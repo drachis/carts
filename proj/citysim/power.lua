@@ -37,7 +37,7 @@ function update_power()
   local nb=neighbors4(c.x,c.y)
   for i=1,#nb do
    local n=nb[i]
-   if conducts(n.x,n.y) and not powered[n.x+n.y*64] then
+   if pw_carries(n.x,n.y) and not powered[n.x+n.y*64] then
     local draw=pw_draw(n.x,n.y)
     if draw>0 and used>=cap then
      power_short=true
@@ -49,6 +49,11 @@ function update_power()
    end
   end
  end
+end
+
+-- glassbox-style: roads can carry power along with everything conductive
+function pw_carries(x,y)
+ return conducts(x,y) or (p.road_power and is_road(x,y))
 end
 
 -- capacity drawn by the tile: 1 for an occupied building, 0 for

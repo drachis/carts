@@ -69,7 +69,10 @@ function update_tools()
   -- keep the cursor inside the view for when we return
   cur.x=mid(flr(camx/8)+1,cur.x,flr(camx/8)+14)
   cur.y=mid(flr(camy/8)+1,cur.y,flr(camy/8)+13)
-  if btnp(4) then map_view=map_view=="city" and "smog" or "city" end
+  if btnp(4) then
+   map_view=map_view=="city" and "smog"
+    or map_view=="smog" and "power" or "city"
+  end
   if btnp(5) then mode="play" end
  end
 end
@@ -116,13 +119,15 @@ function apply_tool(quiet)
  end
  local s=tile(x,y)
  if t.name=="bulldoze" then
-  if s>3 and try_spend(cost.dozer) then
+  -- blasting a mountain costs real money
+  if s>3 and try_spend(s==5 and cost.blast or cost.dozer) then
    -- bridges and pylons revert to water, everything else to grass
    set_tile(x,y,(s==59 or s==60 or s==61) and 3 or 1)
    refresh_around(x,y)
    update_power()
    add_fx(x,y,2)
    sfx(1)
+   started=true
   end
   return
  end
@@ -140,6 +145,7 @@ function apply_tool(quiet)
  update_power()
  add_fx(x,y,3,"-$"..c)
  sfx(0)
+ started=true -- the clock runs once the first thing is built
 end
 
 -- roads pick their sprite from connected neighbors (n=1 e=2 s=4 w=8);
@@ -160,12 +166,12 @@ function refresh_tile(x,y)
   if is_road(x-1,y) then m+=8 end
   set_tile(x,y,16+m)
  elseif s>=80 and s<=95 then
-  -- wires bend toward anything conductive next door
+  -- wires bend toward anything that carries power next door
   local m=0
-  if conducts(x,y-1) then m+=1 end
-  if conducts(x+1,y) then m+=2 end
-  if conducts(x,y+1) then m+=4 end
-  if conducts(x-1,y) then m+=8 end
+  if pw_carries(x,y-1) then m+=1 end
+  if pw_carries(x+1,y) then m+=2 end
+  if pw_carries(x,y+1) then m+=4 end
+  if pw_carries(x-1,y) then m+=8 end
   set_tile(x,y,80+m)
  end
 end

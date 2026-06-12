@@ -84,6 +84,7 @@ end
 -- minimap tile colors for the "city" view, by sprite id band
 function ui_city_col(s)
  if s==3 then return 12 end
+ if s==5 then return 4 end
  if s>=16 and s<=31 then return 5 end
  if s>=32 and s<=35 then return 11 end
  if s>=36 and s<=39 then return 13 end
@@ -107,8 +108,8 @@ function draw_minimap()
  for ty=0,47 do
   for tx=0,47 do
    local c
+   local s=tile(tx,ty)
    if map_view=="smog" then
-    local s=tile(tx,ty)
     local v=land_value(tx,ty)
     c=5
     if s==3 then c=12
@@ -117,8 +118,15 @@ function draw_minimap()
     elseif v<0 then c=4
     elseif v>1 then c=11
     end
+   elseif map_view=="power" then
+    -- glassbox-style data layer: lit grid vs dark grid
+    if s==3 then c=12
+    elseif s==48 then c=10
+    elseif is_powered(tx,ty) then c=11
+    elseif pw_carries(tx,ty) then c=8
+    else c=5 end
    else
-    c=ui_city_col(tile(tx,ty))
+    c=ui_city_col(s)
    end
    rectfill(px+tx*2,py+ty*2,px+tx*2+1,py+ty*2+1,c)
   end

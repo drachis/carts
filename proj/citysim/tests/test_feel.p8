@@ -40,6 +40,7 @@ end
 -- recreate sprite flags (no __gff__ in this cart)
 fset(1,3,true)
 fset(2,3,true)
+fset(4,3,true)
 for i=16,31 do fset(i,0,true) end
 for i=32,43 do
  fset(i,1,true)
@@ -176,6 +177,10 @@ draw_hud()
 mode="menu"
 draw_menu()
 mode="map"
+draw_minimap()
+map_view="smog"
+draw_minimap()
+map_view="power"
 draw_minimap()
 msg,msg_t="hello",10
 draw_msg()

@@ -8,7 +8,15 @@ p={
  tax_demand=0.15,    -- demand lost per tax point above 2
  debt_demand=0.2,    -- demand lost while in debt
  upkeep={road=1,line=1,crossing=2,pylon=1,plant=10,svc=5},
- cost={road=10,zone=50,line=5,plant=300,park=10,bridge=50,svc=100,dozer=1},
+ cost={road=10,zone=50,line=5,plant=300,park=10,bridge=50,svc=100,
+  dozer=1,blast=25},
+
+ -- terrain
+ ocean_chance=0.4,   -- odds one map edge is open sea
+ ranges=2,           -- mountain ranges (plus 0-1 random extra)
+
+ -- glassbox-style: roads carry power too (lines still reach off-road)
+ road_power=true,
 
  -- growth
  road_radius=1,      -- chebyshev distance a zone may sit from a road

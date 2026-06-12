@@ -29,6 +29,7 @@ end
 -- this cart has no __gff__, so recreate the sprite flags from design.md
 fset(1,3,true)
 fset(2,3,true)
+fset(4,3,true)
 for i=16,31 do fset(i,0,true) end
 for i=32,43 do
  fset(i,1,true)
@@ -67,6 +68,7 @@ ok(is_powered(15,11),"plant is powered")
 ok(is_powered(14,11),"zone next to plant powered")
 ok(is_powered(10,11),"power conducts along zone row")
 ok(not is_powered(20,20),"far tile not powered")
+ok(is_powered(12,10),"roads carry power (glassbox)")
 ok(has_road_access(12,11),"zone has road access")
 ok(zone_kind(12,11)==1 and zone_density(12,11)==0,"zone kind/density")
 
@@ -110,6 +112,7 @@ cur={x=12,y=10}
 apply_tool()
 ok(tile(12,10)==53,"line over h-road makes crossing")
 ok(is_road(12,10) and conducts(12,10),"crossing is road and conducts")
+ok(started==true,"building starts the clock")
 refresh_tile(12,10)
 ok(tile(12,10)==53,"autotile leaves crossing alone")
 update_power()
@@ -142,6 +145,25 @@ for x=0,gridw-1 do set_zone(x,44,1,1) end
 update_power()
 ok(power_short,"48 buildings exceed one plant's 40")
 ok(not is_powered(47,44),"buildings beyond capacity stay dark")
+
+-- terrain: the generator raises mountains and highland
+local rocks,high=0,0
+for y=0,gridh-1 do
+ for x=0,gridw-1 do
+  if tile(x,y)==5 then rocks+=1 end
+  if tile(x,y)==4 then high+=1 end
+ end
+end
+ok(rocks>10,"mountain ranges generated")
+ok(high>5,"highland fringes generated")
+set_tile(8,40,5)
+ok(not is_buildable(8,40),"mountains are unbuildable")
+money=100
+mode="play"
+tool=11 -- bulldoze
+cur={x=8,y=40}
+apply_tool()
+ok(tile(8,40)==1 and money==75,"blasting a mountain costs $25")
 
 -- river bends carry a flow vector for the ripples
 local has_flow=false

@@ -62,18 +62,62 @@ function init_map()
    set_tile(x,y,rnd()<0.12 and 2 or 1)
   end
  end
- -- a river wandering top to bottom: narrow source, wide mouth, and
- -- momentum-driven meanders (soil resists, then gives way)
+ -- sometimes one side of the map is open sea
+ local oc=rnd()<p.ocean_chance and flr(rnd(2)) or nil
+ if oc then
+  for y=0,gridh-1 do
+   for i=0,1+flr(rnd(3)) do
+    set_tile(oc==0 and i or gridw-1-i,y,3)
+   end
+  end
+ end
+ -- mountain ranges (random-walk blobs of rock)
+ for m=1,p.ranges+flr(rnd(2)) do
+  local mx,my=4+flr(rnd(40)),4+flr(rnd(40))
+  for i=1,24+flr(rnd(16)) do
+   set_tile(mx,my,5)
+   mx=mid(1,mx+flr(rnd(3))-1,gridw-2)
+   my=mid(1,my+flr(rnd(3))-1,gridh-2)
+  end
+ end
+ -- highland fringes climb the foothills
+ for y=0,gridh-1 do
+  for x=0,gridw-1 do
+   if tile(x,y)<3 then
+    for d in all(neighbors4(x,y)) do
+     if tile(d.x,d.y)==5 and rnd()<0.7 then set_tile(x,y,4) end
+    end
+   end
+  end
+ end
+ -- a mesa plateau out on its own
+ local px,py=6+flr(rnd(36)),6+flr(rnd(36))
+ for i=1,30 do
+  if tile(px,py)<3 then set_tile(px,py,4) end
+  px=mid(1,px+flr(rnd(3))-1,gridw-2)
+  py=mid(1,py+flr(rnd(3))-1,gridh-2)
+ end
+ -- main river, top to bottom: narrow source, wide mouth, momentum
+ -- meanders. it carves straight through rock (canyons)
  local rx=10+flr(rnd(28))
  local v=0
  for y=0,gridh-1 do
   local w=1+flr(y/20)
-  if rnd()<0.15 then w+=1 end -- soft banks widen the channel
+  if rnd()<0.15 then w+=1 end
   for i=0,w-1 do
    set_tile(rx+i,y,3)
   end
   v=mid(-1.2,v+rnd(1)-0.5,1.2)
   rx=mid(2,rx+flr(v+0.5),gridw-6)
+ end
+ -- a tributary winds in from the west until it meets water
+ local ty=10+flr(rnd(28))
+ local tx,tv=0,0
+ while tx<gridw and tile(tx,ty)~=3 do
+  set_tile(tx,ty,3)
+  tv=mid(-1,tv+rnd(0.8)-0.4,1)
+  ty=mid(1,ty+flr(tv+0.5),gridh-2)
+  tx+=1
  end
  calc_flow()
  camx,camy=0,0
@@ -98,8 +142,8 @@ function calc_flow()
 end
 
 -- view: hud rows 0..7, world fills y 8..127 (16x15 tiles).
--- the camera eases toward where the cursor wants it.
-function update_camera()
+-- the camera eases toward where the cursor wants it (snap jumps there).
+function update_camera(snap)
  local px,py=cur.x*8,cur.y*8
  local dx,dy=camx,camy
  if px-dx<16 then dx=px-16 end
@@ -108,8 +152,9 @@ function update_camera()
  if py-dy>96 then dy=py-96 end
  dx=mid(0,dx,gridw*8-128)
  dy=mid(0,dy,gridh*8-120)
- camx+=(dx-camx)*0.4
- camy+=(dy-camy)*0.4
+ local k=snap and 1 or 0.4
+ camx+=(dx-camx)*k
+ camy+=(dy-camy)*k
  if abs(dx-camx)<0.5 then camx=dx end
  if abs(dy-camy)<0.5 then camy=dy end
 end

@@ -4,12 +4,24 @@ lv_grid={}
 
 function init_landval()
  lv_grid={}
+ -- count rock per cell once: mountain walls block smog drift
+ lv_mtn={}
+ for y=0,gridh-1 do
+  for x=0,gridw-1 do
+   if tile(x,y)==5 then
+    local ci=flr(x/4)+flr(y/4)*12
+    lv_mtn[ci]=(lv_mtn[ci] or 0)+1
+   end
+  end
+ end
 end
 
--- cell-grid (12x12) accessors with their own bounds check
+-- cell-grid (12x12) accessors with their own bounds check.
+-- negative spread (pollution) cannot drift into a mostly-rock cell.
 function lv_add(cx,cy,v)
  if cx>=0 and cx<12 and cy>=0 and cy<12 then
   local ci=cx+cy*12
+  if v<0 and (lv_mtn[ci] or 0)>4 then return end
   lv_grid[ci]=(lv_grid[ci] or 0)+v
  end
 end
@@ -42,8 +54,10 @@ function update_landval()
     lv_add(cx,cy,-2)
    elseif s==56 then
     lv_add(cx,cy,-1)
-   elseif s==2 or s==3 then
-    lv_add(cx,cy,0.25)
+   elseif s==2 or s==3 or s==4 then
+    lv_add(cx,cy,0.25) -- trees, water, highland views
+   elseif s==5 then
+    lv_add(cx,cy,0.5)  -- mountain scenery
    end
   end
  end

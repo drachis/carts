@@ -27,6 +27,7 @@ function load_city()
  tax_rate=mget(54,0)
  milestone=mget(55,0)*10
  post_load()
+ started=true
  msg,msg_t="city loaded",60
 end
 
@@ -36,8 +37,9 @@ function new_city()
  init_growth()
  post_load()
  cur={x=24,y=24}
- update_camera()
- msg,msg_t="new city founded",60
+ update_camera(true)
+ started=false
+ msg,msg_t="new city founded - time starts when you build",90
 end
 
 function post_load()

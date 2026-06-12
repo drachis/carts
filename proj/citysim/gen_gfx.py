@@ -30,6 +30,26 @@ S[2] = [  # trees
     "33333433",
     "33333333",
 ]
+S[4] = [  # highland grass: mesa plateau, ledge shadow along the bottom
+    "3b33b3b3",
+    "33333333",
+    "b33b33b3",
+    "33333333",
+    "3b333b33",
+    "33b33333",
+    "b333b3b3",
+    "11111111",
+]
+S[5] = [  # mountain: rocky peak with a snow cap, solid base so ranges merge
+    "33357333",
+    "33576533",
+    "35656653",
+    "56555565",
+    "55655556",
+    "65555655",
+    "55565555",
+    "55555555",
+]
 S[3] = [  # water
     "cccccccc",
     "cc1ccccc",
@@ -321,7 +341,7 @@ gfx = "\n".join("".join(r) for r in rows)
 
 # flags: 1 road, 2 zone, 4 conducts, 8 buildable
 flags = [0] * 256
-flags[1] = flags[2] = 8
+flags[1] = flags[2] = flags[4] = 8  # grass, trees, highland buildable
 for i in range(16, 32): flags[i] = 1
 for i in range(32, 44): flags[i] = 6
 flags[48] = 4
