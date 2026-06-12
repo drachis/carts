@@ -54,6 +54,7 @@ end
 fset(59,0,true)
 fset(60,0,true)
 fset(61,2,true)
+fset(62,2,true)
 for i=64,66 do fset(i,2,true) end
 for i=80,95 do fset(i,2,true) end
 

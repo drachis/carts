@@ -43,6 +43,7 @@ end
 fset(59,0,true)
 fset(60,0,true)
 fset(61,2,true)
+fset(62,2,true)
 for i=64,66 do fset(i,2,true) end
 for i=80,95 do fset(i,2,true) end
 
@@ -202,7 +203,23 @@ apply_tool()
 ok(tile(wx,wy)==3,"bulldozed bridge reverts to water")
 tool=6 -- power line
 apply_tool()
-ok(tile(wx,wy)==61 and conducts(wx,wy),"line on water builds a pylon")
+local py=tile(wx,wy)
+ok((py==61 or py==62) and conducts(wx,wy),"line on water builds a pylon")
+
+-- pylons face along the wire crossing the river
+set_tile(30,5,3)
+set_tile(29,5,80)
+set_tile(31,5,80)
+cur={x=30,y=5}
+apply_tool()
+ok(tile(30,5)==62,"east-west crossing uses the horizontal pylon")
+set_tile(30,5,3)
+set_tile(29,5,1)
+set_tile(31,5,1)
+set_tile(30,4,80)
+cur={x=30,y=5}
+apply_tool()
+ok(tile(30,5)==61,"north-south crossing uses the vertical pylon")
 
 -- wire autotile: two adjacent lines bend toward each other
 set_tile(40,30,80)

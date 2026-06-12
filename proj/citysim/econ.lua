@@ -45,7 +45,7 @@ function update_econ()
     upkeep+=u.road
    elseif s>=80 and s<=95 then
     upkeep+=u.line
-   elseif s==61 then
+   elseif s==61 or s==62 then
     upkeep+=u.pylon
    elseif s==53 or s==54 then
     upkeep+=u.crossing

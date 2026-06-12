@@ -136,7 +136,7 @@ function update_disaster()
     ns=56
    elseif (s>=16 and s<=31) or (s>=80 and s<=95) or s==53 or s==54 or s==44 or s==2 then
     ns=1
-   elseif s==59 or s==60 or s==61 then
+   elseif s>=59 and s<=62 then
     ns=3
    end
    if ns>=0 and s~=ns then

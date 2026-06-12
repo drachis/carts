@@ -122,7 +122,7 @@ function apply_tool(quiet)
   -- blasting a mountain costs real money
   if s>3 and try_spend(s==5 and cost.blast or cost.dozer) then
    -- bridges and pylons revert to water, everything else to grass
-   set_tile(x,y,(s==59 or s==60 or s==61) and 3 or 1)
+   set_tile(x,y,(s>=59 and s<=62) and 3 or 1)
    refresh_around(x,y)
    update_power()
    add_fx(x,y,2)
@@ -156,6 +156,13 @@ function refresh_tile(x,y)
  if s==59 or s==60 then
   -- bridges orient toward their road neighbors
   set_tile(x,y,(is_road(x,y-1) or is_road(x,y+1)) and 60 or 59)
+  return
+ end
+ if s==61 or s==62 then
+  -- pylons face along the wire crossing the water
+  local h=pw_carries(x-1,y) or pw_carries(x+1,y)
+  local v=pw_carries(x,y-1) or pw_carries(x,y+1)
+  set_tile(x,y,h and not v and 62 or 61)
   return
  end
  if is_road(x,y) then

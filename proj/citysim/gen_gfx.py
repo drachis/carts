@@ -301,13 +301,23 @@ S[59] = [  # bridge, road runs e-w
     "cccccccc",
 ]
 S[60] = ["c6444" + ("5" if y % 3 == 1 else "4") + "6c" for y in range(8)]  # n-s bridge
-S[61] = [  # power pylon standing in water
+S[61] = [  # water pylon, wire runs n-s
     "ccc6cccc",
     "ccc6cccc",
     "ccc6cccc",
     "cc464ccc",
     "ccc6cccc",
     "ccc6cccc",
+    "cc444ccc",
+    "cccccccc",
+]
+S[62] = [  # water pylon, wire runs e-w
+    "cccccccc",
+    "ccc4cccc",
+    "ccc4cccc",
+    "66666666",
+    "ccc4cccc",
+    "ccc4cccc",
     "cc444ccc",
     "cccccccc",
 ]
@@ -347,7 +357,7 @@ for i in range(32, 44): flags[i] = 6
 flags[48] = 4
 flags[53] = flags[54] = 5  # road + conducts
 flags[59] = flags[60] = 1  # bridges are roads
-flags[61] = 4              # water pylon conducts
+flags[61] = flags[62] = 4  # water pylons conduct
 for i in range(64, 67): flags[i] = 4  # services join the power grid
 for i in range(80, 96): flags[i] = 4  # wire autotiles conduct
 gff = "\n".join(

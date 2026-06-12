@@ -94,7 +94,7 @@ function ui_city_col(s)
  if s==55 then return 9 end
  if s==56 then return 0 end
  if s==59 or s==60 then return 4 end
- if s==61 or (s>=80 and s<=95) then return 6 end
+ if s==61 or s==62 or (s>=80 and s<=95) then return 6 end
  if s>=64 and s<=66 then return 7 end
  return 3
 end
