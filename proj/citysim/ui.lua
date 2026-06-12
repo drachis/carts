@@ -7,7 +7,7 @@ function draw_hud()
  rectfill(0,0,127,7,0)
  -- money
  local ms="$"..tostr(money)
- print(ms,0,1,11)
+ print(ms,0,1,money<0 and 8 or 11)
  -- pop
  local ps="p"..tostr(pop)
  print(ps,28,1,14)
@@ -59,6 +59,8 @@ function draw_menu()
   elseif e.name=="bulldoze" then
    line(x+2,sy+2,x+sw-3,sy+sw-3,8)
    line(x+sw-3,sy+2,x+2,sy+sw-3,8)
+  elseif e.spd then
+   print(">>",x+3,sy+4,10)
   else
    -- map: 3x3 checkerboard of 2x2 squares
    local cx=x+2
@@ -123,6 +125,10 @@ function draw_minimap()
     c=9
    elseif s==56 then
     c=0
+   elseif s==59 or s==60 then
+    c=4
+   elseif s==61 then
+    c=6
    else
     c=3
    end

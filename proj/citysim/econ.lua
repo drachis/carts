@@ -1,13 +1,14 @@
 -- econ.lua : money, monthly tick, cost table
 
-cost={road=10,zone=50,line=5,plant=300,park=10,dozer=1}
+cost={road=10,zone=50,line=5,plant=300,park=10,bridge=50,dozer=1}
 
+-- deficit spending allowed down to a debt ceiling
 function try_spend(n)
- if money>=n then
+ if money-n>=-1000 then
   money-=n
   return true
  end
- msg="not enough money"
+ msg="bankers refuse: debt limit"
  msg_t=60
  sfx(1)
  return false
@@ -50,8 +51,17 @@ function update_econ()
    end
   end
  end
+ -- debt accrues interest monthly
+ if money<0 then
+  upkeep+=flr(-money*0.02)+1
+ end
  local net=income-upkeep
  money+=net
+ if month==1 and money<0 then
+  hud_msg,hud_msg_c="in debt! citizens unhappy",8
+  hud_msg_t=150
+  sfx(3)
+ end
  -- monthly summary shows in the hud where the date is
  if net>=0 then
   hud_msg,hud_msg_c="taxes +$"..net,11

@@ -34,11 +34,19 @@ which we never use — safe.)
 | 52      | "no power" bolt overlay icon     |
 | 53/54   | line crossing h-road / v-road (flags: road + conducts) |
 | 55/56   | fire / rubble (no flags; rubble must be bulldozed) |
+| 57/58   | light / heavy smog dither overlays (drawn where land value <=-2 / <=-4) |
+| 59/60   | bridge e-w / n-s (flag: road; bulldozes back to water) |
+| 61      | power pylon in water (flag: conducts) |
 
 sfx ids: 0 place, 1 deny/bulldoze, 2 chime (month, milestone), 3 fire alarm.
 more shared globals: tax_rate (1..3, econ), power_short (power), milestone
 (growth), lv_grid + land_value(x,y) + growth_mult(x,y,k) (landval.lua),
 dz_fires + start_fire() (disaster.lua). plants power 40 tiles each.
+also: gspd sim speed 1/2/4 (tools, main loops sim_tick gspd times per frame);
+debt allowed to -1000 with monthly interest + demand penalty; savegame.lua
+cstores the map region (with scalars stashed at map row 0, x>=49) to
+citysave.p8; traffic cars BFS-commute from residential to c/i jobs with
+right-hand lane offsets.
 
 ### sprite flags (already set in __gff__)
 - flag 0: road

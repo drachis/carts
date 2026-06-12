@@ -61,12 +61,14 @@ function init_map()
    set_tile(x,y,rnd()<0.12 and 2 or 1)
   end
  end
- -- a river wandering top to bottom
+ -- a river wandering top to bottom: narrow source, wide mouth downstream
  local rx=8+flr(rnd(32))
  for y=0,gridh-1 do
-  set_tile(rx,y,3)
-  set_tile(rx+1,y,3)
-  rx=mid(1,rx+flr(rnd(3))-1,gridw-3)
+  local w=1+flr(y/20)
+  for i=0,w-1 do
+   set_tile(rx+i,y,3)
+  end
+  rx=mid(1,rx+flr(rnd(3))-1,gridw-5)
  end
  camx,camy=0,0
 end
@@ -87,13 +89,23 @@ function draw_world()
  camera(camx,camy-8)
  local cx,cy=flr(camx/8),flr(camy/8)
  map(cx,cy,cx*8,cy*8,17,16)
- -- blink a bolt over unpowered zones
- if t()%1<0.5 then
-  for y=cy,min(gridh-1,cy+15) do
-   for x=cx,min(gridw-1,cx+16) do
-    if is_zone(x,y) and not is_powered(x,y) then
-     spr(52,x*8,y*8)
-    end
+ -- per-tile overlays: flowing water, unpowered bolts, pollution haze
+ local bl=t()%1<0.5
+ for y=cy,min(gridh-1,cy+15) do
+  for x=cx,min(gridw-1,cx+16) do
+   local s=tile(x,y)
+   if s==3 then
+    -- ripples drift downstream (the river flows to its mouth at the bottom)
+    local yy=(flr(t()*16)+x*3)%8
+    pset(x*8+(x*5+y*3)%6+1,y*8+yy,(x+y)%2==0 and 7 or 6)
+   elseif bl and is_zone(x,y) and not is_powered(x,y) then
+    spr(52,x*8,y*8)
+   end
+   local v=land_value(x,y)
+   if v<=-4 then
+    spr(58,x*8,y*8)
+   elseif v<=-2 then
+    spr(57,x*8,y*8)
    end
   end
  end

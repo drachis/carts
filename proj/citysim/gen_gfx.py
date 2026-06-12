@@ -246,6 +246,33 @@ S[56] = [  # rubble
     "00000000",
 ]
 
+# smog overlays: dithered grey haze (black = transparent)
+S[57] = ["".join("5" if (x + y) % 4 == 0 else "0" for x in range(8)) for y in range(8)]
+S[58] = ["".join("6" if x % 4 == 1 and y % 4 == 1 else
+                 "5" if (x + y) % 2 == 0 else "0" for x in range(8)) for y in range(8)]
+
+S[59] = [  # bridge, road runs e-w
+    "cccccccc",
+    "66666666",
+    "44444444",
+    "45444544",
+    "44544454",
+    "44444444",
+    "cc6cc6cc",
+    "cccccccc",
+]
+S[60] = ["c6444" + ("5" if y % 3 == 1 else "4") + "6c" for y in range(8)]  # n-s bridge
+S[61] = [  # power pylon standing in water
+    "ccc6cccc",
+    "ccc6cccc",
+    "ccc6cccc",
+    "cc464ccc",
+    "ccc6cccc",
+    "ccc6cccc",
+    "cc444ccc",
+    "cccccccc",
+]
+
 # road/powerline crossings: line passes perpendicular over a straight road
 g = road(10)  # e+w road
 S[53] = [r[:3] + "6" + r[4:] for r in g]
@@ -281,6 +308,8 @@ for i in range(32, 44): flags[i] = 6
 flags[48] = 4
 for i in range(49, 52): flags[i] = 4
 flags[53] = flags[54] = 5  # road + conducts
+flags[59] = flags[60] = 1  # bridges are roads
+flags[61] = 4              # water pylon conducts
 gff = "\n".join(
     "".join("%02x" % f for f in flags[line * 128 : (line + 1) * 128])
     for line in range(2)

@@ -10,6 +10,7 @@ __lua__
 #include ../tools.lua
 #include ../traffic.lua
 #include ../disaster.lua
+#include ../savegame.lua
 #include ../ui.lua
 
 local pass,failed=0,0
@@ -37,6 +38,9 @@ for i=53,54 do
  fset(i,0,true)
  fset(i,2,true)
 end
+fset(59,0,true)
+fset(60,0,true)
+fset(61,2,true)
 
 srand(1)
 init_map()
@@ -108,7 +112,7 @@ refresh_tile(12,10)
 ok(tile(12,10)==53,"autotile leaves crossing alone")
 update_power()
 
--- traffic: cars appear on a road network once there's population
+-- traffic v2: commuters need a home, a workplace, and a road between
 init_traffic()
 for x=5,35 do
  set_tile(x,20,16)
@@ -116,17 +120,31 @@ end
 for x=5,35 do
  refresh_tile(x,20)
 end
+for x=5,18 do
+ set_zone(x,19,1,2) -- developed homes north of the road
+ set_zone(x,21,1,2) -- and south
+end
+for x=25,35 do
+ set_zone(x,19,2,2) -- developed shops at the east end
+ set_zone(x,21,2,2)
+end
+local p=tr_path(5,20,35,20)
+ok(p~=nil and #p==31,"tr_path finds the straight route")
+ok(tr_path(5,20,12,10)==nil,"tr_path returns nil when disconnected")
 pop=100
-for f=12001,13200 do
+local spawned,on_road=false,true
+for f=12001,31200 do
  frame=f
  update_traffic()
+ if #tr_cars>0 then
+  spawned=true
+  for c in all(tr_cars) do
+   if not is_road(flr(c.px/8),flr(c.py/8)) then on_road=false end
+  end
+ end
 end
-ok(#tr_cars>0,"cars spawn on roads")
-local on_road=true
-for c in all(tr_cars) do
- if not is_road(flr(c.px/8),flr(c.py/8)) then on_road=false end
-end
-ok(on_road,"all cars are on roads")
+ok(spawned,"commuters spawn between homes and jobs")
+ok(on_road,"cars stay on roads for their whole trip")
 draw_traffic()
 
 -- park tool places a park
@@ -163,6 +181,54 @@ set_tile(0,43,48)
 update_power()
 ok(power_short,"over-capacity sets power_short")
 ok(not is_powered(47,44),"tiles beyond capacity stay dark")
+
+-- deficit spending: allowed into debt, refused past the ceiling
+money=10
+ok(try_spend(100) and money==-90,"spending into debt allowed")
+ok(not try_spend(2000),"debt ceiling refuses")
+ok(money==-90,"refused spend leaves debt alone")
+
+-- bridges + water pylons
+money=1000
+local wx,wy=nil,nil
+for y=0,gridh-1 do
+ for x=0,gridw-1 do
+  if wx==nil and tile(x,y)==3 then wx,wy=x,y end
+ end
+end
+ok(wx~=nil,"river exists")
+mode="play"
+tool=1 -- road
+cur={x=wx,y=wy}
+apply_tool()
+local b=tile(wx,wy)
+ok(b==59 or b==60,"road on water builds a bridge")
+ok(is_road(wx,wy),"bridge is a road")
+tool=8 -- bulldoze
+apply_tool()
+ok(tile(wx,wy)==3,"bulldozed bridge reverts to water")
+tool=6 -- power line
+apply_tool()
+ok(tile(wx,wy)==61 and conducts(wx,wy),"line on water builds a pylon")
+
+-- sim speed cycles 1 -> 2 -> 4 -> 1
+ok(gspd==1,"speed starts 1x")
+cycle_speed()
+cycle_speed()
+ok(gspd==4,"speed cycles to 4x")
+cycle_speed()
+ok(gspd==1,"speed wraps to 1x")
+
+-- save / load / new city
+money=777 month=3 year=1963 tax_rate=2 milestone=50
+save_city()
+money=1 month=1 year=1950 milestone=0
+load_city()
+ok(money==777 and month==3 and year==1963 and milestone==50,
+   "save/load restores scalars")
+ok(mget(49,0)==42,"save magic present")
+new_city()
+ok(money==2000 and pop==0,"new city resets the books")
 
 -- ui smoke test: just make sure nothing crashes when drawing
 camx,camy=0,0

@@ -32,8 +32,9 @@ function update_growth()
   end
   pop=res
   jobs=cjobs+ijobs
-  -- high taxes scare everyone off a bit
+  -- high taxes scare everyone off a bit; a city in debt scares them more
   local tp=(tax_rate-2)*0.15
+  if money<0 then tp+=0.2 end
   demand.r=mid((jobs+16-pop)/32-tp,-1,1)
   demand.c=mid((pop*0.5-cjobs)/24-tp,-1,1)
   demand.i=mid((pop*0.7-ijobs)/24-tp,-1,1)

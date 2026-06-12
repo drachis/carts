@@ -10,6 +10,7 @@ tools_list={
  {name="power plant",costkey="plant",spr=48},
  {name="bulldoze",costkey="dozer"},
  {name="map"},
+ {name="speed 1x",spd=true},
 }
 
 function init_tools()
@@ -17,6 +18,14 @@ function init_tools()
  tool=1
  mode="play"
  msg,msg_t="",0
+ gspd=1
+end
+
+function cycle_speed()
+ gspd=gspd==1 and 2 or gspd==2 and 4 or 1
+ for e in all(tools_list) do
+  if e.spd then e.name="speed "..gspd.."x" end
+ end
 end
 
 function update_tools()
@@ -32,7 +41,14 @@ function update_tools()
   if btnp(0) then tool=(tool-2)%#tools_list+1 end
   if btnp(1) then tool=tool%#tools_list+1 end
   if btnp(4) or btnp(5) then
-   mode=tools_list[tool].name=="map" and "map" or "play"
+   local e=tools_list[tool]
+   if e.spd then
+    cycle_speed()
+   elseif e.name=="map" then
+    mode="map"
+   else
+    mode="play"
+   end
   end
  else -- map mode: dpad pans the viewport
   if btn(0) then camx-=4 end
@@ -55,40 +71,54 @@ function apply_tool()
   mode="map"
   return
  end
+ if t.spd then
+  cycle_speed()
+  return
+ end
+ local s=tile(x,y)
  if t.name=="bulldoze" then
-  if tile(x,y)>3 and try_spend(cost.dozer) then
-   set_tile(x,y,1)
+  if s>3 and try_spend(cost.dozer) then
+   -- bridges and pylons revert to water, everything else to grass
+   set_tile(x,y,(s==59 or s==60 or s==61) and 3 or 1)
    refresh_around(x,y)
    update_power()
    sfx(1)
   end
   return
  end
- -- power lines may cross straight road segments (h road 26, v road 21)
- local cross=nil
- if t.name=="power line" then
-  if tile(x,y)==26 then cross=53 end
-  if tile(x,y)==21 then cross=54 end
+ -- figure out what this tool puts here and what it costs
+ local put,c
+ if t.kind then
+  c=cost.zone
+  if is_buildable(x,y) then put=zone_base[t.kind] end
+ elseif t.name=="road" then
+  c=cost.road
+  if is_buildable(x,y) then
+   put=16
+  elseif s==3 then
+   put,c=59,cost.bridge
+  end
+ elseif t.name=="power line" then
+  c=cost.line
+  if is_buildable(x,y) then put=49
+  elseif s==3 then put,c=61,cost.line*4
+  elseif s==26 then put=53 -- crossing over straight roads
+  elseif s==21 then put=54
+  end
+ elseif t.name=="park" then
+  c=cost.park
+  if is_buildable(x,y) then put=44 end
+ else -- power plant
+  c=cost.plant
+  if is_buildable(x,y) then put=48 end
  end
- if not is_buildable(x,y) and not cross then
+ if not put then
   msg,msg_t="can't build there",60
   sfx(1)
   return
  end
- if not try_spend(cost[t.costkey]) then return end
- if cross then
-  set_tile(x,y,cross)
- elseif t.kind then
-  set_zone(x,y,t.kind,0)
- elseif t.name=="road" then
-  set_tile(x,y,16)
- elseif t.name=="park" then
-  set_tile(x,y,44)
- elseif t.name=="power line" then
-  set_tile(x,y,49)
- else
-  set_tile(x,y,48)
- end
+ if not try_spend(c) then return end
+ set_tile(x,y,put)
  refresh_around(x,y)
  update_power()
  sfx(0)
@@ -99,6 +129,11 @@ end
 function refresh_tile(x,y)
  local s=tile(x,y)
  if s==53 or s==54 then return end -- crossings stay as-is
+ if s==59 or s==60 then
+  -- bridges orient toward their road neighbors
+  set_tile(x,y,(is_road(x,y-1) or is_road(x,y+1)) and 60 or 59)
+  return
+ end
  if is_road(x,y) then
   local m=0
   if is_road(x,y-1) then m+=1 end
