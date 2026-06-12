@@ -5,6 +5,7 @@ tools_list={
  {name="house zone",costkey="zone",spr=33,kind=1},
  {name="shop zone",costkey="zone",spr=37,kind=2},
  {name="factory zone",costkey="zone",spr=41,kind=3},
+ {name="park",costkey="park",spr=44},
  {name="power line",costkey="line",spr=49},
  {name="power plant",costkey="plant",spr=48},
  {name="bulldoze",costkey="dozer"},
@@ -59,6 +60,7 @@ function apply_tool()
    set_tile(x,y,1)
    refresh_around(x,y)
    update_power()
+   sfx(1)
   end
   return
  end
@@ -70,6 +72,7 @@ function apply_tool()
  end
  if not is_buildable(x,y) and not cross then
   msg,msg_t="can't build there",60
+  sfx(1)
   return
  end
  if not try_spend(cost[t.costkey]) then return end
@@ -79,6 +82,8 @@ function apply_tool()
   set_zone(x,y,t.kind,0)
  elseif t.name=="road" then
   set_tile(x,y,16)
+ elseif t.name=="park" then
+  set_tile(x,y,44)
  elseif t.name=="power line" then
   set_tile(x,y,49)
  else
@@ -86,6 +91,7 @@ function apply_tool()
  end
  refresh_around(x,y)
  update_power()
+ sfx(0)
 end
 
 -- roads pick their sprite from connected neighbors (n=1 e=2 s=4 w=8);

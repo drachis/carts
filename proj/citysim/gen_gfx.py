@@ -83,7 +83,7 @@ def plot(col, letter):
 
 S[32] = plot("b", "r")
 S[36] = plot("c", "c")
-S[40] = plot("9", "i")
+S[40] = plot("a", "i")
 
 S[33] = [  # r1: one house
     "33333333",
@@ -215,6 +215,37 @@ S[51] = [  # power line cross
     "33363333",
     "33363333",
 ]
+S[44] = [  # park: bushes, a flower, a bird?  just a nice green spot
+    "33333333",
+    "3bb33b33",
+    "3bbb3bb3",
+    "33b33bb3",
+    "333333e3",
+    "38333333",
+    "333b3b33",
+    "33333333",
+]
+S[55] = [  # fire
+    "00000000",
+    "00090000",
+    "00990900",
+    "09a99900",
+    "9aaa9990",
+    "9aaaa990",
+    "89aaa980",
+    "08888800",
+]
+S[56] = [  # rubble
+    "00000000",
+    "05606450",
+    "56655065",
+    "05446550",
+    "50655406",
+    "06554650",
+    "55065565",
+    "00000000",
+]
+
 # road/powerline crossings: line passes perpendicular over a straight road
 g = road(10)  # e+w road
 S[53] = [r[:3] + "6" + r[4:] for r in g]
@@ -257,8 +288,21 @@ gff = "\n".join(
 
 with open(CART, "r", encoding="utf-8") as f:
     src = f.read()
+# sfx: header(mode,speed,loopstart,loopend) + 32 notes of pitch(2)wave(1)vol(1)fx(1)
+def sfx(speed, notes):
+    body = "".join(notes) + "00000" * (32 - len(notes))
+    return "00%02x0000%s" % (speed, body)
+
+sfx_lines = [
+    sfx(8, ["1e150", "24150"]),                    # 0: place blip
+    sfx(8, ["0c650", "0a650", "08650"]),           # 1: deny / bulldoze crunch
+    sfx(8, ["24130", "30130"]),                    # 2: month chime
+    sfx(12, ["18250", "1e250", "18250", "1e250"]), # 3: fire alarm
+]
+
 src = re.split(r"\n__gfx__\n.*", src, flags=re.S)[0].rstrip("\n")
-src += "\n__gfx__\n" + gfx + "\n__gff__\n" + gff + "\n"
+src += ("\n__gfx__\n" + gfx + "\n__gff__\n" + gff +
+        "\n__sfx__\n" + "\n".join(sfx_lines) + "\n")
 with open(CART, "w", encoding="utf-8", newline="\n") as f:
     f.write(src)
 print("patched", CART)

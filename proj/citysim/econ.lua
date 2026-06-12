@@ -1,6 +1,6 @@
 -- econ.lua : money, monthly tick, cost table
 
-cost={road=10,zone=50,line=5,plant=300,dozer=1}
+cost={road=10,zone=50,line=5,plant=300,park=10,dozer=1}
 
 function try_spend(n)
  if money>=n then
@@ -9,6 +9,7 @@ function try_spend(n)
  end
  msg="not enough money"
  msg_t=60
+ sfx(1)
  return false
 end
 
@@ -17,6 +18,7 @@ function init_econ()
  month=1
  year=1950
  ec_f=0
+ tax_rate=2
  hud_msg,hud_msg_t,hud_msg_c="",0,7
 end
 
@@ -30,8 +32,8 @@ function update_econ()
   month=1
   year+=1
  end
- -- income
- local income=pop*2+jobs
+ -- income scales with the tax rate (menu-adjustable)
+ local income=pop*tax_rate+flr(jobs*tax_rate/2)
  -- upkeep via grid scan
  local upkeep=0
  for y=0,gridh-1 do
@@ -57,4 +59,5 @@ function update_econ()
   hud_msg,hud_msg_c="deficit -$"..(-net),8
  end
  hud_msg_t=90
+ sfx(2)
 end

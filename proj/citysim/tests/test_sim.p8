@@ -6,8 +6,10 @@ __lua__
 #include ../power.lua
 #include ../growth.lua
 #include ../econ.lua
+#include ../landval.lua
 #include ../tools.lua
 #include ../traffic.lua
+#include ../disaster.lua
 #include ../ui.lua
 
 local pass,failed=0,0
@@ -42,6 +44,8 @@ init_tools()
 init_power()
 init_econ()
 init_growth()
+init_landval()
+init_disaster()
 frame=0
 
 -- hand-build a powered block: road row, zones under it, plant at the end
@@ -95,7 +99,7 @@ ok(month~=m0 or year~=y0,"month advances after 300 frames")
 -- power line crosses a straight road via apply_tool
 money=1000
 mode="play"
-tool=5 -- power line
+tool=6 -- power line
 cur={x=12,y=10}
 apply_tool()
 ok(tile(12,10)==53,"line over h-road makes crossing")
@@ -124,6 +128,41 @@ for c in all(tr_cars) do
 end
 ok(on_road,"all cars are on roads")
 draw_traffic()
+
+-- park tool places a park
+money=1000
+tool=5 -- park
+cur={x=2,y=2}
+set_tile(2,2,1)
+apply_tool()
+ok(tile(2,2)==44,"park tool places park")
+
+-- land value: industry drags down, parks lift up
+set_zone(40,5,3,3)
+frame=64
+update_landval()
+ok(land_value(40,5)<0,"industry pollutes its cell")
+ok(land_value(2,2)>0,"park raises its cell")
+ok(growth_mult(40,5,1)<1,"residential growth suffers near industry")
+ok(growth_mult(40,5,3)==1,"industry does not care")
+
+-- fire burns a zone down to rubble
+dz_ignite(12,11)
+ok(tile(12,11)==55,"ignition sets fire tile")
+for f=1,200 do
+ frame=13200+f
+ update_disaster()
+end
+ok(tile(12,11)==56,"fire burns out to rubble")
+ok(#dz_fires==0 or tile(12,11)==56,"fire list drains")
+
+-- plant capacity: a 48-tile line + plant exceeds one plant's 40
+set_tile(15,11,1) -- remove the earlier plant so cap is one plant's worth
+for x=0,gridw-1 do set_tile(x,44,49) end
+set_tile(0,43,48)
+update_power()
+ok(power_short,"over-capacity sets power_short")
+ok(not is_powered(47,44),"tiles beyond capacity stay dark")
 
 -- ui smoke test: just make sure nothing crashes when drawing
 camx,camy=0,0

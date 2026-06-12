@@ -18,11 +18,12 @@ function draw_hud()
  else
   print(ui_months[month].." "..tostr(year),58,1,7)
  end
- -- rci demand: letter + bar in the zone's color, above/below the midline
+ -- rci demand: r green, c blue, i yellow; dimmer hue below the midline
  local bx=104
  local labels={"r","c","i"}
  local dvals={demand.r,demand.c,demand.i}
- local dcols={11,14,9}
+ local dcols={11,12,10}
+ local ncols={3,13,4}
  rectfill(bx,4,bx+22,4,5)
  for i=1,3 do
   local lx=bx+(i-1)*8
@@ -32,7 +33,7 @@ function draw_hud()
   if h>0 then
    rectfill(lx+4,4-h,lx+5,4,dcols[i])
   elseif h<0 then
-   rectfill(lx+4,4,lx+5,4-h,dcols[i])
+   rectfill(lx+4,4,lx+5,4-h,ncols[i])
   end
  end
 end
@@ -109,15 +110,19 @@ function draw_minimap()
    elseif s>=32 and s<=35 then
     c=11
    elseif s>=36 and s<=39 then
-    c=14
+    c=13
    elseif s>=40 and s<=43 then
-    c=9
+    c=10
    elseif s==48 then
     c=8
    elseif s>=49 and s<=51 then
     c=6
    elseif s==53 or s==54 then
     c=5
+   elseif s==55 then
+    c=9
+   elseif s==56 then
+    c=0
    else
     c=3
    end

@@ -28,10 +28,17 @@ which we never use — safe.)
 | 32..35  | residential density 0..3         |
 | 36..39  | commercial density 0..3          |
 | 40..43  | industrial density 0..3          |
+| 44      | park (boosts land value)         |
 | 48      | power plant                      |
 | 49/50/51| power line horiz / vert / cross  |
 | 52      | "no power" bolt overlay icon     |
 | 53/54   | line crossing h-road / v-road (flags: road + conducts) |
+| 55/56   | fire / rubble (no flags; rubble must be bulldozed) |
+
+sfx ids: 0 place, 1 deny/bulldoze, 2 chime (month, milestone), 3 fire alarm.
+more shared globals: tax_rate (1..3, econ), power_short (power), milestone
+(growth), lv_grid + land_value(x,y) + growth_mult(x,y,k) (landval.lua),
+dz_fires + start_fire() (disaster.lua). plants power 40 tiles each.
 
 ### sprite flags (already set in __gff__)
 - flag 0: road
