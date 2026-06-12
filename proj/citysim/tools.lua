@@ -1,7 +1,7 @@
 -- tools.lua : input, cursor, placement, bulldoze, autotiling
 
 tools_list={
- {name="road",costkey="road",spr=18},
+ {name="road",costkey="road",spr=26},
  {name="house zone",costkey="zone",spr=33,kind=1},
  {name="shop zone",costkey="zone",spr=37,kind=2},
  {name="factory zone",costkey="zone",spr=41,kind=3},
