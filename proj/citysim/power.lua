@@ -27,41 +27,38 @@ function update_power()
   end
  end
  local cap=nplants*p.plant_cap
- local npowered=#q
- -- bfs through conductive neighbors up to cap
+ local used=0
+ -- bfs: anything conductive carries power, but only buildings
+ -- (developed zones, services) draw plant capacity. once the grid is
+ -- maxed out, further buildings stay dark while power flows past them.
  while qi<=#q do
-  if npowered>=cap then
-   -- check if any unpowered reachable tiles remain
-   local c=q[qi]
-   local nb=neighbors4(c.x,c.y)
-   for i=1,#nb do
-    local n=nb[i]
-    if conducts(n.x,n.y) and not powered[n.x+n.y*64] then
+  local c=q[qi]
+  qi=qi+1
+  local nb=neighbors4(c.x,c.y)
+  for i=1,#nb do
+   local n=nb[i]
+   if conducts(n.x,n.y) and not powered[n.x+n.y*64] then
+    local draw=pw_draw(n.x,n.y)
+    if draw>0 and used>=cap then
      power_short=true
-    end
-   end
-   qi=qi+1
-  else
-   local c=q[qi]
-   qi=qi+1
-   local nb=neighbors4(c.x,c.y)
-   for i=1,#nb do
-    local n=nb[i]
-    if conducts(n.x,n.y) then
-     local k=n.x+n.y*64
-     if not powered[k] then
-      if npowered<cap then
-       powered[k]=true
-       npowered=npowered+1
-       add(q,{x=n.x,y=n.y})
-      else
-       power_short=true
-      end
-     end
+    else
+     used=used+draw
+     powered[n.x+n.y*64]=true
+     add(q,{x=n.x,y=n.y})
     end
    end
   end
  end
+end
+
+-- capacity drawn by the tile: 1 for an occupied building, 0 for
+-- carriers (wires, pylons, crossings, empty zone plots, plants)
+function pw_draw(x,y)
+ local s=tile(x,y)
+ if (s>=64 and s<=66) or (is_zone(x,y) and (s-32)%4>0) then
+  return 1
+ end
+ return 0
 end
 
 function is_powered(x,y)

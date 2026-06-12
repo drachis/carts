@@ -270,11 +270,6 @@ S[56] = [  # rubble
     "00000000",
 ]
 
-# smog overlays: dithered grey haze (black = transparent)
-S[57] = ["".join("5" if (x + y) % 4 == 0 else "0" for x in range(8)) for y in range(8)]
-S[58] = ["".join("6" if x % 4 == 1 and y % 4 == 1 else
-                 "5" if (x + y) % 2 == 0 else "0" for x in range(8)) for y in range(8)]
-
 S[59] = [  # bridge, road runs e-w
     "cccccccc",
     "66666666",

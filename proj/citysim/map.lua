@@ -62,16 +62,39 @@ function init_map()
    set_tile(x,y,rnd()<0.12 and 2 or 1)
   end
  end
- -- a river wandering top to bottom: narrow source, wide mouth downstream
- local rx=8+flr(rnd(32))
+ -- a river wandering top to bottom: narrow source, wide mouth, and
+ -- momentum-driven meanders (soil resists, then gives way)
+ local rx=10+flr(rnd(28))
+ local v=0
  for y=0,gridh-1 do
   local w=1+flr(y/20)
+  if rnd()<0.15 then w+=1 end -- soft banks widen the channel
   for i=0,w-1 do
    set_tile(rx+i,y,3)
   end
-  rx=mid(1,rx+flr(rnd(3))-1,gridw-5)
+  v=mid(-1.2,v+rnd(1)-0.5,1.2)
+  rx=mid(2,rx+flr(v+0.5),gridw-6)
  end
+ calc_flow()
  camx,camy=0,0
+end
+
+-- per-row flow vector from the channel's actual curve, so ripples
+-- drift sideways along bends. recomputed after load too.
+function calc_flow()
+ flow={}
+ local prev=nil
+ for y=0,gridh-1 do
+  local l=nil
+  for x=0,gridw-1 do
+   if l==nil and tile(x,y)==3 then l=x end
+  end
+  flow[y]=0
+  if prev~=nil and l~=nil and y>0 then
+   flow[y-1]=mid(-1,l-prev,1)
+  end
+  prev=l
+ end
 end
 
 -- view: hud rows 0..7, world fills y 8..127 (16x15 tiles).
@@ -94,8 +117,10 @@ end
 function draw_world()
  clip(0,8,128,120)
  camera(camx,camy-8)
- -- seasonal palette: trees turn in fall, snow in winter
- if month>=9 and month<=11 then
+ -- night darkens the world; otherwise seasons tint it
+ if dn_phase()=="night" then
+  dn_dark()
+ elseif month>=9 and month<=11 then
   pal(11,9)
  elseif month==12 or month<=2 then
   pal(3,6)
@@ -109,9 +134,11 @@ function draw_world()
   for x=cx,min(gridw-1,cx+16) do
    local s=tile(x,y)
    if s==3 then
-    -- ripples drift downstream (the river flows to its mouth at the bottom)
+    -- ripples follow the channel: downstream plus the bend's drift
+    local fx=flow[y] or 0
     local yy=(flr(t()*16)+x*3)%8
-    pset(x*8+(x*5+y*3)%6+1,y*8+yy,(x+y)%2==0 and 7 or 6)
+    local xx=(x*5+y*3+flr(t()*10*fx))%6+1
+    pset(x*8+xx,y*8+yy,(x+y)%2==0 and 7 or 6)
    elseif is_zone(x,y) then
     if bl and not is_powered(x,y) then
      spr(52,x*8,y*8)
@@ -119,11 +146,13 @@ function draw_world()
      draw_window_lights(x,y,zone_kind(x,y),zone_density(x,y))
     end
    end
-   local v=land_value(x,y)
-   if v<=-4 then
-    spr(58,x*8,y*8)
-   elseif v<=-2 then
-    spr(57,x*8,y*8)
+   -- polluters puff smoke from their stacks (area haze lives in the
+   -- smog map view, where it doesn't fight the tile art)
+   if s>=41 and s<=43 or s==48 then
+    local ph=(flr(t()*12)+x*3+y*5)%10
+    if ph<8 then
+     pset(x*8+2+flr(ph/4),y*8+1-ph%4,ph%2==0 and 6 or 5)
+    end
    end
   end
  end

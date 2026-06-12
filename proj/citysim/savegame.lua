@@ -52,6 +52,7 @@ function post_load()
  init_disaster()
  init_landval()
  init_achv()
+ calc_flow()
  update_power()
  if set_tax_item then set_tax_item() end
 end

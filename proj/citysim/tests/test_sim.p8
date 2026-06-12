@@ -131,13 +131,27 @@ ok(land_value(2,2)>0,"park raises its cell")
 ok(growth_mult(40,5,1)<1,"residential growth suffers near industry")
 ok(growth_mult(40,5,3)==1,"industry does not care")
 
--- plant capacity: a 48-tile line + plant exceeds one plant's 40
+-- plant capacity: carriers are free, buildings draw from the plant
 set_tile(15,11,1) -- remove the earlier plant so cap is one plant's worth
 for x=0,gridw-1 do set_tile(x,44,80) end
 set_tile(0,43,48)
 update_power()
-ok(power_short,"over-capacity sets power_short")
-ok(not is_powered(47,44),"tiles beyond capacity stay dark")
+ok(is_powered(47,44),"wires transfer without consuming capacity")
+ok(not power_short,"carriers alone cause no shortage")
+for x=0,gridw-1 do set_zone(x,44,1,1) end
+update_power()
+ok(power_short,"48 buildings exceed one plant's 40")
+ok(not is_powered(47,44),"buildings beyond capacity stay dark")
+
+-- river bends carry a flow vector for the ripples
+local has_flow=false
+for y=0,gridh-1 do
+ local f=flow[y]
+ if f==nil or f<-1 or f>1 then has_flow=nil break end
+ if f~=0 then has_flow=true end
+end
+ok(has_flow~=nil,"flow vector defined for every row")
+ok(has_flow==true,"river actually bends somewhere")
 
 -- deficit spending: allowed into debt, refused past the ceiling
 money=10

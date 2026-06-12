@@ -130,7 +130,8 @@ frame=0
 ok(dn_phase()=="day","cycle starts in daytime")
 frame=flr(p.day_frames*0.75)
 ok(dn_phase()=="night","late cycle is night")
-draw_night()
+dn_dark()
+pal()
 draw_window_lights(5,5,1,2)
 frame=0
 

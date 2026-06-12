@@ -14,16 +14,14 @@ function dn_phase()
  end
 end
 
-function draw_night()
- local ph=dn_phase()
- if ph=="day" then return end
- if ph=="night" then
-  fillp(0xa5a5+0x.8)
- else
-  fillp(0x7f7f+0x.8)
- end
- rectfill(0,8,127,127,0)
- fillp()
+-- night darkening via a draw-palette remap (pico-8's stand-in for a
+-- multiply layer). chosen to keep contrast: roads stay grey, water goes
+-- deep, walls cool off, and color 10 stays warm so windows glow.
+local dn_dk={[1]=1,[2]=1,[3]=1,[4]=2,[5]=5,[6]=5,[7]=6,[8]=2,
+ [9]=4,[10]=9,[11]=3,[12]=13,[13]=1,[14]=2,[15]=4}
+
+function dn_dark()
+ for c,d in pairs(dn_dk) do pal(c,d) end
 end
 
 function draw_window_lights(x,y,kind,dens)

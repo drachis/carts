@@ -59,6 +59,17 @@ city_name derived from rci mix in growth.lua; map mode is one-pass (world
 pans live behind the panel), 🅾️ toggles city/smog view, ❎ closes; build
 menu is a sliding strip centered on the selection.
 
+round 6 (readability + sim fixes): night is now a draw-palette remap
+(dn_dark() in daynight.lua, applied inside draw_world before the map
+draws, pal() reset before bright layers) — no more dither; color 10 maps
+warm so windows glow. pollution dither sprites (57/58) removed: polluters
+puff animated chimney smoke instead, area haze lives only in the smog map
+view. power: conducts flag carries power, but only pw_draw(x,y)==1 tiles
+(developed zones, services) consume plant capacity — power flows past
+browned-out buildings. river gen has momentum meanders + width bulges;
+calc_flow() (map.lua, rerun in post_load) stores a per-row flow vector
+that the water ripples drift along.
+
 round 5 (game feel): tool_put(t,x,y)->sprite,cost in tools.lua is the single
 source of truth for placement validity — the cursor draws a dithered ghost
 of exactly what would be built (red x when invalid / bulldozing). drag-build:
