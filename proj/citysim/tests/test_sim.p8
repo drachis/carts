@@ -7,6 +7,7 @@ __lua__
 #include ../growth.lua
 #include ../econ.lua
 #include ../tools.lua
+#include ../traffic.lua
 #include ../ui.lua
 
 local pass,failed=0,0
@@ -30,6 +31,10 @@ for i=32,43 do
 end
 fset(48,2,true)
 for i=49,51 do fset(i,2,true) end
+for i=53,54 do
+ fset(i,0,true)
+ fset(i,2,true)
+end
 
 srand(1)
 init_map()
@@ -86,6 +91,39 @@ ok(money==400,"failed spend leaves money alone")
 local m0,y0=month,year
 for i=1,300 do update_econ() end
 ok(month~=m0 or year~=y0,"month advances after 300 frames")
+
+-- power line crosses a straight road via apply_tool
+money=1000
+mode="play"
+tool=5 -- power line
+cur={x=12,y=10}
+apply_tool()
+ok(tile(12,10)==53,"line over h-road makes crossing")
+ok(is_road(12,10) and conducts(12,10),"crossing is road and conducts")
+refresh_tile(12,10)
+ok(tile(12,10)==53,"autotile leaves crossing alone")
+update_power()
+
+-- traffic: cars appear on a road network once there's population
+init_traffic()
+for x=5,35 do
+ set_tile(x,20,16)
+end
+for x=5,35 do
+ refresh_tile(x,20)
+end
+pop=100
+for f=12001,13200 do
+ frame=f
+ update_traffic()
+end
+ok(#tr_cars>0,"cars spawn on roads")
+local on_road=true
+for c in all(tr_cars) do
+ if not is_road(flr(c.px/8),flr(c.py/8)) then on_road=false end
+end
+ok(on_road,"all cars are on roads")
+draw_traffic()
 
 -- ui smoke test: just make sure nothing crashes when drawing
 camx,camy=0,0

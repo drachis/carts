@@ -15,8 +15,9 @@ end
 function init_econ()
  money=2000
  month=1
- year=1900
+ year=1950
  ec_f=0
+ hud_msg,hud_msg_t,hud_msg_c="",0,7
 end
 
 function update_econ()
@@ -40,6 +41,8 @@ function update_econ()
     upkeep+=1
    elseif s==49 or s==50 or s==51 then
     upkeep+=1
+   elseif s==53 or s==54 then
+    upkeep+=2 -- road + line crossing
    elseif s==48 then
     upkeep+=10
    end
@@ -47,10 +50,11 @@ function update_econ()
  end
  local net=income-upkeep
  money+=net
+ -- monthly summary shows in the hud where the date is
  if net>=0 then
-  msg="taxes +$"..net
+  hud_msg,hud_msg_c="taxes +$"..net,11
  else
-  msg="deficit -$"..(-net)
+  hud_msg,hud_msg_c="deficit -$"..(-net),8
  end
- msg_t=90
+ hud_msg_t=90
 end

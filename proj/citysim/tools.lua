@@ -33,7 +33,16 @@ function update_tools()
   if btnp(4) or btnp(5) then
    mode=tools_list[tool].name=="map" and "map" or "play"
   end
- else -- map mode
+ else -- map mode: dpad pans the viewport
+  if btn(0) then camx-=4 end
+  if btn(1) then camx+=4 end
+  if btn(2) then camy-=4 end
+  if btn(3) then camy+=4 end
+  camx=mid(0,camx,gridw*8-128)
+  camy=mid(0,camy,gridh*8-120)
+  -- keep the cursor inside the view for when we return
+  cur.x=mid(flr(camx/8)+1,cur.x,flr(camx/8)+14)
+  cur.y=mid(flr(camy/8)+1,cur.y,flr(camy/8)+13)
   if btnp(4) or btnp(5) then mode="play" end
  end
 end
@@ -53,12 +62,20 @@ function apply_tool()
   end
   return
  end
- if not is_buildable(x,y) then
+ -- power lines may cross straight road segments (h road 26, v road 21)
+ local cross=nil
+ if t.name=="power line" then
+  if tile(x,y)==26 then cross=53 end
+  if tile(x,y)==21 then cross=54 end
+ end
+ if not is_buildable(x,y) and not cross then
   msg,msg_t="can't build there",60
   return
  end
  if not try_spend(cost[t.costkey]) then return end
- if t.kind then
+ if cross then
+  set_tile(x,y,cross)
+ elseif t.kind then
   set_zone(x,y,t.kind,0)
  elseif t.name=="road" then
   set_tile(x,y,16)
@@ -74,6 +91,8 @@ end
 -- roads pick their sprite from connected neighbors (n=1 e=2 s=4 w=8);
 -- power lines pick horiz/vert/cross from conductive neighbors
 function refresh_tile(x,y)
+ local s=tile(x,y)
+ if s==53 or s==54 then return end -- crossings stay as-is
  if is_road(x,y) then
   local m=0
   if is_road(x,y-1) then m+=1 end

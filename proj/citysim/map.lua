@@ -97,6 +97,7 @@ function draw_world()
    end
   end
  end
+ draw_traffic()
  if mode~="map" then
   rect(cur.x*8,cur.y*8,cur.x*8+7,cur.y*8+7,t()%0.4<0.2 and 7 or 10)
  end

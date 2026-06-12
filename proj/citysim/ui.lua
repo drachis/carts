@@ -11,28 +11,28 @@ function draw_hud()
  -- pop
  local ps="p"..tostr(pop)
  print(ps,28,1,14)
- -- month/year
- local ds=ui_months[month].." "..tostr(year)
- print(ds,58,1,7)
- -- rci demand bars: drawn at right side
- -- each label+bar takes ~6px, 3 groups = ~18px, start at x=108
- local bx=107
- local by=4 -- midline y
+ -- monthly tax summary briefly replaces the date
+ if hud_msg_t and hud_msg_t>0 then
+  hud_msg_t-=1
+  print(hud_msg,58,1,hud_msg_c)
+ else
+  print(ui_months[month].." "..tostr(year),58,1,7)
+ end
+ -- rci demand: letter + bar in the zone's color, above/below the midline
+ local bx=104
  local labels={"r","c","i"}
  local dvals={demand.r,demand.c,demand.i}
  local dcols={11,14,9}
+ rectfill(bx,4,bx+22,4,5)
  for i=1,3 do
-  local lx=bx+(i-1)*7
+  local lx=bx+(i-1)*8
   print(labels[i],lx,1,dcols[i])
   local d=dvals[i]
-  if d>0 then
-   local h=flr(d*3)
-   if h<1 then h=1 end
-   rectfill(lx,by-h,lx+2,by,11)
-  elseif d<0 then
-   local h=flr(-d*3)
-   if h<1 then h=1 end
-   rectfill(lx,by,lx+2,by+h,8)
+  local h=mid(-3,flr(d*3+(d>0 and 0.99 or 0)),3)
+  if h>0 then
+   rectfill(lx+4,4-h,lx+5,4,dcols[i])
+  elseif h<0 then
+   rectfill(lx+4,4,lx+5,4-h,dcols[i])
   end
  end
 end
@@ -116,6 +116,8 @@ function draw_minimap()
     c=8
    elseif s>=49 and s<=51 then
     c=6
+   elseif s==53 or s==54 then
+    c=5
    else
     c=3
    end
@@ -132,7 +134,7 @@ function draw_minimap()
  local vh=15*2-1
  rect(vx,vy,vx+vw,vy+vh,7)
  -- title
- local title="city map - x close"
+ local title="pan:dpad  close:x"
  print(title,flr((128-#title*4)/2),py+97,7)
 end
 

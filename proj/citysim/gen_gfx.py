@@ -215,6 +215,12 @@ S[51] = [  # power line cross
     "33363333",
     "33363333",
 ]
+# road/powerline crossings: line passes perpendicular over a straight road
+g = road(10)  # e+w road
+S[53] = [r[:3] + "6" + r[4:] for r in g]
+g = road(5)   # n+s road
+S[54] = [("66666666" if y == 2 else r) for y, r in enumerate(g)]
+
 S[52] = [  # "no power" bolt overlay (black=transparent)
     "00000000",
     "000aaa00",
@@ -243,6 +249,7 @@ for i in range(16, 32): flags[i] = 1
 for i in range(32, 44): flags[i] = 6
 flags[48] = 4
 for i in range(49, 52): flags[i] = 4
+flags[53] = flags[54] = 5  # road + conducts
 gff = "\n".join(
     "".join("%02x" % f for f in flags[line * 128 : (line + 1) * 128])
     for line in range(2)
