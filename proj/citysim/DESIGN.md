@@ -31,6 +31,7 @@ which we never use — safe.)
 | 48      | power plant                      |
 | 49/50/51| power line horiz / vert / cross  |
 | 52      | "no power" bolt overlay icon     |
+| 53/54   | line crossing h-road / v-road (flags: road + conducts) |
 
 ### sprite flags (already set in __gff__)
 - flag 0: road
@@ -78,6 +79,7 @@ msg, msg_t       -- status line text + ttl frames; anyone may set (ui draws)
 | growth.lua | agent | ~500   | init_growth(), update_growth() (demand pass + growth tick) |
 | econ.lua   | agent | ~350   | init_econ(), update_econ(), cost table, try_spend(n) |
 | ui.lua     | agent | ~900   | draw_hud(), draw_menu(), draw_minimap(), draw_msg() |
+| traffic.lua| agent | ~350   | init_traffic(), update_traffic(), draw_traffic() — ambient cars on roads |
 
 ## module specs
 
