@@ -74,20 +74,33 @@ function init_map()
  camx,camy=0,0
 end
 
--- view: hud rows 0..7, world fills y 8..127 (16x15 tiles)
+-- view: hud rows 0..7, world fills y 8..127 (16x15 tiles).
+-- the camera eases toward where the cursor wants it.
 function update_camera()
  local px,py=cur.x*8,cur.y*8
- if px-camx<16 then camx=px-16 end
- if px-camx>104 then camx=px-104 end
- if py-camy<16 then camy=py-16 end
- if py-camy>96 then camy=py-96 end
- camx=mid(0,camx,gridw*8-128)
- camy=mid(0,camy,gridh*8-120)
+ local dx,dy=camx,camy
+ if px-dx<16 then dx=px-16 end
+ if px-dx>104 then dx=px-104 end
+ if py-dy<16 then dy=py-16 end
+ if py-dy>96 then dy=py-96 end
+ dx=mid(0,dx,gridw*8-128)
+ dy=mid(0,dy,gridh*8-120)
+ camx+=(dx-camx)*0.4
+ camy+=(dy-camy)*0.4
+ if abs(dx-camx)<0.5 then camx=dx end
+ if abs(dy-camy)<0.5 then camy=dy end
 end
 
 function draw_world()
  clip(0,8,128,120)
  camera(camx,camy-8)
+ -- seasonal palette: trees turn in fall, snow in winter
+ if month>=9 and month<=11 then
+  pal(11,9)
+ elseif month==12 or month<=2 then
+  pal(3,6)
+  pal(11,3)
+ end
  local cx,cy=flr(camx/8),flr(camy/8)
  map(cx,cy,cx*8,cy*8,17,16)
  -- per-tile overlays: flowing water, unpowered bolts, pollution haze
@@ -114,10 +127,35 @@ function draw_world()
    end
   end
  end
+ pal()
  draw_traffic()
  draw_fires()
+ draw_tornado()
+ draw_fx()
  if mode~="map" then
-  rect(cur.x*8,cur.y*8,cur.x*8+7,cur.y*8+7,t()%0.4<0.2 and 7 or 10)
+  local px,py=cur.x*8,cur.y*8
+  local e=tools_list[tool]
+  -- ghost preview: what the tool would build, dithered until placed
+  if mode=="play" and not e.spd and e.name~="map" then
+   if e.name=="bulldoze" then
+    if tile(cur.x,cur.y)>3 then
+     line(px+1,py+1,px+6,py+6,8)
+     line(px+6,py+1,px+1,py+6,8)
+    end
+   else
+    local put=tool_put(e,cur.x,cur.y)
+    if put then
+     spr(put,px,py)
+     fillp(0x5a5a+0x.8)
+     rectfill(px,py,px+7,py+7,0)
+     fillp()
+    else
+     line(px+2,py+2,px+5,py+5,8)
+     line(px+5,py+2,px+2,py+5,8)
+    end
+   end
+  end
+  rect(px,py,px+7,py+7,t()%0.4<0.2 and 7 or 10)
  end
  camera()
  clip()

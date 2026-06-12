@@ -34,12 +34,17 @@ end
 
 function update_tools()
  if mode=="play" then
+  local ox,oy=cur.x,cur.y
   if btnp(0) then cur.x=max(0,cur.x-1) end
   if btnp(1) then cur.x=min(gridw-1,cur.x+1) end
   if btnp(2) then cur.y=max(0,cur.y-1) end
   if btnp(3) then cur.y=min(gridh-1,cur.y+1) end
   update_camera()
   if btnp(5) then apply_tool() end
+  -- drag-build: hold ❎ and move to paint roads/zones/lines
+  if btn(5) and not btnp(5) and (cur.x~=ox or cur.y~=oy) then
+   apply_tool(true)
+  end
   if btnp(4) then mode="menu" end
  elseif mode=="menu" then
   if btnp(0) then tool=(tool-2)%#tools_list+1 end
@@ -69,7 +74,36 @@ function update_tools()
  end
 end
 
-function apply_tool()
+-- what would tool t place at x,y, and for how much? nil when invalid.
+-- shared by the placement code and the cursor ghost preview.
+-- plain power lines (80..95) may be built over without bulldozing.
+function tool_put(t,x,y)
+ local s=tile(x,y)
+ local online=s>=80 and s<=95
+ local open=is_buildable(x,y) or online
+ if t.kind then
+  if open then return zone_base[t.kind],cost.zone end
+ elseif t.name=="road" then
+  if online then
+   -- crossing if the line runs straight, otherwise the road replaces it
+   local m=s-80
+   if m==1 or m==4 or m==5 then return 53,cost.road end
+   if m==2 or m==8 or m==10 then return 54,cost.road end
+   return 16,cost.road
+  end
+  if is_buildable(x,y) then return 16,cost.road end
+  if s==3 then return 59,cost.bridge end
+ elseif t.name=="power line" then
+  if is_buildable(x,y) then return 80,cost.line end
+  if s==3 then return 61,cost.line*4 end
+  if s==26 then return 53,cost.line end
+  if s==21 then return 54,cost.line end
+ elseif t.put then
+  if open then return t.put,cost[t.costkey] end
+ end
+end
+
+function apply_tool(quiet)
  local t=tools_list[tool]
  local x,y=cur.x,cur.y
  if t.name=="map" then
@@ -87,51 +121,24 @@ function apply_tool()
    set_tile(x,y,(s==59 or s==60 or s==61) and 3 or 1)
    refresh_around(x,y)
    update_power()
+   add_fx(x,y,2)
    sfx(1)
   end
   return
  end
- -- figure out what this tool puts here and what it costs.
- -- plain power lines (80..95) may be built over without bulldozing.
- local online=s>=80 and s<=95
- local open=is_buildable(x,y) or online
- local put,c
- if t.kind then
-  c=cost.zone
-  if open then put=zone_base[t.kind] end
- elseif t.name=="road" then
-  c=cost.road
-  if online then
-   -- crossing if the line runs straight, otherwise the road replaces it
-   local m=s-80
-   if m==1 or m==4 or m==5 then put=53
-   elseif m==2 or m==8 or m==10 then put=54
-   else put=16 end
-  elseif is_buildable(x,y) then
-   put=16
-  elseif s==3 then
-   put,c=59,cost.bridge
-  end
- elseif t.name=="power line" then
-  c=cost.line
-  if is_buildable(x,y) then put=80
-  elseif s==3 then put,c=61,cost.line*4
-  elseif s==26 then put=53 -- crossing over straight roads
-  elseif s==21 then put=54
-  end
- else -- park, plant, services: anything with a fixed sprite
-  c=cost[t.costkey]
-  if open then put=t.put end
- end
+ local put,c=tool_put(t,x,y)
  if not put then
-  msg,msg_t="can't build there",60
-  sfx(1)
+  if not quiet then
+   msg,msg_t="can't build there",60
+   sfx(1)
+  end
   return
  end
  if not try_spend(c) then return end
  set_tile(x,y,put)
  refresh_around(x,y)
  update_power()
+ add_fx(x,y,3,"-$"..c)
  sfx(0)
 end
 

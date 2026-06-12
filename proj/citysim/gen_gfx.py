@@ -352,11 +352,28 @@ sfx_lines = [
     sfx(8, ["0c650", "0a650", "08650"]),           # 1: deny / bulldoze crunch
     sfx(8, ["24130", "30130"]),                    # 2: month chime
     sfx(12, ["18250", "1e250", "18250", "1e250"]), # 3: fire alarm
+    sfx(6, ["2c130", "30130"]),                    # 4: zone growth pop
+    "" , "", "",                                   # 5-7 reserved
 ]
+# 8: bass loop, 9: melody loop (background music, costs no code tokens)
+bass = []
+for n in (0x18, 0x13, 0x15, 0x11):
+    bass += ["%02x520" % n] * 8
+mel_seq = [0x24, 0, 0x27, 0x29, 0x2b, 0, 0x29, 0x27,
+           0x24, 0, 0x27, 0, 0x29, 0, 0, 0,
+           0x2b, 0, 0x2e, 0, 0x30, 0, 0x2e, 0x2b,
+           0x29, 0, 0x27, 0x29, 0x24, 0, 0, 0]
+mel = ["%02x220" % n if n else "00000" for n in mel_seq]
+sfx_lines[5] = sfx(24, bass)   # use slots 8/9 via padding below
+sfx_lines[6] = sfx(24, mel)
+sfx_lines = sfx_lines[:5] + [sfx(8, [])] * 3 + [sfx_lines[5], sfx_lines[6]]
+
+music_lines = ["03 08094344"]
 
 src = re.split(r"\n__gfx__\n.*", src, flags=re.S)[0].rstrip("\n")
 src += ("\n__gfx__\n" + gfx + "\n__gff__\n" + gff +
-        "\n__sfx__\n" + "\n".join(sfx_lines) + "\n")
+        "\n__sfx__\n" + "\n".join(sfx_lines) +
+        "\n__music__\n" + "\n".join(music_lines) + "\n")
 with open(CART, "w", encoding="utf-8", newline="\n") as f:
     f.write(src)
 print("patched", CART)

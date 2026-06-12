@@ -27,7 +27,9 @@ function draw_hud()
  rectfill(bx,4,bx+22,4,5)
  for i=1,3 do
   local lx=bx+(i-1)*8
-  print(labels[i],lx,1,dcols[i])
+  -- pulse the label when demand is begging for that zone
+  print(labels[i],lx,1,
+   dvals[i]>0.8 and t()%0.5<0.25 and 7 or dcols[i])
   local d=dvals[i]
   local h=mid(-3,flr(d*3+(d>0 and 0.99 or 0)),3)
   if h>0 then
@@ -132,7 +134,13 @@ function draw_minimap()
   if milestone>=m[1] then rname=m[2] end
  end
  print(city_name.." ("..rname..")",18,111,7)
- print("+$"..last_income.." -$"..last_upkeep.."  achv "..achv_count().."/"..achv_total(),18,118,6)
+ print("+$"..last_income.." -$"..last_upkeep.." av "..achv_count().."/"..achv_total(),18,118,6)
+ -- population sparkline, one dot per month
+ local m=1
+ for v in all(pop_hist) do m=max(m,v) end
+ for i=1,#pop_hist do
+  pset(102+i,126-flr(pop_hist[i]/m*14),11)
+ end
 end
 
 function draw_msg()

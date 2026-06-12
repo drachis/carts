@@ -1,7 +1,9 @@
 pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
--- headless sim tests: pico8 -x tests/test_sim.p8
+-- headless core-sim tests: pico8 -x tests/test_sim.p8
+-- (systems/feel tests live in test_feel.p8 - together all modules
+--  plus test code exceed the 8192 token cart limit)
 #include ../params.lua
 #include ../map.lua
 #include ../power.lua
@@ -9,12 +11,9 @@ __lua__
 #include ../econ.lua
 #include ../landval.lua
 #include ../tools.lua
-#include ../traffic.lua
-#include ../disaster.lua
-#include ../savegame.lua
-#include ../achievements.lua
-#include ../daynight.lua
-#include ../ui.lua
+
+-- effects.lua not included here; tools/growth call this
+function add_fx() end
 
 local pass,failed=0,0
 function ok(cond,name)
@@ -53,7 +52,6 @@ init_power()
 init_econ()
 init_growth()
 init_landval()
-init_disaster()
 frame=0
 
 -- hand-build a powered block: road row, zones under it, plant at the end
@@ -116,41 +114,6 @@ refresh_tile(12,10)
 ok(tile(12,10)==53,"autotile leaves crossing alone")
 update_power()
 
--- traffic v2: commuters need a home, a workplace, and a road between
-init_traffic()
-for x=5,35 do
- set_tile(x,20,16)
-end
-for x=5,35 do
- refresh_tile(x,20)
-end
-for x=5,18 do
- set_zone(x,19,1,2) -- developed homes north of the road
- set_zone(x,21,1,2) -- and south
-end
-for x=25,35 do
- set_zone(x,19,2,2) -- developed shops at the east end
- set_zone(x,21,2,2)
-end
-local pth=tr_path(5,20,35,20)
-ok(pth~=nil and #pth==31,"tr_path finds the straight route")
-ok(tr_path(5,20,12,10)==nil,"tr_path returns nil when disconnected")
-pop=100
-local spawned,on_road=false,true
-for f=12001,31200 do
- frame=f
- update_traffic()
- if #tr_cars>0 then
-  spawned=true
-  for c in all(tr_cars) do
-   if not is_road(flr(c.px/8),flr(c.py/8)) then on_road=false end
-  end
- end
-end
-ok(spawned,"commuters spawn between homes and jobs")
-ok(on_road,"cars stay on roads for their whole trip")
-draw_traffic()
-
 -- park tool places a park
 money=1000
 tool=5 -- park
@@ -167,16 +130,6 @@ ok(land_value(40,5)<0,"industry pollutes its cell")
 ok(land_value(2,2)>0,"park raises its cell")
 ok(growth_mult(40,5,1)<1,"residential growth suffers near industry")
 ok(growth_mult(40,5,3)==1,"industry does not care")
-
--- fire burns a zone down to rubble
-dz_ignite(12,11)
-ok(tile(12,11)==55,"ignition sets fire tile")
-for f=1,200 do
- frame=13200+f
- update_disaster()
-end
-ok(tile(12,11)==56,"fire burns out to rubble")
-ok(#dz_fires==0 or tile(12,11)==56,"fire list drains")
 
 -- plant capacity: a 48-tile line + plant exceeds one plant's 40
 set_tile(15,11,1) -- remove the earlier plant so cap is one plant's worth
@@ -235,28 +188,14 @@ cur={x=42,y=28}
 apply_tool()
 ok(zone_kind(42,28)==1,"zone replaces a power line without bulldozing")
 
--- fire stations: coverage detection
-set_tile(44,30,64)
-ok(dz_covered(44,32),"fire station covers nearby tiles")
-ok(not dz_covered(20,5),"no coverage far away")
-
--- day/night phases
-frame=0
-ok(dn_phase()=="day","cycle starts in daytime")
-frame=flr(p.day_frames*0.75)
-ok(dn_phase()=="night","late cycle is night")
-draw_night()
-draw_window_lights(5,5,1,2)
-frame=0
-
--- achievements
-pop=150
-for i=1,10 do
- frame=128
- update_achv()
-end
-ok(achv_count()>=1,"population achievement awarded")
-ok(achv_total()==8,"eight achievements defined")
+-- ghost preview shares the placement rules
+set_tile(44,2,1)
+set_tile(45,2,3)
+local g1,gc1=tool_put(tools_list[1],44,2)
+local g2,gc2=tool_put(tools_list[1],45,2)
+ok(g1==16 and gc1==cost.road,"ghost: road on grass")
+ok(g2==59 and gc2==cost.bridge,"ghost: bridge over water")
+ok(tool_put(tools_list[7],45,2)==nil,"ghost: no plant on water")
 
 -- sim speed cycles 1 -> 2 -> 4 -> 1
 ok(gspd==1,"speed starts 1x")
@@ -265,30 +204,6 @@ cycle_speed()
 ok(gspd==4,"speed cycles to 4x")
 cycle_speed()
 ok(gspd==1,"speed wraps to 1x")
-
--- save / load / new city
-money=777 month=3 year=1963 tax_rate=2 milestone=50
-save_city()
-money=1 month=1 year=1950 milestone=0
-load_city()
-ok(money==777 and month==3 and year==1963 and milestone==50,
-   "save/load restores scalars")
-ok(mget(49,0)==42,"save magic present")
-new_city()
-ok(money==2000 and pop==0,"new city resets the books")
-
--- ui smoke test: just make sure nothing crashes when drawing
-camx,camy=0,0
-draw_hud()
-mode="menu"
-draw_menu()
-mode="map"
-draw_minimap()
-msg,msg_t="hello",10
-draw_msg()
-mode="play"
-draw_world()
-ok(true,"ui draws without error")
 
 printh("---- "..pass.." passed, "..failed.." failed ----")
 if failed>0 then printh("test result: fail") else printh("test result: pass") end

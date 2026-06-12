@@ -19,6 +19,7 @@ function init_econ()
  ec_f=0
  tax_rate=2
  last_income,last_upkeep=0,0
+ pop_hist={}
  hud_msg,hud_msg_t,hud_msg_c="",0,7
 end
 
@@ -62,6 +63,8 @@ function update_econ()
  local net=income-upkeep
  money+=net
  last_income,last_upkeep=income,upkeep
+ add(pop_hist,pop)
+ if #pop_hist>24 then deli(pop_hist,1) end
  if month==1 and money<0 then
   hud_msg,hud_msg_c="in debt! citizens unhappy",8
   hud_msg_t=150

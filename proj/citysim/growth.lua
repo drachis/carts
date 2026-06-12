@@ -67,6 +67,8 @@ function update_growth()
     if is_powered(x,y) and has_road_access(x,y) and dens<3
      and rnd()<d*p.grow_rate*growth_mult(x,y,k) then
      set_zone(x,y,k,dens+1)
+     add_fx(x,y,1)
+     sfx(4)
     elseif (not is_powered(x,y) or d<-0.5
      or (k<3 and land_value(x,y)<-3))
      and dens>0 and rnd()<p.decay_rate then

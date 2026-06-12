@@ -59,6 +59,18 @@ city_name derived from rci mix in growth.lua; map mode is one-pass (world
 pans live behind the panel), 🅾️ toggles city/smog view, ❎ closes; build
 menu is a sliding strip centered on the selection.
 
+round 5 (game feel): tool_put(t,x,y)->sprite,cost in tools.lua is the single
+source of truth for placement validity — the cursor draws a dithered ghost
+of exactly what would be built (red x when invalid / bulldozing). drag-build:
+hold ❎ while moving. camera eases (lerp) instead of snapping. effects.lua:
+init/update/draw_fx + add_fx(x,y,kind,txt) — 1 sparkle (zone grew), 2 smoke
+(bulldoze), 3 float text (cost), plus an ambient plane flyover. disaster.lua
+gained a tornado (dz_tor, start_tornado(), draw_tornado()); pause-menu item 2
+is "disaster!" (random fire or tornado). seasons: fall recolors trees,
+winter snows (pal swaps in draw_world). pop_hist sparkline + demand-letter
+pulse in ui. sfx 4 = growth pop; sfx 8/9 + music pattern 0 = background
+loop, started with music(0).
+
 ### sprite flags (already set in __gff__)
 - flag 0: road
 - flag 1: zone (any r/c/i, any density)
