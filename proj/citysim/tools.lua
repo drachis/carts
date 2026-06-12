@@ -5,9 +5,12 @@ tools_list={
  {name="house zone",costkey="zone",spr=33,kind=1},
  {name="shop zone",costkey="zone",spr=37,kind=2},
  {name="factory zone",costkey="zone",spr=41,kind=3},
- {name="park",costkey="park",spr=44},
- {name="power line",costkey="line",spr=49},
- {name="power plant",costkey="plant",spr=48},
+ {name="park",costkey="park",spr=44,put=44},
+ {name="power line",costkey="line",spr=90},
+ {name="power plant",costkey="plant",spr=48,put=48},
+ {name="fire dept",costkey="svc",spr=64,put=64},
+ {name="police",costkey="svc",spr=65,put=65},
+ {name="school",costkey="svc",spr=66,put=66},
  {name="bulldoze",costkey="dozer"},
  {name="map"},
  {name="speed 1x",spd=true},
@@ -19,6 +22,7 @@ function init_tools()
  mode="play"
  msg,msg_t="",0
  gspd=1
+ map_view="city"
 end
 
 function cycle_speed()
@@ -60,7 +64,8 @@ function update_tools()
   -- keep the cursor inside the view for when we return
   cur.x=mid(flr(camx/8)+1,cur.x,flr(camx/8)+14)
   cur.y=mid(flr(camy/8)+1,cur.y,flr(camy/8)+13)
-  if btnp(4) or btnp(5) then mode="play" end
+  if btnp(4) then map_view=map_view=="city" and "smog" or "city" end
+  if btnp(5) then mode="play" end
  end
 end
 
@@ -86,31 +91,37 @@ function apply_tool()
   end
   return
  end
- -- figure out what this tool puts here and what it costs
+ -- figure out what this tool puts here and what it costs.
+ -- plain power lines (80..95) may be built over without bulldozing.
+ local online=s>=80 and s<=95
+ local open=is_buildable(x,y) or online
  local put,c
  if t.kind then
   c=cost.zone
-  if is_buildable(x,y) then put=zone_base[t.kind] end
+  if open then put=zone_base[t.kind] end
  elseif t.name=="road" then
   c=cost.road
-  if is_buildable(x,y) then
+  if online then
+   -- crossing if the line runs straight, otherwise the road replaces it
+   local m=s-80
+   if m==1 or m==4 or m==5 then put=53
+   elseif m==2 or m==8 or m==10 then put=54
+   else put=16 end
+  elseif is_buildable(x,y) then
    put=16
   elseif s==3 then
    put,c=59,cost.bridge
   end
  elseif t.name=="power line" then
   c=cost.line
-  if is_buildable(x,y) then put=49
+  if is_buildable(x,y) then put=80
   elseif s==3 then put,c=61,cost.line*4
   elseif s==26 then put=53 -- crossing over straight roads
   elseif s==21 then put=54
   end
- elseif t.name=="park" then
-  c=cost.park
-  if is_buildable(x,y) then put=44 end
- else -- power plant
-  c=cost.plant
-  if is_buildable(x,y) then put=48 end
+ else -- park, plant, services: anything with a fixed sprite
+  c=cost[t.costkey]
+  if open then put=t.put end
  end
  if not put then
   msg,msg_t="can't build there",60
@@ -141,13 +152,14 @@ function refresh_tile(x,y)
   if is_road(x,y+1) then m+=4 end
   if is_road(x-1,y) then m+=8 end
   set_tile(x,y,16+m)
- else
-  local s=tile(x,y)
-  if s>=49 and s<=51 then
-   local v=conducts(x,y-1) or conducts(x,y+1)
-   local h=conducts(x-1,y) or conducts(x+1,y)
-   set_tile(x,y,v and (h and 51 or 50) or 49)
-  end
+ elseif s>=80 and s<=95 then
+  -- wires bend toward anything conductive next door
+  local m=0
+  if conducts(x,y-1) then m+=1 end
+  if conducts(x+1,y) then m+=2 end
+  if conducts(x,y+1) then m+=4 end
+  if conducts(x-1,y) then m+=8 end
+  set_tile(x,y,80+m)
  end
 end
 

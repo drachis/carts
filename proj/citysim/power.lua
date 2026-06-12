@@ -26,7 +26,7 @@ function update_power()
    end
   end
  end
- local cap=nplants*40
+ local cap=nplants*p.plant_cap
  local npowered=#q
  -- bfs through conductive neighbors up to cap
  while qi<=#q do

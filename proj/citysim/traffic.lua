@@ -90,7 +90,7 @@ end
 
 function update_traffic()
  -- spawn commuters
- if frame%32==0 and pop>0 and #tr_cars<min(12,2+flr(pop/12)) then
+ if frame%32==0 and pop>0 and #tr_cars<min(p.car_cap,2+flr(pop/p.car_pop)) then
   local ox,oy=tr_find_stop({1})
   local dx,dy=tr_find_stop({2,3})
   if ox~=nil and dx~=nil and not(ox==dx and oy==dy) then

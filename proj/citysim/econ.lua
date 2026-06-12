@@ -1,10 +1,8 @@
--- econ.lua : money, monthly tick, cost table
-
-cost={road=10,zone=50,line=5,plant=300,park=10,bridge=50,dozer=1}
+-- econ.lua : money, monthly tick (costs live in params.lua)
 
 -- deficit spending allowed down to a debt ceiling
 function try_spend(n)
- if money-n>=-1000 then
+ if money-n>=-p.debt_limit then
   money-=n
   return true
  end
@@ -15,17 +13,18 @@ function try_spend(n)
 end
 
 function init_econ()
- money=2000
+ money=p.start_money
  month=1
  year=1950
  ec_f=0
  tax_rate=2
+ last_income,last_upkeep=0,0
  hud_msg,hud_msg_t,hud_msg_c="",0,7
 end
 
 function update_econ()
  ec_f+=1
- if ec_f<300 then return end
+ if ec_f<p.month_frames then return end
  ec_f=0
  -- advance month
  month+=1
@@ -36,27 +35,33 @@ function update_econ()
  -- income scales with the tax rate (menu-adjustable)
  local income=pop*tax_rate+flr(jobs*tax_rate/2)
  -- upkeep via grid scan
+ local u=p.upkeep
  local upkeep=0
  for y=0,gridh-1 do
   for x=0,gridw-1 do
    local s=tile(x,y)
-   if s>=16 and s<=31 then
-    upkeep+=1
-   elseif s==49 or s==50 or s==51 then
-    upkeep+=1
+   if (s>=16 and s<=31) or s==59 or s==60 then
+    upkeep+=u.road
+   elseif s>=80 and s<=95 then
+    upkeep+=u.line
+   elseif s==61 then
+    upkeep+=u.pylon
    elseif s==53 or s==54 then
-    upkeep+=2 -- road + line crossing
+    upkeep+=u.crossing
    elseif s==48 then
-    upkeep+=10
+    upkeep+=u.plant
+   elseif s>=64 and s<=66 then
+    upkeep+=u.svc
    end
   end
  end
  -- debt accrues interest monthly
  if money<0 then
-  upkeep+=flr(-money*0.02)+1
+  upkeep+=flr(-money*p.interest)+1
  end
  local net=income-upkeep
  money+=net
+ last_income,last_upkeep=income,upkeep
  if month==1 and money<0 then
   hud_msg,hud_msg_c="in debt! citizens unhappy",8
   hud_msg_t=150

@@ -37,6 +37,8 @@ which we never use — safe.)
 | 57/58   | light / heavy smog dither overlays (drawn where land value <=-2 / <=-4) |
 | 59/60   | bridge e-w / n-s (flag: road; bulldozes back to water) |
 | 61      | power pylon in water (flag: conducts) |
+| 64/65/66| fire station / police / school (flag: conducts; police+school boost land value, fire station suppresses fires within p.station_radius) |
+| 80..95  | power line autotile; id = 80 + mask of conductive neighbors (n=1 e=2 s=4 w=8). old 49..51 line sprites retired. lines can be built over (road makes a crossing, anything else replaces) |
 
 sfx ids: 0 place, 1 deny/bulldoze, 2 chime (month, milestone), 3 fire alarm.
 more shared globals: tax_rate (1..3, econ), power_short (power), milestone
@@ -47,6 +49,15 @@ debt allowed to -1000 with monthly interest + demand penalty; savegame.lua
 cstores the map region (with scalars stashed at map row 0, x>=49) to
 citysave.p8; traffic cars BFS-commute from residential to c/i jobs with
 right-hand lane offsets.
+
+round 4: ALL tuning constants live in params.lua as the global `p` (cost is
+an alias of p.cost) — never declare a local named p at file top level.
+achievements.lua (init/update_achv, achv_count/total, toasts via hud_msg);
+daynight.lua (dn_phase day/evening/night from p.day_frames, draw_night
+screen dither, draw_window_lights called from draw_world per lit zone);
+city_name derived from rci mix in growth.lua; map mode is one-pass (world
+pans live behind the panel), 🅾️ toggles city/smog view, ❎ closes; build
+menu is a sliding strip centered on the selection.
 
 ### sprite flags (already set in __gff__)
 - flag 0: road

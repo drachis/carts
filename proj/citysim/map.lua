@@ -38,8 +38,9 @@ function set_zone(x,y,kind,density)
 end
 
 function has_road_access(x,y)
- for dy=-1,1 do
-  for dx=-1,1 do
+ local r=p.road_radius
+ for dy=-r,r do
+  for dx=-r,r do
    if is_road(x+dx,y+dy) then return true end
   end
  end
@@ -98,8 +99,12 @@ function draw_world()
     -- ripples drift downstream (the river flows to its mouth at the bottom)
     local yy=(flr(t()*16)+x*3)%8
     pset(x*8+(x*5+y*3)%6+1,y*8+yy,(x+y)%2==0 and 7 or 6)
-   elseif bl and is_zone(x,y) and not is_powered(x,y) then
-    spr(52,x*8,y*8)
+   elseif is_zone(x,y) then
+    if bl and not is_powered(x,y) then
+     spr(52,x*8,y*8)
+    elseif zone_density(x,y)>0 and is_powered(x,y) then
+     draw_window_lights(x,y,zone_kind(x,y),zone_density(x,y))
+    end
    end
    local v=land_value(x,y)
    if v<=-4 then

@@ -2,6 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
 -- headless sim tests: pico8 -x tests/test_sim.p8
+#include ../params.lua
 #include ../map.lua
 #include ../power.lua
 #include ../growth.lua
@@ -11,6 +12,8 @@ __lua__
 #include ../traffic.lua
 #include ../disaster.lua
 #include ../savegame.lua
+#include ../achievements.lua
+#include ../daynight.lua
 #include ../ui.lua
 
 local pass,failed=0,0
@@ -33,7 +36,6 @@ for i=32,43 do
  fset(i,2,true)
 end
 fset(48,2,true)
-for i=49,51 do fset(i,2,true) end
 for i=53,54 do
  fset(i,0,true)
  fset(i,2,true)
@@ -41,6 +43,8 @@ end
 fset(59,0,true)
 fset(60,0,true)
 fset(61,2,true)
+for i=64,66 do fset(i,2,true) end
+for i=80,95 do fset(i,2,true) end
 
 srand(1)
 init_map()
@@ -128,8 +132,8 @@ for x=25,35 do
  set_zone(x,19,2,2) -- developed shops at the east end
  set_zone(x,21,2,2)
 end
-local p=tr_path(5,20,35,20)
-ok(p~=nil and #p==31,"tr_path finds the straight route")
+local pth=tr_path(5,20,35,20)
+ok(pth~=nil and #pth==31,"tr_path finds the straight route")
 ok(tr_path(5,20,12,10)==nil,"tr_path returns nil when disconnected")
 pop=100
 local spawned,on_road=false,true
@@ -176,7 +180,7 @@ ok(#dz_fires==0 or tile(12,11)==56,"fire list drains")
 
 -- plant capacity: a 48-tile line + plant exceeds one plant's 40
 set_tile(15,11,1) -- remove the earlier plant so cap is one plant's worth
-for x=0,gridw-1 do set_tile(x,44,49) end
+for x=0,gridw-1 do set_tile(x,44,80) end
 set_tile(0,43,48)
 update_power()
 ok(power_short,"over-capacity sets power_short")
@@ -204,12 +208,55 @@ apply_tool()
 local b=tile(wx,wy)
 ok(b==59 or b==60,"road on water builds a bridge")
 ok(is_road(wx,wy),"bridge is a road")
-tool=8 -- bulldoze
+tool=11 -- bulldoze
 apply_tool()
 ok(tile(wx,wy)==3,"bulldozed bridge reverts to water")
 tool=6 -- power line
 apply_tool()
 ok(tile(wx,wy)==61 and conducts(wx,wy),"line on water builds a pylon")
+
+-- wire autotile: two adjacent lines bend toward each other
+set_tile(40,30,80)
+set_tile(41,30,80)
+refresh_tile(40,30)
+refresh_tile(41,30)
+ok(tile(40,30)==82 and tile(41,30)==88,"wires autotile e/w")
+
+-- building over power lines
+set_tile(40,28,85) -- vertical wire
+mode="play"
+tool=1 -- road
+cur={x=40,y=28}
+apply_tool()
+ok(tile(40,28)==53,"road over vertical line makes crossing")
+set_tile(42,28,80)
+tool=2 -- house zone
+cur={x=42,y=28}
+apply_tool()
+ok(zone_kind(42,28)==1,"zone replaces a power line without bulldozing")
+
+-- fire stations: coverage detection
+set_tile(44,30,64)
+ok(dz_covered(44,32),"fire station covers nearby tiles")
+ok(not dz_covered(20,5),"no coverage far away")
+
+-- day/night phases
+frame=0
+ok(dn_phase()=="day","cycle starts in daytime")
+frame=flr(p.day_frames*0.75)
+ok(dn_phase()=="night","late cycle is night")
+draw_night()
+draw_window_lights(5,5,1,2)
+frame=0
+
+-- achievements
+pop=150
+for i=1,10 do
+ frame=128
+ update_achv()
+end
+ok(achv_count()>=1,"population achievement awarded")
+ok(achv_total()==8,"eight achievements defined")
 
 -- sim speed cycles 1 -> 2 -> 4 -> 1
 ok(gspd==1,"speed starts 1x")

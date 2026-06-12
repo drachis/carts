@@ -185,35 +185,59 @@ S[48] = [  # power plant
     "55555555",
     "88888888",
 ]
-S[49] = [  # power line horizontal
+# power lines 80..95: wire autotile, id = 80 + mask of conductive
+# neighbors (n=1 e=2 s=4 w=8); wires visibly bend toward whatever they feed
+def wire(mask):
+    g = [["3"] * 8 for _ in range(8)]
+    n, e, s, w = mask & 1, mask & 2, mask & 4, mask & 8
+    if n:
+        for y in range(0, 4): g[y][3] = "6"
+    if s:
+        for y in range(3, 8): g[y][3] = "6"
+    if e:
+        for x in range(3, 8): g[3][x] = "6"
+    if w:
+        for x in range(0, 4): g[3][x] = "6"
+    if mask == 0:  # lone pole with crossbar
+        for y in range(2, 7): g[y][3] = "4"
+        for x in range(2, 6): g[2][x] = "6"
+    else:          # support post beside the junction
+        g[4][4] = "4"
+        g[5][4] = "4"
+    return ["".join(r) for r in g]
+
+for m in range(16):
+    S[80 + m] = wire(m)
+
+S[64] = [  # fire station
     "33333333",
-    "33343333",
-    "66666666",
-    "33343333",
-    "33343333",
-    "33343333",
-    "33343333",
+    "88888888",
+    "87788778",
+    "88888888",
+    "87777778",
+    "87777778",
+    "88888888",
     "33333333",
 ]
-S[50] = [  # power line vertical
-    "33363333",
-    "33363333",
-    "33363333",
-    "33464333",
-    "33363333",
-    "33363333",
-    "33363333",
-    "33363333",
+S[65] = [  # police station
+    "33333333",
+    "cccccccc",
+    "c1c11c1c",
+    "cccccccc",
+    "cca77acc",
+    "cc7117cc",
+    "cccccccc",
+    "33333333",
 ]
-S[51] = [  # power line cross
-    "33363333",
-    "33363333",
-    "66666666",
-    "33363333",
-    "33363333",
-    "33363333",
-    "33363333",
-    "33363333",
+S[66] = [  # school
+    "33a43333",
+    "33343333",
+    "44444444",
+    "47477474",
+    "44444444",
+    "44477444",
+    "44477444",
+    "33333333",
 ]
 S[44] = [  # park: bushes, a flower, a bird?  just a nice green spot
     "33333333",
@@ -290,8 +314,8 @@ S[52] = [  # "no power" bolt overlay (black=transparent)
     "00000000",
 ]
 
-# compose sheet: sprites 0..63 -> 32 pixel rows of 128 hex chars
-rows = [["0"] * 128 for _ in range(32)]
+# compose sheet: sprites 0..95 -> 48 pixel rows of 128 hex chars
+rows = [["0"] * 128 for _ in range(48)]
 for sid, art in S.items():
     assert len(art) == 8 and all(len(r) == 8 for r in art), sid
     sr, sc = (sid // 16) * 8, (sid % 16) * 8
@@ -306,10 +330,11 @@ flags[1] = flags[2] = 8
 for i in range(16, 32): flags[i] = 1
 for i in range(32, 44): flags[i] = 6
 flags[48] = 4
-for i in range(49, 52): flags[i] = 4
 flags[53] = flags[54] = 5  # road + conducts
 flags[59] = flags[60] = 1  # bridges are roads
 flags[61] = 4              # water pylon conducts
+for i in range(64, 67): flags[i] = 4  # services join the power grid
+for i in range(80, 96): flags[i] = 4  # wire autotiles conduct
 gff = "\n".join(
     "".join("%02x" % f for f in flags[line * 128 : (line + 1) * 128])
     for line in range(2)

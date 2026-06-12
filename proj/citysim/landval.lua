@@ -35,6 +35,9 @@ function update_landval()
     lv_blob(cx,cy,-3,-1)
    elseif s==44 then
     lv_blob(cx,cy,2,1)
+   elseif s==65 or s==66 then
+    -- police and schools raise property values
+    lv_blob(cx,cy,2,1)
    elseif s==55 then
     lv_add(cx,cy,-2)
    elseif s==56 then

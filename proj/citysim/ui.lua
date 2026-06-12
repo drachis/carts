@@ -40,113 +40,99 @@ end
 
 function draw_menu()
  if mode~="menu" then return end
- local n=#tools_list
- local sw=12
- local gap=1
- local total=n*(sw+gap)-gap
- local sx=flr((128-total)/2)
- local sy=116
- -- dark backing for strip
- rectfill(sx-1,sy-1,sx+total,sy+sw,1)
- for i=1,n do
-  local e=tools_list[i]
-  local x=sx+(i-1)*(sw+gap)
-  -- slot bg
-  rectfill(x,sy,x+sw-1,sy+sw-1,1)
-  -- icon
-  if e.spr then
-   spr(e.spr,x+2,sy+2)
-  elseif e.name=="bulldoze" then
-   line(x+2,sy+2,x+sw-3,sy+sw-3,8)
-   line(x+sw-3,sy+2,x+2,sy+sw-3,8)
-  elseif e.spd then
-   print(">>",x+3,sy+4,10)
-  else
-   -- map: 3x3 checkerboard of 2x2 squares
-   local cx=x+2
-   local cy=sy+2
-   for row=0,2 do
-    for col=0,2 do
-     local c=(row+col)%2==0 and 3 or 11
-     rectfill(cx+col*2,cy+row*2,cx+col*2+1,cy+row*2+1,c)
+ -- sliding strip: the selected tool stays centered
+ local sy=115
+ rectfill(0,sy-1,127,sy+12,1)
+ for i=1,#tools_list do
+  local x=58+(i-tool)*13
+  if x>-12 and x<128 then
+   local e=tools_list[i]
+   if e.spr then
+    spr(e.spr,x+2,sy+2)
+   elseif e.name=="bulldoze" then
+    line(x+2,sy+2,x+9,sy+9,8)
+    line(x+9,sy+2,x+2,sy+9,8)
+   elseif e.spd then
+    print(">>",x+2,sy+3,10)
+   else
+    -- map: little checkerboard
+    for row=0,2 do
+     for col=0,2 do
+      rectfill(x+2+col*2,sy+2+row*2,x+3+col*2,sy+3+row*2,
+       (row+col)%2==0 and 3 or 11)
+     end
     end
    end
-  end
-  -- highlight selected
-  if i==tool then
-   rect(x,sy,x+sw-1,sy+sw-1,7)
+   if i==tool then
+    rect(x-1,sy-1,x+12,sy+12,7)
+   end
   end
  end
  -- label above strip: name + cost
  local e=tools_list[tool]
  local label=e.name
- if e.costkey and cost and cost[e.costkey] then
-  label=label.." $"..tostr(cost[e.costkey])
+ if e.costkey and cost[e.costkey] then
+  label=label.." $"..cost[e.costkey]
  end
- local lw=#label*4
- local lx=flr((128-lw)/2)
- local ly=sy-9
- rectfill(lx-1,ly-1,lx+lw,ly+6,0)
- print(label,lx,ly,7)
+ local lx=64-#label*2
+ rectfill(lx-1,sy-10,lx+#label*4,sy-3,0)
+ print(label,lx,sy-9,7)
 end
 
+-- minimap tile colors for the "city" view, by sprite id band
+function ui_city_col(s)
+ if s==3 then return 12 end
+ if s>=16 and s<=31 then return 5 end
+ if s>=32 and s<=35 then return 11 end
+ if s>=36 and s<=39 then return 13 end
+ if s>=40 and s<=43 then return 10 end
+ if s==48 then return 8 end
+ if s==53 or s==54 then return 5 end
+ if s==55 then return 9 end
+ if s==56 then return 0 end
+ if s==59 or s==60 then return 4 end
+ if s==61 or (s>=80 and s<=95) then return 6 end
+ if s>=64 and s<=66 then return 7 end
+ return 3
+end
+
+-- the world keeps drawing (and panning) behind the panel: one pass
 function draw_minimap()
  if mode~="map" then return end
- -- dim background
- rectfill(0,0,127,127,1)
- -- 96x96 panel centered: x=16..111, y=16..111
- local px=16
- local py=16
+ local px,py=16,13
+ rectfill(px-1,py-1,px+96,py+96,0)
  rect(px-1,py-1,px+96,py+96,7)
- -- draw tiles as 2x2 px blocks
  for ty=0,47 do
   for tx=0,47 do
-   local s=tile(tx,ty)
    local c
-   if s==3 then
-    c=12
-   elseif s==1 or s==2 then
-    c=3
-   elseif s>=16 and s<=31 then
+   if map_view=="smog" then
+    local s=tile(tx,ty)
+    local v=land_value(tx,ty)
     c=5
-   elseif s>=32 and s<=35 then
-    c=11
-   elseif s>=36 and s<=39 then
-    c=13
-   elseif s>=40 and s<=43 then
-    c=10
-   elseif s==48 then
-    c=8
-   elseif s>=49 and s<=51 then
-    c=6
-   elseif s==53 or s==54 then
-    c=5
-   elseif s==55 then
-    c=9
-   elseif s==56 then
-    c=0
-   elseif s==59 or s==60 then
-    c=4
-   elseif s==61 then
-    c=6
+    if s==3 then c=12
+    elseif v<=-4 then c=8
+    elseif v<=-2 then c=9
+    elseif v<0 then c=4
+    elseif v>1 then c=11
+    end
    else
-    c=3
+    c=ui_city_col(tile(tx,ty))
    end
-   local mx=px+tx*2
-   local my=py+ty*2
-   rectfill(mx,my,mx+1,my+1,c)
+   rectfill(px+tx*2,py+ty*2,px+tx*2+1,py+ty*2+1,c)
   end
  end
- -- camera viewport rect: world view 128x120 px = 16x15 tiles
- -- camx,camy are pixel offsets; 1 tile=8px, minimap 1 tile=2px
  local vx=px+flr(camx/8)*2
  local vy=py+flr(camy/8)*2
- local vw=16*2-1
- local vh=15*2-1
- rect(vx,vy,vx+vw,vy+vh,7)
- -- title
- local title="pan:dpad  close:x"
- print(title,flr((128-#title*4)/2),py+97,7)
+ rect(vx,vy,vx+31,vy+29,7)
+ print(map_view,px+2,py+1,7)
+ -- city name, rank, budget, achievements
+ rectfill(0,110,127,127,0)
+ local rname="village"
+ for m in all(p.ranks) do
+  if milestone>=m[1] then rname=m[2] end
+ end
+ print(city_name.." ("..rname..")",18,111,7)
+ print("+$"..last_income.." -$"..last_upkeep.."  achv "..achv_count().."/"..achv_total(),18,118,6)
 end
 
 function draw_msg()
