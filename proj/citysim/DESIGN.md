@@ -59,6 +59,18 @@ city_name derived from rci mix in growth.lua; map mode is one-pass (world
 pans live behind the panel), 🅾️ toggles city/smog view, ❎ closes; build
 menu is a sliding strip centered on the selection.
 
+round 8 (glassbox needs, revised): road power REMOVED — building power
+lines is the fun part; power flows only through conductive sprites
+again. instead, network.lua carries zone NEEDS along roads (the real
+glassbox idea): update_net() labels road connected-components every 64
+frames (net[x+y*64]=id) and tallies developed r/c/i beside each network
+(net_rci[id*4+k]). net_ok(x,y,k,dens) gates growth past density 1:
+homes need reachable jobs, shops need customers + freight, factories
+need workers; density-0 pioneers settle anywhere. growth checks it in
+the upgrade condition. token diet: econ's monthly upkeep scan removed —
+update_achv's 128-frame census now fills shared `city_st` (declared in
+init_econ) and econ prices upkeep from those counts.
+
 round 7 (terrain + glassbox): sprites 4 highland (buildable, +value,
 plateau art) and 5 mountain (unbuildable rock, +value scenery, blasting
 costs p.cost.blast, blocks smog drift via lv_mtn cell counts). terrain

@@ -39,7 +39,7 @@ function new_city()
  cur={x=24,y=24}
  update_camera(true)
  started=false
- msg,msg_t="new city founded - time starts when you build",90
+ msg,msg_t="new city - build to begin",90
 end
 
 function post_load()
@@ -54,6 +54,8 @@ function post_load()
  init_disaster()
  init_landval()
  init_achv()
+ init_net()
+ update_net(true)
  calc_flow()
  update_power()
  if set_tax_item then set_tax_item() end

@@ -8,17 +8,13 @@ function draw_hud()
  -- money
  local ms="$"..tostr(money)
  print(ms,0,1,money<0 and 8 or 11)
- -- pop
- local ps="p"..tostr(pop)
+ -- pop: P#.##K format when over 1000
+ local ps=pop<1000 and "p"..pop
+  or "p"..flr(pop/100)/10 .."k"
  print(ps,28,1,14)
- -- monthly tax summary briefly replaces the date
- if hud_msg_t and hud_msg_t>0 then
-  hud_msg_t-=1
-  print(hud_msg,58,1,hud_msg_c)
- else
-  print(ui_months[month].." "..tostr(year),58,1,7)
- end
- -- rci demand: r green, c blue, i yellow; dimmer hue below the midline
+ -- date always visible (messages go to ticker below the bar)
+ print(ui_months[month].." "..tostr(year),44,1,7)
+ -- rci demand bars: r green, c blue, i yellow; dim hue below midline
  local bx=104
  local labels={"r","c","i"}
  local dvals={demand.r,demand.c,demand.i}
@@ -27,9 +23,7 @@ function draw_hud()
  rectfill(bx,4,bx+22,4,5)
  for i=1,3 do
   local lx=bx+(i-1)*8
-  -- pulse the label when demand is begging for that zone
-  print(labels[i],lx,1,
-   dvals[i]>0.8 and t()%0.5<0.25 and 7 or dcols[i])
+  print(labels[i],lx,1,dcols[i])
   local d=dvals[i]
   local h=mid(-3,flr(d*3+(d>0 and 0.99 or 0)),3)
   if h>0 then
@@ -40,16 +34,29 @@ function draw_hud()
  end
 end
 
+-- ticker: system messages slide in below the hud bar (y=8..14)
+function draw_ticker()
+ if not hud_msg_t or hud_msg_t<=0 then return end
+ hud_msg_t-=1
+ rectfill(0,8,127,14,0)
+ print(hud_msg,1,9,hud_msg_c)
+end
+
 function draw_menu()
  if mode~="menu" then return end
- -- sliding strip: the selected tool stays centered
  local sy=115
  rectfill(0,sy-1,127,sy+12,1)
  for i=1,#tools_list do
   local x=58+(i-tool)*13
   if x>-12 and x<128 then
    local e=tools_list[i]
-   if e.spr then
+   if e.kind then
+    rect(x+1,sy+1,x+10,sy+10,({11,12,10})[e.kind])
+    print(({"r","c","i"})[e.kind],x+4,sy+4,7)
+   elseif e.insp then
+    circ(x+5,sy+4,3,7)
+    line(x+8,sy+7,x+10,sy+9,7)
+   elseif e.spr then
     spr(e.spr,x+2,sy+2)
    elseif e.name=="bulldoze" then
     line(x+2,sy+2,x+9,sy+9,8)
@@ -57,20 +64,13 @@ function draw_menu()
    elseif e.spd then
     print(">>",x+2,sy+3,10)
    else
-    -- map: little checkerboard
-    for row=0,2 do
-     for col=0,2 do
-      rectfill(x+2+col*2,sy+2+row*2,x+3+col*2,sy+3+row*2,
-       (row+col)%2==0 and 3 or 11)
-     end
-    end
+    fillp(0x33cc)
+    rectfill(x+2,sy+2,x+9,sy+9,0x3b)
+    fillp()
    end
-   if i==tool then
-    rect(x-1,sy-1,x+12,sy+12,7)
-   end
+   if i==tool then rect(x-1,sy-1,x+12,sy+12,7) end
   end
  end
- -- label above strip: name + cost
  local e=tools_list[tool]
  local label=e.name
  if e.costkey and cost[e.costkey] then
@@ -81,25 +81,14 @@ function draw_menu()
  print(label,lx,sy-9,7)
 end
 
--- minimap tile colors for the "city" view, by sprite id band
+local ui_ccol={3,3,12,3,4,5,0,5,4,6,6,8,7,11,9,0}
 function ui_city_col(s)
- if s==3 then return 12 end
- if s==5 then return 4 end
- if s>=16 and s<=31 then return 5 end
  if s>=32 and s<=35 then return 11 end
  if s>=36 and s<=39 then return 13 end
  if s>=40 and s<=43 then return 10 end
- if s==48 then return 8 end
- if s==53 or s==54 then return 5 end
- if s==55 then return 9 end
- if s==56 then return 0 end
- if s==59 or s==60 then return 4 end
- if s==61 or s==62 or (s>=80 and s<=95) then return 6 end
- if s>=64 and s<=66 then return 7 end
- return 3
+ return ui_ccol[tcl[s]] or 3
 end
 
--- the world keeps drawing (and panning) behind the panel: one pass
 function draw_minimap()
  if mode~="map" then return end
  local px,py=16,13
@@ -109,21 +98,11 @@ function draw_minimap()
   for tx=0,47 do
    local c
    local s=tile(tx,ty)
-   if map_view=="smog" then
-    local v=land_value(tx,ty)
-    c=5
-    if s==3 then c=12
-    elseif v<=-4 then c=8
-    elseif v<=-2 then c=9
-    elseif v<0 then c=4
-    elseif v>1 then c=11
-    end
-   elseif map_view=="power" then
-    -- glassbox-style data layer: lit grid vs dark grid
+   if map_view=="power" then
     if s==3 then c=12
     elseif s==48 then c=10
     elseif is_powered(tx,ty) then c=11
-    elseif pw_carries(tx,ty) then c=8
+    elseif conducts(tx,ty) then c=8
     else c=5 end
    else
     c=ui_city_col(s)
@@ -135,20 +114,6 @@ function draw_minimap()
  local vy=py+flr(camy/8)*2
  rect(vx,vy,vx+31,vy+29,7)
  print(map_view,px+2,py+1,7)
- -- city name, rank, budget, achievements
- rectfill(0,110,127,127,0)
- local rname="village"
- for m in all(p.ranks) do
-  if milestone>=m[1] then rname=m[2] end
- end
- print(city_name.." ("..rname..")",18,111,7)
- print("+$"..last_income.." -$"..last_upkeep.." av "..achv_count().."/"..achv_total(),18,118,6)
- -- population sparkline, one dot per month
- local m=1
- for v in all(pop_hist) do m=max(m,v) end
- for i=1,#pop_hist do
-  pset(102+i,126-flr(pop_hist[i]/m*14),11)
- end
 end
 
 function draw_msg()

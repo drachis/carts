@@ -3,13 +3,23 @@
 
 gridw,gridh=48,48
 
+-- sprite id -> class id; one table feeds the census, minimap colors,
+-- tile names, and upkeep instead of several if-chains.
+-- 1 grass 2 trees 3 water 4 highland 5 rock 6 road 7 zone 8 crossing
+-- 9 bridge 10 pylon 11 line 12 plant 13 service 14 park 15 fire 16 rubble
+tcl={1,2,3,4,5,[44]=14,[48]=12,[53]=8,[54]=8,[56]=16,
+ [59]=9,[60]=9,[61]=10,[62]=10,[96]=16,[97]=16,[98]=16}
+for i=16,31 do tcl[i]=6 end
+for i=32,43 do tcl[i]=7 end
+for i=64,66 do tcl[i]=13 end
+for i=80,95 do tcl[i]=11 end
+
 function in_bounds(x,y)
  return x>=0 and y>=0 and x<gridw and y<gridh
 end
 
 function tile(x,y)
- if not in_bounds(x,y) then return 0 end
- return mget(x,y)
+ return in_bounds(x,y) and mget(x,y) or 0
 end
 
 function set_tile(x,y,s)
@@ -71,15 +81,11 @@ function init_map()
    end
   end
  end
- -- mountain ranges (random-walk blobs of rock)
+ -- mountain ranges, then a lone mesa (same drunken walk, new paint)
  for m=1,p.ranges+flr(rnd(2)) do
-  local mx,my=4+flr(rnd(40)),4+flr(rnd(40))
-  for i=1,24+flr(rnd(16)) do
-   set_tile(mx,my,5)
-   mx=mid(1,mx+flr(rnd(3))-1,gridw-2)
-   my=mid(1,my+flr(rnd(3))-1,gridh-2)
-  end
+  rough(4+flr(rnd(40)),4+flr(rnd(40)),24+flr(rnd(16)),5,true)
  end
+ rough(6+flr(rnd(36)),6+flr(rnd(36)),30,4,false)
  -- highland fringes climb the foothills
  for y=0,gridh-1 do
   for x=0,gridw-1 do
@@ -89,13 +95,6 @@ function init_map()
     end
    end
   end
- end
- -- a mesa plateau out on its own
- local px,py=6+flr(rnd(36)),6+flr(rnd(36))
- for i=1,30 do
-  if tile(px,py)<3 then set_tile(px,py,4) end
-  px=mid(1,px+flr(rnd(3))-1,gridw-2)
-  py=mid(1,py+flr(rnd(3))-1,gridh-2)
  end
  -- main river, top to bottom: narrow source, wide mouth, momentum
  -- meanders. it carves straight through rock (canyons)
@@ -123,6 +122,15 @@ function init_map()
  camx,camy=0,0
 end
 
+-- drunken-walk painter for terrain blobs
+function rough(x,y,n,s,over)
+ for i=1,n do
+  if over or tile(x,y)<3 then set_tile(x,y,s) end
+  x=mid(1,x+flr(rnd(3))-1,gridw-2)
+  y=mid(1,y+flr(rnd(3))-1,gridh-2)
+ end
+end
+
 -- per-row flow vector from the channel's actual curve, so ripples
 -- drift sideways along bends. recomputed after load too.
 function calc_flow()
@@ -145,32 +153,19 @@ end
 -- the camera eases toward where the cursor wants it (snap jumps there).
 function update_camera(snap)
  local px,py=cur.x*8,cur.y*8
- local dx,dy=camx,camy
- if px-dx<16 then dx=px-16 end
- if px-dx>104 then dx=px-104 end
- if py-dy<16 then dy=py-16 end
- if py-dy>96 then dy=py-96 end
- dx=mid(0,dx,gridw*8-128)
- dy=mid(0,dy,gridh*8-120)
- local k=snap and 1 or 0.4
- camx+=(dx-camx)*k
- camy+=(dy-camy)*k
- if abs(dx-camx)<0.5 then camx=dx end
- if abs(dy-camy)<0.5 then camy=dy end
+ if px-camx<16 then camx=px-16 end
+ if px-camx>104 then camx=px-104 end
+ if py-camy<16 then camy=py-16 end
+ if py-camy>96 then camy=py-96 end
+ camx=mid(0,camx,gridw*8-128)
+ camy=mid(0,camy,gridh*8-120)
 end
 
 function draw_world()
  clip(0,8,128,120)
  camera(camx,camy-8)
- -- night darkens the world; otherwise seasons tint it
- if dn_phase()=="night" then
-  dn_dark()
- elseif month>=9 and month<=11 then
-  pal(11,9)
- elseif month==12 or month<=2 then
-  pal(3,6)
-  pal(11,3)
- end
+ -- night darkens the world
+ if dn_phase()=="night" then dn_dark() end
  local cx,cy=flr(camx/8),flr(camy/8)
  map(cx,cy,cx*8,cy*8,17,16)
  -- per-tile overlays: flowing water, unpowered bolts, pollution haze
@@ -183,7 +178,7 @@ function draw_world()
     local fx=flow[y] or 0
     local yy=(flr(t()*16)+x*3)%8
     local xx=(x*5+y*3+flr(t()*10*fx))%6+1
-    pset(x*8+xx,y*8+yy,(x+y)%2==0 and 7 or 6)
+    pset(x*8+xx,y*8+yy,6)
    elseif is_zone(x,y) then
     if bl and not is_powered(x,y) then
      spr(52,x*8,y*8)
@@ -204,29 +199,22 @@ function draw_world()
  pal()
  draw_traffic()
  draw_fires()
- draw_tornado()
+ draw_engine()
  draw_fx()
  if mode~="map" then
   local px,py=cur.x*8,cur.y*8
   local e=tools_list[tool]
   -- ghost preview: what the tool would build, dithered until placed
-  if mode=="play" and not e.spd and e.name~="map" then
-   if e.name=="bulldoze" then
-    if tile(cur.x,cur.y)>3 then
-     line(px+1,py+1,px+6,py+6,8)
-     line(px+6,py+1,px+1,py+6,8)
-    end
-   else
-    local put=tool_put(e,cur.x,cur.y)
-    if put then
-     spr(put,px,py)
-     fillp(0x5a5a+0x.8)
-     rectfill(px,py,px+7,py+7,0)
-     fillp()
-    else
-     line(px+2,py+2,px+5,py+5,8)
-     line(px+5,py+2,px+2,py+5,8)
-    end
+  if mode=="play" and not e.spd and not e.insp and e.name~="map" then
+   local put=not (e.name=="bulldoze") and tool_put(e,cur.x,cur.y)
+   if put then
+    spr(put,px,py)
+    fillp(0x5a5a+0x.8)
+    rectfill(px,py,px+7,py+7,0)
+    fillp()
+   elseif e.name~="bulldoze" or tile(cur.x,cur.y)>3 then
+    line(px+2,py+2,px+5,py+5,8)
+    line(px+5,py+2,px+2,py+5,8)
    end
   end
   rect(px,py,px+7,py+7,t()%0.4<0.2 and 7 or 10)

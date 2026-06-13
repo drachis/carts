@@ -10,6 +10,7 @@ __lua__
 #include ../growth.lua
 #include ../econ.lua
 #include ../landval.lua
+#include ../network.lua
 #include ../tools.lua
 
 -- effects.lua not included here; tools/growth call this
@@ -54,6 +55,7 @@ init_power()
 init_econ()
 init_growth()
 init_landval()
+init_net()
 frame=0
 
 -- hand-build a powered block: road row, zones under it, plant at the end
@@ -69,7 +71,7 @@ ok(is_powered(15,11),"plant is powered")
 ok(is_powered(14,11),"zone next to plant powered")
 ok(is_powered(10,11),"power conducts along zone row")
 ok(not is_powered(20,20),"far tile not powered")
-ok(is_powered(12,10),"roads carry power (glassbox)")
+ok(not is_powered(12,10),"plain roads do not carry power")
 ok(has_road_access(12,11),"zone has road access")
 ok(zone_kind(12,11)==1 and zone_density(12,11)==0,"zone kind/density")
 
@@ -108,7 +110,7 @@ ok(month~=m0 or year~=y0,"month advances after 300 frames")
 -- power line crosses a straight road via apply_tool
 money=1000
 mode="play"
-tool=6 -- power line
+tool=7 -- power line
 cur={x=12,y=10}
 apply_tool()
 ok(tile(12,10)==53,"line over h-road makes crossing")
@@ -120,7 +122,7 @@ update_power()
 
 -- park tool places a park
 money=1000
-tool=5 -- park
+tool=6 -- park
 cur={x=2,y=2}
 set_tile(2,2,1)
 apply_tool()
@@ -128,8 +130,8 @@ ok(tile(2,2)==44,"park tool places park")
 
 -- land value: industry drags down, parks lift up
 set_zone(40,5,3,3)
-frame=64
-update_landval()
+frame=32
+update_growth()
 ok(land_value(40,5)<0,"industry pollutes its cell")
 ok(land_value(2,2)>0,"park raises its cell")
 ok(growth_mult(40,5,1)<1,"residential growth suffers near industry")
@@ -147,6 +149,20 @@ update_power()
 ok(power_short,"48 buildings exceed one plant's 40")
 ok(not is_powered(47,44),"buildings beyond capacity stay dark")
 
+-- glassbox needs: zones grow past level 1 only when their road
+-- network reaches what they need
+for x=2,8 do set_tile(x,46,16) end
+set_zone(2,45,1,1)
+update_net(true)
+ok(not net_ok(2,45,1,1),"lone homes find no jobs on their network")
+ok(net_ok(2,45,1,0),"pioneers settle anywhere")
+set_zone(5,45,2,1)
+set_zone(6,45,3,1)
+update_net(true)
+ok(net_ok(2,45,1,1),"homes find jobs along the road")
+ok(net_ok(5,45,2,1),"shops reach customers and freight")
+ok(net_ok(6,45,3,1),"factories reach workers")
+
 -- terrain: the generator raises mountains and highland
 local rocks,high=0,0
 for y=0,gridh-1 do
@@ -161,7 +177,7 @@ set_tile(8,40,5)
 ok(not is_buildable(8,40),"mountains are unbuildable")
 money=100
 mode="play"
-tool=11 -- bulldoze
+tool=12 -- bulldoze
 cur={x=8,y=40}
 apply_tool()
 ok(tile(8,40)==1 and money==75,"blasting a mountain costs $25")
@@ -192,16 +208,16 @@ for y=0,gridh-1 do
 end
 ok(wx~=nil,"river exists")
 mode="play"
-tool=1 -- road
+tool=2 -- road
 cur={x=wx,y=wy}
 apply_tool()
 local b=tile(wx,wy)
 ok(b==59 or b==60,"road on water builds a bridge")
 ok(is_road(wx,wy),"bridge is a road")
-tool=11 -- bulldoze
+tool=12 -- bulldoze
 apply_tool()
 ok(tile(wx,wy)==3,"bulldozed bridge reverts to water")
-tool=6 -- power line
+tool=7 -- power line
 apply_tool()
 local py=tile(wx,wy)
 ok((py==61 or py==62) and conducts(wx,wy),"line on water builds a pylon")
@@ -231,12 +247,12 @@ ok(tile(40,30)==82 and tile(41,30)==88,"wires autotile e/w")
 -- building over power lines
 set_tile(40,28,85) -- vertical wire
 mode="play"
-tool=1 -- road
+tool=2 -- road
 cur={x=40,y=28}
 apply_tool()
 ok(tile(40,28)==53,"road over vertical line makes crossing")
 set_tile(42,28,80)
-tool=2 -- house zone
+tool=3 -- house zone
 cur={x=42,y=28}
 apply_tool()
 ok(zone_kind(42,28)==1,"zone replaces a power line without bulldozing")
@@ -244,11 +260,23 @@ ok(zone_kind(42,28)==1,"zone replaces a power line without bulldozing")
 -- ghost preview shares the placement rules
 set_tile(44,2,1)
 set_tile(45,2,3)
-local g1,gc1=tool_put(tools_list[1],44,2)
-local g2,gc2=tool_put(tools_list[1],45,2)
+local g1,gc1=tool_put(tools_list[2],44,2)
+local g2,gc2=tool_put(tools_list[2],45,2)
 ok(g1==16 and gc1==cost.road,"ghost: road on grass")
 ok(g2==59 and gc2==cost.bridge,"ghost: bridge over water")
-ok(tool_put(tools_list[7],45,2)==nil,"ghost: no plant on water")
+ok(tool_put(tools_list[8],45,2)==nil,"ghost: no plant on water")
+
+-- inspect tool reports on tiles
+mode="play"
+tool=1 -- inspect (the default cursor)
+cur={x=42,y=28} -- the house zone placed above
+msg=""
+apply_tool()
+ok(#msg>0,"inspect reports on a zone")
+cur={x=8,y=40} -- blasted to grass earlier
+msg=""
+apply_tool()
+ok(#msg>0,"inspect reports on terrain")
 
 -- sim speed cycles 1 -> 2 -> 4 -> 1
 ok(gspd==1,"speed starts 1x")

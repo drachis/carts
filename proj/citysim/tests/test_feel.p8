@@ -8,6 +8,7 @@ __lua__
 #include ../power.lua
 #include ../econ.lua
 #include ../landval.lua
+#include ../network.lua
 #include ../tools.lua
 #include ../traffic.lua
 #include ../disaster.lua
@@ -65,6 +66,7 @@ init_power()
 init_econ()
 init_growth()
 init_landval()
+init_net()
 init_disaster()
 init_achv()
 init_fx()
@@ -102,30 +104,35 @@ ok(spawned,"commuters spawn between homes and jobs")
 ok(on_road,"cars stay on roads for their whole trip")
 draw_traffic()
 
--- fire burns a zone down to rubble
+-- fire burns a zone: tile stays visible, tracked in dz_fmap
 set_zone(12,11,1,2)
 dz_ignite(12,11)
-ok(tile(12,11)==55,"ignition sets fire tile")
+ok(dz_fmap[12+11*64],"ignite records burning tile")
 for f=1,200 do
  frame=19300+f
  update_disaster()
 end
-ok(tile(12,11)==56,"fire burns out to rubble")
+ok(tile(12,11)==96,"burned zone becomes r-rubble (sprite 96)")
 
 -- fire stations: coverage detection
 set_tile(44,30,64)
 ok(dz_covered(44,32),"fire station covers nearby tiles")
 ok(not dz_covered(20,5),"no coverage far away")
 
--- tornado wrecks what it touches, then dissipates
-set_zone(42,28,1,1)
+-- fire engine: dispatches from a station and arrives to spray
+init_disaster()
+set_tile(10,9,64) -- station beside the road row at y=10
+set_zone(14,11,1,2)
 frame=1
-dz_tor={x=42,y=28,dx=0,dy=0,t=5}
-update_disaster()
-ok(tile(42,28)==56,"tornado leaves rubble")
-for i=1,10 do update_disaster() end
-ok(dz_tor==nil,"tornado dissipates")
-draw_tornado()
+dz_ignite(14,11)
+ok(dz_eng~=nil,"fire engine dispatched")
+local arrived=false
+for i=1,600 do
+ update_disaster()
+ if dz_eng and dz_eng.spray>0 then arrived=true end
+end
+ok(arrived,"engine arrived and sprayed")
+draw_engine()
 
 -- day/night phases
 frame=0
@@ -148,16 +155,12 @@ ok(achv_total()==8,"eight achievements defined")
 
 -- particles spawn and expire
 init_fx()
-add_fx(5,5,1)
-add_fx(5,5,2)
-add_fx(5,5,3,"-$10")
-ok(#fx_list>=8,"fx particles spawn")
+add_fx(5,5,4,0.5,0,20,7,10)   -- sparkle
+add_fx(5,5,3,0.2,-0.3,25,5,6) -- smoke
+add_fx(5,5,4,0.5,0,20,7,10)   -- sparkle again
+ok(#fx_list>=11,"fx particles spawn")
 for i=1,40 do update_fx() end
-local stale=false
-for q in all(fx_list) do
- if q.k~=4 then stale=true end
-end
-ok(not stale,"fx particles expire")
+ok(#fx_list==0,"fx particles expire")
 draw_fx()
 
 -- save / load / new city
@@ -175,13 +178,14 @@ ok(money==2000 and pop==0,"new city resets the books")
 camx,camy=0,0
 pop_hist={5,10,40}
 draw_hud()
+draw_ticker()
 mode="menu"
 draw_menu()
 mode="map"
 draw_minimap()
-map_view="smog"
-draw_minimap()
 map_view="power"
+draw_minimap()
+map_view="city"
 draw_minimap()
 msg,msg_t="hello",10
 draw_msg()

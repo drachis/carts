@@ -7,16 +7,15 @@ p={
  month_frames=300,   -- 10 seconds at 30fps
  tax_demand=0.15,    -- demand lost per tax point above 2
  debt_demand=0.2,    -- demand lost while in debt
- upkeep={road=1,line=1,crossing=2,pylon=1,plant=10,svc=5},
+ -- monthly upkeep per tile, keyed by class id:
+ -- 6 road, 8 crossing, 9 bridge, 10 pylon, 11 line, 12 plant, 13 service
+ upkeep={[6]=1,[8]=2,[9]=1,[10]=1,[11]=1,[12]=10,[13]=5},
  cost={road=10,zone=50,line=5,plant=300,park=10,bridge=50,svc=100,
   dozer=1,blast=25},
 
  -- terrain
  ocean_chance=0.4,   -- odds one map edge is open sea
  ranges=2,           -- mountain ranges (plus 0-1 random extra)
-
- -- glassbox-style: roads carry power too (lines still reach off-road)
- road_power=true,
 
  -- growth
  road_radius=1,      -- chebyshev distance a zone may sit from a road
@@ -39,8 +38,9 @@ p={
  station_radius=4,   -- chebyshev coverage of a fire station
 
  -- traffic
- car_cap=12,
- car_pop=12,         -- one extra car per this much population
+ car_cap=24,
+ car_pop=8,          -- one extra car per this much population
+ eng_radius=2,       -- tiles from road where fire engine can respond
 
  -- day/night
  day_frames=1800,    -- full day cycle length (60s at 30fps)

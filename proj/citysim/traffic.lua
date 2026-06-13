@@ -63,36 +63,52 @@ function tr_path(x0,y0,x1,y1)
  return rev
 end
 
--- find a road tile adjacent to a zone matching kind(s)
--- kinds is a table of zone_kind values to accept
-local function tr_find_stop(kinds)
+-- find a road tile adjacent to a developed zone.
+-- when want_r=true: seek residential; when false: seek workplace.
+-- early game (jobs==0): accept any developed zone so cars still spawn.
+local function tr_find_stop(want_r)
  for _=1,12 do
   local zx=flr(rnd(gridw))
   local zy=flr(rnd(gridh))
   local zk=zone_kind(zx,zy)
-  local ok=false
-  if zk~=nil and zone_density(zx,zy)>0 then
-   for _,k in pairs(kinds) do
-    if k==zk then ok=true end
-   end
-  end
-  if ok then
-   local ns=neighbors4(zx,zy)
-   for _,n in pairs(ns) do
-    if is_road(n.x,n.y) then
-     return n.x,n.y
-    end
+  if zk~=nil and zone_density(zx,zy)>0
+   and (jobs==0 or (zk==1)==want_r) then
+   for _,n in pairs(neighbors4(zx,zy)) do
+    if is_road(n.x,n.y) then return n.x,n.y end
    end
   end
  end
  return nil,nil
 end
 
+-- advance any path-follower (car, fire engine) one pixel.
+-- returns false when the trip is over: arrival, or road gone.
+function path_step(c)
+ local n=c.path[c.i]
+ local tx=n.x*8+3
+ local ty=n.y*8+3
+ local sx=sgn0(tx-c.px)
+ local sy=sgn0(ty-c.py)
+ if sx~=0 then
+  c.dx,c.dy=sx,0
+  c.px+=sx
+ elseif sy~=0 then
+  c.dx,c.dy=0,sy
+  c.py+=sy
+ end
+ if c.px==tx and c.py==ty then
+  if not is_road(n.x,n.y) then return false end
+  c.i+=1
+  if c.i>#c.path then return false end
+ end
+ return true
+end
+
 function update_traffic()
  -- spawn commuters
  if frame%32==0 and pop>0 and #tr_cars<min(p.car_cap,2+flr(pop/p.car_pop)) then
-  local ox,oy=tr_find_stop({1})
-  local dx,dy=tr_find_stop({2,3})
+  local ox,oy=tr_find_stop(true)
+  local dx,dy=tr_find_stop(false)
   if ox~=nil and dx~=nil and not(ox==dx and oy==dy) then
    local path=tr_path(ox,oy,dx,dy)
    if path~=nil and #path>1 then
@@ -113,36 +129,10 @@ function update_traffic()
  -- move cars
  local keep={}
  for _,c in pairs(tr_cars) do
-  local alive=true
-  if c.life>0 then
+  local alive=c.life>0
+  if alive then
    c.life-=1
-   local n=c.path[c.i]
-   local tx=n.x*8+3
-   local ty=n.y*8+3
-   local sx=sgn0(tx-c.px)
-   local sy=sgn0(ty-c.py)
-   if sx~=0 then
-    c.dx=sx
-    c.dy=0
-    c.px+=sx
-   elseif sy~=0 then
-    c.dx=0
-    c.dy=sy
-    c.py+=sy
-   end
-   -- check arrival at node
-   if c.px==tx and c.py==ty then
-    if not is_road(n.x,n.y) then
-     alive=false
-    else
-     c.i+=1
-     if c.i>#c.path then
-      alive=false
-     end
-    end
-   end
-  else
-   alive=false
+   alive=path_step(c)
   end
   if alive then
    add(keep,c)

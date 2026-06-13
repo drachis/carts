@@ -1,10 +1,11 @@
 -- tools.lua : input, cursor, placement, bulldoze, autotiling
 
 tools_list={
+ {name="inspect",insp=true},
  {name="road",costkey="road",spr=26},
- {name="house zone",costkey="zone",spr=33,kind=1},
- {name="shop zone",costkey="zone",spr=37,kind=2},
- {name="factory zone",costkey="zone",spr=41,kind=3},
+ {name="house zone",costkey="zone",kind=1},
+ {name="shop zone",costkey="zone",kind=2},
+ {name="factory zone",costkey="zone",kind=3},
  {name="park",costkey="park",spr=44,put=44},
  {name="power line",costkey="line",spr=90},
  {name="power plant",costkey="plant",spr=48,put=48},
@@ -66,12 +67,8 @@ function update_tools()
   if btn(3) then camy+=4 end
   camx=mid(0,camx,gridw*8-128)
   camy=mid(0,camy,gridh*8-120)
-  -- keep the cursor inside the view for when we return
-  cur.x=mid(flr(camx/8)+1,cur.x,flr(camx/8)+14)
-  cur.y=mid(flr(camy/8)+1,cur.y,flr(camy/8)+13)
   if btnp(4) then
-   map_view=map_view=="city" and "smog"
-    or map_view=="smog" and "power" or "city"
+   map_view=map_view=="city" and "power" or "city"
   end
   if btnp(5) then mode="play" end
  end
@@ -117,15 +114,23 @@ function apply_tool(quiet)
   cycle_speed()
   return
  end
+ if t.insp then
+  do_inspect(x,y)
+  return
+ end
  local s=tile(x,y)
  if t.name=="bulldoze" then
-  -- blasting a mountain costs real money
   if s>3 and try_spend(s==5 and cost.blast or cost.dozer) then
-   -- bridges and pylons revert to water, everything else to grass
-   set_tile(x,y,(s>=59 and s<=62) and 3 or 1)
+   if s>=59 and s<=62 then
+    set_tile(x,y,3)            -- bridge/pylon → water
+   elseif s>=96 and s<=98 then
+    set_zone(x,y,s-95,0)      -- zone rubble → empty zone
+   else
+    set_tile(x,y,1)            -- everything else → grass
+   end
    refresh_around(x,y)
    update_power()
-   add_fx(x,y,2)
+   add_fx(x,y,3,0.2,-0.3,25,5,6)
    sfx(1)
    started=true
   end
@@ -143,7 +148,7 @@ function apply_tool(quiet)
  set_tile(x,y,put)
  refresh_around(x,y)
  update_power()
- add_fx(x,y,3,"-$"..c)
+ add_fx(x,y,4,0.5,0,20,7,10)
  sfx(0)
  started=true -- the clock runs once the first thing is built
 end
@@ -160,8 +165,8 @@ function refresh_tile(x,y)
  end
  if s==61 or s==62 then
   -- pylons face along the wire crossing the water
-  local h=pw_carries(x-1,y) or pw_carries(x+1,y)
-  local v=pw_carries(x,y-1) or pw_carries(x,y+1)
+  local h=conducts(x-1,y) or conducts(x+1,y)
+  local v=conducts(x,y-1) or conducts(x,y+1)
   set_tile(x,y,h and not v and 62 or 61)
   return
  end
@@ -173,14 +178,36 @@ function refresh_tile(x,y)
   if is_road(x-1,y) then m+=8 end
   set_tile(x,y,16+m)
  elseif s>=80 and s<=95 then
-  -- wires bend toward anything that carries power next door
+  -- wires bend toward anything conductive next door
   local m=0
-  if pw_carries(x,y-1) then m+=1 end
-  if pw_carries(x+1,y) then m+=2 end
-  if pw_carries(x,y+1) then m+=4 end
-  if pw_carries(x-1,y) then m+=8 end
+  if conducts(x,y-1) then m+=1 end
+  if conducts(x+1,y) then m+=2 end
+  if conducts(x,y+1) then m+=4 end
+  if conducts(x-1,y) then m+=8 end
   set_tile(x,y,80+m)
  end
+end
+
+function do_inspect(x,y)
+ local s=tile(x,y)
+ local k=zone_kind(x,y)
+ if k then
+  local d=zone_density(x,y)
+  local st=not is_powered(x,y) and "no power"
+   or not has_road_access(x,y) and "no road"
+   or not net_ok(x,y,k,d) and (k==1 and "needs jobs" or "needs trade")
+   or d<3 and "growing" or "thriving"
+  msg,msg_t=({"r","c","i"})[k].." lv"..d.." "..st,120
+ else
+  msg,msg_t=tile_name(s),120
+ end
+end
+
+local tl_names={"grass","trees","water","highland","mountain","road",
+ "zone","crossing","bridge","pylon","power line","power plant",
+ "city service","park","fire!","rubble - bulldoze it"}
+function tile_name(s)
+ return tl_names[tcl[s]] or "land"
 end
 
 function refresh_around(x,y)

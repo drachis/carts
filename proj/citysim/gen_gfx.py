@@ -279,7 +279,7 @@ S[55] = [  # fire
     "89aaa980",
     "08888800",
 ]
-S[56] = [  # rubble
+S[56] = [  # rubble (generic: non-zone burnout)
     "00000000",
     "05606450",
     "56655065",
@@ -287,6 +287,37 @@ S[56] = [  # rubble
     "50655406",
     "06554650",
     "55065565",
+    "00000000",
+]
+
+S[96] = [  # r-rubble: residential ruins (brick-red accent)
+    "00000000",
+    "08855500",
+    "58880556",
+    "05846550",
+    "50658406",
+    "06554650",
+    "55865565",
+    "00000000",
+]
+S[97] = [  # c-rubble: commercial ruins (glass-blue accent)
+    "00000000",
+    "05606450",
+    "5c655065",
+    "0544c550",
+    "50c55406",
+    "0655c650",
+    "55065565",
+    "00000000",
+]
+S[98] = [  # i-rubble: industrial ruins (metal-orange accent)
+    "00000000",
+    "05606450",
+    "56655065",
+    "0544a550",
+    "50a55406",
+    "06554a50",
+    "5506a565",
     "00000000",
 ]
 
@@ -339,8 +370,8 @@ S[52] = [  # "no power" bolt overlay (black=transparent)
     "00000000",
 ]
 
-# compose sheet: sprites 0..95 -> 48 pixel rows of 128 hex chars
-rows = [["0"] * 128 for _ in range(48)]
+# compose sheet: sprites 0..111 -> 56 pixel rows of 128 hex chars
+rows = [["0"] * 128 for _ in range(56)]
 for sid, art in S.items():
     assert len(art) == 8 and all(len(r) == 8 for r in art), sid
     sr, sc = (sid // 16) * 8, (sid % 16) * 8
