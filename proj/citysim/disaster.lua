@@ -53,19 +53,35 @@ function start_fire()
  return true
 end
 
--- engine spawns at the nearest road to the fire (no station travel)
--- enc_radius param controls max distance; no road = no response
+-- nearest road tile within chebyshev radius r of (cx,cy)
+function find_road_near(cx,cy,r)
+ for dy=-r,r do
+  for dx=-r,r do
+   if is_road(cx+dx,cy+dy) then return cx+dx,cy+dy end
+  end
+ end
+end
+
+-- pathfind from nearest station → road near fire; no station = no engine
 function dz_dispatch(fx,fy)
  if dz_eng then return end
- local er=p.eng_radius
- for dy=-er,er do for dx=-er,er do
-  if is_road(fx+dx,fy+dy) then
-   local rx,ry=fx+dx,fy+dy
-   dz_eng={path={{x=rx,y=ry},{x=rx,y=ry}},
-    i=2,px=rx*8+3,py=ry*8+3,spray=0}
-   return
+ local bx,by,bd=nil,nil,9999
+ for y=0,gridh-1 do
+  for x=0,gridw-1 do
+   if tile(x,y)==64 then
+    local d=abs(x-fx)+abs(y-fy)
+    if d<bd then bx,by,bd=x,y,d end
+   end
   end
- end end
+ end
+ if not bx then return end
+ local sx,sy=find_road_near(bx,by,1)
+ local ex,ey=find_road_near(fx,fy,p.eng_radius)
+ if not sx or not ex then return end
+ local path=tr_path(sx,sy,ex,ey)
+ if not path then return end
+ dz_eng={path=path,i=2,px=path[1].x*8+3,py=path[1].y*8+3,
+  dx=0,dy=0,spray=0}
 end
 
 function update_disaster()

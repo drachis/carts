@@ -126,17 +126,21 @@ function update_traffic()
   end
  end
 
- -- move cars
+ -- move cars; reverse path at destination for continuous round-trips
  local keep={}
  for _,c in pairs(tr_cars) do
   local alive=c.life>0
   if alive then
    c.life-=1
    alive=path_step(c)
+   if not alive and c.i>#c.path then
+    local rev={}
+    for i=#c.path,1,-1 do add(rev,c.path[i]) end
+    c.path=rev c.i=2 c.life=600
+    alive=true
+   end
   end
-  if alive then
-   add(keep,c)
-  end
+  if alive then add(keep,c) end
  end
  tr_cars=keep
 end
