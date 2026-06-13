@@ -174,10 +174,11 @@ function draw_world()
   for x=cx,min(gridw-1,cx+16) do
    local s=tile(x,y)
    if s==3 then
-    -- ripples follow the channel: downstream plus the bend's drift
+    -- ripples travel along the channel's actual direction
     local fx=flow[y] or 0
-    local yy=(flr(t()*16)+x*3)%8
-    local xx=(x*5+y*3+flr(t()*10*fx))%6+1
+    local dt=flr(t()*10)
+    local xx=(x*5+y*3+(fx~=0 and dt*fx or 0))%6+1
+    local yy=(x*3+y*5+(fx==0 and dt or 0))%8
     pset(x*8+xx,y*8+yy,6)
    elseif is_zone(x,y) then
     if bl and not is_powered(x,y) then
