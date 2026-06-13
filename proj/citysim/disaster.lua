@@ -13,7 +13,7 @@ function dz_covered(x,y)
  local r=p.station_radius
  for yy=max(0,y-r),min(gridh-1,y+r) do
   for xx=max(0,x-r),min(gridw-1,x+r) do
-   if tile(xx,yy)==64 then return true end
+   if tile(xx,yy)==64 and is_powered(xx,yy) then return true end
   end
  end
  return false

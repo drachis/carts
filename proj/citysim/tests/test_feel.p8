@@ -114,9 +114,12 @@ for f=1,200 do
 end
 ok(tile(12,11)==96,"burned zone becomes r-rubble (sprite 96)")
 
--- fire stations: coverage detection
-set_tile(44,30,64)
-ok(dz_covered(44,32),"fire station covers nearby tiles")
+-- fire stations: coverage requires power
+set_tile(44,29,48)   -- plant adjacent to station
+update_power()
+set_tile(44,30,64)   -- station (now powered via plant)
+update_power()
+ok(dz_covered(44,32),"powered station covers nearby tiles")
 ok(not dz_covered(20,5),"no coverage far away")
 
 -- fire engine: dispatches from a station and arrives to spray

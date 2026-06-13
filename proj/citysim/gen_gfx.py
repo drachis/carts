@@ -125,14 +125,14 @@ S[34] = [  # r2: two houses
     "33b33b33",
     "33333333",
 ]
-S[35] = [  # r3: apartment block
-    "55555555",
+S[35] = [  # r3: apartment block - 'd'=color13(blue-grey), stays blue at night vs roads(grey)
+    "dddddddd",
     "66666666",
-    "6a6a6a66",
+    "dadadad6",
     "66666666",
-    "6a6a6a66",
+    "dadadad6",
     "66666666",
-    "6a6a6a66",
+    "dadadad6",
     "66644666",
 ]
 S[37] = [  # c1: shop with awning

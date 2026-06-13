@@ -186,6 +186,8 @@ function draw_world()
     elseif zone_density(x,y)>0 and is_powered(x,y) then
      draw_window_lights(x,y,zone_kind(x,y),zone_density(x,y))
     end
+   elseif s>=64 and s<=66 then
+    if bl and not is_powered(x,y) then spr(52,x*8,y*8) end
    end
    -- polluters puff smoke from their stacks (area haze lives in the
    -- smog map view, where it doesn't fight the tile art)
