@@ -31,11 +31,12 @@ p={
  plant_cap=40,       -- tiles powered per plant
 
  -- fire
- fire_frames=900,    -- frames between random ignition rolls
+ fire_frames=1800,   -- frames between random ignition rolls
  fire_chance=0.2,
- burn_t=150,         -- frames a tile burns
- station_burn_t=60,  -- burn time near a fire station
+ burn_t=240,         -- frames a tile burns
+ station_burn_t=100, -- burn time near a fire station
  station_radius=4,   -- chebyshev coverage of a fire station
+ spread_wait=50,     -- frames before first spread, then between spreads
 
  -- traffic
  car_cap=24,

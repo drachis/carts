@@ -108,7 +108,7 @@ draw_traffic()
 set_zone(12,11,1,2)
 dz_ignite(12,11)
 ok(dz_fmap[12+11*64],"ignite records burning tile")
-for f=1,200 do
+for f=1,280 do
  frame=19300+f
  update_disaster()
 end

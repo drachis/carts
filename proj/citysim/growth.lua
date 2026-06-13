@@ -68,7 +68,7 @@ function update_growth()
      set_zone(x,y,k,dens+1)
      add_fx(x,y,4,0.5,0,20,7,10)
     elseif (not is_powered(x,y) or d<-0.5)
-     and dens>0 and rnd()<p.decay_rate then
+     and dens>0 and rnd()<(is_powered(x,y) and p.decay_rate or 0.2) then
      set_zone(x,y,k,dens-1)
     end
    end

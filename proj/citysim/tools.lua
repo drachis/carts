@@ -138,7 +138,11 @@ function apply_tool(quiet)
  end
  local put,c=tool_put(t,x,y)
  if not put then
-  if not quiet then
+  local already=(t.kind and zone_kind(x,y)==t.kind)
+   or (t.name=="road" and is_road(x,y))
+   or (t.name=="power line" and s>=80 and s<=95)
+   or (t.put and s==t.put)
+  if not quiet and not already then
    msg,msg_t="can't build there",60
    sfx(1)
   end

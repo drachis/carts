@@ -26,7 +26,7 @@ function dz_ignite(x,y)
  local was_empty=#dz_fires==0
  add(dz_fires,{x=x,y=y,
   t=dz_covered(x,y) and p.station_burn_t or p.burn_t,
-  zk=zone_kind(x,y)})
+  zk=zone_kind(x,y),sp=p.spread_wait})
  if was_empty then
   msg="fire!" msg_t=90
   sfx(3)
@@ -93,8 +93,10 @@ function update_disaster()
  local keep={}
  for _,f in pairs(dz_fires) do
   f.t-=1
-  if f.t%30==0 and f.t>0
+  f.sp-=1
+  if f.sp<=0 and f.t>0
    and not (dz_covered(f.x,f.y) and rnd()<0.75) then
+   f.sp=p.spread_wait
    local nb=neighbors4(f.x,f.y)
    if #nb>0 then
     local n=nb[1+flr(rnd(#nb))]

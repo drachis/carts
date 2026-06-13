@@ -1,14 +1,10 @@
 -- traffic.lua : purposeful commuter cars on roads
 
 tr_cars={}
-
-function init_traffic()
- tr_cars={}
-end
+tr_last_phase=nil
 
 local tr_cols={7,8,10,12,14}
 
--- sgn with zero: returns -1, 0, or 1
 local function sgn0(n)
  if n>0 then return 1
  elseif n<0 then return -1
@@ -81,6 +77,24 @@ local function tr_find_stop(want_r)
  return nil,nil
 end
 
+-- find a road tile adjacent to a school building (sprite 66)
+local function tr_find_school()
+ for _=1,12 do
+  local x=flr(rnd(gridw))
+  local y=flr(rnd(gridh))
+  if tile(x,y)==66 then
+   for _,n in pairs(neighbors4(x,y)) do
+    if is_road(n.x,n.y) then return n.x,n.y end
+   end
+  end
+ end
+end
+
+function init_traffic()
+ tr_cars={}
+ tr_last_phase=dn_phase()
+end
+
 -- advance any path-follower (car, fire engine) one pixel.
 -- returns false when the trip is over: arrival, or road gone.
 function path_step(c)
@@ -105,40 +119,41 @@ function path_step(c)
 end
 
 function update_traffic()
- -- spawn commuters
- if frame%32==0 and pop>0 and #tr_cars<min(p.car_cap,2+flr(pop/p.car_pop)) then
-  local ox,oy=tr_find_stop(true)
-  local dx,dy=tr_find_stop(false)
-  if ox~=nil and dx~=nil and not(ox==dx and oy==dy) then
-   local path=tr_path(ox,oy,dx,dy)
-   if path~=nil and #path>1 then
-    add(tr_cars,{
-     path=path,
-     i=2,
-     px=path[1].x*8+3,
-     py=path[1].y*8+3,
-     dx=0,
-     dy=0,
-     col=tr_cols[1+flr(rnd(#tr_cols))],
-     life=600
-    })
+ -- spawn a wave of commuters at each day/night transition:
+ --   dawn (→day): R zones send workers to C/I (and some to school)
+ --   dusk (→night): C/I zones send workers back home to R
+ local phase=dn_phase()
+ if phase~=tr_last_phase and pop>0 then
+  tr_last_phase=phase
+  local going_to_work=(phase=="day")
+  local cap=min(p.car_cap,2+flr(pop/p.car_pop))
+  local tries=cap*4
+  while tries>0 and #tr_cars<cap do
+   tries-=1
+   local ox,oy=tr_find_stop(going_to_work)
+   local dx,dy
+   if going_to_work and rnd()<0.3 then dx,dy=tr_find_school() end
+   if not dx then dx,dy=tr_find_stop(not going_to_work) end
+   if ox~=nil and dx~=nil and not(ox==dx and oy==dy) then
+    local path=tr_path(ox,oy,dx,dy)
+    if path~=nil and #path>1 then
+     add(tr_cars,{path=path,i=2,
+      px=path[1].x*8+3,py=path[1].y*8+3,
+      dx=0,dy=0,
+      col=tr_cols[1+flr(rnd(#tr_cols))],
+      life=600})
+    end
    end
   end
  end
 
- -- move cars; reverse path at destination for continuous round-trips
+ -- move cars; one-way trip (return wave is spawned at the next transition)
  local keep={}
  for _,c in pairs(tr_cars) do
   local alive=c.life>0
   if alive then
    c.life-=1
    alive=path_step(c)
-   if not alive and c.i>#c.path then
-    local rev={}
-    for i=#c.path,1,-1 do add(rev,c.path[i]) end
-    c.path=rev c.i=2 c.life=600
-    alive=true
-   end
   end
   if alive then add(keep,c) end
  end
