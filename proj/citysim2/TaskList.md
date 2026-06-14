@@ -18,7 +18,8 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 - ☑ map.lua (550→**577**) — grid, tile/zone helpers, autotile, camera, plane
   accessors (`peekp`/`pokep`/`pclr`). Integrated, compiles. Encoding: 0 water /
   1 grass / 2 mountain · roads 16..31 · power 32..47 · R/C/I 48/52/56 +density.
-- ◐ router.lua (300) — weighted path(from,to,costfn) + flood; congestion-aware
+- ☑ router.lua (300→**368**) — `path(x0,y0,x1,y1,pass,cost)` weighted Dijkstra
+  (lazy/stale-skip) + `flood(x0,y0,pass,visit)`. Substrate-agnostic. Integrated.
 - ☐ net.lua (500) — road+power components + per-component offer index; powered()
 - ☐ agents.lua (550) — pooled trips realizing contracts; cong +/- in path_step
 - ☐ sim.lua (1800) — event loop (timewheel) + broadcast→match→contract + grow/decay
@@ -45,6 +46,10 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 2. Agent writes the file; lead runs `count_tokens.py <file>` (under budget?).
 3. Lead adds the `#include` to citysim2.p8, runs `pico8 -x` test cart.
 4. Tick it here; record actual tokens vs budget.
+5. **Screenshot each iteration** (the player is remote): `_shot.p8` lays a test
+   city + `cstore`s the 0x6000 framebuffer to `shot_fb.p8` under `pico8 -x`, then
+   `fb_to_png.py shot_fb.p8 shot.png 3` decodes it → upload `shot.png`.
+   (Headless `-x` can't screenshot directly; this captures the real framebuffer.)
 
 ### Actual tokens (fill as modules land)
 | module | budget | actual |
@@ -52,7 +57,8 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 | params | 150 | 39 |
 | data   | 100 | 36 |
 | map    | 550 | 577 |
-| cart total | 8192 | 705 |
+| router | 300 | 368 |
+| cart total | 8192 | 1072 |
 
 Note: agents under-estimate their own token cost (map agent guessed ~390, real
 577). The lead's `count_tokens.py` is the gate before integrating.

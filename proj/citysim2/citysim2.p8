@@ -7,6 +7,7 @@ __lua__
 #include params.lua
 #include data.lua
 #include map.lua
+#include router.lua
 
 -- glue owns _init/_update/_draw; modules never define them.
 function _init()
