@@ -9,6 +9,7 @@ __lua__
 #include ../net.lua
 #include ../terrain.lua
 #include ../agents.lua
+#include ../sim.lua
 
 local pass,fail=0,0
 function ok(c,n)
@@ -53,6 +54,28 @@ ok(#agents==0,"agent expired/arrived and was removed")
 local cong=0
 for y=0,gw-1 do for x=0,gw-1 do cong+=peekp(pl_cong,x,y) end end
 ok(cong==0,"congestion fully released after agents gone (sum "..cong..")")
+
+-- sim core: R + C zones joined by a road grow and generate commuters
+init_map()
+for x=4,12 do set_tile(x,10,16) end
+set_zone(6,9,1,1)   -- residential beside the road
+set_zone(10,9,2,1)  -- commercial beside the road
+update_net()
+ok(connected(6,9,10,9),"the two zones share a road network")
+init_sim()
+init_agents()
+sim_seed()
+local spawned=false
+for i=1,2000 do
+ update_sim()
+ update_agents()
+ if #agents>0 then spawned=true end
+end
+ok(zone_density(6,9)>1 or zone_density(10,9)>1,"connected zones grew (r="..zone_density(6,9).." c="..zone_density(10,9)..")")
+ok(pop>0 and jobs>0,"census: pop="..pop.." jobs="..jobs)
+ok(spawned,"commuters spawned between home and work")
+local ti=tile_info(6,9)
+ok(ti~=nil and ti.kind==1,"tile_info reports the zone")
 
 printh("---- "..pass.." passed, "..fail.." failed ----")
 if fail>0 then printh("test result: fail") else printh("test result: pass") end

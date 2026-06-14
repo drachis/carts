@@ -11,6 +11,7 @@ __lua__
 #include net.lua
 #include terrain.lua
 #include agents.lua
+#include sim.lua
 
 -- glue owns _init/_update/_draw; modules never define them.
 function _init()
@@ -20,11 +21,14 @@ function _init()
  gen_terrain()
  update_net()
  init_agents()
+ init_sim()
+ sim_seed()
  update_camera(true)
 end
 
 function _update()
  t+=1
+ update_sim()
  update_agents()
 end
 

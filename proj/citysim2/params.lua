@@ -9,6 +9,13 @@ p={
  eval_iv=90,         -- ticks between a tile re-evaluating its needs
  decay_miss=4,       -- consecutive unmet evals before a tile downgrades
 
+ -- zone economy (capacity per density step)
+ r_per=4,            -- residents per residential density
+ c_per=3,            -- jobs per commercial density
+ i_per=4,            -- jobs per industrial density
+ grow_rate=0.25,     -- chance a fully-served zone densifies on an eval
+ decay_rate=0.15,    -- chance a starved zone downgrades on an eval
+
  -- agents / visibility (the lively-city knob, DESIGN s10)
  agent_cap=80,       -- max live visible agents
  show=1,             -- visible cars per filled capacity unit (1=all; lower=sample)

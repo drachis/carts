@@ -1,0 +1,135 @@
+-- sim.lua : event-driven rci core (timewheel + grow/decay + commuters)
+-- api: init_sim, sim_seed, update_sim, schedule, tile_info, sm_index
+--      globals: evq, tick, pop, jobs, demand, idx
+-- calls: is_zone, zone_kind, zone_density, set_zone, neighbors4, is_road,
+--        rcomp, connected, spawn_agent, p, gw
+-- private prefix: sm_
+
+evq={}
+tick=0
+pop=0
+jobs=0
+demand={r=0,c=0,i=0}
+idx={}  -- offer index: idx[comp][kind] = list of {x,y} developed zone tiles
+
+function init_sim()
+ evq={}
+ for i=1,p.evt_h do add(evq,{}) end
+ tick=0 pop=0 jobs=0
+ demand={r=0,c=0,i=0}
+ idx={}
+end
+
+function schedule(dt,ev)
+ add(evq[(tick+dt)%p.evt_h+1],ev)
+end
+
+-- rebuild the per-road-component offer index from developed zones.
+-- a need looks up idx[mycomponent][complement_kind] -> already-reachable tiles.
+function sm_index()
+ idx={}
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if is_zone(x,y) and zone_density(x,y)>0 then
+    local c=rcomp(x,y)
+    if c~=0 then
+     idx[c]=idx[c] or {}
+     local k=zone_kind(x,y)
+     idx[c][k]=idx[c][k] or {}
+     add(idx[c][k],{x=x,y=y})
+    end
+   end
+  end
+ end
+end
+
+function sim_seed()
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if is_zone(x,y) then schedule((x+y)%p.eval_iv,{k=1,x=x,y=y}) end
+  end
+ end
+ sm_index()
+end
+
+local function sm_adj_road(x,y)
+ for _,n in pairs(neighbors4(x,y)) do
+  if is_road(n.x,n.y) then return n end
+ end
+end
+
+local sm_wants={[1]={2,3},[2]={1},[3]={1}}
+
+-- a reachable developed complement of tile (x,y); returns wx,wy or nil
+local function sm_complement(x,y,k)
+ local c=rcomp(x,y)
+ if c==0 or not idx[c] then return end
+ for _,wk in pairs(sm_wants[k]) do
+  local l=idx[c][wk]
+  if l and #l>0 then
+   local t=l[1+flr(rnd(#l))]
+   return t.x,t.y
+  end
+ end
+end
+
+local function sm_eval(x,y)
+ if not is_zone(x,y) then return end
+ local k=zone_kind(x,y)
+ local d=zone_density(x,y)
+ local access=rcomp(x,y)~=0
+ local wx,wy=sm_complement(x,y,k)
+ local found=wx~=nil
+ if access and found and d<3 and rnd(1)<p.grow_rate then
+  set_zone(x,y,k,d+1)
+ elseif (not access or not found) and d>0 and rnd(1)<p.decay_rate then
+  set_zone(x,y,k,d-1)
+ end
+ -- visible commuter (per p.show)
+ if found and d>0 and rnd(1)<p.show then
+  local o=sm_adj_road(x,y)
+  local w=sm_adj_road(wx,wy)
+  if o and w then spawn_agent(o.x,o.y,w.x,w.y,1) end
+ end
+ schedule(p.eval_iv,{k=1,x=x,y=y})
+end
+
+local sm_cd=0
+local function sm_census()
+ local r,cj,ij=0,0,0
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if is_zone(x,y) then
+    local k=zone_kind(x,y)
+    local d=zone_density(x,y)
+    if k==1 then r+=d*p.r_per
+    elseif k==2 then cj+=d*p.c_per
+    else ij+=d*p.i_per end
+   end
+  end
+ end
+ pop=r jobs=cj+ij
+ demand.r=mid(-1,(jobs-pop)/32,1)
+ demand.c=mid(-1,(pop*0.5-cj)/24,1)
+ demand.i=mid(-1,(pop*0.7-ij)/24,1)
+end
+
+function update_sim()
+ tick+=1
+ local bi=tick%p.evt_h+1
+ local b=evq[bi]
+ local n=min(#b,p.evt_cap)
+ for i=1,n do
+  if b[i].k==1 then sm_eval(b[i].x,b[i].y) end
+ end
+ evq[bi]={}
+ sm_cd-=1
+ if sm_cd<=0 then sm_cd=30 sm_index() sm_census() end
+end
+
+function tile_info(x,y)
+ if not is_zone(x,y) then return nil end
+ local k=zone_kind(x,y)
+ local wx=sm_complement(x,y,k)
+ return {kind=k,dens=zone_density(x,y),access=rcomp(x,y)~=0,served=wx~=nil}
+end
