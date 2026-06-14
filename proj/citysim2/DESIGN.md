@@ -129,14 +129,14 @@ plant with capacity (offer index over the power network), no special case.
   what lets one engine drive terrain gen, traffic, freight, and power, and lets
   terrain (§6) reuse the core loop before roads exist. Write the pipeline this way
   from the first commit; don't bake "road" into it.
-- **State lives in map RAM** (sprite id = tile state). A **32×32 city** uses 1024
-  of the dedicated map region's 4096 bytes, leaving room for **three 32×32
-  byte-"planes"** of dense per-tile sim data (elevation, component id, packed
-  need/offer) accessed by `mget/mset` — no Lua tables, no GC, and **saved for
-  free** by the one `cstore`/`reload` of `0x2000–0x2fff`. Because tile + 3 planes
-  fit the dedicated region, the shared bank stays free for night sprites (§6, §7).
-  Rich/sparse data (contracts, offer index, agents) stays in Lua. **32×32 is the
-  load-bearing size** here — a bigger grid trades away planes or the sprite bank.
+- **State lives in RAM, by the manual's memory map (§6.7).** The **tile grid** is
+  the map region (0x2000, sprite id = tile state, drawn by `map()`), kept **≤32
+  rows** so the shared bank (0x1000) stays free for **night sprites**. **Dense
+  per-tile sim fields** (elevation, component id, packed need/offer) are
+  byte-**planes in the 32 KB user region at 0x8000**, via `peek`/`poke` — no Lua
+  tables, no GC. Rich/sparse data (contracts, offer index, agents, event queue)
+  stays in Lua. Save/load = `cstore`/`reload` of the grid + planes to a companion
+  cart (§7 documents the peek/poke caveats). A 32×32 grid is the working size.
 - **Scaled units from day one.** Money, population, goods volumes — anything that
   can exceed ~32000 — stored in `k` units (16.16 fixed-point flips sign past
   32767). Abbreviate on display (`mfmt`-style).
@@ -247,34 +247,36 @@ variants. Re-measure with `pico8 -x` (authoritative) after each addition — not
 
 ## 7. Key data structures
 
-**Memory layout — sim data lives in spare map RAM ("data planes").** A map cell
-is just an 8-bit value (0–255); `map()` only draws the cells we ask it to, so the
-rest is free byte storage. With a **32×32 city**, the tile grid is 1024 of the
-dedicated map region's 4096 bytes (`0x2000–0x2fff`), leaving **3072 bytes = three
-32×32 byte-planes** for dense per-tile sim fields:
+**Memory layout — sim data planes live in the 0x8000 user RAM** (manual **§6.7
+"Memory"**). The base-RAM map, with the addresses we touch:
 
 ```
-0x2000 map region (128 x 32):
-  cols  0..31 : tile plane     -- the map we draw (sprite id = tile state)
-  cols 32..63 : plane A = elev(x,y)   = mget(32+x,y)   -- elevation 0..255
-  cols 64..95 : plane B = comp(x,y)   = mget(64+x,y)   -- road/power component id
-  cols 96..127: plane C = noff(x,y)   = mget(96+x,y)   -- packed need/offer bits
+0x0000 gfx        sprites 0..127  (day tiles, ui)
+0x1000 gfx2/map2  SHARED: sprites 128..255 (night tiles)  XOR  map rows 32..63
+0x2000 map        the TILE GRID (sprite id = tile state), drawn by map()
+0x3000 gfx flags
+0x5f00 draw/hw state ... 0x5f80 gpio     -- NEVER poke these
+0x6000 screen (8k)
+0x8000 user data  32 KB — "no particular meaning ... use for anything" (§6.7)
 ```
 
-Because tile + 3 planes fit the *dedicated* region, the **shared bank
-`0x1000–0x1fff` (sprites 128–255) stays free for the day/night night-sprites** —
-both, no conflict. A bigger city or a 4th plane starts eating that bank: an
-explicit trade. **Save/load is free:** one `cstore`/`reload` of `0x2000–0x2fff`
-carries the city *and* all planes (citysim's trick, extended to the sim). Planes
-are 8-bit; a field needing more range splits across two.
+Two clean separations:
+- **Tile grid → map region (0x2000)** so `map()`/`mget`/`mset` work, kept **≤32
+  rows** so the **shared bank (0x1000) stays free for night sprites** (the
+  day/night swap). A 32×32 grid satisfies this with width to spare.
+- **All dense per-tile sim fields → byte "planes" in 0x8000** via `peek`/`poke`.
+  They never compete with the grid or the sprites. For a 32×32 grid a byte-plane
+  is 1024 (0x400) bytes; 32 KB holds **32 planes** — far more than we need.
 
 ```lua
--- DENSE per-tile scalar fields -> map-RAM byte planes (mget/mset, 0..255):
---   elev(x,y), comp(x,y) [component id], noff(x,y) [need bits | offer bits],
---   moisture/desirability if a 4th plane is worth the shared bank.
--- no Lua tables, no GC, saved for free.
+-- DENSE per-tile scalars -> 0x8000 byte planes (peek/poke; index = x + y*32):
+EL=0x8000  -- elev(x,y) = peek(EL + x + y*32)        0..255
+CO=0x8400  -- comp(x,y) = peek(CO + x + y*32)        road/power component id
+NO=0x8800  -- noff(x,y) = peek(NO + x + y*32)        packed need|offer bits
+-- (0x8c00, 0x9000, ... free for moisture, desirability, contract-id, ...)
+-- no Lua tables, no GC for these.
 
--- SPARSE / RICH structures -> Lua tables (don't fit a byte plane):
+-- SPARSE / RICH structures -> Lua tables (not per-tile scalars):
 ctr     = { [k] = {res,from,to,cost,ttl}, ... }   -- active contracts per tile
 roffer  = { [compid] = { res -> list of supplier tiles } }  -- the offer index
 agents  = { {path,i,px,py,res,from,to,ttl,col}, ... }       -- pooled, capped
@@ -284,9 +286,24 @@ evq     = { [t % H] = { {k,x,y,...}, ... } }   -- timewheel of scheduled events
 elog[k] = small ring of recent event types on tile k   -- powers the inspector
 ```
 
-The **offer index per component** is the trick that keeps matching cheap:
-broadcasting a need = `roffer[comp(x,y)][res]`, pick the nearest with capacity —
-no fresh search per need. Component id comes straight from a byte plane.
+**peek/poke caveats (all from §6.7):**
+- **Scratch, not auto-saved.** 0x8000 is base RAM only (zeroed at start; not in
+  cart ROM). Persist with **`cstore`/`reload` to a companion save-cart** (the
+  `FILENAME` form), as citysim saved its map — one call per region (tile grid at
+  0x2000, planes at 0x8000). `cstore` *cannot* write the code section (≥0x4300),
+  so save data always lands in a companion cart, never the running cart.
+- **Wider than 8 bits:** `peek2`/`poke2` (16-bit) or `peek4`/`poke4` (32-bit,
+  unaligned OK) — space that plane 2 or 4 bytes/tile. Fast **read** operators:
+  `@addr`=peek, `%addr`=peek2, `$addr`=peek4 (read-only, slightly faster).
+- **Bulk:** `memset(EL,0,0x400)` clears a plane; `memcpy` snapshots one.
+  A single `peek`/`poke` moves ≤8192 bytes.
+- **Bounds:** keep all plane math at **≥0x8000**. Never poke 0x5f00–0x5f7f
+  (draw/hw state), 0x5f80 (gpio), or 0x6000 (screen) — corruption or crashes.
+
+The rule: **dense scalar fields → 0x8000 planes; structured/transient data →
+Lua.** The **offer index per component** keeps matching cheap — a need looks up
+`roffer[comp(x,y)][res]` and picks the nearest with capacity; the component id
+comes straight from a plane.
 
 ---
 
@@ -388,7 +405,7 @@ can call it.
 | hud (500) | `draw_hud`, `draw_minimap` | reads state, data | demand bars; minimap colours |
 | **inspector (300)** | `draw_inspector` | sim `tile_info`, data | renders a tile's needs/contracts/agents |
 | fx (200) | `add_fx`, `update_fx`, `draw_fx` | — | particles spawn + expire |
-| save (220) | `save_city`, `load_city` | map, econ | scalars + grid restore via one `cstore`/`reload` |
+| save (220) | `save_city`, `load_city` | map, econ | grid (0x2000) + 0x8000 planes + scalars `cstore`/`reload` to a companion cart; round-trips intact (§6.7 caveats) |
 | daynight (50) | `dn_apply` (sprite-bank swap by phase) | — (authored art) | swaps bank at dusk/dawn |
 | main glue (150) | `_init`/`_update`/`_draw` | every `init_*`/`update_*`/`draw_*` | — |
 
