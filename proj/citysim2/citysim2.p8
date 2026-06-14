@@ -12,27 +12,27 @@ __lua__
 #include terrain.lua
 #include agents.lua
 #include sim.lua
+#include tools.lua
 
 -- glue owns _init/_update/_draw; modules never define them.
 function _init()
- t=0
- cur={x=16,y=16}
  init_map()
  gen_terrain()
  update_net()
  init_agents()
  init_sim()
  sim_seed()
+ init_tools()
  update_camera(true)
 end
 
 function _update()
- t+=1
+ update_tools()
  update_sim()
  update_agents()
 end
 
--- temporary colour-block render (render.lua will replace this).
+-- temporary colour-block render (8px tiles, camera-relative; render.lua replaces)
 function tcol(s)
  if s==0 then return 1 end
  if s==2 then return 13 end
@@ -45,13 +45,17 @@ end
 
 function _draw()
  cls(0)
+ camera(camx,camy)
  for y=0,gw-1 do
   for x=0,gw-1 do
-   rectfill(x*4,y*4,x*4+3,y*4+3,tcol(tile(x,y)))
+   rectfill(x*8,y*8,x*8+7,y*8+7,tcol(tile(x,y)))
   end
  end
  draw_agents()
- print("citysim2",1,1,7)
+ draw_cursor()
+ camera()
+ print("pop "..pop.." jobs "..jobs,1,1,7)
+ print(tools_list[tool],1,121,10)
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
