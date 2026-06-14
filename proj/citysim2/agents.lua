@@ -1,0 +1,83 @@
+-- agents.lua : pooled visible trips that realise sim contracts
+-- api: agents, init_agents(), spawn_agent(x0,y0,x1,y1,res), update_agents(), draw_agents()
+-- calls: path (router), is_road (map), peekp/pokep/gw (map), pl_cong (data), res_col (data), p (params)
+
+agents={}
+
+function init_agents()
+ agents={}
+end
+
+function spawn_agent(x0,y0,x1,y1,res)
+ if #agents>=p.agent_cap then return end
+ local pa=path(x0,y0,x1,y1,
+  is_road,
+  function(x,y) return 1+p.cong_k*peekp(pl_cong,x,y) end)
+ if pa and #pa>1 then
+  -- enter first tile
+  pokep(pl_cong,x0,y0,min(255,peekp(pl_cong,x0,y0)+1))
+  add(agents,{
+   path=pa, i=2,
+   px=x0*8+4, py=y0*8+4,
+   tx=x0, ty=y0,
+   res=res, col=res_col[res],
+   life=p.trip_life
+  })
+ end
+end
+
+local function ag_remove(a)
+ pokep(pl_cong,a.tx,a.ty,max(0,peekp(pl_cong,a.tx,a.ty)-1))
+end
+
+function update_agents()
+ local keep={}
+ for _,a in pairs(agents) do
+  a.life-=1
+  local alive=a.life>0 and a.i<=#a.path
+  if alive then
+   -- move 1px toward centre of current target node
+   local n=a.path[a.i]
+   local tnx=n.x*8+4
+   local tny=n.y*8+4
+   local dx=tnx-a.px
+   local dy=tny-a.py
+   if dx~=0 then
+    a.px+=sgn(dx)
+   elseif dy~=0 then
+    a.py+=sgn(dy)
+   end
+   -- crossed into a new tile?
+   local ntx=flr(a.px/8)
+   local nty=flr(a.py/8)
+   if ntx~=a.tx or nty~=a.ty then
+    pokep(pl_cong,a.tx,a.ty,max(0,peekp(pl_cong,a.tx,a.ty)-1))
+    pokep(pl_cong,ntx,nty,min(255,peekp(pl_cong,ntx,nty)+1))
+    a.tx=ntx
+    a.ty=nty
+   end
+   -- reached this node's centre?
+   if a.px==tnx and a.py==tny then
+    a.i+=1
+   end
+   if a.i>#a.path then
+    alive=false
+   end
+  end
+  if alive then
+   add(keep,a)
+  else
+   ag_remove(a)
+  end
+ end
+ agents=keep
+end
+
+function draw_agents()
+ for _,a in pairs(agents) do
+  pset(a.px,a.py,a.col)
+  pset(a.px+1,a.py,a.col)
+  pset(a.px,a.py+1,a.col)
+  pset(a.px+1,a.py+1,a.col)
+ end
+end

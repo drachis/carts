@@ -20,13 +20,18 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
   1 grass / 2 mountain · roads 16..31 · power 32..47 · R/C/I 48/52/56 +density.
 - ☑ router.lua (300→**368**) — `path(x0,y0,x1,y1,pass,cost)` weighted Dijkstra
   (lazy/stale-skip) + `flood(x0,y0,pass,visit)`. Substrate-agnostic. Integrated.
-- ☐ net.lua (500) — road+power components + per-component offer index; powered()
-- ☐ agents.lua (550) — pooled trips realizing contracts; cong +/- in path_step
+- ☑ net.lua (500→**143**) — road components → `pl_comp`; `rcomp`/`connected`;
+  `powered()` STUB (true) until power tiles+sim. Offer index deferred to sim.
+- ☑ agents.lua (550→**388**) — pool, `spawn_agent`, `update_agents` (path_step +
+  cong ±1 per tile), `draw_agents`. Congestion invariant verified in smoke test.
 - ☐ sim.lua (1800) — event loop (timewheel) + broadcast→match→contract + grow/decay
   - proof of concept: residential labor → commercial jobs, one commuter loop alive
+  - also: the per-component OFFER INDEX (deferred from net), `powered()` for real.
 
 ## Generation
-- ☐ terrain.lua (150) — noise heightmap → threshold; rivers via reused pipeline
+- ☑ terrain.lua (220→**384**) — box-blur fBM heightmap → **percentile** thresholds
+  (~13% water, ~11% mtn, rest grass) + greedy downhill river. (Fixed a flat-map
+  bug the smoke test caught.)
 
 ## Shell
 - ☐ tools.lua (1000) — cursor, zone, build, bulldoze, tool_put
@@ -58,7 +63,10 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 | data   | 100 | 36 |
 | map    | 550 | 577 |
 | router | 300 | 368 |
-| cart total | 8192 | 1072 |
+| net    | 500 | 143 |
+| agents | 550 | 388 |
+| terrain| 220 | 384 |
+| cart total | 8192 | 2002 |
 
 Note: agents under-estimate their own token cost (map agent guessed ~390, real
 577). The lead's `count_tokens.py` is the gate before integrating.
