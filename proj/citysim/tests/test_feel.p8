@@ -108,7 +108,7 @@ draw_traffic()
 set_zone(12,11,1,2)
 dz_ignite(12,11)
 ok(dz_fmap[12+11*64],"ignite records burning tile")
-for f=1,280 do
+for f=1,340 do
  frame=19300+f
  update_disaster()
 end
@@ -159,10 +159,11 @@ ok(achv_total()==8,"eight achievements defined")
 -- particles spawn and expire
 init_fx()
 add_fx(5,5,4,0.5,0,20,7,10)   -- sparkle
-add_fx(5,5,3,0.2,-0.3,25,5,6) -- smoke
+add_fx(5,5,3,0.2,-0.3,25,5,6) -- debris smoke
+add_smoke(5,5)                  -- stack smoke
 add_fx(5,5,4,0.5,0,20,7,10)   -- sparkle again
-ok(#fx_list>=11,"fx particles spawn")
-for i=1,40 do update_fx() end
+ok(#fx_list>=12,"fx particles spawn")
+for i=1,60 do update_fx() end
 ok(#fx_list==0,"fx particles expire")
 draw_fx()
 

@@ -174,12 +174,16 @@ function draw_world()
   for x=cx,min(gridw-1,cx+16) do
    local s=tile(x,y)
    if s==3 then
-    -- ripples travel along the channel's actual direction
+    -- two animated layers: light sparkle + dark dot, both following flow
     local fx=flow[y] or 0
     local dt=flr(t()*10)
+    local dt2=flr(t()*6)
     local xx=(x*5+y*3+(fx~=0 and dt*fx or 0))%6+1
     local yy=(x*3+y*5+(fx==0 and dt or 0))%8
     pset(x*8+xx,y*8+yy,6)
+    local xx2=(x*7+y*11+(fx~=0 and dt2*fx or 0))%6+1
+    local yy2=(x*11+y*7+(fx==0 and dt2 or 0))%8
+    pset(x*8+xx2,y*8+yy2,1)
    elseif is_zone(x,y) then
     if bl and not is_powered(x,y) then
      spr(52,x*8,y*8)
@@ -189,12 +193,10 @@ function draw_world()
    elseif s>=64 and s<=66 then
     if bl and not is_powered(x,y) then spr(52,x*8,y*8) end
    end
-   -- polluters puff smoke from their stacks (area haze lives in the
-   -- smog map view, where it doesn't fight the tile art)
+   -- industrial/plant stacks emit puffy smoke particles
    if s>=41 and s<=43 or s==48 then
-    local ph=(flr(t()*12)+x*3+y*5)%10
-    if ph<8 then
-     pset(x*8+2+flr(ph/4),y*8+1-ph%4,ph%2==0 and 6 or 5)
+    if (frame+x*3+y*7)%12==0 then
+     add_smoke(x,y)
     end
    end
   end

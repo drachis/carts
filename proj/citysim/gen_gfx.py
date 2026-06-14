@@ -50,15 +50,15 @@ S[5] = [  # mountain: rocky peak with a snow cap, solid base so ranges merge
     "55565555",
     "55555555",
 ]
-S[3] = [  # water
+S[3] = [  # water: pure teal base; dots/sparkles animated in code
     "cccccccc",
-    "cc1ccccc",
-    "cccccc1c",
     "cccccccc",
-    "c1cccccc",
-    "cccc1ccc",
     "cccccccc",
-    "cc1ccccc",
+    "cccccccc",
+    "cccccccc",
+    "cccccccc",
+    "cccccccc",
+    "cccccccc",
 ]
 
 # roads 16..31: asphalt 5, curb 6 on unconnected sides, yellow dashes toward

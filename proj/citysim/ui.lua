@@ -6,7 +6,7 @@ local ui_months={"jan","feb","mar","apr","may","jun",
 function draw_hud()
  rectfill(0,0,127,7,0)
  -- money
- local ms="$"..tostr(money)
+ local ms=mfmt(money)
  print(ms,0,1,money<0 and 8 or 11)
  -- pop: P#.##K format when over 1000
  local ps=pop<1000 and "p"..pop
@@ -104,6 +104,10 @@ function draw_minimap()
     elseif is_powered(tx,ty) then c=11
     elseif conducts(tx,ty) then c=8
     else c=5 end
+   elseif map_view=="value" then
+    -- land value doubles as pollution: red=polluted/low, green=desirable
+    local v=land_value(tx,ty)
+    c=v<-1 and 8 or v>1 and 11 or s==3 and 1 or 6
    else
     c=ui_city_col(s)
    end
@@ -114,6 +118,10 @@ function draw_minimap()
  local vy=py+flr(camy/8)*2
  rect(vx,vy,vx+31,vy+29,7)
  print(map_view,px+2,py+1,7)
+ -- income/upkeep summary always visible on minimap
+ local net=last_income-last_upkeep
+ print(mfmt(last_income).." -"..mfmt(last_upkeep).." ="..mfmt(net),
+  px,py+99,net>=0 and 11 or 8)
 end
 
 function draw_msg()

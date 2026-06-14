@@ -1,5 +1,17 @@
 -- econ.lua : money, monthly tick (costs live in params.lua)
 
+-- format money as $1.5k / $29k etc; PICO-8 max is 32767 so k is the ceiling
+function mfmt(v)
+ local s=v<0 and "-$" or "$"
+ local a=abs(v)
+ if a>=1000 then
+  local k=flr(a/1000)
+  local t=flr((a%1000)/100)
+  return s..k..(t>0 and "."..t or "").."k"
+ end
+ return s..a
+end
+
 -- deficit spending allowed down to a debt ceiling
 function try_spend(n)
  if money-n>=-p.debt_limit then
@@ -45,12 +57,12 @@ function update_econ()
   upkeep+=flr(-money*p.interest)+1
  end
  local net=income-upkeep
- money+=net
+ money=min(29000,money+net)
  last_income,last_upkeep=income,upkeep
  if net>=0 then
-  hud_msg,hud_msg_c="+$"..net.." tax",11
+  hud_msg,hud_msg_c="+"..mfmt(net).." tax",11
  else
-  hud_msg,hud_msg_c="-$"..(-net).." deficit",8
+  hud_msg,hud_msg_c=mfmt(net).." deficit",8
  end
  hud_msg_t=90
  sfx(2)

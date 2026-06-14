@@ -68,7 +68,8 @@ function update_tools()
   camx=mid(0,camx,gridw*8-128)
   camy=mid(0,camy,gridh*8-120)
   if btnp(4) then
-   map_view=map_view=="city" and "power" or "city"
+   map_view=map_view=="city" and "power"
+    or map_view=="power" and "value" or "city"
   end
   if btnp(5) then mode="play" end
  end
@@ -124,9 +125,21 @@ function apply_tool(quiet)
    if s>=59 and s<=62 then
     set_tile(x,y,3)            -- bridge/pylon → water
    elseif s>=96 and s<=98 then
-    set_zone(x,y,s-95,0)      -- zone rubble → empty zone
+    set_zone(x,y,s-95,0)      -- zone rubble → empty plot
+   elseif is_zone(x,y) and zone_density(x,y)>0 then
+    set_zone(x,y,zone_kind(x,y),0) -- developed zone → empty plot
    else
-    set_tile(x,y,1)            -- everything else → grass
+    set_tile(x,y,1)            -- empty plot/anything else → grass
+   end
+   -- if this tile was burning, cancel the fire (prevents phantom rubble)
+   local fk=x+y*64
+   if dz_fmap and dz_fmap[fk] then
+    dz_fmap[fk]=nil
+    local nf={}
+    for _,f in pairs(dz_fires) do
+     if f.x~=x or f.y~=y then add(nf,f) end
+    end
+    dz_fires=nf
    end
    refresh_around(x,y)
    update_power()

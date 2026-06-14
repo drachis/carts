@@ -118,6 +118,18 @@ function path_step(c)
  return true
 end
 
+-- build a car from ox,oy to dx,dy if the route is valid
+function tr_spawn(ox,oy,dx,dy,life)
+ if ox==nil or dx==nil or (ox==dx and oy==dy) then return end
+ local path=tr_path(ox,oy,dx,dy)
+ if path~=nil and #path>1 then
+  add(tr_cars,{path=path,i=2,
+   px=path[1].x*8+3,py=path[1].y*8+3,
+   dx=0,dy=0,sdx=0,sdy=0,
+   col=tr_cols[1+flr(rnd(#tr_cols))],life=life})
+ end
+end
+
 function update_traffic()
  -- spawn a wave of commuters at each day/night transition:
  --   dawn (→day): R zones send workers to C/I (and some to school)
@@ -125,35 +137,35 @@ function update_traffic()
  local phase=dn_phase()
  if phase~=tr_last_phase and pop>0 then
   tr_last_phase=phase
-  local going_to_work=(phase=="day")
+  local work=(phase=="day")
   local cap=min(p.car_cap,2+flr(pop/p.car_pop))
   local tries=cap*4
   while tries>0 and #tr_cars<cap do
    tries-=1
-   local ox,oy=tr_find_stop(going_to_work)
+   local ox,oy=tr_find_stop(work)
    local dx,dy
-   if going_to_work and rnd()<0.3 then dx,dy=tr_find_school() end
-   if not dx then dx,dy=tr_find_stop(not going_to_work) end
-   if ox~=nil and dx~=nil and not(ox==dx and oy==dy) then
-    local path=tr_path(ox,oy,dx,dy)
-    if path~=nil and #path>1 then
-     add(tr_cars,{path=path,i=2,
-      px=path[1].x*8+3,py=path[1].y*8+3,
-      dx=0,dy=0,
-      col=tr_cols[1+flr(rnd(#tr_cols))],
-      life=600})
-    end
-   end
+   if work and rnd()<0.3 then dx,dy=tr_find_school() end
+   if not dx then dx,dy=tr_find_stop(not work) end
+   tr_spawn(ox,oy,dx,dy,600)
   end
  end
 
- -- move cars; one-way trip (return wave is spawned at the next transition)
+ -- daytime errand/delivery traffic: light continuous background movement
+ if phase=="day" and frame%90==0 and pop>0 and #tr_cars<p.car_cap then
+  local ox,oy=tr_find_stop(rnd()<0.5)
+  local dx,dy=tr_find_stop(rnd()<0.5)
+  tr_spawn(ox,oy,dx,dy,400)
+ end
+
+ -- move cars; smooth direction lerp kills corner jitter
  local keep={}
  for _,c in pairs(tr_cars) do
   local alive=c.life>0
   if alive then
    c.life-=1
    alive=path_step(c)
+   c.sdx+=(c.dx-c.sdx)*0.35
+   c.sdy+=(c.dy-c.sdy)*0.35
   end
   if alive then add(keep,c) end
  end
@@ -162,12 +174,9 @@ end
 
 function draw_traffic()
  for _,c in pairs(tr_cars) do
-  local ox,oy=0,0
-  if c.dx==1 then oy=2
-  elseif c.dx==-1 then oy=-2
-  elseif c.dy==1 then ox=-2
-  elseif c.dy==-1 then ox=2
-  end
+  -- lane offset based on smooth direction: right-hand traffic positioning
+  local ox=flr(-c.sdy*2+0.5)
+  local oy=flr(c.sdx*2+0.5)
   rectfill(c.px+ox-1,c.py+oy-1,c.px+ox,c.py+oy,c.col)
  end
 end

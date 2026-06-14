@@ -30,13 +30,16 @@ p={
  -- power
  plant_cap=40,       -- tiles powered per plant
 
- -- fire
+ -- fire (all times in frames @ 30fps)
  fire_frames=1800,   -- frames between random ignition rolls
  fire_chance=0.2,
- burn_t=240,         -- frames a tile burns
- station_burn_t=100, -- burn time near a fire station
+ burn_t=300,         -- frames a tile burns before becoming rubble
+ station_burn_t=120, -- burn time near a fire station
  station_radius=4,   -- chebyshev coverage of a fire station
- spread_wait=50,     -- frames before first spread, then between spreads
+ spread_delay=120,   -- frames before first spread attempt (4s = engine travel window)
+ spread_int=60,      -- frames between subsequent spread attempts
+ spread_min=0.2,     -- starting spread probability (ramps up with each attempt)
+ spread_max=0.9,     -- maximum spread probability
 
  -- traffic
  car_cap=24,

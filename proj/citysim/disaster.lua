@@ -26,7 +26,7 @@ function dz_ignite(x,y)
  local was_empty=#dz_fires==0
  add(dz_fires,{x=x,y=y,
   t=dz_covered(x,y) and p.station_burn_t or p.burn_t,
-  zk=zone_kind(x,y),sp=p.spread_wait})
+  zk=zone_kind(x,y),sp=p.spread_delay,si=0})
  if was_empty then
   msg="fire!" msg_t=90
   sfx(3)
@@ -94,26 +94,34 @@ function update_disaster()
  for _,f in pairs(dz_fires) do
   f.t-=1
   f.sp-=1
-  if f.sp<=0 and f.t>0
-   and not (dz_covered(f.x,f.y) and rnd()<0.75) then
-   f.sp=p.spread_wait
-   local nb=neighbors4(f.x,f.y)
-   if #nb>0 then
-    local n=nb[1+flr(rnd(#nb))]
-    if is_zone(n.x,n.y) or tile(n.x,n.y)==48 then
-     dz_ignite(n.x,n.y)
-    elseif is_road(n.x,n.y) then
-     -- fire jumps across roads to zones on the far side
-     for _,r in pairs(neighbors4(n.x,n.y)) do
-      if is_zone(r.x,r.y) then dz_ignite(r.x,r.y) end
+  if f.sp<=0 and f.t>0 then
+   f.sp=p.spread_int
+   -- spread probability ramps up with each attempt; engine spray suppresses it
+   local prob=min(p.spread_max,p.spread_min+f.si*0.15)
+   local e=dz_eng
+   if e and e.spray>0
+    and abs(f.x*8+3-e.px)<=20 and abs(f.y*8+3-e.py)<=20 then
+    prob*=0.25  -- engine spraying this tile: 75% spread reduction
+   end
+   f.si+=1
+   if rnd()<prob and not (dz_covered(f.x,f.y) and rnd()<0.75) then
+    local nb=neighbors4(f.x,f.y)
+    if #nb>0 then
+     local n=nb[1+flr(rnd(#nb))]
+     if is_zone(n.x,n.y) or tile(n.x,n.y)==48 then
+      dz_ignite(n.x,n.y)
+     elseif is_road(n.x,n.y) then
+      for _,r in pairs(neighbors4(n.x,n.y)) do
+       if is_zone(r.x,r.y) then dz_ignite(r.x,r.y) end
+      end
      end
     end
    end
   end
   if f.t<=0 then
    dz_fmap[f.x+f.y*64]=nil
-   -- zone: zone-specific rubble (96=r,97=c,98=i); non-zone: generic rubble
    set_tile(f.x,f.y,f.zk and 95+f.zk or 56)
+   update_power()
   else
    add(keep,f)
   end

@@ -16,6 +16,12 @@ function add_fx(x,y,n,spd,bvy,ttl,ca,cb)
  end
 end
 
+-- smoke: dark→grey→white puff that swells as it rises (ttl 40→0)
+function add_smoke(x,y)
+ add(fx_list,{px=x*8+2+rnd(5),py=y*8,
+  vx=rnd(0.4)-0.2,vy=-0.3-rnd(0.3),ttl=40,sm=true})
+end
+
 function update_fx()
  local live={}
  for q in all(fx_list) do
@@ -26,5 +32,13 @@ function update_fx()
 end
 
 function draw_fx()
- for q in all(fx_list) do pset(q.px,q.py,q.c) end
+ for q in all(fx_list) do
+  if q.sm then
+   -- radius swells 0→2, color lightens with age (dark→grey→white)
+   circfill(q.px,q.py,(40-q.ttl)\14,
+    q.ttl>26 and 5 or q.ttl>13 and 6 or 7)
+  else
+   pset(q.px,q.py,q.c)
+  end
+ end
 end

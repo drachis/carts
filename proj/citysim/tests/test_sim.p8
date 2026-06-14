@@ -128,6 +128,21 @@ set_tile(2,2,1)
 apply_tool()
 ok(tile(2,2)==44,"park tool places park")
 
+-- bulldoze restores developed zones (any density) to their empty plot
+money=1000
+tool=12 -- bulldoze
+set_zone(2,4,1,3) -- dense residential
+cur={x=2,y=4}
+apply_tool()
+ok(tile(2,4)==32,"bulldoze dense zone restores empty r-plot")
+set_zone(3,4,3,2) -- mid industrial
+cur={x=3,y=4}
+apply_tool()
+ok(tile(3,4)==40,"bulldoze dense zone restores empty i-plot")
+cur={x=2,y=4}
+apply_tool() -- second pass on empty plot clears to grass
+ok(tile(2,4)==1,"bulldoze empty plot clears to grass")
+
 -- land value: industry drags down, parks lift up
 set_zone(40,5,3,3)
 frame=32
