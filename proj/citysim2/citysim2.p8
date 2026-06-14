@@ -6,10 +6,14 @@ __lua__
 -- modules are #included in dependency order; add each as it lands.
 #include params.lua
 #include data.lua
+#include map.lua
 
 -- glue owns _init/_update/_draw; modules never define them.
 function _init()
  t=0
+ cur={x=16,y=16}
+ init_map()
+ update_camera(true)
 end
 
 function _update()
@@ -18,8 +22,10 @@ end
 
 function _draw()
  cls(1)
- print("citysim2: scaffolding",4,4,7)
- print("see design.md",4,12,6)
+ camera(camx,camy)
+ map(0,0,0,0,gw,gw)
+ camera()
+ print("citysim2 map ok",4,4,7)
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

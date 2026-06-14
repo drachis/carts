@@ -15,8 +15,10 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 - ☑ data.lua (100) — res tables + 0x8000 plane addresses
 
 ## Core (critical path — build in order)
-- ☐ map.lua (550) — grid, tile/zone helpers, autotile, camera, plane accessors
-- ☐ router.lua (300) — weighted path(from,to,costfn) + flood; congestion-aware
+- ☑ map.lua (550→**577**) — grid, tile/zone helpers, autotile, camera, plane
+  accessors (`peekp`/`pokep`/`pclr`). Integrated, compiles. Encoding: 0 water /
+  1 grass / 2 mountain · roads 16..31 · power 32..47 · R/C/I 48/52/56 +density.
+- ◐ router.lua (300) — weighted path(from,to,costfn) + flood; congestion-aware
 - ☐ net.lua (500) — road+power components + per-component offer index; powered()
 - ☐ agents.lua (550) — pooled trips realizing contracts; cong +/- in path_step
 - ☐ sim.lua (1800) — event loop (timewheel) + broadcast→match→contract + grow/decay
@@ -47,5 +49,10 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 ### Actual tokens (fill as modules land)
 | module | budget | actual |
 |--------|-------:|-------:|
-| params | 150 | (measure) |
-| data   | 100 | (measure) |
+| params | 150 | 39 |
+| data   | 100 | 36 |
+| map    | 550 | 577 |
+| cart total | 8192 | 705 |
+
+Note: agents under-estimate their own token cost (map agent guessed ~390, real
+577). The lead's `count_tokens.py` is the gate before integrating.
