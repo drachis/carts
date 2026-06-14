@@ -122,52 +122,71 @@ powered, non-over-capacity set".
 
 ## 6. Single-cart token budget
 
-Estimates are **grounded in citysim's measured per-module costs** (this is the
-main reason citysim was worth building). citysim's totals, for reference:
+Estimates are **grounded in citysim's measured per-module costs**. For reference:
 map 1638, tools 1297, disaster 1101, traffic 899, ui 860, growth 469, network
 307, econ 288, power 249, savegame 233, effects 220, achievements 212, params
 170, daynight 163, landval 159 → ~8157 in the cart.
 
-citysim2 reuses the cheap, proven parts (power, BFS, econ, save, day/night,
-effects) and spends the freed budget (no formula-growth, no land-value pass, no
-achievements, no disaster in MVP) on the sim core + offer index + inspector.
+Three structural decisions shape this budget (see notes below the table):
+1. **"map" is split.** citysim's 1638-token map was a kitchen sink (grid +
+   terrain + render + camera). Here those are separate units so map-core is ~550.
+2. **Power and econ are not bespoke subsystems** — they fall out of the agent/
+   market core. Power is just a resource on the power channel (the same offer
+   index that matches labor matches power); money emerges as accounting over
+   contracts. So no 250-token power flood + 300-token econ; a thin econ remains
+   only for the player-facing money/tax/time.
+3. **sim and ui share a data layer.** A `res`/tile metadata table drives both
+   matching and display; the inspector is a generic renderer of `tile_info(x,y)`,
+   not bespoke logic. Adding a resource touches data, not render code.
 
-| system                  | est. | grounded in / notes                                   |
-|-------------------------|-----:|-------------------------------------------------------|
-| params                  |  150 | citysim params 170                                    |
-| map: grid + RAM state + tile/zone helpers + autotile | 450 | subset of citysim map |
-| map: terrain gen (kept simple) |  200 | citysim terrain ~250, trimmed             |
-| map: world draw + overlays     |  350 | citysim draw_world ~350                    |
-| camera (smooth, per-pixel)     |   90 | citysim camera ~80                         |
-| bfs: road pathfind (shared)    |  200 | citysim tr_path ~200                       |
-| net: road components + **per-component offer index** | 450 | citysim network 307 + index |
-| power: flood-fill reach + capacity budget | 250 | citysim power 249              |
-| **sim: broadcast→offer→match→contract + grow/decay** | **1100** | new; cf. growth 469 (this is the heart — guard it) |
-| **agents: pooled trips, path_step, draw** | **550** | citysim traffic 899 minus the BFS |
-| econ: tax/upkeep/money($k)/time |  300 | citysim econ 288                          |
-| tools/input: cursor, zone, build, bulldoze, tool_put | 950 | citysim tools 1297, trimmed |
-| hud + minimap                  |  550 | citysim ui hud+minimap ~550               |
-| **inspector panel (needs/contracts/agents)** | **350** | new — the legibility feature  |
-| effects / particles            |  180 | citysim effects 220                        |
-| save / load (one cstore of map RAM) | 200 | citysim savegame 233                  |
-| day / night                    |  130 | citysim daynight 163                       |
+These are **generous targets** (build rich, trim if a system overruns), with a
+**10% reserve (~820)** held back for polish + contingency — not the big cushion
+from before. If a system runs over, iterate it down rather than spending reserve.
+
+| system                  | est. | notes                                                |
+|-------------------------|-----:|------------------------------------------------------|
+| params                  |  150 | all tuning constants                                 |
+| data: `res` + tile metadata (shared sim↔ui) |  100 | resource id→name/colour/channel; drives matching AND labels |
+| map core: grid in RAM, tile/zone helpers, autotile (`nmask`), camera | 550 | the cohesive "map" — no terrain/render/bfs |
+| terrain: authored in map data (≈0 code) or minimal gen | 150 | hand-author starter maps → near-free; see "what a leaner map loses" |
+| bfs: breadth-first reach + path over road/power | 250 | shared by net/sim/agents (citysim `tr_path` ~200) |
+| net: road **+ power** component labels + per-component offer index | 500 | power is just another channel |
+| **sim core: broadcast→offer→match→contract, grow/decay, power & money as resources** | **1800** | the heart — the freed budget lives here |
+| **agents: pooled trips realizing contracts, draw** | **550** | citysim traffic minus the BFS |
+| econ (thin): money ($k), tax policy, time — revenue emerges from contracts | 200 | mostly accounting + UI, not a sim |
+| tools/input: cursor, zone, build, bulldoze, `tool_put` | 1000 | citysim tools 1297, trimmed |
+| render: `draw_world`, tiles, agents, overlays | 550 | split out of citysim's map |
+| hud + minimap                  |  500 | citysim hud+minimap ~550                  |
+| **inspector: generic `tile_info` renderer** | **300** | data-driven; reads the shared layer |
+| fx / particles                 |  200 | citysim effects 220                       |
+| save / load (one `cstore` of map RAM) | 220 | citysim savegame 233                 |
+| day / night: **sprite-bank swap** (art-driven) |  50 | needs a free sprite bank — see note     |
 | sfx / music hooks (art via gen_gfx = 0 code) | 60 | citysim ~                       |
-| main glue (_init/_update/_draw) | 120 | citysim ~120                             |
-| **MVP subtotal**               | **~6630** |                                                  |
-| **headroom for polish + contingency** | **~1560** | to the 8192 ceiling                  |
+| main glue (`_init`/`_update`/`_draw`) | 150 | wires modules; owns the 3 callbacks   |
+| **systems subtotal**           | **~7280** |                                                 |
+| **reserve (~10%)**             | **~820** | polish + contingency; iterate systems down if over |
+| **total target**               | **~8100 / 8192** | ~90 hard margin                              |
 
-**Risk flags.** Two systems are the likely overrun sources — watch them:
-- **sim core (1100):** matching, contracts and grow/decay can balloon. Keep the
-  offer index doing the heavy lifting (matching = lookup + nearest), cap contract
-  bookkeeping to per-building, and reuse `params` for every threshold.
-- **tools/input (950):** citysim's tools hit 1297 on placement/autotile/crossing
-  logic. Fewer tile variants and a tighter `tool_put` keep this down.
+**What a leaner map loses.** Pulling terrain/render/bfs out of map already gets
+core to ~550 with *no* feature loss. Going further — **authoring terrain as map
+data** instead of generating it — saves the ~150 gen budget and gives art control
+(and pairs with the sprite-swap idea), but loses **procedural variety**: every
+new game starts from hand-made maps rather than a fresh random coastline/river/
+mountains each time. For an agent sim where the *city* is the variety, that's a
+fine trade. Keep a tiny gen only if "new random map" matters to play.
 
-**The polish budget (~1560) is real but finite.** Disasters (citysim fire+engine
-was ~1100; a lean version ~500), congestion visuals, extra service types, and a
-soundtrack all draw from it. Add them deliberately, re-measuring with
-`pico8 -x` (authoritative) after each — not `count_tokens.py`, which only
-approximates.
+**Day/night as a sprite swap.** With a smaller map (e.g. 32×32 uses only map rows
+0–31), the shared sprite bank (sprites 128–255 / map rows 32–63) is **free**. So
+day/night can be a **spritesheet bank swap** (a cheap `memcpy`/`reload`, ~50
+tokens of code) with **hand-authored night sprites** (lit windows, warm glows) —
+art costs zero code tokens via `gen_gfx`. This replaces citysim's per-frame
+palette manipulation and, more importantly, lets us **style each tile per state**
+once the game plays well. Cost is sprite *space*, which the smaller map frees.
+
+**Risk flags.** The sim core (1800) and tools (1000) are the likely overruns.
+Keep the offer index doing the matching (lookup + nearest, not per-need BFS), cap
+contracts to per-building, and keep tile variants few. Re-measure with
+`pico8 -x` (authoritative) after each addition — not `count_tokens.py`.
 
 ---
 
@@ -244,8 +263,10 @@ and satisfying, fix the model before adding resources.
   visible traffic or an inspectable cause; aggregate the rest. This is also the
   main token lever — the more we can aggregate without the player noticing, the
   more sim depth fits in 8k.
-- **Where does the polish budget go first?** ~1560 tokens after MVP — likely
-  congestion visuals (they reinforce the core loop) before disasters or sound.
+- **Where does the polish reserve go first?** Only ~820 is held back (10%), so
+  spend it deliberately — likely congestion visuals (they reinforce the core
+  loop) before disasters or sound. If it's not enough, trim a system, don't grow
+  the cart.
 
 ---
 
@@ -269,18 +290,26 @@ can call it.
 | file (budget) | defines — callable API out | calls — API in | proves (lead's test) |
 |---|---|---|---|
 | params (150) | `p`, `cost` | — | keys present |
-| map (1000) | `tile`/`set_tile`/`is_road`/`is_zone`/`zone_kind`/`zone_density`, `neighbors4`, `nmask`, `road_path`, `init_map`, `draw_world`, `update_camera` | `p` | autotile mask; `road_path` finds & returns nil when disconnected |
-| power (250) | `is_powered`, `update_power`, `power_short` | map, `p` | flood reach + capacity cap |
-| net (450) | `update_net`, `reach_offers(x,y,res)`, `rcomp` | map, `p` | reachable suppliers correct on a hand-built map |
-| **sim (1100)** | `update_sim`, `need`/`offer`/`ctr`, `demand`, `pop`, `jobs`, `tile_info(x,y)` | net, power, map, agents, `p` | a labor↔jobs need forms a contract; unmet need decays a building |
-| **agents (550)** | `spawn_agent(from,to,res)`, `update_agents`, `draw_agents`, `agents` | map (`road_path`/`path_step`), `p` | a spawned trip drives source→dest staying on roads |
-| econ (300) | `money` ($k), `mfmt`, `try_spend`, `tax_rate`, `update_econ` | `p` | `mfmt` formats; debt ceiling; no sign-flip at scale |
-| tools (950) | `cur`, `tool`, `update_tools`, `apply_tool`, `tool_put` | map, econ, sim, `p` | place / zone / bulldoze transitions |
-| ui (900) | `draw_hud`, `draw_minimap`, **`draw_inspector`** | reads all state | inspector lists a tile's needs/contracts/agents |
-| fx (180) | `add_fx`, `update_fx`, `draw_fx` | — | particles spawn + expire |
-| save (200) | `save_city`, `load_city` | map, econ | scalars + grid restore via one `cstore`/`reload` |
-| daynight (130) | `dn_phase`, `dn_dark` | `p` | phase boundaries |
-| main glue (120) | `_init`/`_update`/`_draw` | every `init_*`/`update_*`/`draw_*` | — |
+| data (100) | `res` (id→name/colour/channel), tile-class table | — | lookups correct |
+| map (550) | `tile`/`set_tile`/`is_road`/`is_zone`/`zone_kind`/`zone_density`, `neighbors4`, `nmask`, `update_camera` | data, `p` | autotile mask; tile helpers |
+| terrain (150) | authored starter map(s) in map data, or `gen_terrain` | map | a map loads / gen fills the grid |
+| bfs (250) | `road_path(x0,y0,x1,y1)`, `flood(x,y,pred)` | map | path finds & returns nil when disconnected |
+| net (500) | `update_net`, `reach_offers(x,y,res)`, `powered(x,y)`, `rcomp` | map, bfs, `p` | reachable suppliers + power reach correct on a hand map |
+| **sim (1800)** | `update_sim`, `need`/`offer`/`ctr`, `demand`, `pop`, `jobs`, `tile_info(x,y)` | net, map, agents, data, `p` | labor↔jobs contract forms; unmet need decays; power gates growth |
+| **agents (550)** | `spawn_agent(from,to,res)`, `update_agents`, `agents` | bfs, map, `p` | a spawned trip drives source→dest staying on roads |
+| econ (200) | `money` ($k), `mfmt`, `try_spend`, `tax_rate`, `update_econ` | sim, `p` | `mfmt`; debt ceiling; no sign-flip at scale |
+| tools (1000) | `cur`, `tool`, `update_tools`, `apply_tool`, `tool_put` | map, econ, sim, `p` | place / zone / bulldoze transitions |
+| render (550) | `draw_world`, `draw_agents`, overlays | map, agents, net, data | (lead smoke-checks; logic tested in sources) |
+| hud (500) | `draw_hud`, `draw_minimap` | reads state, data | demand bars; minimap colours |
+| **inspector (300)** | `draw_inspector` | sim `tile_info`, data | renders a tile's needs/contracts/agents |
+| fx (200) | `add_fx`, `update_fx`, `draw_fx` | — | particles spawn + expire |
+| save (220) | `save_city`, `load_city` | map, econ | scalars + grid restore via one `cstore`/`reload` |
+| daynight (50) | `dn_apply` (sprite-bank swap by phase) | — (authored art) | swaps bank at dusk/dawn |
+| main glue (150) | `_init`/`_update`/`_draw` | every `init_*`/`update_*`/`draw_*` | — |
+
+Note: no standalone `power` unit — `net.powered(x,y)` is the same offer-index
+machinery over the power channel. `econ` is thin (player-facing money/tax/time);
+revenue and "demand" are read out of `sim`, not computed by a separate model.
 
 A complete cold-start task = **the row's file + budget + its `defines` (must
 provide) + its `calls` (already built, may use) + the `proves` assertion the lead
