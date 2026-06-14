@@ -10,6 +10,7 @@ __lua__
 #include ../terrain.lua
 #include ../agents.lua
 #include ../sim.lua
+#include ../tools.lua
 
 local pass,fail=0,0
 function ok(c,n)
@@ -76,6 +77,23 @@ ok(pop>0 and jobs>0,"census: pop="..pop.." jobs="..jobs)
 ok(spawned,"commuters spawned between home and work")
 local ti=tile_info(6,9)
 ok(ti~=nil and ti.kind==1,"tile_info reports the zone")
+
+-- tools: placement applies + hooks the sim/net
+init_map()
+init_sim()
+init_tools()
+cur={x=8,y=8} tool=1 apply_tool()
+ok(is_road(8,8),"road tool places a road")
+cur={x=9,y=8} tool=1 apply_tool()
+ok(tile(8,8)==18 or tile(8,8)>=16,"road autotiles toward its neighbour")
+cur={x=8,y=7} tool=2 apply_tool()
+ok(zone_kind(8,7)==1,"r-zone tool places residential")
+cur={x=9,y=7} tool=3 apply_tool()
+ok(zone_kind(9,7)==2,"c-zone tool places commercial")
+set_tile(0,0,0) -- water
+ok(tool_put(2,0,0)==nil,"tool_put rejects unbuildable (water)")
+cur={x=8,y=8} tool=6 apply_tool()
+ok(tile(8,8)==1,"bulldoze clears to grass")
 
 printh("---- "..pass.." passed, "..fail.." failed ----")
 if fail>0 then printh("test result: fail") else printh("test result: pass") end

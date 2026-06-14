@@ -31,6 +31,15 @@ end
 --   power(5)  -> 32 (autotiled) on buildable
 --   bulldoze(6) -> 1 (grass) on anything > grass
 function tool_put(t,x,y)
+ if t==1 then
+  return is_buildable(x,y) and 16 or nil
+ elseif t==5 then
+  return is_buildable(x,y) and 32 or nil
+ elseif t>=2 and t<=4 then
+  return is_buildable(x,y) and (48+(t-2)*4) or nil
+ elseif t==6 then
+  return tile(x,y)>1 and 1 or nil
+ end
  return nil
 end
 
@@ -42,6 +51,39 @@ end
 --   - after any change: update_net(); and for a NEW zone tile, schedule a sim
 --     eval: schedule(0,{k=1,x=cur.x,y=cur.y}) so the sim picks it up live.
 function apply_tool()
+ local x,y=cur.x,cur.y
+ if tool==6 then
+  if tile(x,y)>1 then
+   set_tile(x,y,1)
+   update_net()
+  end
+ elseif tool>=2 and tool<=4 then
+  if is_buildable(x,y) then
+   set_zone(x,y,tool-1,0)
+   update_net()
+   schedule(0,{k=1,x=x,y=y})
+  end
+ elseif tool==1 then
+  if tool_put(1,x,y) then
+   set_tile(x,y,16+nmask(x,y,is_road))
+   for nb in all(neighbors4(x,y)) do
+    if is_road(nb.x,nb.y) then
+     set_tile(nb.x,nb.y,16+nmask(nb.x,nb.y,is_road))
+    end
+   end
+   update_net()
+  end
+ elseif tool==5 then
+  if tool_put(5,x,y) then
+   set_tile(x,y,32+nmask(x,y,conducts))
+   for nb in all(neighbors4(x,y)) do
+    if conducts(nb.x,nb.y) then
+     set_tile(nb.x,nb.y,32+nmask(nb.x,nb.y,conducts))
+    end
+   end
+   update_net()
+  end
+ end
 end
 
 function draw_cursor()

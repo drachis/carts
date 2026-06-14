@@ -24,9 +24,11 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
   `powered()` STUB (true) until power tiles+sim. Offer index deferred to sim.
 - ☑ agents.lua (550→**388**) — pool, `spawn_agent`, `update_agents` (path_step +
   cong ±1 per tile), `draw_agents`. Congestion invariant verified in smoke test.
-- ☐ sim.lua (1800) — event loop (timewheel) + broadcast→match→contract + grow/decay
-  - proof of concept: residential labor → commercial jobs, one commuter loop alive
-  - also: the per-component OFFER INDEX (deferred from net), `powered()` for real.
+- ☑ sim.lua (1800→**733**) — timewheel event loop; eval-driven grow/decay gated
+  by road access + a reachable complement (via the **offer index** `idx[comp][kind]`,
+  built here); spawns commuters (p.show); derived census. **Core loop ALIVE**
+  (connected R+C grow to density 3 + cars run). ⚠ evt_cap overflow drops events
+  (fine small; revisit at scale). TODO later: arrive-events, real `powered()`.
 
 ## Generation
 - ☑ terrain.lua (220→**384**) — box-blur fBM heightmap → **percentile** thresholds
@@ -34,7 +36,9 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
   bug the smoke test caught.)
 
 ## Shell
-- ☐ tools.lua (1000) — cursor, zone, build, bulldoze, tool_put
+- ☑ tools.lua (1000→**398**) — cursor/camera + tool palette + placement
+  (road/power autotile, R/C/I zones, bulldoze; hooks update_net + sim eval).
+  Built as a HEADER by lead, placement fleshed out by an agent (the pattern works).
 - ☐ render.lua (550) — draw_world, agents, overlays
 - ☐ hud.lua (500) — hud + minimap
 - ☐ inspector.lua (300) — generic tile_info renderer (needs/contracts/agents/elog)
@@ -66,7 +70,9 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 | net    | 500 | 143 |
 | agents | 550 | 388 |
 | terrain| 220 | 384 |
-| cart total | 8192 | 2002 |
+| sim    | 1800 | 733 |
+| tools  | 1000 | 398 |
+| cart total | 8192 | 3250 |
 
 Note: agents under-estimate their own token cost (map agent guessed ~390, real
 577). The lead's `count_tokens.py` is the gate before integrating.
