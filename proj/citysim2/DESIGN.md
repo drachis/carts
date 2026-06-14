@@ -246,3 +246,43 @@ and satisfying, fix the model before adding resources.
   more sim depth fits in 8k.
 - **Where does the polish budget go first?** ~1560 tokens after MVP — likely
   congestion visuals (they reinforce the core loop) before disasters or sound.
+
+---
+
+## 11. Delegation units (one file = one agent task)
+
+The budget in §6 is also the **work breakdown**. Workflow proven in citysim: the
+lead owns this contract, the test carts, and integration; each module is a
+**single file** handed to a short-lived agent (often on another model) scoped by
+its row below. The estimates will shift as we build — treat them as targets, not
+limits — but they're accurate enough to scope a task and to know early when a
+module is overrunning.
+
+**Conventions every agent gets:** globals are the API; prefix module-private
+helpers (`net_`, `pw_`, `sim_`, `ag_`, `ec_`, `ui_`). One `p` table for
+constants — never shadow it. Modules do **not** define `_init/_update/_draw`
+(the main glue owns those) and do **not** run PICO-8 — the lead measures tokens
+with `pico8 -x` (authoritative) and runs the tests. Write code that *parses*
+(balanced `end`/`then`) and matches the **defines** column exactly so siblings
+can call it.
+
+| file (budget) | defines — callable API out | calls — API in | proves (lead's test) |
+|---|---|---|---|
+| params (150) | `p`, `cost` | — | keys present |
+| map (1000) | `tile`/`set_tile`/`is_road`/`is_zone`/`zone_kind`/`zone_density`, `neighbors4`, `nmask`, `road_path`, `init_map`, `draw_world`, `update_camera` | `p` | autotile mask; `road_path` finds & returns nil when disconnected |
+| power (250) | `is_powered`, `update_power`, `power_short` | map, `p` | flood reach + capacity cap |
+| net (450) | `update_net`, `reach_offers(x,y,res)`, `rcomp` | map, `p` | reachable suppliers correct on a hand-built map |
+| **sim (1100)** | `update_sim`, `need`/`offer`/`ctr`, `demand`, `pop`, `jobs`, `tile_info(x,y)` | net, power, map, agents, `p` | a labor↔jobs need forms a contract; unmet need decays a building |
+| **agents (550)** | `spawn_agent(from,to,res)`, `update_agents`, `draw_agents`, `agents` | map (`road_path`/`path_step`), `p` | a spawned trip drives source→dest staying on roads |
+| econ (300) | `money` ($k), `mfmt`, `try_spend`, `tax_rate`, `update_econ` | `p` | `mfmt` formats; debt ceiling; no sign-flip at scale |
+| tools (950) | `cur`, `tool`, `update_tools`, `apply_tool`, `tool_put` | map, econ, sim, `p` | place / zone / bulldoze transitions |
+| ui (900) | `draw_hud`, `draw_minimap`, **`draw_inspector`** | reads all state | inspector lists a tile's needs/contracts/agents |
+| fx (180) | `add_fx`, `update_fx`, `draw_fx` | — | particles spawn + expire |
+| save (200) | `save_city`, `load_city` | map, econ | scalars + grid restore via one `cstore`/`reload` |
+| daynight (130) | `dn_phase`, `dn_dark` | `p` | phase boundaries |
+| main glue (120) | `_init`/`_update`/`_draw` | every `init_*`/`update_*`/`draw_*` | — |
+
+A complete cold-start task = **the row's file + budget + its `defines` (must
+provide) + its `calls` (already built, may use) + the `proves` assertion the lead
+will run.** Build order (§8) is the order to hand these out: params → map →
+power → net → sim+agents (the core loop) → inspector → econ/tools/ui → polish.
