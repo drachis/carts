@@ -97,12 +97,16 @@ powered, non-over-capacity set".
 
 ## 5. PICO-8 constraints (hard rules — from LEARNINGS.md)
 
-- **8192-token ceiling is the design budget.** Plan the **cart split up front**:
-  - **cart 0 (sim):** params, map, net, power, sim (broadcast/offer/match), econ.
-  - **cart 1 (shell):** render, hud, inspector, input, gen_gfx art.
-  - Share state through **map RAM** + a fixed memory region; cart 1 `reload`s the
-    sim cart's data, or use `cstore`/`reload` hand-offs. Validate the split early
-    with a token spike before building UI polish.
+- **One cart, 8192 tokens. No multicart.** Multicart trades tokens for
+  complexity that grows faster than the context window — hand-offs, duplicated
+  state, two build loops. The design goal is **depth and polish inside 8k**, not
+  horizontal expansion. Every system below has a token budget (§6); the sim must
+  fit *with room to polish*. If something doesn't fit, make it leaner or cut it —
+  do not reach for a second cart.
+- **Spend the budget on simulation, not surface.** citysim spent ~1900 tokens on
+  formula growth + land value + achievements + a disaster system. citysim2
+  **reinvests that** into the agent/market core, the offer index, and the
+  inspector. Keep the rest lean.
 - **State lives in map RAM**; sprite id = tile state. Per-tile *dynamic* data
   (needs/contracts) lives in a sparse table keyed `x+y*W`, rebuilt as needed so
   it never has to be serialized — save/load is one `cstore`/`reload` of the map.
@@ -116,22 +120,54 @@ powered, non-over-capacity set".
 
 ---
 
-## 6. Module layout & token budgets (targets, cart 0 unless noted)
+## 6. Single-cart token budget
 
-| module        | owns                                                      | ~budget |
-|---------------|-----------------------------------------------------------|---------|
-| params        | all tuning constants                                      | 150     |
-| map           | grid in map RAM, tile helpers, terrain gen, BFS over road | 700     |
-| net           | road **component labeling** + per-component offer index    | 500     |
-| power         | power flood-fill reachability + capacity budget           | 300     |
-| sim           | needs/offers, the broadcast→match→contract tick, growth/decay | 1200|
-| agents        | pooled trip agents realizing contracts (`path_step`)      | 500     |
-| econ          | taxes, upkeep, money (in $k), time                        | 350     |
-| render (c1)   | world draw, agents, overlays                              | 700     |
-| hud+inspector (c1) | hud, tool menu, minimap, **tile inspector panel**    | 900     |
-| input/tools (c1)   | cursor, zoning, building, bulldoze                    | 700     |
+Estimates are **grounded in citysim's measured per-module costs** (this is the
+main reason citysim was worth building). citysim's totals, for reference:
+map 1638, tools 1297, disaster 1101, traffic 899, ui 860, growth 469, network
+307, econ 288, power 249, savegame 233, effects 220, achievements 212, params
+170, daynight 163, landval 159 → ~8157 in the cart.
 
-Keep cart 0 (sim) well under 8192 so the simulation can deepen without a UI tax.
+citysim2 reuses the cheap, proven parts (power, BFS, econ, save, day/night,
+effects) and spends the freed budget (no formula-growth, no land-value pass, no
+achievements, no disaster in MVP) on the sim core + offer index + inspector.
+
+| system                  | est. | grounded in / notes                                   |
+|-------------------------|-----:|-------------------------------------------------------|
+| params                  |  150 | citysim params 170                                    |
+| map: grid + RAM state + tile/zone helpers + autotile | 450 | subset of citysim map |
+| map: terrain gen (kept simple) |  200 | citysim terrain ~250, trimmed             |
+| map: world draw + overlays     |  350 | citysim draw_world ~350                    |
+| camera (smooth, per-pixel)     |   90 | citysim camera ~80                         |
+| bfs: road pathfind (shared)    |  200 | citysim tr_path ~200                       |
+| net: road components + **per-component offer index** | 450 | citysim network 307 + index |
+| power: flood-fill reach + capacity budget | 250 | citysim power 249              |
+| **sim: broadcast→offer→match→contract + grow/decay** | **1100** | new; cf. growth 469 (this is the heart — guard it) |
+| **agents: pooled trips, path_step, draw** | **550** | citysim traffic 899 minus the BFS |
+| econ: tax/upkeep/money($k)/time |  300 | citysim econ 288                          |
+| tools/input: cursor, zone, build, bulldoze, tool_put | 950 | citysim tools 1297, trimmed |
+| hud + minimap                  |  550 | citysim ui hud+minimap ~550               |
+| **inspector panel (needs/contracts/agents)** | **350** | new — the legibility feature  |
+| effects / particles            |  180 | citysim effects 220                        |
+| save / load (one cstore of map RAM) | 200 | citysim savegame 233                  |
+| day / night                    |  130 | citysim daynight 163                       |
+| sfx / music hooks (art via gen_gfx = 0 code) | 60 | citysim ~                       |
+| main glue (_init/_update/_draw) | 120 | citysim ~120                             |
+| **MVP subtotal**               | **~6630** |                                                  |
+| **headroom for polish + contingency** | **~1560** | to the 8192 ceiling                  |
+
+**Risk flags.** Two systems are the likely overrun sources — watch them:
+- **sim core (1100):** matching, contracts and grow/decay can balloon. Keep the
+  offer index doing the heavy lifting (matching = lookup + nearest), cap contract
+  bookkeeping to per-building, and reuse `params` for every threshold.
+- **tools/input (950):** citysim's tools hit 1297 on placement/autotile/crossing
+  logic. Fewer tile variants and a tighter `tool_put` keep this down.
+
+**The polish budget (~1560) is real but finite.** Disasters (citysim fire+engine
+was ~1100; a lean version ~500), congestion visuals, extra service types, and a
+soundtrack all draw from it. Add them deliberately, re-measuring with
+`pico8 -x` (authoritative) after each — not `count_tokens.py`, which only
+approximates.
 
 ---
 
@@ -175,9 +211,10 @@ capacity, instead of a fresh BFS per need.
 6. **Gating:** power and service coverage as needs that block growth.
 7. **Derived RCI + econ:** compute the demand meter from unmet broadcasts; taxes
    fund services; money in $k.
-8. **Cart split** when cart 0 approaches budget; move render/ui/inspector to
-   cart 1.
-9. **Polish:** day/night, disasters, congestion visuals, sound.
+8. **Polish, deliberately:** day/night, congestion visuals, sound, then a lean
+   disaster — each drawn from the ~1560-token polish budget (§6), re-measuring
+   with `pico8 -x` after every addition. When the cart tightens, lean out an
+   existing system (§6 risk flags) rather than dropping polish.
 
 Stop and playtest after step 3 and step 4 — if the commuter loop isn't legible
 and satisfying, fix the model before adding resources.
@@ -204,6 +241,8 @@ and satisfying, fix the model before adding resources.
 - **Congestion model:** per-road-tile agent count feeding back into commute cost
   — how cheaply can we track it without a per-tile counter every frame?
 - **How much aggregation is invisible?** Simulate individually only what becomes
-  visible traffic or an inspectable cause; aggregate the rest.
-- **Single-cart MVP or split from the start?** Likely single-cart through step 4,
-  then split — but keep the module boundaries clean so the split is mechanical.
+  visible traffic or an inspectable cause; aggregate the rest. This is also the
+  main token lever — the more we can aggregate without the player noticing, the
+  more sim depth fits in 8k.
+- **Where does the polish budget go first?** ~1560 tokens after MVP — likely
+  congestion visuals (they reinforce the core loop) before disasters or sound.
