@@ -155,7 +155,7 @@ from before. If a system runs over, iterate it down rather than spending reserve
 | data: `res` + tile metadata (shared sim↔ui) |  100 | resource id→name/colour/channel; drives matching AND labels |
 | map core: grid in RAM, tile/zone helpers, autotile (`nmask`), camera | 550 | the cohesive "map" — no terrain/render/bfs |
 | terrain: noise heightmap → threshold; rivers by **reusing the match/agent pipeline** over the open grid (noise-seeded source/sink goals) | 150 | gen-specific code = noise seed + paint; routing reused from sim/agents |
-| bfs: breadth-first reach + path over road/power | 250 | shared by net/sim/agents (citysim `tr_path` ~200) |
+| router: **weighted** (cost-aware) path + `flood` reach | 300 | one weighted search serves meandering rivers AND commute/congestion cost (citysim `tr_path` was plain BFS ~200) |
 | net: road **+ power** component labels + per-component offer index | 500 | power is just another channel |
 | **sim core: broadcast→offer→match→contract, grow/decay, power & money as resources** | **1800** | the heart — the freed budget lives here |
 | **agents: pooled trips realizing contracts, draw** | **550** | citysim traffic minus the BFS |
@@ -169,9 +169,9 @@ from before. If a system runs over, iterate it down rather than spending reserve
 | day / night: **sprite-bank swap** (art-driven) |  50 | needs a free sprite bank — see note     |
 | sfx / music hooks (art via gen_gfx = 0 code) | 60 | citysim ~                       |
 | main glue (`_init`/`_update`/`_draw`) | 150 | wires modules; owns the 3 callbacks   |
-| **systems subtotal**           | **~7280** |                                                 |
+| **systems subtotal**           | **~7330** |                                                 |
 | **reserve (~10%)**             | **~820** | polish + contingency; iterate systems down if over |
-| **total target**               | **~8100 / 8192** | ~90 hard margin                              |
+| **total target**               | **~8150 / 8192** | ~40 hard margin (tightening — trim a system before adding) |
 
 **Terrain is generated, period — no authoring.** A small generator makes
 hand-authored maps unnecessary. The base, DF-style: build an **elevation field**
@@ -187,8 +187,12 @@ Earlier this doc claimed gen could only borrow low-level primitives because
 "there's no road network at gen time." Too timid: **seed the empty grid with
 source/sink goals from noise** (springs *offer* drainage; the sea / map edges
 *need* it), then run the *same broadcast→match→agent-path pipeline* with the
-**open grid** as the network. Each spring matches its sea and the agent's carved
-path **is** the river; ridges and erosion can be seeded the same way. Terrain
+**open grid as a noise-weighted network** — per-tile routing cost comes from the
+noise/elevation field, so the carved path **meanders**. (Route over a *flat*,
+uniform grid and you get a dead-straight rectilinear path — the noise weighting is
+exactly what turns a shortest-path into a river.) Each spring matches its sea and
+that wandering path **is** the river; ridges and erosion can be seeded the same
+way. Terrain
 thus **dogfoods and validates the core loop before any roads exist** — the best
 possible early test of the engine. What's reused: the substrate-agnostic
 **match + route + agent** layer. What isn't: the economic bookkeeping (money, ttl
@@ -242,7 +246,7 @@ capacity, instead of a fresh BFS per need.
 
 ## 8. Build order (MVP first, polish last)
 
-1. **Skeleton:** map grid in RAM, `bfs` (path + `flood`), and a **plain noise
+1. **Skeleton:** map grid in RAM, `router` (weighted path + `flood`), and a **plain noise
    heightmap → threshold** with a simple downhill-walker river. (Plain so terrain
    doesn't block on the pipeline that doesn't exist yet.) Headless-test grid +
    flood + that an `elev` field exists.
@@ -322,11 +326,11 @@ can call it.
 | params (150) | `p`, `cost` | — | keys present |
 | data (100) | `res` (id→name/colour/channel), tile-class table | — | lookups correct |
 | map (550) | `tile`/`set_tile`/`is_road`/`is_zone`/`zone_kind`/`zone_density`, `neighbors4`, `nmask`, `update_camera` | data, `p` | autotile mask; tile helpers |
-| terrain (150) | `gen_terrain` — noise heightmap → threshold; noise-seed source/sink goals + drive the match/agent pipeline over the open grid to carve rivers; `elev(x,y)` | map, bfs, sim/agents (route) | elevation field present; a seeded spring carves a river to the sea |
-| bfs (250) | `road_path(x0,y0,x1,y1)`, `flood(x,y,pred)` | map | path finds & returns nil when disconnected |
-| net (500) | `update_net`, `reach_offers(x,y,res)`, `powered(x,y)`, `rcomp` | map, bfs, `p` | reachable suppliers + power reach correct on a hand map |
+| terrain (150) | `gen_terrain` — noise heightmap → threshold; noise-seed source/sink goals + drive the match/agent pipeline over the **noise-weighted** open grid to carve meandering rivers; `elev(x,y)` | map, router, sim/agents | elevation field present; a seeded spring carves a *meandering* river to the sea |
+| router (300) | `path(from,to,costfn)` — **weighted** search; `flood(x,y,pred)` | map | weighted path meanders on a noisy cost field; straight on flat cost; nil when disconnected |
+| net (500) | `update_net`, `reach_offers(x,y,res)`, `powered(x,y)`, `rcomp` | map, router, `p` | reachable suppliers + power reach correct on a hand map |
 | **sim (1800)** | `update_sim`, `need`/`offer`/`ctr`, `demand`, `pop`, `jobs`, `tile_info(x,y)` | net, map, agents, data, `p` | labor↔jobs contract forms; unmet need decays; power gates growth |
-| **agents (550)** | `spawn_agent(from,to,res)`, `update_agents`, `agents` | bfs, map, `p` | a spawned trip drives source→dest staying on roads |
+| **agents (550)** | `spawn_agent(from,to,res)`, `update_agents`, `agents` | router, map, `p` | a spawned trip drives source→dest staying on roads |
 | econ (200) | `money` ($k), `mfmt`, `try_spend`, `tax_rate`, `update_econ` | sim, `p` | `mfmt`; debt ceiling; no sign-flip at scale |
 | tools (1000) | `cur`, `tool`, `update_tools`, `apply_tool`, `tool_put` | map, econ, sim, `p` | place / zone / bulldoze transitions |
 | render (550) | `draw_world`, `draw_agents`, overlays | map, agents, net, data | (lead smoke-checks; logic tested in sources) |
