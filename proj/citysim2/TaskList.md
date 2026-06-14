@@ -39,9 +39,14 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 - ☑ tools.lua (1000→**398**) — cursor/camera + tool palette + placement
   (road/power autotile, R/C/I zones, bulldoze; hooks update_net + sim eval).
   Built as a HEADER by lead, placement fleshed out by an agent (the pattern works).
-- ☐ render.lua (550) — draw_world, agents, overlays
-- ☐ hud.lua (500) — hud + minimap
-- ☐ inspector.lua (300) — generic tile_info renderer (needs/contracts/agents/elog)
+- ☑ gen_gfx.py (art, 0 code tok) — sprite sheet for the tile encoding (water/
+  grass/mountain, autotile roads+power, R/C/I buildings by density). sprite id ==
+  tile id so map() renders the city directly.
+- ☑ render.lua (550→**111**) — draw_world: camera + map() + congestion overlay
+  (red on busy roads) + agents + cursor. Built header→agent-fleshed.
+- ☐ hud.lua (500) — RCI demand bars + minimap (split from the glue's inline hud)
+- ☑ inspector.lua (300→**108**) — panel over the cursor tile: kind+density +
+  no road/starved/thriving. Opaque bg (avoids the citysim no-bg bug). header→agent.
 - ☐ econ.lua (200) — money($k), tax, time; revenue read from sim
 
 ## Polish (HELD — do not start until base game playtested; reserve ~820)
@@ -72,7 +77,9 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 | terrain| 220 | 384 |
 | sim    | 1800 | 733 |
 | tools  | 1000 | 398 |
-| cart total | 8192 | 3250 |
+| render | 550 | 111 |
+| inspector | 300 | 108 |
+| cart total | 8192 | 3359 |
 
 Note: agents under-estimate their own token cost (map agent guessed ~390, real
 577). The lead's `count_tokens.py` is the gate before integrating.
