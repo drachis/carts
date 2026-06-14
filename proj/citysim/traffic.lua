@@ -3,7 +3,7 @@
 tr_cars={}
 tr_last_phase=nil
 
-local tr_cols={7,8,10,12,14}
+local tr_cols=split"7,8,10,12,14"
 
 local function sgn0(n)
  if n>0 then return 1
@@ -151,8 +151,10 @@ function update_traffic()
   end
  end
 
- -- daytime errand/delivery traffic: light continuous background movement
- if phase=="day" and frame%90==0 and pop>0 and #tr_cars<p.car_cap then
+ -- daytime errands/shopping/deliveries: steady background bustle so the city
+ -- feels alive between the dawn/dusk commute waves
+ if phase=="day" and frame%p.errand_freq==0 and pop>0
+  and #tr_cars<p.car_cap then
   local ox,oy=tr_find_stop(rnd()<0.5)
   local dx,dy=tr_find_stop(rnd()<0.5)
   tr_spawn(ox,oy,dx,dy,400)

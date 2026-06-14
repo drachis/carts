@@ -56,7 +56,7 @@ end
 -- carriers (wires, pylons, crossings, empty zone plots, plants)
 function pw_draw(x,y)
  local s=tile(x,y)
- if (s>=64 and s<=66) or (is_zone(x,y) and (s-32)%4>0) then
+ if (s>=64 and s<=67) or (is_zone(x,y) and (s-32)%4>0) then
   return 1
  end
  return 0

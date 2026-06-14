@@ -11,7 +11,7 @@ tcl={1,2,3,4,5,[44]=14,[48]=12,[53]=8,[54]=8,[56]=16,
  [59]=9,[60]=9,[61]=10,[62]=10,[96]=16,[97]=16,[98]=16}
 for i=16,31 do tcl[i]=6 end
 for i=32,43 do tcl[i]=7 end
-for i=64,66 do tcl[i]=13 end
+for i=64,67 do tcl[i]=13 end
 for i=80,95 do tcl[i]=11 end
 
 function in_bounds(x,y)
@@ -31,7 +31,7 @@ function is_zone(x,y) return fget(tile(x,y),1) end
 function conducts(x,y) return fget(tile(x,y),2) end
 function is_buildable(x,y) return fget(tile(x,y),3) end
 
-zone_base={32,36,40}
+zone_base=split"32,36,40"
 
 function zone_kind(x,y)
  if not is_zone(x,y) then return nil end
@@ -75,6 +75,18 @@ function nmask(x,y,f)
  if f(x-1,y) then m+=8 end
  return m
 end
+
+-- first grid tile where pred(x,y) is true (scan order); nil if none.
+-- the vehicle pathfinds anyway, so "first" is fine and cheaper than "nearest".
+function find_tile(pred)
+ for y=0,gridh-1 do
+  for x=0,gridw-1 do
+   if pred(x,y) then return x,y end
+  end
+ end
+end
+
+function is_rubble(s) return s==56 or s>=96 and s<=98 end
 
 function init_map()
  for y=0,gridh-1 do
@@ -202,7 +214,7 @@ function draw_world()
     local xx2=(x*7+y*11+(fx~=0 and dt2*fx or 0))%6+1
     local yy2=(x*11+y*7+(fx==0 and dt2 or 0))%8
     pset(x*8+xx2,y*8+yy2,1)
-   elseif is_zone(x,y) or s>=64 and s<=66 then
+   elseif is_zone(x,y) or s>=64 and s<=67 then
     -- unpowered buildings flash a bolt; powered dense zones light windows
     if not is_powered(x,y) then
      if bl then spr(52,x*8,y*8) end
@@ -221,7 +233,7 @@ function draw_world()
  pal()
  draw_traffic()
  draw_fires()
- draw_engine()
+ draw_veh(veh)
  draw_fx()
  if mode~="map" then
   local px,py=cur.x*8,cur.y*8

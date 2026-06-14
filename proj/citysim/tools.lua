@@ -12,6 +12,7 @@ tools_list={
  {name="fire dept",costkey="svc",spr=64,put=64},
  {name="police",costkey="svc",spr=65,put=65},
  {name="school",costkey="svc",spr=66,put=66},
+ {name="public works",costkey="svc",spr=67,put=67},
  {name="bulldoze",costkey="dozer"},
  {name="map"},
  {name="speed 1x",spd=true},

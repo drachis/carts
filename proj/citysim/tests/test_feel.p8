@@ -47,7 +47,7 @@ for i=32,43 do fset(i,6) end
 fset(48,4)
 for i=53,54 do fset(i,5) end
 fset(59,1) fset(60,1) fset(61,4) fset(62,4)
-for i=64,66 do fset(i,4) end
+for i=64,67 do fset(i,4) end
 for i=80,95 do fset(i,4) end
 
 srand(1)
@@ -113,20 +113,35 @@ update_power()
 ok(dz_covered(44,32),"powered station covers nearby tiles")
 ok(not dz_covered(20,5),"no coverage far away")
 
--- fire engine: dispatches from a station and arrives to spray
+-- service vehicle (red) dispatches to a fire from a station and sprays
 init_disaster()
 set_tile(10,9,64) -- station beside the road row at y=10
 set_zone(14,11,1,2)
 frame=1
 dz_ignite(14,11)
-ok(dz_eng~=nil,"fire engine dispatched")
+update_veh()
+ok(veh~=nil and veh.job==1,"fire engine dispatched (red)")
 local arrived=false
 for i=1,600 do
  update_disaster()
- if dz_eng and dz_eng.spray>0 then arrived=true end
+ update_veh()
+ if veh and veh.spray>0 then arrived=true end
 end
 ok(arrived,"engine arrived and sprayed")
-draw_engine()
+draw_veh(veh)
+
+-- same vehicle (green) rolls from a powered depot and clears rubble
+init_disaster()
+set_tile(11,8,48) -- plant powers the depot
+set_tile(11,9,67) -- public works depot beside road row y=10
+update_power()
+set_tile(13,9,56) -- a rubble tile beside the road
+frame=30
+veh_dispatch()
+ok(veh~=nil and veh.job==2,"wrecking crew dispatched (green)")
+for i=1,400 do update_veh() frame+=1 end
+ok(tile(13,9)~=56,"truck cleared the rubble")
+draw_veh(veh)
 
 -- day/night phases
 frame=0

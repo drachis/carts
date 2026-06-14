@@ -259,6 +259,16 @@ S[66] = [  # school
     "44477444",
     "33333333",
 ]
+S[67] = [  # public works depot: garage with a green truck inside
+    "33333333",
+    "55555553",
+    "5dddddd5",
+    "5d3bb3d5",
+    "5d3bb3d5",
+    "53b66b35",
+    "33333333",
+    "33333333",
+]
 S[44] = [  # park: bushes, a flower, a bird?  just a nice green spot
     "33333333",
     "3bb33b33",
@@ -389,7 +399,7 @@ flags[48] = 4
 flags[53] = flags[54] = 5  # road + conducts
 flags[59] = flags[60] = 1  # bridges are roads
 flags[61] = flags[62] = 4  # water pylons conduct
-for i in range(64, 67): flags[i] = 4  # services join the power grid
+for i in range(64, 68): flags[i] = 4  # services join the power grid
 for i in range(80, 96): flags[i] = 4  # wire autotiles conduct
 gff = "\n".join(
     "".join("%02x" % f for f in flags[line * 128 : (line + 1) * 128])
