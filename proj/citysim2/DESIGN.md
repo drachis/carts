@@ -53,29 +53,42 @@ congestion on the path. Lower is better; beyond a max cost the match fails.
 
 ---
 
-## 3. The tick (round-robin, not every-frame)
+## 3. The update — event-driven
 
-Per sim tick, sample `N` tiles (like citysim's growth sampling) and for each:
+The machine can afford a richer update than citysim's per-frame sampling, and
+**events buy legibility**: every state change is a message one tile sends another,
+so the event stream *is* the explanation. (Resolves the old "sampling vs.
+event-driven" question — event-driven wins.)
 
-1. **Broadcast.** For each unmet need on the tile, BFS its channel network for
-   reachable tiles that offer that resource with spare capacity.
-2. **Offer / match.** Pick the lowest-cost offer with capacity. (Cache the
-   per-tile network component so "who can I reach" is a lookup, not a fresh BFS
-   every time — see `net`.)
-3. **Commit.** Reserve capacity on the supplier; record a **contract**
-   `{res, from, to, cost, ttl}` on both tiles. Spawn one pooled **agent** that
-   drives the path (reuse citysim's `path_step`).
-4. **Resolve over time.** A tile whose core needs are under contract is *served*
-   → density may rise. A tile with needs unmet for `decay_t` → density falls /
-   abandons, releasing its offers.
+The loop **drains an event queue** each tick. An event is a small record
+`{k=type, x, y, ...payload}` scheduled for a future tick; its handler mutates
+state (byte planes + Lua) and **schedules follow-up events**. Nothing polls —
+work happens only where something changed.
 
-Contracts have a `ttl`; on expiry they re-validate (cheap) or dissolve. Agents
-are short-lived (one trip), pooled, and capped (`agent_cap`) so a big city stays
-within CPU. The visible car/truck count ≈ active contracts being traveled.
+- **Scheduling is a timewheel**, not a sorted heap: a ring of buckets
+  `evq[t % H]`, O(1) to schedule and drain, cheap in tokens. `schedule(dt, ev)`
+  drops `ev` in bucket `(now+dt) % H`; each tick processes `evq[now % H]` and
+  clears it. Horizon `H` covers the longest delay (commute, ttl); longer waits
+  just re-arm.
+- **A requests, B updates from the event.** A tile's recurring `eval` event finds
+  an unmet need, queries the offer index (§2), matches **B**, and **schedules an
+  `arrive` event at B** `commute` ticks out (carrying `from=A`). When `arrive`
+  fires, B's handler fills the job / counts the resident and A is satisfied — the
+  agent you watched driving *was* that pending event, made visible.
+- **Timers are just scheduled events** — no per-frame countdowns: fire `spread`
+  at +delay, contract `expire` at +ttl, commute `arrive`, and each tile's own
+  periodic `eval` re-broadcast. **Decay** = an `eval` that finds the need still
+  unmet and downgrades the tile, then re-arms.
+- **The examples are all one mechanism** — a type + a handler: `arrive@work`,
+  `student@school`, `ignite → dispatch wrecking crew → arrive → clear`. Adding a
+  behavior = adding an event type to the dispatch table.
 
-Power is special: model it as a flood-fill reachability set + capacity budget
-(citysim's `power.lua` already does this); "power need" is just "am I in a
-powered, non-over-capacity set".
+Bootstrap: on init/load, schedule a **staggered `eval` for every developed tile**;
+they self-perpetuate from there (each `eval` re-arms its own next one). Guard
+against storms: cap cascades processed per tick, and hold **at most one pending
+`eval` per tile**. Agents stay pooled + capped (`agent_cap`); visible traffic ≈
+in-flight `arrive` events. Power is just a channel: "powered" = reachable from a
+plant with capacity (offer index over the power network), no special case.
 
 ---
 
@@ -88,10 +101,13 @@ powered, non-over-capacity set".
   needs get matched (short commutes, served by coverage, low congestion/pollution
   nearby). High desirability → faster growth & higher density caps. No separate
   hand-tuned land-value pass required — it falls out of match costs.
-- **Inspector is a first-class feature.** Click any tile → panel shows: its open
-  needs, its current contracts (who it's matched with and the commute cost), the
-  agents it has on the road, and its served/unserved status. The sim must
-  *explain itself*; if we can't show why a tile is decaying, the model is wrong.
+- **Inspector is a first-class feature, and events make it nearly free.** Click
+  any tile → panel shows its open needs, current contracts (who it's matched with
+  + commute cost), agents on the road, served/unserved status — **and a short log
+  of its recent events** (`ignited → crew dispatched → arrived → cleared`). Since
+  every change already arrives as an event, keeping a tiny per-tile ring of the
+  last few is the whole feature: the sim literally narrates its own causality. If
+  we can't show why a tile is decaying, the model is wrong.
 
 ---
 
@@ -162,7 +178,7 @@ from before. If a system runs over, iterate it down rather than spending reserve
 | terrain: noise heightmap → threshold; rivers by **reusing the match/agent pipeline** over the open grid (noise-seeded source/sink goals) | 150 | gen-specific code = noise seed + paint; routing reused from sim/agents |
 | router: **weighted** (cost-aware) path + `flood` reach | 300 | one weighted search serves meandering rivers AND commute/congestion cost (citysim `tr_path` was plain BFS ~200) |
 | net: road **+ power** component labels + per-component offer index | 500 | power is just another channel |
-| **sim core: broadcast→offer→match→contract, grow/decay, power & money as resources** | **1800** | the heart — the freed budget lives here |
+| **sim core: event loop (timewheel + dispatch) → broadcast→match→contract, grow/decay; power & money as resources** | **1800** | the heart; event-driven (§3). Replaces sampling + per-frame countdowns, so not purely additive — but the richer update draws on the reserve |
 | **agents: pooled trips realizing contracts, draw** | **550** | citysim traffic minus the BFS |
 | econ (thin): money ($k), tax policy, time — revenue emerges from contracts | 200 | mostly accounting + UI, not a sim |
 | tools/input: cursor, zone, build, bulldoze, `tool_put` | 1000 | citysim tools 1297, trimmed |
@@ -219,10 +235,13 @@ art costs zero code tokens via `gen_gfx`. This replaces citysim's per-frame
 palette manipulation and, more importantly, lets us **style each tile per state**
 once the game plays well. Cost is sprite *space*, which the smaller map frees.
 
-**Risk flags.** The sim core (1800) and tools (1000) are the likely overruns.
-Keep the offer index doing the matching (lookup + nearest, not per-need BFS), cap
-contracts to per-building, and keep tile variants few. Re-measure with
-`pico8 -x` (authoritative) after each addition — not `count_tokens.py`.
+**Risk flags.** The sim core (1800) and tools (1000) are the likely overruns, and
+the **event loop tightens the margin** (~40 hard + the 820 reserve). The machine
+can afford the CPU; tokens are the constraint. Keep it lean: a timewheel (not a
+heap), a small integer-keyed dispatch table, per-building contracts, the offer
+index doing the matching (lookup + nearest, not per-need search), and few tile
+variants. Re-measure with `pico8 -x` (authoritative) after each addition — not
+`count_tokens.py` — and trim a system before growing the cart.
 
 ---
 
@@ -259,6 +278,10 @@ are 8-bit; a field needing more range splits across two.
 ctr     = { [k] = {res,from,to,cost,ttl}, ... }   -- active contracts per tile
 roffer  = { [compid] = { res -> list of supplier tiles } }  -- the offer index
 agents  = { {path,i,px,py,res,from,to,ttl,col}, ... }       -- pooled, capped
+
+-- TRANSIENT event state (Lua; not saved — rebuilt by the bootstrap on load):
+evq     = { [t % H] = { {k,x,y,...}, ... } }   -- timewheel of scheduled events
+elog[k] = small ring of recent event types on tile k   -- powers the inspector
 ```
 
 The **offer index per component** is the trick that keeps matching cheap:
@@ -273,9 +296,11 @@ no fresh search per need. Component id comes straight from a byte plane.
    heightmap → threshold** with a simple downhill-walker river. (Plain so terrain
    doesn't block on the pipeline that doesn't exist yet.) Headless-test grid +
    flood + that an `elev` field exists.
-2. **Substrate-agnostic engine:** the match/route/agent pipeline with the
-   **network passed in** (start with the open grid), plus `net` component labeling
-   + the per-component offer index. Test "reachable suppliers" on a hand map.
+2. **Engine:** the **event loop** (timewheel `schedule`/drain) + the substrate-
+   agnostic match/route/agent pipeline with the **network passed in** (start with
+   the open grid), plus `net` component labeling + the per-component offer index.
+   Test "reachable suppliers" on a hand map and that a scheduled event fires on
+   time.
 3. **Reroute the river through the engine:** noise-seed source/sink goals and
    carve the river by routing them over the open grid — the first real exercise of
    the engine, before any roads. (Optional but high-value dogfood.)
@@ -310,8 +335,11 @@ and satisfying, fix the model before adding resources.
 
 ## 10. Open design questions (decide before/at step 3)
 
-- **Sampling vs. event-driven:** round-robin sample tiles (simple, citysim-proven)
-  or a work-queue of tiles whose state changed (more correct, more tokens)?
+- **Sampling vs. event-driven — DECIDED: event-driven** (§3). Remaining knobs:
+  timewheel horizon `H` (max direct delay before re-arming), the per-tick cascade
+  cap (storm guard), and the `eval` re-arm interval. The event queue is transient
+  — *not* saved; the bootstrap reschedules a staggered `eval` per developed tile
+  on load.
 - **Contract granularity:** one contract per building, or per unit of capacity?
   Per-building is far cheaper and probably enough at this resolution.
 - **Congestion model:** per-road-tile agent count feeding back into commute cost
@@ -352,7 +380,7 @@ can call it.
 | terrain (150) | `gen_terrain` — noise heightmap → threshold; noise-seed source/sink goals + drive the match/agent pipeline over the **noise-weighted** open grid to carve meandering rivers; `elev(x,y)` | map, router, sim/agents | elevation field present; a seeded spring carves a *meandering* river to the sea |
 | router (300) | `path(from,to,costfn)` — **weighted** search; `flood(x,y,pred)` | map | weighted path meanders on a noisy cost field; straight on flat cost; nil when disconnected |
 | net (500) | `update_net`, `reach_offers(x,y,res)`, `powered(x,y)`, `rcomp` | map, router, `p` | reachable suppliers + power reach correct on a hand map |
-| **sim (1800)** | `update_sim`, `need`/`offer`/`ctr`, `demand`, `pop`, `jobs`, `tile_info(x,y)` | net, map, agents, data, `p` | labor↔jobs contract forms; unmet need decays; power gates growth |
+| **sim (1800)** | `update_sim` (drains the event queue), `schedule(dt,ev)`, `ctr`, `elog`, `demand`, `pop`, `jobs`, `tile_info(x,y)` | net, router, map, agents, data, `p` | a scheduled event fires on time; labor↔jobs `arrive` forms a contract; unmet `eval` decays; power gates growth |
 | **agents (550)** | `spawn_agent(from,to,res)`, `update_agents`, `agents` | router, map, `p` | a spawned trip drives source→dest staying on roads |
 | econ (200) | `money` ($k), `mfmt`, `try_spend`, `tax_rate`, `update_econ` | sim, `p` | `mfmt`; debt ceiling; no sign-flip at scale |
 | tools (1000) | `cur`, `tool`, `update_tools`, `apply_tool`, `tool_put` | map, econ, sim, `p` | place / zone / bulldoze transitions |
