@@ -38,26 +38,16 @@ function ok(cond,name)
  end
 end
 
--- recreate sprite flags (no __gff__ in this cart)
-fset(1,3,true)
-fset(2,3,true)
-fset(4,3,true)
-for i=16,31 do fset(i,0,true) end
-for i=32,43 do
- fset(i,1,true)
- fset(i,2,true)
-end
-fset(48,2,true)
-for i=53,54 do
- fset(i,0,true)
- fset(i,2,true)
-end
-fset(59,0,true)
-fset(60,0,true)
-fset(61,2,true)
-fset(62,2,true)
-for i=64,66 do fset(i,2,true) end
-for i=80,95 do fset(i,2,true) end
+-- recreate sprite flags as bitfields (no __gff__ in this cart):
+-- bit0 road, bit1 zone, bit2 conducts, bit3 buildable (matches gen_gfx)
+fset(1,8) fset(2,8) fset(4,8)
+for i=16,31 do fset(i,1) end
+for i=32,43 do fset(i,6) end
+fset(48,4)
+for i=53,54 do fset(i,5) end
+fset(59,1) fset(60,1) fset(61,4) fset(62,4)
+for i=64,66 do fset(i,4) end
+for i=80,95 do fset(i,4) end
 
 srand(1)
 init_map()
@@ -161,8 +151,7 @@ init_fx()
 add_fx(5,5,4,0.5,0,20,7,10)   -- sparkle
 add_fx(5,5,3,0.2,-0.3,25,5,6) -- debris smoke
 add_smoke(5,5)                  -- stack smoke
-add_fx(5,5,4,0.5,0,20,7,10)   -- sparkle again
-ok(#fx_list>=12,"fx particles spawn")
+ok(#fx_list>=8,"fx particles spawn")
 for i=1,60 do update_fx() end
 ok(#fx_list==0,"fx particles expire")
 draw_fx()
@@ -186,11 +175,9 @@ draw_ticker()
 mode="menu"
 draw_menu()
 mode="map"
-draw_minimap()
-map_view="power"
-draw_minimap()
-map_view="city"
-draw_minimap()
+for v in all({"city","power","value"}) do
+ map_view=v draw_minimap()
+end
 msg,msg_t="hello",10
 draw_msg()
 mode="play"

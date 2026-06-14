@@ -151,7 +151,7 @@ end
 function draw_fires()
  for _,f in pairs(dz_fires) do
   for _=1,3 do
-   pset(f.x*8+flr(rnd(8)),f.y*8+flr(rnd(8)),rnd()<0.5 and 10 or 9)
+   pset(f.x*8+rnd(8),f.y*8+rnd(8),rnd()<0.5 and 10 or 9)
   end
  end
 end

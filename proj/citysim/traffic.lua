@@ -62,6 +62,13 @@ end
 -- find a road tile adjacent to a developed zone.
 -- when want_r=true: seek residential; when false: seek workplace.
 -- early game (jobs==0): accept any developed zone so cars still spawn.
+-- first road tile orthogonally adjacent to x,y (nil if none)
+local function adj_road(x,y)
+ for _,n in pairs(neighbors4(x,y)) do
+  if is_road(n.x,n.y) then return n.x,n.y end
+ end
+end
+
 local function tr_find_stop(want_r)
  for _=1,12 do
   local zx=flr(rnd(gridw))
@@ -69,12 +76,10 @@ local function tr_find_stop(want_r)
   local zk=zone_kind(zx,zy)
   if zk~=nil and zone_density(zx,zy)>0
    and (jobs==0 or (zk==1)==want_r) then
-   for _,n in pairs(neighbors4(zx,zy)) do
-    if is_road(n.x,n.y) then return n.x,n.y end
-   end
+   local rx,ry=adj_road(zx,zy)
+   if rx then return rx,ry end
   end
  end
- return nil,nil
 end
 
 -- find a road tile adjacent to a school building (sprite 66)
@@ -82,11 +87,7 @@ local function tr_find_school()
  for _=1,12 do
   local x=flr(rnd(gridw))
   local y=flr(rnd(gridh))
-  if tile(x,y)==66 then
-   for _,n in pairs(neighbors4(x,y)) do
-    if is_road(n.x,n.y) then return n.x,n.y end
-   end
-  end
+  if tile(x,y)==66 then return adj_road(x,y) end
  end
 end
 

@@ -188,20 +188,10 @@ function refresh_tile(x,y)
   return
  end
  if is_road(x,y) then
-  local m=0
-  if is_road(x,y-1) then m+=1 end
-  if is_road(x+1,y) then m+=2 end
-  if is_road(x,y+1) then m+=4 end
-  if is_road(x-1,y) then m+=8 end
-  set_tile(x,y,16+m)
+  set_tile(x,y,16+nmask(x,y,is_road))
  elseif s>=80 and s<=95 then
   -- wires bend toward anything conductive next door
-  local m=0
-  if conducts(x,y-1) then m+=1 end
-  if conducts(x+1,y) then m+=2 end
-  if conducts(x,y+1) then m+=4 end
-  if conducts(x-1,y) then m+=8 end
-  set_tile(x,y,80+m)
+  set_tile(x,y,80+nmask(x,y,conducts))
  end
 end
 

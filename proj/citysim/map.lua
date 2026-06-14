@@ -66,6 +66,16 @@ function neighbors4(x,y)
  return n
 end
 
+-- autotile bitmask of neighbors passing test f (n=1 e=2 s=4 w=8)
+function nmask(x,y,f)
+ local m=0
+ if f(x,y-1) then m+=1 end
+ if f(x+1,y) then m+=2 end
+ if f(x,y+1) then m+=4 end
+ if f(x-1,y) then m+=8 end
+ return m
+end
+
 function init_map()
  for y=0,gridh-1 do
   for x=0,gridw-1 do
@@ -184,14 +194,13 @@ function draw_world()
     local xx2=(x*7+y*11+(fx~=0 and dt2*fx or 0))%6+1
     local yy2=(x*11+y*7+(fx==0 and dt2 or 0))%8
     pset(x*8+xx2,y*8+yy2,1)
-   elseif is_zone(x,y) then
-    if bl and not is_powered(x,y) then
-     spr(52,x*8,y*8)
-    elseif zone_density(x,y)>0 and is_powered(x,y) then
+   elseif is_zone(x,y) or s>=64 and s<=66 then
+    -- unpowered buildings flash a bolt; powered dense zones light windows
+    if not is_powered(x,y) then
+     if bl then spr(52,x*8,y*8) end
+    elseif is_zone(x,y) and zone_density(x,y)>0 then
      draw_window_lights(x,y,zone_kind(x,y),zone_density(x,y))
     end
-   elseif s>=64 and s<=66 then
-    if bl and not is_powered(x,y) then spr(52,x*8,y*8) end
    end
    -- industrial/plant stacks emit puffy smoke particles
    if s>=41 and s<=43 or s==48 then
