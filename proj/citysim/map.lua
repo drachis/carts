@@ -160,15 +160,23 @@ function calc_flow()
 end
 
 -- view: hud rows 0..7, world fills y 8..127 (16x15 tiles).
--- the camera eases toward where the cursor wants it (snap jumps there).
+-- the camera eases toward its target a few px/frame so scrolling glides
+-- per-pixel instead of jumping a whole tile when the cursor hits an edge.
 function update_camera(snap)
  local px,py=cur.x*8,cur.y*8
- if px-camx<16 then camx=px-16 end
- if px-camx>104 then camx=px-104 end
- if py-camy<16 then camy=py-16 end
- if py-camy>96 then camy=py-96 end
- camx=mid(0,camx,gridw*8-128)
- camy=mid(0,camy,gridh*8-120)
+ local tx,ty=camx,camy
+ if px-tx<16 then tx=px-16 end
+ if px-tx>104 then tx=px-104 end
+ if py-ty<16 then ty=py-16 end
+ if py-ty>96 then ty=py-96 end
+ tx=mid(0,tx,gridw*8-128)
+ ty=mid(0,ty,gridh*8-120)
+ if snap then
+  camx,camy=tx,ty
+ else
+  camx+=mid(-4,tx-camx,4)
+  camy+=mid(-4,ty-camy,4)
+ end
 end
 
 function draw_world()

@@ -71,7 +71,14 @@ function update_tools()
    map_view=map_view=="city" and "power"
     or map_view=="power" and "value" or "city"
   end
-  if btnp(5) then mode="play" end
+  if btnp(5) then
+   -- drop the cursor at the centre of where we panned so play mode
+   -- stays here instead of snapping back to the old cursor tile
+   cur.x=mid(0,flr(camx/8)+8,gridw-1)
+   cur.y=mid(0,flr(camy/8)+7,gridh-1)
+   mode="play"
+   update_camera(true)
+  end
  end
 end
 
@@ -210,9 +217,7 @@ function do_inspect(x,y)
  end
 end
 
-local tl_names={"grass","trees","water","highland","mountain","road",
- "zone","crossing","bridge","pylon","power line","power plant",
- "city service","park","fire!","rubble - bulldoze it"}
+local tl_names=split"grass,trees,water,highland,mountain,road,zone,crossing,bridge,pylon,power line,power plant,city service,park,fire!,rubble - bulldoze it"
 function tile_name(s)
  return tl_names[tcl[s]] or "land"
 end

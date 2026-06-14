@@ -1,7 +1,11 @@
 -- ui.lua : hud, menu, minimap, message overlay
 
-local ui_months={"jan","feb","mar","apr","may","jun",
-                 "jul","aug","sep","oct","nov","dec"}
+-- packed lookup tables: split() turns "a,b,c" into a table (numbers
+-- auto-converted), costing ~2 tokens instead of one per element.
+local ui_months=split"jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec"
+local rci_lbl=split"r,c,i"
+local rci_col=split"11,12,10"  -- demand bar hue (above midline)
+local rci_dim=split"3,13,4"    -- dim hue (below midline)
 
 function draw_hud()
  rectfill(0,0,127,7,0)
@@ -11,25 +15,22 @@ function draw_hud()
  -- pop: P#.##K format when over 1000
  local ps=pop<1000 and "p"..pop
   or "p"..flr(pop/100)/10 .."k"
- print(ps,28,1,14)
+ print(ps,34,1,14)
  -- date always visible (messages go to ticker below the bar)
- print(ui_months[month].." "..tostr(year),44,1,7)
+ print(ui_months[month].." "..tostr(year),64,1,7)
  -- rci demand bars: r green, c blue, i yellow; dim hue below midline
  local bx=104
- local labels={"r","c","i"}
  local dvals={demand.r,demand.c,demand.i}
- local dcols={11,12,10}
- local ncols={3,13,4}
  rectfill(bx,4,bx+22,4,5)
  for i=1,3 do
   local lx=bx+(i-1)*8
-  print(labels[i],lx,1,dcols[i])
+  print(rci_lbl[i],lx,1,rci_col[i])
   local d=dvals[i]
   local h=mid(-3,flr(d*3+(d>0 and 0.99 or 0)),3)
   if h>0 then
-   rectfill(lx+4,4-h,lx+5,4,dcols[i])
+   rectfill(lx+4,4-h,lx+5,4,rci_col[i])
   elseif h<0 then
-   rectfill(lx+4,4,lx+5,4-h,ncols[i])
+   rectfill(lx+4,4,lx+5,4-h,rci_dim[i])
   end
  end
 end
@@ -51,8 +52,8 @@ function draw_menu()
   if x>-12 and x<128 then
    local e=tools_list[i]
    if e.kind then
-    rect(x+1,sy+1,x+10,sy+10,({11,12,10})[e.kind])
-    print(({"r","c","i"})[e.kind],x+4,sy+4,7)
+    rect(x+1,sy+1,x+10,sy+10,rci_col[e.kind])
+    print(rci_lbl[e.kind],x+4,sy+4,7)
    elseif e.insp then
     circ(x+5,sy+4,3,7)
     line(x+8,sy+7,x+10,sy+9,7)
@@ -81,7 +82,7 @@ function draw_menu()
  print(label,lx,sy-9,7)
 end
 
-local ui_ccol={3,3,12,3,4,5,0,5,4,6,6,8,7,11,9,0}
+local ui_ccol=split"3,3,12,3,4,5,0,5,4,6,6,8,7,11,9,0"
 function ui_city_col(s)
  if s>=32 and s<=35 then return 11 end
  if s>=36 and s<=39 then return 13 end
@@ -118,10 +119,10 @@ function draw_minimap()
  local vy=py+flr(camy/8)*2
  rect(vx,vy,vx+31,vy+29,7)
  print(map_view,px+2,py+1,7)
- -- income/upkeep summary always visible on minimap
+ -- income/upkeep summary always visible on minimap (values are dollars)
  local net=last_income-last_upkeep
- print(mfmt(last_income).." -"..mfmt(last_upkeep).." ="..mfmt(net),
-  px,py+99,net>=0 and 11 or 8)
+ print(mfmt(last_income/1000).." -"..mfmt(last_upkeep/1000)
+  .." ="..mfmt(net/1000),px,py+99,net>=0 and 11 or 8)
 end
 
 function draw_msg()

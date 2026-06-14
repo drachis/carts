@@ -98,14 +98,23 @@ for f=9001,12000 do
 end
 ok(zone_density(30,30)==0,"unpowered zone stays density 0")
 
--- econ
-money=500
-ok(try_spend(100) and money==400,"try_spend deducts")
+-- econ (money is stored in thousands of dollars; try_spend takes dollars)
+money=2 -- $2000
+ok(try_spend(1000) and money==1,"try_spend deducts")
 ok(not try_spend(10000),"try_spend rejects when broke")
-ok(money==400,"failed spend leaves money alone")
+ok(money==1,"failed spend leaves money alone")
 local m0,y0=month,year
 for i=1,300 do update_econ() end
 ok(month~=m0 or year~=y0,"month advances after 300 frames")
+
+-- mfmt: $k value -> abbreviated string (dollars / k / m, signed)
+ok(mfmt(0)=="$0","mfmt zero")
+ok(mfmt(0.5)=="$500","mfmt sub-1k shows dollars")
+ok(mfmt(2)=="$2k","mfmt whole thousands")
+ok(mfmt(1.5)=="$1.5k","mfmt one decimal k")
+ok(mfmt(1000)=="$1m","mfmt millions")
+ok(mfmt(2500)=="$2.5m","mfmt one decimal m")
+ok(mfmt(-3)=="-$3k","mfmt negative")
 
 -- power line crosses a straight road via apply_tool
 money=1000
@@ -190,12 +199,12 @@ ok(rocks>10,"mountain ranges generated")
 ok(high>5,"highland fringes generated")
 set_tile(8,40,5)
 ok(not is_buildable(8,40),"mountains are unbuildable")
-money=100
+money=1 -- $1000
 mode="play"
 tool=12 -- bulldoze
 cur={x=8,y=40}
 apply_tool()
-ok(tile(8,40)==1 and money==75,"blasting a mountain costs $25")
+ok(tile(8,40)==1 and money==1-cost.blast/1000,"blasting a mountain costs $25")
 
 -- river bends carry a flow vector for the ripples
 local has_flow=false
@@ -208,10 +217,10 @@ ok(has_flow~=nil,"flow vector defined for every row")
 ok(has_flow==true,"river actually bends somewhere")
 
 -- deficit spending: allowed into debt, refused past the ceiling
-money=10
-ok(try_spend(100) and money==-90,"spending into debt allowed")
+money=0
+ok(try_spend(100) and money==-100/1000,"spending into debt allowed")
 ok(not try_spend(2000),"debt ceiling refuses")
-ok(money==-90,"refused spend leaves debt alone")
+ok(money==-100/1000,"refused spend leaves debt alone")
 
 -- bridges + water pylons
 money=1000

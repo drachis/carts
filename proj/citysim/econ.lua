@@ -1,21 +1,25 @@
 -- econ.lua : money, monthly tick (costs live in params.lua)
 
--- format money as $1.5k / $29k etc; PICO-8 max is 32767 so k is the ceiling
+-- money is stored in THOUSANDS of dollars so a 16.16 fixed-point number can
+-- represent up to ~$32m without flipping sign. costs/income stay in dollars
+-- and are scaled by 1/1000 at the econ boundaries (try_spend / update_econ).
+-- mfmt formats a $k value: <$1k shows dollars, then k, then m.
 function mfmt(v)
  local s=v<0 and "-$" or "$"
  local a=abs(v)
- if a>=1000 then
-  local k=flr(a/1000)
-  local t=flr((a%1000)/100)
-  return s..k..(t>0 and "."..t or "").."k"
- end
- return s..a
+ if a<1 then return s..flr(a*1000+0.5) end
+ local u="k"
+ if a>=1000 then a/=1000 u="m" end
+ local w=flr(a)
+ local f=flr((a-w)*10)
+ return s..w..(f>0 and "."..f or "")..u
 end
 
 -- deficit spending allowed down to a debt ceiling
 function try_spend(n)
- if money-n>=-p.debt_limit then
-  money-=n
+ local d=n/1000 -- dollars -> $k
+ if money-d>=-p.debt_limit/1000 then
+  money-=d
   return true
  end
  msg="bankers refuse: debt limit"
@@ -25,7 +29,7 @@ function try_spend(n)
 end
 
 function init_econ()
- money=p.start_money
+ money=p.start_money/1000
  month=1
  year=1950
  ec_f=0
@@ -52,17 +56,17 @@ function update_econ()
  for k,v in pairs(p.upkeep) do
   upkeep+=(city_st[k] or 0)*v
  end
- -- debt accrues interest monthly
+ -- debt accrues interest monthly (money is $k, so debt dollars = -money*1000)
  if money<0 then
-  upkeep+=flr(-money*p.interest)+1
+  upkeep+=flr(-money*1000*p.interest)+1
  end
  local net=income-upkeep
- money=min(29000,money+net)
+ money=min(32000,money+net/1000)
  last_income,last_upkeep=income,upkeep
  if net>=0 then
-  hud_msg,hud_msg_c="+"..mfmt(net).." tax",11
+  hud_msg,hud_msg_c="+"..mfmt(net/1000).." tax",11
  else
-  hud_msg,hud_msg_c=mfmt(net).." deficit",8
+  hud_msg,hud_msg_c=mfmt(net/1000).." deficit",8
  end
  hud_msg_t=90
  sfx(2)

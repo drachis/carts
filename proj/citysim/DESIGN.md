@@ -34,7 +34,7 @@ which we never use — safe.)
 | 52      | "no power" bolt overlay icon     |
 | 53/54   | line crossing h-road / v-road (flags: road + conducts) |
 | 55/56   | fire / rubble (no flags; rubble must be bulldozed) |
-| 57/58   | light / heavy smog dither overlays (drawn where land value <=-2 / <=-4) |
+| 57/58   | unused |
 | 59/60   | bridge e-w / n-s (flag: road; bulldozes back to water) |
 | 61      | power pylon in water (flag: conducts) |
 | 64/65/66| fire station / police / school (flag: conducts; police+school boost land value, fire station suppresses fires within p.station_radius) |
@@ -218,7 +218,30 @@ msg, msg_t       -- status line text + ttl frames; anyone may set (ui draws)
   then calls update_power().
 
 ## testing
-`tests/test_sim.p8` includes the lua modules, stubs what it must, runs headless:
+Headless test carts include the lua modules, stub what they must, and print
+"ok ..." / "fail ..." via printh:
 `& "O:\AI\Claude\AI w Pico8\PICO-8\pico8.exe" -x tests\test_sim.p8`
-asserts print "ok ..." / "FAIL ..." via printh. agents: you don't run pico-8;
-lead runs tests. write code that parses (balanced end/then) — that's on you.
+- `test_sim.p8` — core sim logic: terrain/map, power, growth, econ (incl. mfmt),
+  network, land value, tools/placement, bulldoze.
+- `test_feel.p8` — agent + time systems: traffic, fire/engines, day-night,
+  achievements, particles, save/load.
+
+**What we test, and what we trust.** PICO-8 is the authority — its language,
+its API (anything in `pico-8_manual.txt`: `spr`, `map`, `split`, `fset`, fixed-
+point math, etc.), and its token counter are considered rock solid. We do NOT
+write tests to prove the engine works; if a documented primitive misbehaves we
+have far bigger problems than a failing assert. Tests cover OUR logic only —
+the decisions, math, and state transitions in our modules. Pure "does drawing
+crash" smoke tests carry little value and are not worth the cart tokens they
+cost; prefer asserting a computed result over asserting "it ran".
+
+**Token budget / authority.** The authoritative token count is PICO-8's own:
+`pico8 -x cart.p8` prints "program too large N/8192" only when OVER; under
+budget it just runs (kill it after a few seconds). A cart may use the full
+8192 and still run. `count_tokens.py` is a fast *approximation* (within a few
+tokens, can under-count) for iterating between PICO-8 checks — not the source
+of truth. Each system is independently testable, so a test cart that nears the
+limit can be split per system rather than padded.
+
+agents: you don't run pico-8; lead runs tests. write code that parses
+(balanced end/then) — that's on you.

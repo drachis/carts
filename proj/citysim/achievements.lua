@@ -16,7 +16,7 @@ local av_list={
  {n="green thumb",        t=function() return st(14)>=5 end},
  {n="power broker",       t=function() return st(12)>=3 end},
  {n="civil servant",      t=function() return st(13)>=3 end},
- {n="deep pockets",       t=function() return money>=5000 end},
+ {n="deep pockets",       t=function() return money>=5 end},
 }
 
 function init_achv()
