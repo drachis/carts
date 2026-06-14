@@ -148,7 +148,7 @@ from before. If a system runs over, iterate it down rather than spending reserve
 | params                  |  150 | all tuning constants                                 |
 | data: `res` + tile metadata (shared sim↔ui) |  100 | resource id→name/colour/channel; drives matching AND labels |
 | map core: grid in RAM, tile/zone helpers, autotile (`nmask`), camera | 550 | the cohesive "map" — no terrain/render/bfs |
-| terrain: authored in map data (≈0 code) or minimal gen | 150 | hand-author starter maps → near-free; see "what a leaner map loses" |
+| terrain: simple procedural gen — mountains + a meandering river + coast | 150 | citysim `rough()` drunken-walk proved this is cheap; authoring is an alt |
 | bfs: breadth-first reach + path over road/power | 250 | shared by net/sim/agents (citysim `tr_path` ~200) |
 | net: road **+ power** component labels + per-component offer index | 500 | power is just another channel |
 | **sim core: broadcast→offer→match→contract, grow/decay, power & money as resources** | **1800** | the heart — the freed budget lives here |
@@ -167,13 +167,26 @@ from before. If a system runs over, iterate it down rather than spending reserve
 | **reserve (~10%)**             | **~820** | polish + contingency; iterate systems down if over |
 | **total target**               | **~8100 / 8192** | ~90 hard margin                              |
 
-**What a leaner map loses.** Pulling terrain/render/bfs out of map already gets
-core to ~550 with *no* feature loss. Going further — **authoring terrain as map
-data** instead of generating it — saves the ~150 gen budget and gives art control
-(and pairs with the sprite-swap idea), but loses **procedural variety**: every
-new game starts from hand-made maps rather than a fresh random coastline/river/
-mountains each time. For an agent sim where the *city* is the variety, that's a
-fine trade. Keep a tiny gen only if "new random map" matters to play.
+**Keep terrain simple and generated.** Pulling terrain/render/bfs out of map
+already gets map-core to ~550 with *no* feature loss — the bloat was never the
+*generation*, it was the extras. citysim's terrain hit ~250 because it stacked a
+tributary, a full-grid highland-fringe scan, and a lone mesa on top of the base.
+**Keep the cheap core (~150):** one or two mountain drunken-walks (`rough()`),
+one meandering river, an optional coast — and drop the extras. Procedural variety
+is worth it; a fresh coastline/river each game is part of the appeal. Authoring
+terrain as fixed map data (≈0 code) stays available as an *alternative* for
+curated maps, but **generated is the default**.
+
+**Terrain from shared primitives (optional, elegant).** Generation can dogfood
+the same primitives the sim uses instead of bespoke code: a **river** is a
+downhill-**seeking walker**; a **coast** is a `flood` from a map edge;
+**moisture/erosion** is a distance field from water. These reuse `bfs`/`flood`
+plus a tiny walker — the *same* drunken-walk primitive as `rough()`, just
+goal-seeking — so "agent-generated" terrain costs little beyond what the sim
+already needs, and unifies gen + sim around a few primitives. Note it shares
+those low-level primitives, not the road-trip *market* (there's no road network
+at gen time). Not an MVP requirement — a natural enrichment once the core loop
+is alive.
 
 **Day/night as a sprite swap.** With a smaller map (e.g. 32×32 uses only map rows
 0–31), the shared sprite bank (sprites 128–255 / map rows 32–63) is **free**. So
@@ -292,7 +305,7 @@ can call it.
 | params (150) | `p`, `cost` | — | keys present |
 | data (100) | `res` (id→name/colour/channel), tile-class table | — | lookups correct |
 | map (550) | `tile`/`set_tile`/`is_road`/`is_zone`/`zone_kind`/`zone_density`, `neighbors4`, `nmask`, `update_camera` | data, `p` | autotile mask; tile helpers |
-| terrain (150) | authored starter map(s) in map data, or `gen_terrain` | map | a map loads / gen fills the grid |
+| terrain (150) | `gen_terrain` — drunken-walk mountains + meandering river + coast (authoring optional) | map, bfs (`flood`) | gen fills the grid; river reaches an edge |
 | bfs (250) | `road_path(x0,y0,x1,y1)`, `flood(x,y,pred)` | map | path finds & returns nil when disconnected |
 | net (500) | `update_net`, `reach_offers(x,y,res)`, `powered(x,y)`, `rcomp` | map, bfs, `p` | reachable suppliers + power reach correct on a hand map |
 | **sim (1800)** | `update_sim`, `need`/`offer`/`ctr`, `demand`, `pop`, `jobs`, `tile_info(x,y)` | net, map, agents, data, `p` | labor↔jobs contract forms; unmet need decays; power gates growth |
