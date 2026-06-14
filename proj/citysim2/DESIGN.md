@@ -113,9 +113,14 @@ powered, non-over-capacity set".
   what lets one engine drive terrain gen, traffic, freight, and power, and lets
   terrain (§6) reuse the core loop before roads exist. Write the pipeline this way
   from the first commit; don't bake "road" into it.
-- **State lives in map RAM**; sprite id = tile state. Per-tile *dynamic* data
-  (needs/contracts) lives in a sparse table keyed `x+y*W`, rebuilt as needed so
-  it never has to be serialized — save/load is one `cstore`/`reload` of the map.
+- **State lives in map RAM** (sprite id = tile state). A **32×32 city** uses 1024
+  of the dedicated map region's 4096 bytes, leaving room for **three 32×32
+  byte-"planes"** of dense per-tile sim data (elevation, component id, packed
+  need/offer) accessed by `mget/mset` — no Lua tables, no GC, and **saved for
+  free** by the one `cstore`/`reload` of `0x2000–0x2fff`. Because tile + 3 planes
+  fit the dedicated region, the shared bank stays free for night sprites (§6, §7).
+  Rich/sparse data (contracts, offer index, agents) stays in Lua. **32×32 is the
+  load-bearing size** here — a bigger grid trades away planes or the sprite bank.
 - **Scaled units from day one.** Money, population, goods volumes — anything that
   can exceed ~32000 — stored in `k` units (16.16 fixed-point flips sign past
   32767). Abbreviate on display (`mfmt`-style).
@@ -223,24 +228,42 @@ contracts to per-building, and keep tile variants few. Re-measure with
 
 ## 7. Key data structures
 
-```lua
--- per-tile dynamic state (sparse, keyed k = x + y*W), rebuilt from map RAM:
-need[k]   = bitfield or small list of resource ids this tile currently wants
-offer[k]  = { res -> spare_capacity }     -- what it can supply right now
-ctr[k]    = { contracts: {res,from,to,cost,ttl} }  -- active matches
+**Memory layout — sim data lives in spare map RAM ("data planes").** A map cell
+is just an 8-bit value (0–255); `map()` only draws the cells we ask it to, so the
+rest is free byte storage. With a **32×32 city**, the tile grid is 1024 of the
+dedicated map region's 4096 bytes (`0x2000–0x2fff`), leaving **3072 bytes = three
+32×32 byte-planes** for dense per-tile sim fields:
 
--- network reach (rebuilt on a slow tick, like citysim's nt_flood):
-rcomp[k]  = road-component id            -- same id == reachable by road
-roffer[id]= { res -> list of supplier tiles in that component }  -- offer index
-pset[k]   = true if in a powered, in-budget set
-
--- agents (pooled, capped):
-agents = { {path,i,px,py,res,from,to,ttl,col}, ... }
+```
+0x2000 map region (128 x 32):
+  cols  0..31 : tile plane     -- the map we draw (sprite id = tile state)
+  cols 32..63 : plane A = elev(x,y)   = mget(32+x,y)   -- elevation 0..255
+  cols 64..95 : plane B = comp(x,y)   = mget(64+x,y)   -- road/power component id
+  cols 96..127: plane C = noff(x,y)   = mget(96+x,y)   -- packed need/offer bits
 ```
 
-The **offer index per network component** is the trick that keeps matching cheap:
-broadcasting a need = look up `roffer[rcomp[k]][res]` and pick the nearest with
-capacity, instead of a fresh BFS per need.
+Because tile + 3 planes fit the *dedicated* region, the **shared bank
+`0x1000–0x1fff` (sprites 128–255) stays free for the day/night night-sprites** —
+both, no conflict. A bigger city or a 4th plane starts eating that bank: an
+explicit trade. **Save/load is free:** one `cstore`/`reload` of `0x2000–0x2fff`
+carries the city *and* all planes (citysim's trick, extended to the sim). Planes
+are 8-bit; a field needing more range splits across two.
+
+```lua
+-- DENSE per-tile scalar fields -> map-RAM byte planes (mget/mset, 0..255):
+--   elev(x,y), comp(x,y) [component id], noff(x,y) [need bits | offer bits],
+--   moisture/desirability if a 4th plane is worth the shared bank.
+-- no Lua tables, no GC, saved for free.
+
+-- SPARSE / RICH structures -> Lua tables (don't fit a byte plane):
+ctr     = { [k] = {res,from,to,cost,ttl}, ... }   -- active contracts per tile
+roffer  = { [compid] = { res -> list of supplier tiles } }  -- the offer index
+agents  = { {path,i,px,py,res,from,to,ttl,col}, ... }       -- pooled, capped
+```
+
+The **offer index per component** is the trick that keeps matching cheap:
+broadcasting a need = `roffer[comp(x,y)][res]`, pick the nearest with capacity —
+no fresh search per need. Component id comes straight from a byte plane.
 
 ---
 
