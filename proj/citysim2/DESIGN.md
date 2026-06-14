@@ -350,25 +350,43 @@ and satisfying, fix the model before adding resources.
 
 ---
 
-## 10. Open design questions (decide before/at step 3)
+## 10. Resolved decisions
 
-- **Sampling vs. event-driven — DECIDED: event-driven** (§3). Remaining knobs:
-  timewheel horizon `H` (max direct delay before re-arming), the per-tick cascade
-  cap (storm guard), and the `eval` re-arm interval. The event queue is transient
-  — *not* saved; the bootstrap reschedules a staggered `eval` per developed tile
-  on load.
-- **Contract granularity:** one contract per building, or per unit of capacity?
-  Per-building is far cheaper and probably enough at this resolution.
-- **Congestion model:** per-road-tile agent count feeding back into commute cost
-  — how cheaply can we track it without a per-tile counter every frame?
-- **How much aggregation is invisible?** Simulate individually only what becomes
-  visible traffic or an inspectable cause; aggregate the rest. This is also the
-  main token lever — the more we can aggregate without the player noticing, the
-  more sim depth fits in 8k.
-- **Where does the polish reserve go first?** Only ~820 is held back (10%), so
-  spend it deliberately — likely congestion visuals (they reinforce the core
-  loop) before disasters or sound. If it's not enough, trim a system, don't grow
-  the cart.
+- **Update — event-driven** (§3). Knobs: timewheel horizon `H`, per-tick cascade
+  cap (storm guard), `eval` re-arm interval. Queue is transient (not saved); the
+  bootstrap reschedules a staggered `eval` per developed tile on load.
+- **Capacity lives in a plane; matching is per-building.** Each building has a
+  **capacity** `N` (a school serves N students, a shop hires N) stored in a
+  `0x8000` byte-plane — so `N` **caps at 255** per tile (the byte limit; `peek2`
+  if we ever need more). A building broadcasts/matches as **one contract** for its
+  whole capacity (cheap), and a `fill` plane tracks how much is currently served.
+  We do **not** make a contract per unit.
+- **Sim granularity ≠ visual granularity (param-driven).** Contracts are
+  per-building, but **visible agents are per unit of capacity, scaled by a
+  param**: `p.show` = how many of a building's `N` filled units actually spawn a
+  car (1.0 = every worker/student drives; lower = sample). Goal is a **lively city
+  that *feels* correct**, not 100% accurate — so **everything visible at first**
+  (small cities look fully alive), then turn `p.show` down as pop grows to stay
+  under `agent_cap`. Liveliness is a knob, not a redesign.
+- **Congestion — a counter plane, updated O(1) at the step, never scanned.** A
+  `cong` `0x8000` plane holds the agent count on each road tile: an agent
+  **`poke`s +1 when it steps onto a tile and −1 when it leaves** (in `path_step`),
+  so there's no per-frame sweep. The weighted `router` cost reads it:
+  `cost(tile) = base + p.cong_k * cong(tile)`, so busy roads get expensive and
+  trips reroute — congestion emerges. Counts cap at 255/tile (saturate).
+- **Reserved lanes — only visible trips touch roads/congestion (avoids the SC4
+  trap).** SimCity 4 choked because power/water/etc. competed for the same trip
+  capacity as Sims. Here **power and other abstract resources resolve over the
+  offer index / flood — they spawn no road agents and never touch `cong`.** Only
+  labor/goods/service trips are visible cars and count toward congestion. So the
+  utility "lanes" are implicitly reserved by being off-road.
+- **Aggregation is the token lever.** Simulate individually only what becomes
+  visible traffic or an inspectable cause; aggregate the rest. `p.show` *is* this
+  lever made adjustable.
+- **Polish reserve (~820) is HELD, unspent.** Do not pre-allocate it (not to
+  congestion visuals, not to disasters). We play the base game first and spend it
+  deliberately after playtesting — it's precious on purpose. If a system overruns,
+  trim a system; don't dip into the reserve early.
 
 ---
 
