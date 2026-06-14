@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 29
+version 19
 __lua__
 -- hello world
 -- by zep
@@ -15,7 +15,7 @@ function _draw()
 	for col = 14,7,-1 do
 		
 		-- for each letter
-		for i=1,7 do
+		for i=1,11 do
 		
 			-- t() is the same as time()
 			t1 = t()*30 + i*4 - col*2

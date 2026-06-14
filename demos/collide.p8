@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 19
+version 30
 __lua__
 -- wall and actor collisions
 -- by zep
@@ -52,7 +52,7 @@ function _init()
 	ball.bounce=1
 	
 	-- red ball: bounce forever
-	-- (because no frition and
+	-- (because no friction and
 	-- max bounce)
 	local ball = make_actor(49,7,8)
 	ball.dx=-0.1
@@ -115,7 +115,7 @@ function solid_area(x,y,w,h)
 end
 
 
--- true if a will hit another
+-- true if [a] will hit another
 -- actor after moving dx,dy
 
 -- also handle bounce response

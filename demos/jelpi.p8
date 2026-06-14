@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 19
+version 41
 __lua__
 -- jelpi demo
 -- by zep
@@ -940,17 +940,17 @@ function apply_paint()
 	srand(flr(tt))
 	local nn=rnd(128)
 	local xx=0
-	local yy=band(nn,127)
+	local yy=nn&127
 	for i=1,1000*13,13 do
 		nn+=i
 		nn*=33
-		xx=band(nn,127)
+		xx=nn&127
 		local col=pget(xx,yy)
 		rectfill(xx,yy,xx+1,yy+1,col)
 		line(xx-1,yy-1,xx+2,yy+2,col)
 		nn+=i
 		nn*=57
-		yy=band(nn,127)
+		yy=nn&127
 		rectfill(xx-1,yy-1,xx,yy,pget(xx,yy))
 			
 	end
@@ -2045,6 +2045,8 @@ theme_dat={
 }
 
 function init_level(lev)
+
+  cls()reset()
 
 	level=lev
 	level_t = 0

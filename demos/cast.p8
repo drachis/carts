@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 19
+version 41
 __lua__
 -- raycasting demo
 -- by zep
@@ -263,7 +263,7 @@ function _draw()
 	draw_3d()
 	-- draw map
 	if (false) then
-		mapdraw(0,0,0,0,32,32)
+		map(0,0,0,0,32,32)
 		pset(pl.x*8,pl.y*8,12)
 		pset(pl.x*8+cos(pl.d)*2,pl.y*8+sin(pl.d)*2,13)
 	end
