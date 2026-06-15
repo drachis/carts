@@ -94,8 +94,9 @@ local function sm_eval(x,y)
   set_zone(x,y,k,d-1)
   if d-1==0 and notify then notify("zone abandoned",5,x,y) end
  end
- -- visible commuter (per p.show)
- if found and d>0 and rnd(1)<p.show then
+ -- visible commuter (per p.show, throttled by time-of-day traffic)
+ local tf=traffic_factor and traffic_factor() or 1
+ if found and d>0 and rnd(1)<p.show*tf then
   local o=sm_adj_road(x,y)
   local w=sm_adj_road(wx,wy)
   if o and w then

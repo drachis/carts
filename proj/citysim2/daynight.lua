@@ -14,6 +14,12 @@ end
 local night_lut=split"1,1,1,2,5,5,7,2,4,9,3,13,1,2,4"
 local eve_lut=split"1,2,3,4,5,13,7,8,9,9,3,13,13,2,4"
 
+-- traffic ebbs at night: ~1 at midday down to ~0.3 at midnight, so the roads
+-- visibly breathe with the day/night cycle (sim scales commuter spawns by this).
+function traffic_factor()
+ return 1-0.7*day_phase()
+end
+
 -- apply the dusk/night remap if it's dark enough (no-op at midday).
 function night_pal()
  local dk=day_phase()
