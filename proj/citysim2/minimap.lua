@@ -23,7 +23,7 @@ function draw_minimap()
    elseif t==2 then
     c=13
    elseif is_road(x,y) then
-    c=5
+    c=peekp(pl_cong,x,y)>p.cong_show and 8 or 5 -- busy roads glow red
    else
     local k=zone_kind(x,y)
     if k then

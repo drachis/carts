@@ -10,26 +10,10 @@
 --   draw_agents()                 -- the moving commuters (agents.lua)
 --   draw_cursor()                 -- the cursor outline (tools.lua)
 --   camera()                      -- reset so the glue draws hud in screen space
--- tint a busy road tile: two red pixels at the tile centre
-function rn_cong_mark(x,y)
- local px,py=x*8+3,y*8+3
- pset(px,py,8)
- pset(px+1,py+1,8)
-end
-
+-- congestion is shown on the minimap (minimap.lua), not as a world overlay.
 function draw_world()
  camera(camx,camy)
  map(0,0,0,0,gw,gw)
- -- congestion overlay (visible window only)
- local cx=flr(camx/8)
- local cy=flr(camy/8)
- for ty=cy,min(gw-1,cy+15) do
-  for tx=cx,min(gw-1,cx+16) do
-   if is_road(tx,ty) and peekp(pl_cong,tx,ty)>p.cong_show then
-    rn_cong_mark(tx,ty)
-   end
-  end
- end
  draw_agents()
  draw_cursor()
  camera()
