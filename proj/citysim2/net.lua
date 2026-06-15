@@ -34,9 +34,10 @@ function update_net()
  end
 end
 
--- tiles that carry power: wires/plant (conducts) plus any zone tile (even empty).
+-- tiles that carry power: wires/plant (conducts), any zone tile (even empty),
+-- and roads with a wire overlay crossing them (pl_wire) — so lines cross roads.
 function power_carries(x,y)
- return conducts(x,y) or is_zone(x,y)
+ return conducts(x,y) or is_zone(x,y) or peekp(pl_wire,x,y)>0
 end
 
 -- the nearest road tile within p.road_reach (chebyshev), scanned ring by ring,

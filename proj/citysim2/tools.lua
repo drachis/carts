@@ -40,7 +40,7 @@ end
 --   bulldoze(6) -> 1 (grass) on anything > grass
 function tool_put(t,x,y)
  if t==1 then
-  return is_buildable(x,y) and 16 or nil
+  return (is_buildable(x,y) or tile(x,y)==0) and 16 or nil  -- roads bridge water
  elseif t==5 then
   return is_buildable(x,y) and 32 or nil
  elseif t>=2 and t<=4 then
@@ -69,8 +69,9 @@ function apply_tool()
  local before=tile(x,y)
  local n=tools_list[tool]
  if n=="bulldoze" then
-  if tile(x,y)>1 and try_spend(cost.dozer) then
+  if (tile(x,y)>1 or peekp(pl_wire,x,y)>0) and try_spend(cost.dozer) then
    set_tile(x,y,1)
+   pokep(pl_wire,x,y,0)  -- also remove any wire overlay
    update_net()
   end
  elseif tool==6 then
@@ -103,7 +104,13 @@ function apply_tool()
    update_net()
   end
  elseif tool==5 then
-  if tool_put(5,x,y) and try_spend(cost.power) then
+  if is_road(x,y) then
+   -- lay a wire crossing the road (overlay plane; the road stays a road)
+   if peekp(pl_wire,x,y)==0 and try_spend(cost.power) then
+    pokep(pl_wire,x,y,1)
+    update_net()
+   end
+  elseif tool_put(5,x,y) and try_spend(cost.power) then
    set_tile(x,y,32+nmask(x,y,conducts))
    for nb in all(neighbors4(x,y)) do
     if conducts(nb.x,nb.y) then

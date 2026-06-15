@@ -40,6 +40,20 @@ function draw_alerts()
  end
 end
 
+-- power-line overlay where a wire crosses a road (pl_wire); the road shows under.
+function draw_wires()
+ local x0,y0=flr(camx/8),flr(camy/8)
+ for ty=y0,y0+16 do
+  for tx=x0,x0+16 do
+   if peekp(pl_wire,tx,ty)>0 then
+    local sx,sy=tx*8,ty*8
+    line(sx,sy+3,sx+7,sy+3,0)
+    pset(sx+2,sy+2,0) pset(sx+5,sy+4,0)
+   end
+  end
+ end
+end
+
 function draw_world()
  camera(camx,camy)
  night_pal()              -- dusk/night colour remap (no-op at midday)
@@ -47,6 +61,7 @@ function draw_world()
  draw_agents()
  pal()                    -- reset so fire/cursor draw at full brightness
  draw_water()             -- water glints (bright, after the night remap)
+ draw_wires()             -- wires crossing roads
  draw_fire()
  draw_fx()
  draw_alerts()            -- no-power lightning bolts

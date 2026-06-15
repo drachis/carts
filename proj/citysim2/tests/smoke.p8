@@ -180,6 +180,22 @@ init_sim() sim_seed()
 for i=1,2000 do update_sim() end
 ok(zone_density(6,13)<2 and zone_density(10,13)<2,"unpowered zones never grow")
 
+-- bridges + wires over roads: roads cross water; a wired road carries power
+init_map()
+set_tile(10,10,0)  -- water
+ok(tool_put(1,10,10)==16,"road tool bridges water")
+init_map()
+set_tile(8,8,60)   -- plant
+set_tile(8,9,32)   -- wire down to the road
+for x=4,12 do set_tile(x,10,16) end -- a road crossing the wire's path
+set_tile(8,11,32)  -- wire continues on the far side
+update_net()
+ok(not powered(8,11),"plain road blocks power (no crossing yet)")
+pokep(pl_wire,8,10,1) -- lay a wire across the road tile
+update_net()
+ok(power_carries(8,10),"a wired road carries power")
+ok(powered(8,11),"power crosses the road through the wire")
+
 -- placement costs money + is denied when broke
 init_map()
 money=2

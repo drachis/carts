@@ -121,5 +121,6 @@ function init_map()
  pclr(pl_fill)
  pclr(pl_cong)
  pclr(pl_need)
+ pclr(pl_wire)
  camx,camy=0,0
 end
