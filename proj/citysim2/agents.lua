@@ -46,10 +46,11 @@ function update_agents()
    local tny=n.y*8+4
    local dx=tnx-a.px
    local dy=tny-a.py
+   -- move one axis at a time; remember heading so we can draw in the right lane
    if dx~=0 then
-    a.px+=sgn(dx)
+    a.px+=sgn(dx) a.hx=sgn(dx) a.hy=0
    elseif dy~=0 then
-    a.py+=sgn(dy)
+    a.py+=sgn(dy) a.hx=0 a.hy=sgn(dy)
    end
    -- crossed into a new tile?
    local ntx=flr(a.px/8)
@@ -91,9 +92,13 @@ end
 
 function draw_agents()
  for _,a in pairs(agents) do
-  pset(a.px,a.py,a.col)
-  pset(a.px+1,a.py,a.col)
-  pset(a.px,a.py+1,a.col)
-  pset(a.px+1,a.py+1,a.col)
+  -- offset to the RIGHT of travel (perp = rotate heading 90deg cw) so opposing
+  -- traffic uses opposite lanes instead of overlapping on the centre line
+  local px=a.px-(a.hy or 0)*2
+  local py=a.py+(a.hx or 0)*2
+  pset(px,py,a.col)
+  pset(px+1,py,a.col)
+  pset(px,py+1,a.col)
+  pset(px+1,py+1,a.col)
  end
 end
