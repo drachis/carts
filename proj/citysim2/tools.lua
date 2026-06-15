@@ -108,9 +108,16 @@ function apply_tool()
   end
  end
  -- dust kick + sound on any successful change; deny blip if nothing happened
- if tile(x,y)~=before then
+ local now=tile(x,y)
+ if now~=before then
   if fx_burst then fx_burst(x*8+4,y*8+4,before>1 and 5 or 6,5) end
   if snd then snd(before>1 and snd_doze or snd_place) end
+  -- recompute the land value the change touched, immediately (rest stays static).
+  if dirty_val then dirty_val(x,y) end
+  -- coverage only changes when a station/park is built or removed: refresh then.
+  if update_cov and (before==61 or before==62 or now==61 or now==62) then
+   update_cov()
+  end
  elseif snd and n~="bulldoze" then
   snd(snd_deny)
  end

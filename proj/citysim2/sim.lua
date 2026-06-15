@@ -113,6 +113,7 @@ local function sm_eval(x,y)
 end
 
 local sm_cd=0
+local sm_id=flr(p.census_iv/2)  -- offset from census so the two don't co-spike
 local function sm_census()
  local r,cj,ij=0,0,0
  for y=0,gw-1 do
@@ -142,11 +143,14 @@ function update_sim()
   elseif ev_hook then ev_hook(b[i]) end
  end
  evq[bi]={}
+ -- amortized maintenance: land value refreshes a couple rows EVERY frame (no
+ -- per-second spike); census + offer index run periodically but on separate
+ -- frames so their scans never stack. coverage is event-driven (tools.lua).
+ step_val(p.val_step)
  sm_cd-=1
- if sm_cd<=0 then
-  sm_cd=p.census_iv sm_index() sm_census() update_val()
-  if update_cov then update_cov() end
- end
+ if sm_cd<=0 then sm_cd=p.census_iv sm_census() end
+ sm_id-=1
+ if sm_id<=0 then sm_id=p.census_iv sm_index() end
 end
 
 function tile_info(x,y)

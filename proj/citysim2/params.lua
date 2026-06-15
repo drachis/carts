@@ -54,6 +54,7 @@ p={
  val_pol=10,         -- desirability lost per nearby polluter (industry/plant)
  val_cong=2,         -- desirability lost per agent on nearby roads
  val_park=24,        -- desirability per nearby park (service +)
+ val_step=1,         -- land-value rows refreshed per frame (~full sweep/sec)
 
  -- fire / disasters (disaster.lua)
  fire_chance=0.0006, -- per-frame odds a random developed zone ignites
