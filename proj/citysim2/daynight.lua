@@ -11,8 +11,9 @@ function day_phase()
 end
 
 -- night LUT: dims structures a notch but KEEPS water blue (12), grass green (3),
--- and the lit windows/lamps (7,10) glowing, so the map stays readable after dark.
-local night_lut=split"1,2,3,2,5,5,7,8,4,10,3,12,1,2,4"
+-- the lit windows/lamps (7,10) glowing, and R's accent green (11) distinct from
+-- grass (mapping 11->3 made residential borders vanish into the lawn at night).
+local night_lut=split"1,2,3,2,5,5,7,8,4,10,11,12,1,2,4"
 
 -- traffic ebbs at night: ~1 at midday down to ~0.3 at midnight, so the roads
 -- visibly breathe with the day/night cycle (sim scales commuter spawns by this).
