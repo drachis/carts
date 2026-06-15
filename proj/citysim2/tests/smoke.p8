@@ -4,6 +4,7 @@ __lua__
 -- headless smoke test: pico8 -x tests/smoke.p8
 #include ../params.lua
 #include ../data.lua
+#include ../notify.lua
 #include ../map.lua
 #include ../router.lua
 #include ../net.lua
@@ -187,6 +188,13 @@ ok(fire_covered(12,13),"zone is inside station coverage")
 ignite(12,13)
 for i=1,600 do update_sim() end
 ok(tile(12,13)~=63,"fire station suppressed the fire")
+
+-- event log: notify pushes a notice; the ring caps at 8
+init_log()
+notify("hello",7,1,2)
+ok(#log==1 and log[1].x==1 and log[1].y==2,"notify records an event with its tile")
+for i=1,12 do notify("spam",7) end
+ok(#log==8,"event log ring caps at 8")
 
 -- save / load round-trip (grid + scalars via companion cart)
 init_map()

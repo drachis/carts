@@ -36,6 +36,7 @@ function ignite(x,y)
  if not (is_zone(x,y) and zone_density(x,y)>0) then return end
  pokep(pl_fire,x,y,p.burn_ttl)
  add(fires,{x=x,y=y})
+ if notify then notify("fire!",8,x,y) end
  schedule(p.fire_int,{k=2,x=x,y=y})
 end
 
@@ -54,6 +55,7 @@ function fire_handler(e)
  if t<=0 then
   unfire(x,y)
   set_tile(x,y,63)  -- collapse to rubble (blocks growth until bulldozed)
+  if notify then notify("burned to rubble",5,x,y) end
   update_net()
  else
   pokep(pl_fire,x,y,t)

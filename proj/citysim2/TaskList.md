@@ -63,6 +63,12 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
   Fire station (tile 62, "fire" tool, cost.fire) suppresses within p.fire_rad.
   pl_fire plane (0x9c00) = burn ticks; fires[] mirrors it for draw_fire flames.
 
+## Legibility ("the sim explains itself")
+- ☑ notify.lua — event log. notify(msg,col,x,y) ring (cap 8); draw_log fades a
+  bottom-left ticker. Sim emits "district booming"/"zone abandoned"; disaster
+  emits "fire!"/"burned to rubble". Calls guarded (`if notify then`) so modules
+  stay decoupled. Each notice keeps its tile for future location-flagging.
+
 ## Polish (HELD — do not start until base game playtested; reserve ~820)
 - ☐ daynight.lua (50) — sprite-bank swap (needs night sprites in gen_gfx)
 - ☐ fx.lua (200) — particles
@@ -102,7 +108,8 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 | save | 220 | 138 |
 | landval | 200 | 134 |
 | disaster | 200 | 428 |
-| cart total | 8192 | 5087 |
+| notify | 150 | 122 |
+| cart total | 8192 | 5263 |
 
 ## Research depth built (this session, autonomous)
 - ☑ economy loop — placement costs money (try_spend), denied when broke.

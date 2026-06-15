@@ -6,6 +6,7 @@ __lua__
 -- modules are #included in dependency order; add each as it lands.
 #include params.lua
 #include data.lua
+#include notify.lua
 #include map.lua
 #include router.lua
 #include net.lua
@@ -32,6 +33,7 @@ function _init()
  sim_seed()
  init_econ()
  init_fire()
+ init_log()
  init_tools()
  update_camera(true)
  mapview=false
@@ -53,6 +55,7 @@ function _draw()
  cls(0)
  draw_world()
  if mapview then draw_minimap() else draw_inspector() end
+ draw_log()
  draw_hud()
  print(tools_list[tool],1,121,10)
 end

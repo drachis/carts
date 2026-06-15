@@ -86,9 +86,11 @@ local function sm_eval(x,y)
  local dv=desir(x,y)  -- 0..255, 128 neutral: weights grow up / decay down
  if access and found and pw and d<3 and rnd(1)<p.grow_rate*dv/128 then
   set_zone(x,y,k,d+1)
+  if d+1==3 and notify then notify("district booming",res_col[k],x,y) end
  elseif (not access or not found or not pw) and d>0
   and rnd(1)<p.decay_rate*(256-dv)/128 then
   set_zone(x,y,k,d-1)
+  if d-1==0 and notify then notify("zone abandoned",5,x,y) end
  end
  -- visible commuter (per p.show)
  if found and d>0 and rnd(1)<p.show then
