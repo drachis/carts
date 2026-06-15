@@ -33,9 +33,13 @@ p={
  month_frames=600,   -- frames per month (20s @ 30fps)
  road_up=1,          -- $ per road tile per month (upkeep, in dollars)
  plant_up=8,         -- $ per plant per month; a big plant costs 4x this
- plant_sup=60,       -- power UNITS a plant feeds its network (1 unit per zone)
+ plant_sup=60,       -- power UNITS a plant feeds its network
  bigplant_sup=180,   -- a big plant feeds far more units
  brownout_iv=20,     -- frames between rolling-brownout rotations when over capacity
+ -- per-zone draw = (density+1) * kind_draw(time)/10. kind_draw lerps day->night
+ -- by day_phase: R sips most at night, C most by day, I steady (R,C,I order).
+ pwr_day=split"4,11,9",   -- midday draw x10 per kind
+ pwr_night=split"11,4,9", -- midnight draw x10 per kind
  job_tax=0.5,        -- jobs taxed at this fraction of the pop rate
  debt_k=-1,          -- debt floor in $k (try_spend won't go below)
  money_cap=32000,    -- $k ceiling (keeps 16.16 fixed-point from flipping)

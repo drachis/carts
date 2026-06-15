@@ -204,10 +204,10 @@ ok(power_carries(10,10),"a wire crosses water")
 
 -- rolling brownouts: when demand exceeds supply only some zones are lit at once
 init_map()
-local osup=p.plant_sup p.plant_sup=3
+local osup=p.plant_sup p.plant_sup=2 tick=0
 for x=4,10 do set_tile(x,9,16) end
 set_tile(4,8,60)                    -- plant
-for x=5,9 do set_zone(x,8,1,0) end  -- 5 zones, demand 5 > supply 3
+for x=5,9 do set_zone(x,8,1,1) end  -- 5 R zones lv1: demand 4 (@noon) > supply 2
 update_net()
 local lit=0
 for x=5,9 do if powered(x,8) then lit+=1 end end

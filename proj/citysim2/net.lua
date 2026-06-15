@@ -37,7 +37,12 @@ function update_net()
      local s=tile(fx,fy)
      if s==60 then psup[id]=(psup[id] or 0)+p.plant_sup add(plants,{x=fx,y=fy})
      elseif s==65 then psup[id]=(psup[id] or 0)+p.bigplant_sup add(plants,{x=fx,y=fy})
-     elseif is_zone(fx,fy) then pdem[id]=(pdem[id] or 0)+1 end
+     elseif is_zone(fx,fy) then
+      -- demand kept per kind (R,C,I) as sum of (density+1); time-of-day weight
+      -- is applied later in powered() so it shifts through the day for free.
+      local pd=pdem[id] if not pd then pd={0,0,0} pdem[id]=pd end
+      pd[zone_kind(fx,fy)]+=zone_density(fx,fy)+1
+     end
     end)
    end
   end
@@ -87,7 +92,13 @@ function powered(x,y)
  end
  local s=psup[id or 0] or 0
  if s==0 then return false end          -- no plant on this network
- local d=pdem[id] or 0
+ -- current demand = sum over kinds of (tier units) * time-of-day draw
+ local pd,d=pdem[id],0
+ if pd then
+  local dp=day_phase and day_phase() or 0
+  for k=1,3 do d+=pd[k]*(p.pwr_day[k]+(p.pwr_night[k]-p.pwr_day[k])*dp) end
+  d=flr(d/10)
+ end
  if s>=d then return true end           -- supply meets demand: all lit
  return (x+y*gw+flr((tick or 0)/p.brownout_iv))%d<s
 end
