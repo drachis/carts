@@ -33,5 +33,5 @@ function draw_inspector()
  f("svc",x+38,y+9,ti.svc)
  f("job",x+2,y+16,ti.served)
  f("cmt",x+20,y+16,ti.commute~=3)   -- red only when a long commute was reported
- f("des",x+38,y+16,ti.val>=124)
+ f("des",x+38,y+16,ti.kind==3 or ti.val>=112)  -- industry ignores land value
 end

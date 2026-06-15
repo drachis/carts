@@ -103,7 +103,7 @@ p={
 cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}
 -- >>> version.lua
 -- version.lua : build id (short git hash), stamped by build_cart.py.
-ver="466d626"
+ver="e49988d"
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -138,6 +138,7 @@ pl_chg=0xb000       -- per-building power battery charge (0..pwr_cap)
 pl_pdist=0xb400     -- power-network distance to the nearest plant (hops; 255=none)
 pl_cmt=0xb800       -- last commute grade reported here (0 none/1 good/2 ok/3 long)
 pl_bridge=0xbc00    -- 1 = this road tile is a bridge (built over water)
+pl_zk=0xc000        -- zone kind a rubble tile remembers (so a crew can re-plot it)
 -- >>> notify.lua
 -- notify.lua : event log — the city narrates itself ("the sim explains itself").
 -- a small ring of recent notable events; sim/disaster push, hud draws a fading
@@ -314,6 +315,7 @@ function init_map()
  pclr(pl_pdist)
  pclr(pl_cmt)
  pclr(pl_bridge)
+ pclr(pl_zk)
  camx,camy=0,0
 end
 -- >>> router.lua
@@ -858,7 +860,9 @@ local function sm_eval(x,y)
  -- a built building runs on its battery; an empty plot just needs the grid to
  -- reach it (served) before a building (with a battery) appears there.
  local pw=d>0 and powered(x,y) or served(x,y)
- local dv=desir(x,y)  -- 0..255, 128 neutral: weights grow up / decay down
+ -- land value weights growth, but INDUSTRY ignores it (it's the polluter; it
+ -- shouldn't be punished for sitting near industry). R/C still care.
+ local dv=k==3 and 128 or desir(x,y)
  -- demand for this kind (-1..1): the rci meter actually drives the city.
  local dmd=k==1 and demand.r or k==2 and demand.c or demand.i
  -- service gate: growing TALL (density >=2) needs station/park coverage.
@@ -1009,6 +1013,7 @@ function fire_handler(e)
  t-=1
  if t<=0 then
   unfire(x,y)
+  pokep(pl_zk,x,y,zone_kind(x,y))  -- rubble remembers what it was, for the crew
   set_tile(x,y,63)  -- collapse to rubble (blocks growth until cleared)
   if notify then notify("burned to rubble",5,x,y) end
   update_net()
@@ -1086,7 +1091,12 @@ function wreck_dispatch(e)
  if tile(rx,ry)~=63 then return end  -- already cleared or bulldozed
  local function clear()
   if tile(rx,ry)==63 then
-   set_tile(rx,ry,1) update_net()
+   -- restore the empty zoned plot it remembers (so the district can rebuild),
+   -- else just clear to grass. matches bulldoze keeping the zoning.
+   local zk=peekp(pl_zk,rx,ry)
+   if zk>0 then set_zone(rx,ry,zk,0) pokep(pl_sat,rx,ry,p.sat_seed) pokep(pl_zk,rx,ry,0)
+   else set_tile(rx,ry,1) end
+   update_net()
    if val_dirty_area then val_dirty_area(rx,ry) end
    if notify then notify("crew cleared rubble",11,rx,ry) end
    if fx_burst then fx_burst(rx*8+4,ry*8+4,5,6) end
@@ -1408,7 +1418,7 @@ function draw_inspector()
  f("svc",x+38,y+9,ti.svc)
  f("job",x+2,y+16,ti.served)
  f("cmt",x+20,y+16,ti.commute~=3)   -- red only when a long commute was reported
- f("des",x+38,y+16,ti.val>=124)
+ f("des",x+38,y+16,ti.kind==3 or ti.val>=112)  -- industry ignores land value
 end
 -- >>> econ.lua
 -- econ.lua : money ($k), tax, time. HEADER — bodies are STUBS for an agent.

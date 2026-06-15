@@ -62,6 +62,7 @@ function fire_handler(e)
  t-=1
  if t<=0 then
   unfire(x,y)
+  pokep(pl_zk,x,y,zone_kind(x,y))  -- rubble remembers what it was, for the crew
   set_tile(x,y,63)  -- collapse to rubble (blocks growth until cleared)
   if notify then notify("burned to rubble",5,x,y) end
   update_net()
@@ -139,7 +140,12 @@ function wreck_dispatch(e)
  if tile(rx,ry)~=63 then return end  -- already cleared or bulldozed
  local function clear()
   if tile(rx,ry)==63 then
-   set_tile(rx,ry,1) update_net()
+   -- restore the empty zoned plot it remembers (so the district can rebuild),
+   -- else just clear to grass. matches bulldoze keeping the zoning.
+   local zk=peekp(pl_zk,rx,ry)
+   if zk>0 then set_zone(rx,ry,zk,0) pokep(pl_sat,rx,ry,p.sat_seed) pokep(pl_zk,rx,ry,0)
+   else set_tile(rx,ry,1) end
+   update_net()
    if val_dirty_area then val_dirty_area(rx,ry) end
    if notify then notify("crew cleared rubble",11,rx,ry) end
    if fx_burst then fx_burst(rx*8+4,ry*8+4,5,6) end

@@ -263,6 +263,7 @@ ignite(10,10)
 ok(peekp(pl_fire,10,10)>0,"ignited zone is on fire")
 for i=1,600 do update_sim() end
 ok(tile(10,10)==63,"fire burned the zone to rubble")
+ok(peekp(pl_zk,10,10)==1,"rubble remembers it was residential")
 ok(not is_buildable(10,10),"rubble blocks rebuild until cleared")
 
 -- coverage: stations + parks project a service field; zones need it to grow tall

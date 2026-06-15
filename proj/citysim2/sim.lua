@@ -90,7 +90,9 @@ local function sm_eval(x,y)
  -- a built building runs on its battery; an empty plot just needs the grid to
  -- reach it (served) before a building (with a battery) appears there.
  local pw=d>0 and powered(x,y) or served(x,y)
- local dv=desir(x,y)  -- 0..255, 128 neutral: weights grow up / decay down
+ -- land value weights growth, but INDUSTRY ignores it (it's the polluter; it
+ -- shouldn't be punished for sitting near industry). R/C still care.
+ local dv=k==3 and 128 or desir(x,y)
  -- demand for this kind (-1..1): the rci meter actually drives the city.
  local dmd=k==1 and demand.r or k==2 and demand.c or demand.i
  -- service gate: growing TALL (density >=2) needs station/park coverage.
