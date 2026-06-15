@@ -51,6 +51,8 @@ p={
  pwr_cap=7,          -- a building's power battery (drains 1 per pwr_iv "hour")
  pwr_pkt=4,          -- energy packet size; grabbed only when there's room for one
  pwr_iv=30,          -- frames per power hour (battery drains/refills on this tick)
+ res_dist=6,         -- a delivered packet loses 1 charge per this many tiles from
+                     --   the nearest plant (line resistance; far buildings dim first)
  job_tax=0.5,        -- jobs taxed at this fraction of the pop rate
  debt_k=-1,          -- debt floor in $k (try_spend won't go below)
  money_cap=32000,    -- $k ceiling (keeps 16.16 fixed-point from flipping)
@@ -97,7 +99,7 @@ p={
 cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}
 -- >>> version.lua
 -- version.lua : build id (short git hash), stamped by build_cart.py.
-ver="725dc4d"
+ver="8675d30"
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -129,6 +131,7 @@ pl_wire=0xa400      -- power-line overlay (>0 = a wire crosses this road tile)
 pl_grace=0xa800     -- "settling" evals left for a new building before it starves
 pl_pow=0xac00       -- power-network component id per carrier tile (supply/demand)
 pl_chg=0xb000       -- per-building power battery charge (0..pwr_cap)
+pl_loss=0xb400      -- per-building transmission loss (charge a packet loses here)
 -- >>> notify.lua
 -- notify.lua : event log — the city narrates itself ("the sim explains itself").
 -- a small ring of recent notable events; sim/disaster push, hud draws a fading
@@ -302,6 +305,7 @@ function init_map()
  pclr(pl_grace)
  pclr(pl_pow)
  pclr(pl_chg)
+ pclr(pl_loss)
  camx,camy=0,0
 end
 -- >>> router.lua
@@ -414,6 +418,17 @@ function update_net()
    end
   end
  end
+ -- transmission loss: a zone's delivered packet loses 1 charge per res_dist tiles
+ -- to the nearest plant (manhattan) -> the far end of the grid dims first.
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if is_zone(x,y) then
+    local md=999
+    for pl in all(plants) do md=min(md,abs(x-pl.x)+abs(y-pl.y)) end
+    pokep(pl_loss,x,y,flr(md/p.res_dist))
+   end
+  end
+ end
 end
 
 -- tiles that carry power: wires/plant (conducts), any zone, service buildings
@@ -478,7 +493,10 @@ function pwr_tick()
   for x=0,gw-1 do
    if is_zone(x,y) then
     local c=max(0,peekp(pl_chg,x,y)-1)
-    if c<=p.pwr_cap-p.pwr_pkt and served(x,y) then c=min(p.pwr_cap,c+p.pwr_pkt) end
+    -- a delivered packet arrives weakened by line resistance (distance loss)
+    if c<=p.pwr_cap-p.pwr_pkt and served(x,y) then
+     c=min(p.pwr_cap,c+max(0,p.pwr_pkt-peekp(pl_loss,x,y)))
+    end
     pokep(pl_chg,x,y,c)
    end
   end

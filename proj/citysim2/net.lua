@@ -47,6 +47,17 @@ function update_net()
    end
   end
  end
+ -- transmission loss: a zone's delivered packet loses 1 charge per res_dist tiles
+ -- to the nearest plant (manhattan) -> the far end of the grid dims first.
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if is_zone(x,y) then
+    local md=999
+    for pl in all(plants) do md=min(md,abs(x-pl.x)+abs(y-pl.y)) end
+    pokep(pl_loss,x,y,flr(md/p.res_dist))
+   end
+  end
+ end
 end
 
 -- tiles that carry power: wires/plant (conducts), any zone, service buildings
@@ -111,7 +122,10 @@ function pwr_tick()
   for x=0,gw-1 do
    if is_zone(x,y) then
     local c=max(0,peekp(pl_chg,x,y)-1)
-    if c<=p.pwr_cap-p.pwr_pkt and served(x,y) then c=min(p.pwr_cap,c+p.pwr_pkt) end
+    -- a delivered packet arrives weakened by line resistance (distance loss)
+    if c<=p.pwr_cap-p.pwr_pkt and served(x,y) then
+     c=min(p.pwr_cap,c+max(0,p.pwr_pkt-peekp(pl_loss,x,y)))
+    end
     pokep(pl_chg,x,y,c)
    end
   end

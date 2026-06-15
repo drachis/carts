@@ -44,6 +44,8 @@ p={
  pwr_cap=7,          -- a building's power battery (drains 1 per pwr_iv "hour")
  pwr_pkt=4,          -- energy packet size; grabbed only when there's room for one
  pwr_iv=30,          -- frames per power hour (battery drains/refills on this tick)
+ res_dist=6,         -- a delivered packet loses 1 charge per this many tiles from
+                     --   the nearest plant (line resistance; far buildings dim first)
  job_tax=0.5,        -- jobs taxed at this fraction of the pop rate
  debt_k=-1,          -- debt floor in $k (try_spend won't go below)
  money_cap=32000,    -- $k ceiling (keeps 16.16 fixed-point from flipping)
