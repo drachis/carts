@@ -107,7 +107,7 @@ set_zone(5,5,1,0) set_zone(6,5,2,0) set_zone(7,5,3,0)
 for x=5,7 do set_tile(x,6,16) end
 set_tile(4,5,60)   -- plant beside R; power conducts through the zone row
 update_net() pwr_tick()
-ok(powered(5,5) and powered(7,5),"minimal city is powered")
+ok(served(5,5) and served(7,5),"the grid reaches the empty plots")
 ok(rcomp(5,5)~=0,"minimal city has road access")
 init_sim() init_agents() sim_seed()
 local built,cars=false,false
@@ -206,7 +206,7 @@ ok(served(8,11),"power crosses the road through the wire")
 init_map()
 set_tile(8,8,60) set_tile(8,9,62) set_zone(8,10,1,0) -- plant-station-zone
 update_net() pwr_tick()
-ok(powered(8,10),"power flows through a service building")
+ok(served(8,10),"power flows through a service building")
 init_map()
 set_tile(10,10,0) pokep(pl_wire,10,10,1)
 ok(power_carries(10,10),"a wire crosses water")
@@ -244,7 +244,7 @@ p.plant_sup=osup
 init_map()
 for x=2,28 do set_tile(x,5,32) end  -- a long power line
 set_tile(2,4,60)                    -- plant at one end
-set_zone(28,6,1,0)                  -- zone at the far end (~28 tiles away)
+set_zone(28,6,1,1)                  -- a BUILT zone at the far end (~28 tiles away)
 update_net()
 ok(peekp(pl_pdist,28,6)>=p.res_dist*p.pwr_pkt,"far building is electrically distant ("..peekp(pl_pdist,28,6)..")")
 for i=1,6 do pwr_tick() end

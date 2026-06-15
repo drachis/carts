@@ -87,7 +87,9 @@ local function sm_eval(x,y)
  local access=rcomp(x,y)~=0
  local wx,wy=sm_complement(x,y,k)
  local found=wx~=nil
- local pw=powered(x,y)
+ -- a built building runs on its battery; an empty plot just needs the grid to
+ -- reach it (served) before a building (with a battery) appears there.
+ local pw=d>0 and powered(x,y) or served(x,y)
  local dv=desir(x,y)  -- 0..255, 128 neutral: weights grow up / decay down
  -- demand for this kind (-1..1): the rci meter actually drives the city.
  local dmd=k==1 and demand.r or k==2 and demand.c or demand.i
@@ -99,7 +101,8 @@ local function sm_eval(x,y)
  pokep(pl_sat,x,y,sat)
  if access and found and pw and dmd>0 and svc and sat>=p.sat_grow and d<3 and rnd(1)<p.grow_rate*dv/128 then
   set_zone(x,y,k,d+1)
-  pokep(pl_sat,x,y,p.sat_seed)  -- a fresh storey opens with goodwill
+  pokep(pl_sat,x,y,p.sat_seed)   -- a fresh storey opens with goodwill
+  pokep(pl_chg,x,y,p.pwr_cap)    -- ...and its lights come on (battery charged)
   if d+1==3 and notify then notify("district booming",res_col[k],x,y) end
  elseif (not access or not found or not pw or dmd<-0.5 or sat<p.sat_low or (d>=2 and not svc)) and d>0
   and rnd(1)<p.decay_rate*(256-dv)/128 then
@@ -167,7 +170,8 @@ function tile_info(x,y)
  if not is_zone(x,y) then return nil end
  local k=zone_kind(x,y)
  local wx,wy=sm_complement(x,y,k)
- return {kind=k,dens=zone_density(x,y),access=rcomp(x,y)~=0,
-  power=powered(x,y),served=wx~=nil,val=desir(x,y),
+ local dn=zone_density(x,y)
+ return {kind=k,dens=dn,access=rcomp(x,y)~=0,
+  power=dn>0 and powered(x,y) or served(x,y),served=wx~=nil,val=desir(x,y),
   svc=(not serviced) or serviced(x,y),unhappy=peekp(pl_sat,x,y)<p.sat_low}
 end

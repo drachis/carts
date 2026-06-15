@@ -37,9 +37,9 @@ function update_net()
      local s=tile(fx,fy)
      if s==60 then psup[id]=(psup[id] or 0)+p.plant_sup add(plants,{x=fx,y=fy})
      elseif s==65 then psup[id]=(psup[id] or 0)+p.bigplant_sup add(plants,{x=fx,y=fy})
-     elseif is_zone(fx,fy) then
-      -- demand kept per kind (R,C,I) as sum of (density+1); time-of-day weight
-      -- is applied later in powered() so it shifts through the day for free.
+     elseif is_zone(fx,fy) and zone_density(fx,fy)>0 then
+      -- only BUILT buildings draw power (an empty plot conducts but sips nothing).
+      -- demand per kind = sum of (density+1); time-of-day weight applied in served.
       local pd=pdem[id] if not pd then pd={0,0,0} pdem[id]=pd end
       pd[zone_kind(fx,fy)]+=zone_density(fx,fy)+1
      end
@@ -125,7 +125,7 @@ end
 function pwr_tick()
  for y=0,gw-1 do
   for x=0,gw-1 do
-   if is_zone(x,y) then
+   if is_zone(x,y) and zone_density(x,y)>0 then  -- empty plots store no power
     local c=max(0,peekp(pl_chg,x,y)-1)
     -- a delivered packet arrives weakened by line resistance (distance loss)
     if c<=p.pwr_cap-p.pwr_pkt and served(x,y) then

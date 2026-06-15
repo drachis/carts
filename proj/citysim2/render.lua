@@ -31,7 +31,7 @@ function draw_alerts()
  local x0,y0=flr(camx/8),flr(camy/8)
  for ty=y0,y0+16 do
   for tx=x0,x0+16 do
-   if is_zone(tx,ty) and not powered(tx,ty) then
+   if is_zone(tx,ty) and zone_density(tx,ty)>0 and not powered(tx,ty) then
     local sx,sy=tx*8,ty*8
     line(sx+4,sy+1,sx+2,sy+4,10)
     line(sx+2,sy+4,sx+5,sy+4,10)

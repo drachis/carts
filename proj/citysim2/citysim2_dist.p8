@@ -105,7 +105,7 @@ p={
 cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}
 -- >>> version.lua
 -- version.lua : build id (short git hash), stamped by build_cart.py.
-ver="85e665c"
+ver="c8e30c5"
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -414,9 +414,9 @@ function update_net()
      local s=tile(fx,fy)
      if s==60 then psup[id]=(psup[id] or 0)+p.plant_sup add(plants,{x=fx,y=fy})
      elseif s==65 then psup[id]=(psup[id] or 0)+p.bigplant_sup add(plants,{x=fx,y=fy})
-     elseif is_zone(fx,fy) then
-      -- demand kept per kind (R,C,I) as sum of (density+1); time-of-day weight
-      -- is applied later in powered() so it shifts through the day for free.
+     elseif is_zone(fx,fy) and zone_density(fx,fy)>0 then
+      -- only BUILT buildings draw power (an empty plot conducts but sips nothing).
+      -- demand per kind = sum of (density+1); time-of-day weight applied in served.
       local pd=pdem[id] if not pd then pd={0,0,0} pdem[id]=pd end
       pd[zone_kind(fx,fy)]+=zone_density(fx,fy)+1
      end
@@ -502,7 +502,7 @@ end
 function pwr_tick()
  for y=0,gw-1 do
   for x=0,gw-1 do
-   if is_zone(x,y) then
+   if is_zone(x,y) and zone_density(x,y)>0 then  -- empty plots store no power
     local c=max(0,peekp(pl_chg,x,y)-1)
     -- a delivered packet arrives weakened by line resistance (distance loss)
     if c<=p.pwr_cap-p.pwr_pkt and served(x,y) then
@@ -871,7 +871,9 @@ local function sm_eval(x,y)
  local access=rcomp(x,y)~=0
  local wx,wy=sm_complement(x,y,k)
  local found=wx~=nil
- local pw=powered(x,y)
+ -- a built building runs on its battery; an empty plot just needs the grid to
+ -- reach it (served) before a building (with a battery) appears there.
+ local pw=d>0 and powered(x,y) or served(x,y)
  local dv=desir(x,y)  -- 0..255, 128 neutral: weights grow up / decay down
  -- demand for this kind (-1..1): the rci meter actually drives the city.
  local dmd=k==1 and demand.r or k==2 and demand.c or demand.i
@@ -883,7 +885,8 @@ local function sm_eval(x,y)
  pokep(pl_sat,x,y,sat)
  if access and found and pw and dmd>0 and svc and sat>=p.sat_grow and d<3 and rnd(1)<p.grow_rate*dv/128 then
   set_zone(x,y,k,d+1)
-  pokep(pl_sat,x,y,p.sat_seed)  -- a fresh storey opens with goodwill
+  pokep(pl_sat,x,y,p.sat_seed)   -- a fresh storey opens with goodwill
+  pokep(pl_chg,x,y,p.pwr_cap)    -- ...and its lights come on (battery charged)
   if d+1==3 and notify then notify("district booming",res_col[k],x,y) end
  elseif (not access or not found or not pw or dmd<-0.5 or sat<p.sat_low or (d>=2 and not svc)) and d>0
   and rnd(1)<p.decay_rate*(256-dv)/128 then
@@ -951,8 +954,9 @@ function tile_info(x,y)
  if not is_zone(x,y) then return nil end
  local k=zone_kind(x,y)
  local wx,wy=sm_complement(x,y,k)
- return {kind=k,dens=zone_density(x,y),access=rcomp(x,y)~=0,
-  power=powered(x,y),served=wx~=nil,val=desir(x,y),
+ local dn=zone_density(x,y)
+ return {kind=k,dens=dn,access=rcomp(x,y)~=0,
+  power=dn>0 and powered(x,y) or served(x,y),served=wx~=nil,val=desir(x,y),
   svc=(not serviced) or serviced(x,y),unhappy=peekp(pl_sat,x,y)<p.sat_low}
 end
 -- >>> disaster.lua
@@ -1310,7 +1314,7 @@ function draw_alerts()
  local x0,y0=flr(camx/8),flr(camy/8)
  for ty=y0,y0+16 do
   for tx=x0,x0+16 do
-   if is_zone(tx,ty) and not powered(tx,ty) then
+   if is_zone(tx,ty) and zone_density(tx,ty)>0 and not powered(tx,ty) then
     local sx,sy=tx*8,ty*8
     line(sx+4,sy+1,sx+2,sy+4,10)
     line(sx+2,sy+4,sx+5,sy+4,10)

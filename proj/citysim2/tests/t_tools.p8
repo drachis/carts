@@ -63,8 +63,8 @@ ok(tile(9,8)>=32 and tile(9,8)<=47,"the power line was placed")
 local cnt=0
 flood(2,2,function() return true end,function() cnt+=1 end,5)
 ok(cnt<=8,"flood respects the capacity cap ("..cnt..")")
-init_map() set_tile(8,8,65) set_zone(8,9,1,0) update_net() pwr_tick()
-ok(powered(8,9),"a big plant powers an adjacent zone")
+init_map() set_tile(8,8,65) set_zone(8,9,1,1) update_net() pwr_tick()
+ok(powered(8,9),"a big plant powers an adjacent built zone")
 
 -- placement charges money; denied when broke
 init_map() init_tools() select_tool("r-zone")
