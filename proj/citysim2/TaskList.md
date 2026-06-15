@@ -80,21 +80,23 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
   emits "fire!"/"burned to rubble". Calls guarded (`if notify then`) so modules
   stay decoupled. Each notice keeps its tile for future location-flagging.
 
-## Playtest feedback (2026-06-15) — work top to bottom
+## Playtest feedback (2026-06-15)
 Sim/build rules:
-- ☐ empty zones should transmit power (zones conduct, not just lines/plant)
-- ☐ zones buildable within 2 tiles of a road (diagonal-from-road must work)
-- ☐ bridges (roads over water) + power lines over roads (so lakes aren't walls)
-- ☐ drag to build / bulldoze (hold button, paint along the cursor)
+- ☑ empty zones transmit power (power_carries: zones conduct)
+- ☑ zones reach a road within p.road_reach=2 tiles (diagonal works)
+- ☑ bridges (roads over water) + power lines over roads (pl_wire overlay)
+- ☑ drag to build / bulldoze (hold action, paint along the cursor)
+- ☑ faster growth (eval_iv 45, grow_rate .45, demand no longer throttles rate)
+- ☑ calmer terrain (sea .08, shorter river) — less crowding
+- ☑ killed the 1s stutter (dirty-queue land value, event-driven coverage)
 Indicators/art:
-- ☐ no-power flashing lightning-bolt over unpowered zones (v1 had it)
-- ☐ R zone blends into grass by day — give it a distinct building colour
-- ☐ water reads black-with-sparkles — recolour to actual blue
-- ☐ smoke should be puffy circfill clouds (v1), not single pixels
+- ☑ no-power flashing lightning bolt over unpowered zones
+- ☑ R zone now tan (reads against grass); water now blue; smoke puffy circfill
 UI:
-- ☐ bring back the v1 toolbar (visible palette; blind cycling feels bad)
-- ☐ top HUD overlaps date/RCI; "j0"=jobs — move jobs into the minimap detail
-- ☐ minimap feels incomplete vs v1 (v1 had city/power/value views + $ summary)
+- ☑ v1-style visible toolbar (sprite icons, current boxed, name+cost)
+- ☑ HUD declutter (dropped j0, fixed date/RCI overlap; pop+jobs on minimap)
+- ☑ minimap shows empty zones (grey) incl R; pop/jobs detail line
+- ☐ (optional) minimap power/value overlay views (v1 had these) — deferred
 
 ## Polish (juice)
 - ☑ daynight.lua (76) — day/night cycle via **pal() colour remap** (NOT a dither
