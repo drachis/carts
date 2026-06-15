@@ -15,6 +15,10 @@ __lua__
 #include tools.lua
 #include render.lua
 #include inspector.lua
+#include econ.lua
+#include hud.lua
+#include minimap.lua
+#include save.lua
 
 -- glue owns _init/_update/_draw; modules never define them.
 function _init()
@@ -24,22 +28,28 @@ function _init()
  init_agents()
  init_sim()
  sim_seed()
+ init_econ()
  init_tools()
  update_camera(true)
+ mapview=false
+ menuitem(1,"save city",save_city)
+ menuitem(2,"load city",load_city)
+ menuitem(3,"map view",function() mapview=not mapview end)
 end
 
 function _update()
  update_tools()
  update_sim()
  update_agents()
+ update_econ()
 end
 
 function _draw()
  cls(0)
  draw_world()
- print("pop "..pop.." jobs "..jobs,1,1,7)
+ if mapview then draw_minimap() else draw_inspector() end
+ draw_hud()
  print(tools_list[tool],1,121,10)
- draw_inspector()
 end
 __gfx__
 1111111c333333333335533300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

@@ -44,16 +44,25 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
   tile id so map() renders the city directly.
 - ☑ render.lua (550→**111**) — draw_world: camera + map() + congestion overlay
   (red on busy roads) + agents + cursor. Built header→agent-fleshed.
-- ☐ hud.lua (500) — RCI demand bars + minimap (split from the glue's inline hud)
+- ☑ hud.lua (500→**170**) — top bar (money/pop/jobs/date) + RCI demand bars. header→agent.
 - ☑ inspector.lua (300→**108**) — panel over the cursor tile: kind+density +
   no road/starved/thriving. Opaque bg (avoids the citysim no-bg bug). header→agent.
-- ☐ econ.lua (200) — money($k), tax, time; revenue read from sim
+- ☑ econ.lua (200→**230**) — money($k), mfmt, try_spend (debt floor), tax, monthly
+  tick (income from pop/jobs, road upkeep). header→agent.
+- ☑ minimap.lua (300→**203**) — whole-city overview (3px/tile, opaque bg, camera
+  viewport rect), toggled from the pause menu. header→agent.
+- ☑ save.lua (220→**138**) — save/load: scalars in spare map cells + cstore/reload
+  grid (0x2000) + planes (0x8000) to companion cart; rebuilds transient state.
+  header→agent. round-trip verified in smoke.
 
 ## Polish (HELD — do not start until base game playtested; reserve ~820)
-- ☐ daynight.lua (50) — sprite-bank swap
+- ☐ daynight.lua (50) — sprite-bank swap (needs night sprites in gen_gfx)
 - ☐ fx.lua (200) — particles
-- ☐ save.lua (220) — cstore/reload grid + 0x8000 planes to companion cart
 - ☐ sfx/music hooks (60)
+
+## Method
+- ☑ skill `delegate-module` written (~/.claude/skills/) — codifies header→agent→
+  verify loop used for tools/render/inspector/econ/hud/save/minimap.
 
 ## Lead loop
 1. Hand a module's §11 contract to an agent (other model).
@@ -79,7 +88,11 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 | tools  | 1000 | 398 |
 | render | 550 | 111 |
 | inspector | 300 | 108 |
-| cart total | 8192 | 3359 |
+| econ | 200 | 230 |
+| hud | 500 | 170 |
+| minimap | 300 | 203 |
+| save | 220 | 138 |
+| cart total | 8192 | 4129 |
 
 Note: agents under-estimate their own token cost (map agent guessed ~390, real
 577). The lead's `count_tokens.py` is the gate before integrating.

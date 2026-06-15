@@ -26,6 +26,8 @@ p={
 
  -- economy (money in THOUSANDS of dollars, see LEARNINGS)
  start_money=2,      -- $2k
- tax_rate=2,
+ tax_rate=2,         -- tax points; income scales with this
+ month_frames=600,   -- frames per month (20s @ 30fps)
+ road_up=1,          -- $ per road tile per month (upkeep, in dollars)
  day_frames=1800,    -- full day/night cycle (60s @ 30fps)
 }

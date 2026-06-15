@@ -11,6 +11,8 @@ __lua__
 #include ../agents.lua
 #include ../sim.lua
 #include ../tools.lua
+#include ../econ.lua
+#include ../save.lua
 
 local pass,fail=0,0
 function ok(c,n)
@@ -94,6 +96,27 @@ set_tile(0,0,0) -- water
 ok(tool_put(2,0,0)==nil,"tool_put rejects unbuildable (water)")
 cur={x=8,y=8} tool=6 apply_tool()
 ok(tile(8,8)==1,"bulldoze clears to grass")
+
+-- econ: $k money formatting + spending
+init_econ()
+ok(mfmt(0.5)=="$500","mfmt sub-1k shows dollars")
+ok(mfmt(2)=="$2k","mfmt whole thousands")
+ok(mfmt(1500)=="$1.5m","mfmt millions")
+ok(mfmt(-3)=="-$3k","mfmt negative")
+money=2
+ok(try_spend(1000) and money==1,"try_spend deducts $k")
+ok(not try_spend(10000),"try_spend rejects past the debt floor")
+
+-- save / load round-trip (grid + scalars via companion cart)
+init_map()
+for x=4,10 do set_tile(x,5,16) end
+set_zone(6,4,1,1)
+money=7 month=5 year=1963 tax_rate=3
+save_city()
+money=1 month=1 year=1950 set_tile(6,4,1)
+load_city()
+ok(money==7 and month==5 and year==1963 and tax_rate==3,"save/load restores scalars")
+ok(zone_kind(6,4)==1,"save/load restores the grid")
 
 printh("---- "..pass.." passed, "..fail.." failed ----")
 if fail>0 then printh("test result: fail") else printh("test result: pass") end
