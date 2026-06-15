@@ -22,6 +22,8 @@ p={
  i_per=4,            -- jobs per industrial density
  grow_rate=0.45,     -- chance a fully-served zone densifies on an eval
  decay_rate=0.15,    -- chance a starved zone downgrades on an eval
+ grace=160,          -- evals a NEW building is "settling" before it can starve
+                     --   (~1 in-game year; gives agents time to find work)
 
  -- agents / visibility (the lively-city knob, DESIGN s10)
  agent_cap=80,       -- max live visible agents
@@ -109,6 +111,7 @@ pl_val=0x9800       -- desirability 0..255 (128 neutral); land value
 pl_fire=0x9c00      -- burn ticks remaining (>0 = on fire); 0 = not burning
 pl_cov=0xa000       -- service coverage (>0 = a station/park serves this tile)
 pl_wire=0xa400      -- power-line overlay (>0 = a wire crosses this road tile)
+pl_grace=0xa800     -- "settling" evals left for a new building before it starves
 -- >>> notify.lua
 -- notify.lua : event log — the city narrates itself ("the sim explains itself").
 -- a small ring of recent notable events; sim/disaster push, hud draws a fading
@@ -245,15 +248,18 @@ end
 -- camera (pixel-smooth ease toward cursor)
 camx,camy=0,0
 
+-- the playfield is the screen between the top HUD (7px) and bottom toolbar
+-- (10px). keep the cursor inside it, and let camy dip to -7 / rise so the edge
+-- rows sit just below the HUD / above the toolbar (not hidden under either).
 function update_camera(snap)
  local px,py=cur.x*8,cur.y*8
  local tx,ty=camx,camy
  if px-tx<16  then tx=px-16  end
  if px-tx>104 then tx=px-104 end
  if py-ty<16  then ty=py-16  end
- if py-ty>96  then ty=py-96  end
+ if py-ty>100 then ty=py-100 end
  tx=mid(0,tx,gw*8-128)
- ty=mid(0,ty,gw*8-120)
+ ty=mid(-7,ty,gw*8-118)
  if snap then
   camx,camy=tx,ty
  else
@@ -276,6 +282,7 @@ function init_map()
  pclr(pl_cong)
  pclr(pl_need)
  pclr(pl_wire)
+ pclr(pl_grace)
  camx,camy=0,0
 end
 -- >>> router.lua
@@ -371,10 +378,11 @@ function update_net()
  end
 end
 
--- tiles that carry power: wires/plant (conducts), any zone tile (even empty),
--- and roads with a wire overlay crossing them (pl_wire) — so lines cross roads.
+-- tiles that carry power: wires/plant (conducts), any zone, service buildings
+-- (park 61 / station 62), and a wire overlay crossing a road or water (pl_wire).
 function power_carries(x,y)
- return conducts(x,y) or is_zone(x,y) or peekp(pl_wire,x,y)>0
+ local s=tile(x,y)
+ return conducts(x,y) or is_zone(x,y) or s==61 or s==62 or peekp(pl_wire,x,y)>0
 end
 
 -- the nearest road tile within p.road_reach (chebyshev), scanned ring by ring,
@@ -748,10 +756,14 @@ local function sm_eval(x,y)
  local dmd=k==1 and demand.r or k==2 and demand.c or demand.i
  -- service gate: growing TALL (density >=2) needs station/park coverage.
  local svc=(not serviced) or d<1 or serviced(x,y)
+ -- settling grace: a new building can't starve for ~a year (time to find work).
+ local g=peekp(pl_grace,x,y)
+ if g>0 then pokep(pl_grace,x,y,g-1) end
  if access and found and pw and dmd>0 and svc and d<3 and rnd(1)<p.grow_rate*dv/128 then
   set_zone(x,y,k,d+1)
+  pokep(pl_grace,x,y,p.grace)  -- a fresh building resets the settling clock
   if d+1==3 and notify then notify("district booming",res_col[k],x,y) end
- elseif (not access or not found or not pw or dmd<-0.5 or (d>=2 and not svc)) and d>0
+ elseif g==0 and (not access or not found or not pw or dmd<-0.5 or (d>=2 and not svc)) and d>0
   and rnd(1)<p.decay_rate*(256-dv)/128 then
   set_zone(x,y,k,d-1)
   if d-1==0 and notify then notify("zone abandoned",5,x,y) end
@@ -818,7 +830,7 @@ function tile_info(x,y)
  local wx=sm_complement(x,y,k)
  return {kind=k,dens=zone_density(x,y),access=rcomp(x,y)~=0,
   power=powered(x,y),served=wx~=nil,val=desir(x,y),
-  svc=(not serviced) or serviced(x,y)}
+  svc=(not serviced) or serviced(x,y),settling=peekp(pl_grace,x,y)>0}
 end
 -- >>> disaster.lua
 -- disaster.lua : fire — the event loop's namesake. zones ignite, burn over
@@ -984,10 +996,10 @@ local function spawn(x,y,dx,dy,life,col,puff)
  if #parts<72 then add(parts,{x=x,y=y,dx=dx,dy=dy,l=life,c=col,r=puff and 0,puff=puff}) end
 end
 
--- a rising smoke puff from world-pixel (px,py); dark for fire, grey for plant.
--- puff=true -> drawn as a growing circfill cloud (v1 look), not a single pixel.
+-- a slow rising smoke puff from world-pixel (px,py); dark for fire, grey plant.
+-- drifts up in a tight column and dissipates (shrinks) rather than popping.
 local function smoke(px,py,dark)
- spawn(px,py,(rnd(2)-1)*0.2,-0.3-rnd(0.3),24+rnd(16),dark and 5 or 6,true)
+ spawn(px,py,(rnd(2)-1)*0.08,-0.18-rnd(0.14),28+rnd(16),dark and 5 or 6,true)
 end
 
 -- an outward burst (dust on placement, sparks on collapse).
@@ -1002,9 +1014,9 @@ function update_fx()
  for i=#parts,1,-1 do
   local q=parts[i]
   q.x+=q.dx q.y+=q.dy q.dy+=0.02 q.l-=1
-  -- puffs swell as they rise; smoke cools grey->dark as it ages
-  if q.puff then q.r=min(2.5,q.r+0.05) end
-  if q.c==6 and q.l<10 then q.c=5 end
+  -- puffs swell a little as they rise; smoke cools grey->dark as it ages
+  if q.puff then q.r=min(2,q.r+0.03) end
+  if q.c==6 and q.l<14 then q.c=5 end
   if q.l<=0 then deli(parts,i) end
  end
  fxc+=1
@@ -1021,7 +1033,7 @@ end
 function draw_fx()
  for q in all(parts) do
   if q.puff then
-   circfill(q.x,q.y,q.r,q.c)
+   circfill(q.x,q.y,min(q.r,q.l*0.18),q.c)  -- shrink as it dies = dissipating
   else
    pset(q.x,q.y,q.c)
   end
@@ -1099,9 +1111,11 @@ function apply_tool()
  local before=tile(x,y)
  local n=tools_list[tool]
  if n=="bulldoze" then
-  if (tile(x,y)>1 or peekp(pl_wire,x,y)>0) and try_spend(cost.dozer) then
+  if peekp(pl_wire,x,y)>0 then
+   -- peel the wire overlay first, leaving the road/water underneath
+   if try_spend(cost.dozer) then pokep(pl_wire,x,y,0) update_net() end
+  elseif tile(x,y)>1 and try_spend(cost.dozer) then
    set_tile(x,y,1)
-   pokep(pl_wire,x,y,0)  -- also remove any wire overlay
    update_net()
   end
  elseif tool==6 then
@@ -1120,6 +1134,7 @@ function apply_tool()
  elseif tool>=2 and tool<=4 then
   if is_buildable(x,y) and try_spend(cost.zone) then
    set_zone(x,y,tool-1,0)
+   pokep(pl_grace,x,y,p.grace)  -- new plot gets a year to settle
    update_net()
    schedule(0,{k=1,x=x,y=y})
   end
@@ -1134,16 +1149,17 @@ function apply_tool()
    update_net()
   end
  elseif tool==5 then
-  if is_road(x,y) then
-   -- lay a wire crossing the road (overlay plane; the road stays a road)
+  if is_road(x,y) or tile(x,y)==0 then
+   -- lay a wire crossing a road or water (overlay plane; the tile stays put)
    if peekp(pl_wire,x,y)==0 and try_spend(cost.power) then
     pokep(pl_wire,x,y,1)
     update_net()
    end
   elseif tool_put(5,x,y) and try_spend(cost.power) then
    set_tile(x,y,32+nmask(x,y,conducts))
+   -- re-autotile only neighbouring power LINES (32..47); never a plant/zone
    for nb in all(neighbors4(x,y)) do
-    if conducts(nb.x,nb.y) then
+    if tile(nb.x,nb.y)>=32 and tile(nb.x,nb.y)<=47 then
      set_tile(nb.x,nb.y,32+nmask(nb.x,nb.y,conducts))
     end
    end
@@ -1182,16 +1198,17 @@ local tb_cost=split"road,zone,zone,zone,power,plant,park,fire,dozer"
 function draw_toolbar()
  rectfill(0,118,127,127,0)
  for i=1,#tools_list do
-  local x=2+(i-1)*9
+  local x=1+(i-1)*9
   local s=tb_spr[i]
   if s>=0 then spr(s,x,119)
   else line(x+1,120,x+6,125,8) line(x+6,120,x+1,125,8) end -- bulldoze X
   if i==tool then rect(x-1,118,x+8,127,7) end
  end
- local lx=2+#tools_list*9+2
- print(tools_list[tool],lx,119,10)
+ -- tool name + cost on ONE line in the space right of the icons
+ local lx=1+#tools_list*9+1
  local ck=tb_cost[tool]
- if ck and cost[ck] then print("$"..cost[ck],lx,125,6) end
+ local lbl=tools_list[tool]..(ck and cost[ck] and " $"..cost[ck] or "")
+ print(lbl,min(lx,128-#lbl*4),121,10)
 end
 -- >>> render.lua
 -- render.lua : world drawing. HEADER — draw_world is a STUB for an agent.
@@ -1287,10 +1304,13 @@ function draw_inspector()
  rectfill(x,y,x+46,y+29,0)
  rect(x,y,x+46,y+29,5)
  print(ins_kinds[ti.kind].." lv"..ti.dens,x+2,y+2,ins_cols[ti.kind])
+ -- status, plainest cause first. "served" = a trading partner is reachable;
+ -- say what's missing per kind instead of the cryptic "starved".
  local st="thriving"
  if not ti.access then st="no road"
  elseif not ti.power then st="no power"
- elseif not ti.served then st="starved"
+ elseif ti.settling then st="settling in"
+ elseif not ti.served then st=ti.kind==1 and "no jobs" or ti.kind==2 and "no trade" or "no buyers"
  elseif ti.dens>=2 and not ti.svc then st="needs svc" end
  print(st,x+2,y+9,7)
  -- land value: green desirable / red blighted
@@ -1411,7 +1431,7 @@ function draw_minimap()
    local t=tile(x,y)
    local c
    if t==0 then
-    c=1
+    c=12
    elseif t==2 then
     c=13
    elseif is_road(x,y) then
@@ -1445,9 +1465,9 @@ function day_phase()
  return (1-cos((tick or 0)/p.day_frames))/2
 end
 
--- colour i -> darker i. index 7 (white) stays 7 so windows/lights glow.
-local night_lut=split"1,1,1,2,5,5,7,2,4,9,3,13,1,2,4"
-local eve_lut=split"1,2,3,4,5,13,7,8,9,9,3,13,13,2,4"
+-- night LUT: dims structures a notch but KEEPS water blue (12), grass green (3),
+-- and the lit windows/lamps (7,10) glowing, so the map stays readable after dark.
+local night_lut=split"1,2,3,2,5,5,7,8,4,10,3,12,1,2,4"
 
 -- traffic ebbs at night: ~1 at midday down to ~0.3 at midnight, so the roads
 -- visibly breathe with the day/night cycle (sim scales commuter spawns by this).
@@ -1455,11 +1475,11 @@ function traffic_factor()
  return 1-0.7*day_phase()
 end
 
--- apply the dusk/night remap if it's dark enough (no-op at midday).
+-- two states only: day (no remap) or night. no morning/evening tween.
 function night_pal()
- local dk=day_phase()
- local l=dk>0.62 and night_lut or (dk>0.34 and eve_lut)
- if l then for i=1,15 do pal(i,l[i]) end end
+ if day_phase()>0.5 then
+  for i=1,15 do pal(i,night_lut[i]) end
+ end
 end
 -- >>> save.lua
 -- save.lua : save/load via cstore/reload to a companion cart. HEADER — stubs.
