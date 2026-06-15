@@ -29,6 +29,27 @@ p={
  tax_rate=2,         -- tax points; income scales with this
  month_frames=600,   -- frames per month (20s @ 30fps)
  road_up=1,          -- $ per road tile per month (upkeep, in dollars)
+ job_tax=0.5,        -- jobs taxed at this fraction of the pop rate
+ debt_k=-1,          -- debt floor in $k (try_spend won't go below)
+ money_cap=32000,    -- $k ceiling (keeps 16.16 fixed-point from flipping)
+ start_year=1950,
+
+ -- demand / census (derived rci meter, sim.lua)
+ census_iv=30,       -- ticks between census + demand recompute
+ dem_rdiv=32,        -- residential demand divisor
+ dem_div=24,         -- commercial/industrial demand divisor
+ dem_c=0.5,          -- target jobs per resident (commercial)
+ dem_i=0.7,          -- target jobs per resident (industrial)
+
+ -- terrain (terrain.lua)
+ sea_pct=0.14,       -- fraction of the map below sea level (water)
+ mtn_pct=0.9,        -- elevation percentile above which is mountain
+ terr_blur=2,        -- heightmap smoothing passes
+ river_jit=28,       -- river meander jitter
+
+ -- render (render.lua)
+ cong_show=2,        -- agents on a road before it reads as congested
+
  day_frames=1800,    -- full day/night cycle (60s @ 30fps)
 }
 

@@ -25,7 +25,7 @@ function draw_world()
  local cy=flr(camy/8)
  for ty=cy,min(gw-1,cy+15) do
   for tx=cx,min(gw-1,cx+16) do
-   if is_road(tx,ty) and peekp(pl_cong,tx,ty)>2 then
+   if is_road(tx,ty) and peekp(pl_cong,tx,ty)>p.cong_show then
     rn_cong_mark(tx,ty)
    end
   end

@@ -7,13 +7,13 @@
 money=2
 tax_rate=2
 month=1
-year=1950
+year=p.start_year
 ec_f=0
 
 function init_econ()
  money=p.start_money
  tax_rate=p.tax_rate
- month=1 year=1950
+ month=1 year=p.start_year
  ec_f=0
 end
 
@@ -32,7 +32,7 @@ end
 -- spend n DOLLARS; allow down to -$1k debt; return true if allowed.
 function try_spend(n)
  local d=n/1000
- if money-d>=-1 then money-=d return true end
+ if money-d>=p.debt_k then money-=d return true end
  return false
 end
 
@@ -43,7 +43,7 @@ function update_econ()
  ec_f=0
  month=month%12+1
  if month==1 then year+=1 end
- local income=pop*tax_rate+flr(jobs*tax_rate/2)
+ local income=pop*tax_rate+flr(jobs*tax_rate*p.job_tax)
  local roads=0
  for y=0,gw-1 do
   for x=0,gw-1 do
@@ -51,5 +51,5 @@ function update_econ()
   end
  end
  local upkeep=roads*p.road_up
- money=min(32000,money+(income-upkeep)/1000)
+ money=min(p.money_cap,money+(income-upkeep)/1000)
 end

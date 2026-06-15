@@ -110,9 +110,9 @@ local function sm_census()
   end
  end
  pop=r jobs=cj+ij
- demand.r=mid(-1,(jobs-pop)/32,1)
- demand.c=mid(-1,(pop*0.5-cj)/24,1)
- demand.i=mid(-1,(pop*0.7-ij)/24,1)
+ demand.r=mid(-1,(jobs-pop)/p.dem_rdiv,1)
+ demand.c=mid(-1,(pop*p.dem_c-cj)/p.dem_div,1)
+ demand.i=mid(-1,(pop*p.dem_i-ij)/p.dem_div,1)
 end
 
 function update_sim()
@@ -125,7 +125,7 @@ function update_sim()
  end
  evq[bi]={}
  sm_cd-=1
- if sm_cd<=0 then sm_cd=30 sm_index() sm_census() end
+ if sm_cd<=0 then sm_cd=p.census_iv sm_index() sm_census() end
 end
 
 function tile_info(x,y)

@@ -4,7 +4,7 @@
 function gen_terrain()
  local buf={}
  for i=0,gw*gw-1 do buf[i]=rnd(256) end
- for _=1,2 do
+ for _=1,p.terr_blur do
   local t={}
   for y=0,gw-1 do for x=0,gw-1 do
    local s,n=0,0
@@ -22,8 +22,8 @@ function gen_terrain()
  local cum,sea,mtn,n=0,0,256,gw*gw
  for i=0,255 do
   cum+=h[i]
-  if sea==0 and cum>=n*0.14 then sea=i end
-  if mtn==256 and cum>=n*0.90 then mtn=i end
+  if sea==0 and cum>=n*p.sea_pct then sea=i end
+  if mtn==256 and cum>=n*p.mtn_pct then mtn=i end
  end
  local bx,by,be=0,0,-1
  for y=0,gw-1 do for x=0,gw-1 do
@@ -42,7 +42,7 @@ function gen_terrain()
   for _,nb in pairs(neighbors4(cx,cy)) do
    local ne=peekp(pl_elev,nb.x,nb.y)
    if ne>0 then
-    ne=ne+rnd(28)
+    ne=ne+rnd(p.river_jit)
     if ne<mn then mn=ne nx=nb.x ny=nb.y end
    end
   end
