@@ -67,14 +67,22 @@ function update_agents()
     a.i+=1
    end
    if a.i>#a.path then
-    alive=false
+    -- arrived. a job-carrying vehicle (crew/engine) is done; a commuter turns
+    -- around and heads home, so trips are visible round-trips, not one-way.
+    if a.job or a.ret then
+     alive=false
+    else
+     a.ret=true
+     local r={}
+     for j=#a.path,1,-1 do add(r,a.path[j]) end
+     a.path=r a.i=2
+    end
    end
   end
   if alive then
    add(keep,a)
   else
    ag_remove(a)
-   -- arrived (path complete, not life-expired)? run its on-arrive job.
    if a.job and a.i>#a.path then a.job() end
   end
  end

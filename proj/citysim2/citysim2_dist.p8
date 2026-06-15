@@ -88,7 +88,7 @@ p={
 cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}
 -- >>> version.lua
 -- version.lua : build id (short git hash), stamped by build_cart.py.
-ver="bf56fb2"
+ver="7047d3c"
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -639,14 +639,22 @@ function update_agents()
     a.i+=1
    end
    if a.i>#a.path then
-    alive=false
+    -- arrived. a job-carrying vehicle (crew/engine) is done; a commuter turns
+    -- around and heads home, so trips are visible round-trips, not one-way.
+    if a.job or a.ret then
+     alive=false
+    else
+     a.ret=true
+     local r={}
+     for j=#a.path,1,-1 do add(r,a.path[j]) end
+     a.path=r a.i=2
+    end
    end
   end
   if alive then
    add(keep,a)
   else
    ag_remove(a)
-   -- arrived (path complete, not life-expired)? run its on-arrive job.
    if a.job and a.i>#a.path then a.job() end
   end
  end
@@ -1126,8 +1134,13 @@ function apply_tool()
  if pc=="d" then
   if peekp(pl_wire,x,y)>0 then            -- peel a wire overlay first
    if try_spend(cost.dozer) then pokep(pl_wire,x,y,0) update_net() end
+  elseif is_zone(x,y) and zone_density(x,y)>0 then
+   -- raze the BUILDING but keep the zoning (v1 lesson); it can rebuild
+   if try_spend(cost.dozer) then
+    set_zone(x,y,zone_kind(x,y),0) pokep(pl_grace,x,y,p.grace) update_net()
+   end
   elseif tile(x,y)>1 and try_spend(cost.dozer) then
-   set_tile(x,y,1) update_net()
+   set_tile(x,y,1) update_net()       -- empty zone / road / building -> grass
   end
  elseif pc=="b" then                       -- a building on grass
   if is_buildable(x,y) and try_spend(cost[t[3]]) then

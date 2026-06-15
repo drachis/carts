@@ -69,8 +69,13 @@ function apply_tool()
  if pc=="d" then
   if peekp(pl_wire,x,y)>0 then            -- peel a wire overlay first
    if try_spend(cost.dozer) then pokep(pl_wire,x,y,0) update_net() end
+  elseif is_zone(x,y) and zone_density(x,y)>0 then
+   -- raze the BUILDING but keep the zoning (v1 lesson); it can rebuild
+   if try_spend(cost.dozer) then
+    set_zone(x,y,zone_kind(x,y),0) pokep(pl_grace,x,y,p.grace) update_net()
+   end
   elseif tile(x,y)>1 and try_spend(cost.dozer) then
-   set_tile(x,y,1) update_net()
+   set_tile(x,y,1) update_net()       -- empty zone / road / building -> grass
   end
  elseif pc=="b" then                       -- a building on grass
   if is_buildable(x,y) and try_spend(cost[t[3]]) then
