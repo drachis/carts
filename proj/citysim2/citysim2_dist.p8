@@ -105,7 +105,7 @@ p={
 cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}
 -- >>> version.lua
 -- version.lua : build id (short git hash), stamped by build_cart.py.
-ver="dad6ae5"
+ver="f1ee22e"
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -442,11 +442,12 @@ function update_net()
  end
 end
 
--- tiles that carry power: wires/plant (conducts), any zone, service buildings
--- (park 61 / station 62), and a wire overlay crossing a road or water (pl_wire).
+-- tiles that carry power: wires/plant (conducts), any zone, the built service
+-- depots (fire station 62, recycling/waste 64 — NOT parks), and a wire overlay
+-- crossing a road or water (pl_wire).
 function power_carries(x,y)
  local s=tile(x,y)
- return conducts(x,y) or is_zone(x,y) or s==61 or s==62 or s==64 or s==65 or peekp(pl_wire,x,y)>0
+ return conducts(x,y) or is_zone(x,y) or s==62 or s==64 or peekp(pl_wire,x,y)>0
 end
 
 -- the nearest road tile within p.road_reach (chebyshev), scanned ring by ring,

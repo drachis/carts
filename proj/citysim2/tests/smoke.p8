@@ -204,9 +204,15 @@ ok(served(8,11),"power crosses the road through the wire")
 
 -- service buildings carry power; wires cross water too
 init_map()
-set_tile(8,8,60) set_tile(8,9,62) set_zone(8,10,1,0) -- plant-station-zone
+set_tile(8,8,60) set_tile(8,9,62) set_zone(8,10,1,0) -- plant-firestation-zone
 update_net() pwr_tick()
-ok(served(8,10),"power flows through a service building")
+ok(served(8,10),"a fire station conducts power")
+init_map() set_tile(8,8,60) set_tile(8,9,64) set_zone(8,10,1,0) -- plant-waste-zone
+update_net()
+ok(served(8,10),"a recycling/waste station conducts power")
+init_map() set_tile(8,8,60) set_tile(8,9,61) set_zone(8,10,1,0) -- plant-park-zone
+update_net()
+ok(not served(8,10),"a park does NOT conduct power")
 init_map()
 set_tile(10,10,0) pokep(pl_wire,10,10,1)
 ok(power_carries(10,10),"a wire crosses water")
