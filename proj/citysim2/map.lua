@@ -128,6 +128,6 @@ function init_map()
  pclr(pl_grace)
  pclr(pl_pow)
  pclr(pl_chg)
- pclr(pl_loss)
+ pclr(pl_pdist)
  camx,camy=0,0
 end

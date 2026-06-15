@@ -231,7 +231,7 @@ for x=2,28 do set_tile(x,5,32) end  -- a long power line
 set_tile(2,4,60)                    -- plant at one end
 set_zone(28,6,1,0)                  -- zone at the far end (~28 tiles away)
 update_net()
-ok(peekp(pl_loss,28,6)>=p.pwr_pkt,"far building has heavy line loss")
+ok(peekp(pl_pdist,28,6)>=p.res_dist*p.pwr_pkt,"far building is electrically distant ("..peekp(pl_pdist,28,6)..")")
 for i=1,6 do pwr_tick() end
 ok(not powered(28,6),"resistance: a building too far from the plant stays dark")
 

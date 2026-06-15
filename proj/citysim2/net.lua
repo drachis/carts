@@ -47,14 +47,19 @@ function update_net()
    end
   end
  end
- -- transmission loss: a zone's delivered packet loses 1 charge per res_dist tiles
- -- to the nearest plant (manhattan) -> the far end of the grid dims first.
- for y=0,gw-1 do
-  for x=0,gw-1 do
-   if is_zone(x,y) then
-    local md=999
-    for pl in all(plants) do md=min(md,abs(x-pl.x)+abs(y-pl.y)) end
-    pokep(pl_loss,x,y,flr(md/p.res_dist))
+ -- power-network distance from the nearest plant: multi-source BFS over the
+ -- carriers (same router substrate as road pathing, just a different network).
+ -- a packet loses 1 charge per res_dist hops, so the far end of the line dims
+ -- first and the loss follows the actual wires around lakes (not a straight line).
+ memset(pl_pdist,255,gw*gw)
+ local q,qi={},1
+ for pl in all(plants) do pokep(pl_pdist,pl.x,pl.y,0) add(q,pl) end
+ while qi<=#q do
+  local c=q[qi] qi+=1
+  local nd=peekp(pl_pdist,c.x,c.y)+1
+  for n in all(neighbors4(c.x,c.y)) do
+   if power_carries(n.x,n.y) and peekp(pl_pdist,n.x,n.y)>nd then
+    pokep(pl_pdist,n.x,n.y,nd) add(q,{x=n.x,y=n.y})
    end
   end
  end
@@ -124,7 +129,7 @@ function pwr_tick()
     local c=max(0,peekp(pl_chg,x,y)-1)
     -- a delivered packet arrives weakened by line resistance (distance loss)
     if c<=p.pwr_cap-p.pwr_pkt and served(x,y) then
-     c=min(p.pwr_cap,c+max(0,p.pwr_pkt-peekp(pl_loss,x,y)))
+     c=min(p.pwr_cap,c+max(0,p.pwr_pkt-flr(peekp(pl_pdist,x,y)/p.res_dist)))
     end
     pokep(pl_chg,x,y,c)
    end

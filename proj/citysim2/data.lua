@@ -28,4 +28,4 @@ pl_wire=0xa400      -- power-line overlay (>0 = a wire crosses this road tile)
 pl_grace=0xa800     -- "settling" evals left for a new building before it starves
 pl_pow=0xac00       -- power-network component id per carrier tile (supply/demand)
 pl_chg=0xb000       -- per-building power battery charge (0..pwr_cap)
-pl_loss=0xb400      -- per-building transmission loss (charge a packet loses here)
+pl_pdist=0xb400     -- power-network distance to the nearest plant (hops; 255=none)
