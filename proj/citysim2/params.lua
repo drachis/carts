@@ -66,9 +66,7 @@ p={
  dem_seed=16,        -- baseline external R demand (lets an empty city bootstrap)
 
  -- terrain (terrain.lua)
- sea_pct=0.08,       -- fraction of the map below sea level (water)
- mtn_pct=0.9,        -- elevation percentile above which is mountain
- terr_blur=2,        -- heightmap smoothing passes
+ river_w=2,          -- river width in tiles (one river, no lakes/mountains)
 
  -- desirability / land value (landval.lua); 128 = neutral
  val_rad=3,          -- influence radius (tiles) for water/pollution

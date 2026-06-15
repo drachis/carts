@@ -47,6 +47,13 @@ set_zone(14,14,1,2) select_tool("bulldoze") cur={x=14,y=14} money=99 apply_tool(
 ok(zone_kind(14,14)==1 and zone_density(14,14)==0,"bulldoze razes building, keeps zone")
 apply_tool()
 ok(tile(14,14)==1,"a second bulldoze clears the empty zone to grass")
+-- bulldozing a road's neighbours re-autotiles it back to a stub
+select_tool("road")
+cur={x=5,y=5} apply_tool() cur={x=6,y=5} apply_tool() cur={x=5,y=6} apply_tool()
+ok(tile(5,5)>16,"the corner road has connections")
+select_tool("bulldoze")
+cur={x=6,y=5} apply_tool() cur={x=5,y=6} apply_tool()
+ok(tile(5,5)==16,"removing the neighbours resets the road to a stub")
 set_tile(0,0,0) select_tool("r-zone") cur={x=0,y=0} apply_tool()
 ok(not is_zone(0,0),"zone tool rejects water")
 

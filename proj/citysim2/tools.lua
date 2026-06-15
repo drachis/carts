@@ -75,7 +75,15 @@ function apply_tool()
     set_zone(x,y,zone_kind(x,y),0) pokep(pl_sat,x,y,p.sat_seed) update_net()
    end
   elseif tile(x,y)>1 and try_spend(cost.dozer) then
-   set_tile(x,y,1) update_net()       -- empty zone / road / building -> grass
+   set_tile(x,y,1)                     -- empty zone / road / building -> grass
+   -- re-autotile neighbouring roads / power lines so a removed junction resets
+   -- (an L-corner left after dozing the rest of a box collapses to a stub).
+   for nb in all(neighbors4(x,y)) do
+    if is_road(nb.x,nb.y) then set_tile(nb.x,nb.y,16+nmask(nb.x,nb.y,is_road))
+    elseif tile(nb.x,nb.y)>=32 and tile(nb.x,nb.y)<=47 then
+     set_tile(nb.x,nb.y,32+nmask(nb.x,nb.y,conducts)) end
+   end
+   update_net()
   end
  elseif pc=="b" then                       -- a building on grass
   if is_buildable(x,y) and try_spend(cost[t[3]]) then

@@ -33,12 +33,8 @@ for y=0,gw-1 do for x=0,gw-1 do
  if s==0 then w+=1 elseif s==2 then m+=1 elseif s==1 then g+=1 end
 end end
 ok(g>0,"terrain has grass ("..g..")")
-ok(w>0,"terrain has water ("..w..")")
-ok(g>w and g>m,"mostly grass (g="..g.." w="..w.." m="..m..")")
-
-local hi=0
-for y=0,gw-1 do for x=0,gw-1 do hi=max(hi,peekp(pl_elev,x,y)) end end
-ok(hi>0,"elevation plane filled (max "..hi..")")
+ok(w>0,"terrain has a river ("..w.." water)")
+ok(g>w,"mostly grass (g="..g.." w="..w..")")
 
 -- road network on grass
 for x=4,20 do set_tile(x,8,16) end

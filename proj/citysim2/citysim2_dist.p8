@@ -73,9 +73,7 @@ p={
  dem_seed=16,        -- baseline external R demand (lets an empty city bootstrap)
 
  -- terrain (terrain.lua)
- sea_pct=0.08,       -- fraction of the map below sea level (water)
- mtn_pct=0.9,        -- elevation percentile above which is mountain
- terr_blur=2,        -- heightmap smoothing passes
+ river_w=2,          -- river width in tiles (one river, no lakes/mountains)
 
  -- desirability / land value (landval.lua); 128 = neutral
  val_rad=3,          -- influence radius (tiles) for water/pollution
@@ -105,7 +103,7 @@ p={
 cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}
 -- >>> version.lua
 -- version.lua : build id (short git hash), stamped by build_cart.py.
-ver="9a96b7f"
+ver="daa9b24"
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -624,39 +622,19 @@ function serviced(x,y)
  return peekp(pl_cov,x,y)>0
 end
 -- >>> terrain.lua
--- terrain.lua : white noise + box blur -> PERCENTILE threshold. simple coastline
--- + lakes, no meandering river (it crowded the buildable land and cost tokens).
--- box-blur narrows the value spread, so sea/mtn come from the actual histogram
--- (always ~sea_pct water + the top (1-mtn_pct) as mountains).
+-- terrain.lua : a calm, buildable map — all grass with ONE meandering river.
+-- (Replaced the percentile lakes + mountains, which scattered obstacles that
+-- didn't read well or play well.) The river flows top->bottom, wandering a
+-- little, width p.river_w; bridge it with roads / cross it with wires.
 function gen_terrain()
- local buf={}
- for i=0,gw*gw-1 do buf[i]=rnd(256) end
- for _=1,p.terr_blur do
-  local t={}
-  for y=0,gw-1 do for x=0,gw-1 do
-   local s,n=0,0
-   for j=-1,1 do for i=-1,1 do
-    if in_bounds(x+i,y+j) then s+=buf[x+i+(y+j)*gw] n+=1 end
-   end end
-   t[x+y*gw]=s/n
-  end end
-  buf=t
+ for y=0,gw-1 do
+  for x=0,gw-1 do set_tile(x,y,1) end
  end
- -- histogram of integer elevations, then percentile cuts
- local h={}
- for i=0,255 do h[i]=0 end
- for i=0,gw*gw-1 do local e=flr(buf[i]) buf[i]=e h[e]+=1 end
- local cum,sea,mtn,n=0,0,256,gw*gw
- for i=0,255 do
-  cum+=h[i]
-  if sea==0 and cum>=n*p.sea_pct then sea=i end
-  if mtn==256 and cum>=n*p.mtn_pct then mtn=i end
+ local rx=flr(gw/3)+flr(rnd(gw/3))
+ for ry=0,gw-1 do
+  for w=0,p.river_w-1 do set_tile(min(rx+w,gw-1),ry,0) end
+  rx=mid(1,rx+flr(rnd(3))-1,gw-1-p.river_w)
  end
- for y=0,gw-1 do for x=0,gw-1 do
-  local e=buf[x+y*gw]
-  pokep(pl_elev,x,y,e)
-  set_tile(x,y,e<sea and 0 or e>=mtn and 2 or 1)
- end end
 end
 -- >>> agents.lua
 -- agents.lua : pooled visible trips that realise sim contracts
@@ -1207,7 +1185,15 @@ function apply_tool()
     set_zone(x,y,zone_kind(x,y),0) pokep(pl_sat,x,y,p.sat_seed) update_net()
    end
   elseif tile(x,y)>1 and try_spend(cost.dozer) then
-   set_tile(x,y,1) update_net()       -- empty zone / road / building -> grass
+   set_tile(x,y,1)                     -- empty zone / road / building -> grass
+   -- re-autotile neighbouring roads / power lines so a removed junction resets
+   -- (an L-corner left after dozing the rest of a box collapses to a stub).
+   for nb in all(neighbors4(x,y)) do
+    if is_road(nb.x,nb.y) then set_tile(nb.x,nb.y,16+nmask(nb.x,nb.y,is_road))
+    elseif tile(nb.x,nb.y)>=32 and tile(nb.x,nb.y)<=47 then
+     set_tile(nb.x,nb.y,32+nmask(nb.x,nb.y,conducts)) end
+   end
+   update_net()
   end
  elseif pc=="b" then                       -- a building on grass
   if is_buildable(x,y) and try_spend(cost[t[3]]) then
