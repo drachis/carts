@@ -5,6 +5,7 @@ __lua__
 #include ../params.lua
 #include ../data.lua
 #include ../notify.lua
+#include ../sound.lua
 #include ../map.lua
 #include ../router.lua
 #include ../net.lua

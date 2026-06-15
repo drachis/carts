@@ -96,8 +96,19 @@ gfx="\n".join("".join(r) for r in rows)
 # flags unused by sim (map.lua predicates are id-range based) but harmless
 gff="\n".join("0"*256 for _ in range(2))
 
+# sound effects (reused from citysim1). slot -> short blip; padded to 168 hex
+# (8-hex header + 32 notes x 5 hex). sound.lua names the slots.
+SFX = [
+    "000800001e15024150",                  # 0 deny  : two-note low blip
+    "000800000c6500a65008650",             # 1 doze  : descending clear
+    "000800002413030130",                  # 2 place : rising confirm
+    "000c0000182501e250182501e250",        # 3 fire  : alternating alarm
+    "000600002c13030130",                  # 4 boom  : high blip
+]
+sfx="\n".join((s+"0"*168)[:168] for s in SFX)
+
 src=open(CART,encoding="utf-8").read()
 src=re.split(r"\n__gfx__\n.*",src,flags=re.S)[0].rstrip("\n")
-src+="\n__gfx__\n"+gfx+"\n__gff__\n"+gff+"\n"
+src+="\n__gfx__\n"+gfx+"\n__gff__\n"+gff+"\n__sfx__\n"+sfx+"\n"
 open(CART,"w",encoding="utf-8",newline="\n").write(src)
 print("patched",CART)

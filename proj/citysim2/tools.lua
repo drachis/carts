@@ -107,9 +107,12 @@ function apply_tool()
    update_net()
   end
  end
- -- dust kick on any successful change (grey for build, dark for dozing)
- if fx_burst and tile(x,y)~=before then
-  fx_burst(x*8+4,y*8+4,before>1 and 5 or 6,5)
+ -- dust kick + sound on any successful change; deny blip if nothing happened
+ if tile(x,y)~=before then
+  if fx_burst then fx_burst(x*8+4,y*8+4,before>1 and 5 or 6,5) end
+  if snd then snd(before>1 and snd_doze or snd_place) end
+ elseif snd and n~="bulldoze" then
+  snd(snd_deny)
  end
 end
 

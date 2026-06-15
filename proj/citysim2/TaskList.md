@@ -78,7 +78,9 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
   belch dark smoke (from fires[]), placing/dozing kicks dust (apply_tool diff).
   net.lua now tracks plants[] so fx emits without a grid scan. Draws bright,
   in world space after the night pal reset.
-- ☐ sfx/music hooks (60)
+- ☑ sound.lua (29) — sfx slot names + muted play wrapper (snd). Waveforms in
+  __sfx__ (gen_gfx.py, reused from citysim1). Triggers: place/doze/deny on
+  apply_tool, alarm on fire ignite. Pause-menu "sound" toggles sfx_mute.
 
 ## Method
 - ☑ skill `delegate-module` written (~/.claude/skills/) — codifies header→agent→
@@ -117,7 +119,8 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 | notify | 150 | 122 |
 | daynight | 50 | 76 |
 | fx | 200 | 280 |
-| cart total | 8192 | 5701 |
+| sound | 60 | 29 |
+| cart total | 8192 | 5771 |
 
 ## Research depth built (this session, autonomous)
 - ☑ economy loop — placement costs money (try_spend), denied when broke.

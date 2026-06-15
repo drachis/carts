@@ -37,6 +37,7 @@ function ignite(x,y)
  pokep(pl_fire,x,y,p.burn_ttl)
  add(fires,{x=x,y=y})
  if notify then notify("fire!",8,x,y) end
+ if snd then snd(snd_fire) end
  schedule(p.fire_int,{k=2,x=x,y=y})
 end
 
