@@ -93,7 +93,23 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 | hud | 500 | 170 |
 | minimap | 300 | 203 |
 | save | 220 | 138 |
-| cart total | 8192 | 4129 |
+| landval | 200 | 134 |
+| cart total | 8192 | 4578 |
+
+## Research depth built (this session, autonomous)
+- ☑ economy loop — placement costs money (try_spend), denied when broke.
+- ☑ power gating — plant tile + real powered() flood; growth needs power.
+- ☑ land value / desirability — pl_val field (water/parks +, industry/plants/
+  congestion −) weights growth; shown in inspector.
+- ☑ park service building (raises desirability); name-based tool dispatch.
+- ☑ goods chain + freight — C<->I trade goods (orange freight) vs R commuters.
+- ☑ congestion moved from world tint to minimap.
+- ☑ all gameplay constants centralized in params.lua.
+- ☑ `delegate-module` skill (~/.claude/skills/).
+
+## Remaining = polish reserve (HELD until playtest) or a fork
+- disasters (fire chain), day/night swap, fx, sound — all draw the ~820 reserve.
+- optional non-reserve depth: arrive-events + per-tile event log (legibility).
 
 Note: agents under-estimate their own token cost (map agent guessed ~390, real
 577). The lead's `count_tokens.py` is the gate before integrating.
