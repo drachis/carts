@@ -123,8 +123,17 @@ local function nearest_station(x,y,id)
  return best
 end
 
--- k=3 event: send a wrecking crew to clear a rubble tile. it drives out from
--- the nearest station and clears the lot on arrival (the trip's on-arrive job).
+-- dispatch a responder: roll a vehicle (res colour) out of the nearest depot of
+-- type `id` to (tx,ty), running `job` on arrival. one shared path for every
+-- emergency service. returns true if a vehicle was actually sent.
+local function dispatch(id,tx,ty,res,job)
+ local st=nearest_station(tx,ty,id)
+ if not st then return end
+ local o,w=adj_road(st.x,st.y),adj_road(tx,ty)
+ return o and w and spawn_agent(o.x,o.y,w.x,w.y,res,job)
+end
+
+-- k=3 event: a wrecking crew clears a rubble tile (on arrival from the depot).
 function wreck_dispatch(e)
  local rx,ry=e.x,e.y
  if tile(rx,ry)~=63 then return end  -- already cleared or bulldozed
@@ -137,30 +146,19 @@ function wreck_dispatch(e)
    if snd then snd(snd_doze) end
   end
  end
- local st=nearest_station(rx,ry,64)
- if st then
-  local o,w=adj_road(st.x,st.y),adj_road(rx,ry)
-  if o and w and spawn_agent(o.x,o.y,w.x,w.y,4,clear) then return end
-  clear()  -- depot exists but no road route: crew clears it anyway
-  return
- end
- -- no depot yet: retry later (a station may get built before a bulldozer).
- schedule(p.wreck_delay*4,{k=3,x=rx,y=ry})
+ if dispatch(64,rx,ry,4,clear) then return end
+ if nearest_station(rx,ry,64) then clear()  -- depot exists but no route: clear anyway
+ else schedule(p.wreck_delay*4,{k=3,x=rx,y=ry}) end  -- no depot: retry later
 end
 
--- send a red fire engine from the nearest fire station (62) to a fresh fire; on
--- arrival it puts the fire out (so the building is saved, not lost to rubble).
+-- a red fire engine from the nearest fire station puts a fresh fire out on
+-- arrival, saving the building from collapsing to rubble.
 function fire_engine(x,y)
- local st=nearest_station(x,y,62)
- if not st then return end
- local o,w=adj_road(st.x,st.y),adj_road(x,y)
- if o and w then
-  spawn_agent(o.x,o.y,w.x,w.y,6,function()
-   if peekp(pl_fire,x,y)>0 then
-    unfire(x,y)
-    if notify then notify("fire out",12,x,y) end
-    if fx_burst then fx_burst(x*8+4,y*8+4,7,6) end
-   end
-  end)
- end
+ dispatch(62,x,y,6,function()
+  if peekp(pl_fire,x,y)>0 then
+   unfire(x,y)
+   if notify then notify("fire out",12,x,y) end
+   if fx_burst then fx_burst(x*8+4,y*8+4,7,6) end
+  end
+ end)
 end
