@@ -98,8 +98,10 @@ cur={x=9,y=7} tool=3 apply_tool()
 ok(zone_kind(9,7)==2,"c-zone tool places commercial")
 set_tile(0,0,0) -- water
 ok(tool_put(2,0,0)==nil,"tool_put rejects unbuildable (water)")
-cur={x=8,y=8} tool=7 apply_tool()
+cur={x=8,y=8} tool=8 apply_tool()
 ok(tile(8,8)==1,"bulldoze clears to grass")
+cur={x=20,y=20} tool=7 apply_tool() -- park
+ok(tile(20,20)==61,"park tool places a park")
 
 -- econ: $k money formatting + spending
 init_econ()
@@ -120,6 +122,9 @@ update_val()
 ok(desir(7,5)>128,"waterfront raises desirability ("..desir(7,5)..")")
 ok(desir(27,5)<128,"industry lowers desirability ("..desir(27,5)..")")
 ok(desir(15,20)==128,"neutral away from everything")
+set_tile(15,15,61) -- park
+update_val()
+ok(desir(16,15)>128,"a park raises desirability ("..desir(16,15)..")")
 
 -- power gating: an unpowered (no plant) zone never grows
 init_map()

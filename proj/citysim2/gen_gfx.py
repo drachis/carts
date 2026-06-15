@@ -72,6 +72,10 @@ S[60] = [  # power plant: grey block, smokestacks, orange core
     "36333633","34333433","55555555","559a9555",
     "55aaa555","55595555","55555555","88888888",
 ]
+S[61] = [  # park: bushes, a flower, a path
+    "33333333","3bb33bb3","3bbb3bb3","33b3eb33",
+    "3433b333","333bb3b3","33b333b3","33333333",
+]
 
 rows=[["0"]*128 for _ in range(64)]
 for sid,art in S.items():

@@ -23,7 +23,7 @@ function update_val()
       local t=tile(nx,ny)
       if t==0 then
        v+=p.val_water
-      elseif t==44 then
+      elseif t==61 then
        v+=p.val_park
       elseif (t>=56 and t<=59) or t==60 then
        v-=p.val_pol
