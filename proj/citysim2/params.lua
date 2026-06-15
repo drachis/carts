@@ -77,4 +77,4 @@ p={
 }
 
 -- build costs in DOLLARS (charged via econ.try_spend, which scales to $k)
-cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60}
+cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250}

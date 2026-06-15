@@ -134,12 +134,15 @@ cur={x=9,y=7} tool=3 apply_tool()
 ok(zone_kind(9,7)==2,"c-zone tool places commercial")
 set_tile(0,0,0) -- water
 ok(tool_put(2,0,0)==nil,"tool_put rejects unbuildable (water)")
-cur={x=8,y=8} tool=9 apply_tool()
+cur={x=8,y=8} tool=10 apply_tool()
 ok(tile(8,8)==1,"bulldoze clears to grass")
 cur={x=20,y=20} tool=7 apply_tool() -- park
 ok(tile(20,20)==61,"park tool places a park")
 cur={x=22,y=20} tool=8 apply_tool() -- fire station
 ok(tile(22,20)==62,"fire tool places a station")
+money=99
+cur={x=24,y=20} tool=9 apply_tool() -- recycling station
+ok(tile(24,20)==64,"recycle tool places a station")
 
 -- econ: $k money formatting + spending
 init_econ()
@@ -252,7 +255,7 @@ for i=1,600 do update_sim() end
 ok(tile(10,10)==63,"fire burned the zone to rubble")
 ok(not is_buildable(10,10),"rubble blocks rebuild until bulldozed")
 money=5
-cur={x=10,y=10} tool=9 apply_tool()
+cur={x=10,y=10} tool=10 apply_tool()
 ok(tile(10,10)==1,"bulldozing rubble clears to grass")
 
 -- coverage: stations + parks project a service field; zones need it to grow tall
@@ -269,7 +272,7 @@ ok(serviced(24,24),"a park provides coverage too")
 -- wrecking crew: rubble near a station gets a crew dispatched that clears it
 init_map() init_sim() init_fire() init_agents()
 for x=4,12 do set_tile(x,10,16) end
-set_tile(5,9,62)    -- station (depot) beside the road
+set_tile(5,9,64)    -- recycling station (depot) beside the road
 set_tile(9,9,63)    -- rubble beside the road, reachable from the depot
 update_net()
 schedule(1,{k=3,x=9,y=9})

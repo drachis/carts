@@ -84,6 +84,10 @@ S[63] = [  # rubble: charred grey debris over scorched ground
     "33533533","55656555","56555655","65555565",
     "55656556","53565555","55555655","55555555",
 ]
+S[64] = [  # recycling station: green-trimmed works depot (wrecking-crew base)
+    "33333333","3bbbbbb3","b655556b","b6b33b6b",
+    "b6b33b6b","b655556b","3bbbbbb3","36666663",
+]
 
 rows=[["0"]*128 for _ in range(64)]
 for sid,art in S.items():

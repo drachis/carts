@@ -107,13 +107,13 @@ local function adj_road(x,y)
  end
 end
 
--- the fire station (tile 62) nearest (x,y) by manhattan distance; the station
--- doubles as the public-works depot the wrecking crew rolls out from.
+-- the recycling station (tile 64) nearest (x,y) by manhattan distance — the
+-- depot the (expensive) wrecking crew rolls out from to clear rubble.
 local function nearest_station(x,y)
  local best,bd
  for sy=0,gw-1 do
   for sx=0,gw-1 do
-   if tile(sx,sy)==62 then
+   if tile(sx,sy)==64 then
     local d=abs(sx-x)+abs(sy-y)
     if not bd or d<bd then bd=d best={x=sx,y=sy} end
    end

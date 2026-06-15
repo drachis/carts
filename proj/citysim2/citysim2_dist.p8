@@ -84,7 +84,7 @@ p={
 }
 
 -- build costs in DOLLARS (charged via econ.try_spend, which scales to $k)
-cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60}
+cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250}
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -382,7 +382,7 @@ end
 -- (park 61 / station 62), and a wire overlay crossing a road or water (pl_wire).
 function power_carries(x,y)
  local s=tile(x,y)
- return conducts(x,y) or is_zone(x,y) or s==61 or s==62 or peekp(pl_wire,x,y)>0
+ return conducts(x,y) or is_zone(x,y) or s==61 or s==62 or s==64 or peekp(pl_wire,x,y)>0
 end
 
 -- the nearest road tile within p.road_reach (chebyshev), scanned ring by ring,
@@ -944,13 +944,13 @@ local function adj_road(x,y)
  end
 end
 
--- the fire station (tile 62) nearest (x,y) by manhattan distance; the station
--- doubles as the public-works depot the wrecking crew rolls out from.
+-- the recycling station (tile 64) nearest (x,y) by manhattan distance — the
+-- depot the (expensive) wrecking crew rolls out from to clear rubble.
 local function nearest_station(x,y)
  local best,bd
  for sy=0,gw-1 do
   for sx=0,gw-1 do
-   if tile(sx,sy)==62 then
+   if tile(sx,sy)==64 then
     local d=abs(sx-x)+abs(sy-y)
     if not bd or d<bd then bd=d best={x=sx,y=sy} end
    end
@@ -1051,7 +1051,7 @@ end
 -- tools: road / r-zone / c-zone / i-zone / power / plant / park / bulldoze.
 -- ids 1..5 are stable; "park"/"bulldoze" are dispatched by NAME (below) so new
 -- buildings can be inserted before bulldoze without re-indexing the logic.
-tools_list=split"road,r-zone,c-zone,i-zone,power,plant,park,fire,bulldoze"
+tools_list=split"road,r-zone,c-zone,i-zone,power,plant,park,fire,recycle,bulldoze"
 tool=1
 local tb_lx,tb_ly=-1,-1  -- last tile painted (for drag-build)
 
@@ -1095,6 +1095,8 @@ function tool_put(t,x,y)
   return is_buildable(x,y) and 61 or nil
  elseif tools_list[t]=="fire" then
   return is_buildable(x,y) and 62 or nil
+ elseif tools_list[t]=="recycle" then
+  return is_buildable(x,y) and 64 or nil
  elseif tools_list[t]=="bulldoze" then
   return tile(x,y)>1 and 1 or nil
  end
@@ -1132,6 +1134,10 @@ function apply_tool()
  elseif n=="fire" then
   if is_buildable(x,y) and try_spend(cost.fire) then
    set_tile(x,y,62)
+  end
+ elseif n=="recycle" then
+  if is_buildable(x,y) and try_spend(cost.recycle) then
+   set_tile(x,y,64)
   end
  elseif tool>=2 and tool<=4 then
   if is_buildable(x,y) and try_spend(cost.zone) then
@@ -1192,22 +1198,22 @@ end
 
 -- each tool's icon is its own tile sprite (sprite id == tile id); bulldoze=X.
 -- cost keys line up with tools_list so the label can show the price.
-local tb_spr=split"16,48,52,56,32,60,61,62,-1"
-local tb_cost=split"road,zone,zone,zone,power,plant,park,fire,dozer"
+local tb_spr=split"16,48,52,56,32,60,61,62,64,-1"
+local tb_cost=split"road,zone,zone,zone,power,plant,park,fire,recycle,dozer"
 
 -- bottom tool palette: always-visible icons (no more blind cycling), current
 -- tool boxed, with its name + cost beside the strip. runs in SCREEN space.
 function draw_toolbar()
  rectfill(0,118,127,127,0)
  for i=1,#tools_list do
-  local x=1+(i-1)*9
+  local x=1+(i-1)*8
   local s=tb_spr[i]
   if s>=0 then spr(s,x,119)
   else line(x+1,120,x+6,125,8) line(x+6,120,x+1,125,8) end -- bulldoze X
   if i==tool then rect(x-1,118,x+8,127,7) end
  end
  -- tool name + cost on ONE line in the space right of the icons
- local lx=1+#tools_list*9+1
+ local lx=1+#tools_list*8+1
  local ck=tb_cost[tool]
  local lbl=tools_list[tool]..(ck and cost[ck] and " $"..cost[ck] or "")
  print(lbl,min(lx,128-#lbl*4),121,10)
@@ -1583,14 +1589,14 @@ b333333b333333333ffffff33ffffff3c333333c333333333111111331111113a333333a33333333
 333333333f7f7ff33f7f7ff33f7f7ff3333333333171711331717113317171133333333334747443347474433474744355595555333bb3b36888888653565555
 b333333b3ffffff33ffffff33ffffff3c333333c311111133111111331111113a333333a3444444334444443344444435555555533b333b36777777655555655
 b3b3b3b3bbbbbbbbbbbbbbbbbbbbbbbbc3c3c3c3cccccccccccccccccccccccca3a3a3a3aaaaaaaaaaaaaaaaaaaaaaaa88888888333333333777777355555555
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+33333333000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+3bbbbbb3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+b655556b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+b6b33b6b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+b6b33b6b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+b655556b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+3bbbbbb3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+36666663000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

@@ -38,7 +38,7 @@ end
 -- (park 61 / station 62), and a wire overlay crossing a road or water (pl_wire).
 function power_carries(x,y)
  local s=tile(x,y)
- return conducts(x,y) or is_zone(x,y) or s==61 or s==62 or peekp(pl_wire,x,y)>0
+ return conducts(x,y) or is_zone(x,y) or s==61 or s==62 or s==64 or peekp(pl_wire,x,y)>0
 end
 
 -- the nearest road tile within p.road_reach (chebyshev), scanned ring by ring,
