@@ -105,7 +105,7 @@ p={
 cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}
 -- >>> version.lua
 -- version.lua : build id (short git hash), stamped by build_cart.py.
-ver="bd81490"
+ver="1c1d08e"
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -138,6 +138,7 @@ pl_sat=0xa800       -- per-building satisfaction battery (0..255); agents refres
 pl_pow=0xac00       -- power-network component id per carrier tile (supply/demand)
 pl_chg=0xb000       -- per-building power battery charge (0..pwr_cap)
 pl_pdist=0xb400     -- power-network distance to the nearest plant (hops; 255=none)
+pl_cmt=0xb800       -- last commute grade reported here (0 none/1 good/2 ok/3 long)
 -- >>> notify.lua
 -- notify.lua : event log — the city narrates itself ("the sim explains itself").
 -- a small ring of recent notable events; sim/disaster push, hud draws a fading
@@ -312,6 +313,7 @@ function init_map()
  pclr(pl_pow)
  pclr(pl_chg)
  pclr(pl_pdist)
+ pclr(pl_cmt)
  camx,camy=0,0
 end
 -- >>> router.lua
@@ -701,8 +703,9 @@ function ag_report(a)
  if a.dx then sat_add(a.dx,a.dy,p.sat_visit) end
  if a.ox then
   local t=#a.path
-  sat_add(a.ox,a.oy,t<=p.commute_good and p.sat_visit
-   or (t<=p.commute_ok and 0 or -p.sat_visit))
+  if t<=p.commute_good then pokep(pl_cmt,a.ox,a.oy,1) sat_add(a.ox,a.oy,p.sat_visit)
+  elseif t<=p.commute_ok then pokep(pl_cmt,a.ox,a.oy,2)
+  else pokep(pl_cmt,a.ox,a.oy,3) sat_add(a.ox,a.oy,-p.sat_visit) end
  end
 end
 
@@ -958,7 +961,8 @@ function tile_info(x,y)
  local dn=zone_density(x,y)
  return {kind=k,dens=dn,access=rcomp(x,y)~=0,
   power=dn>0 and powered(x,y) or served(x,y),served=wx~=nil,val=desir(x,y),
-  svc=(not serviced) or serviced(x,y),unhappy=peekp(pl_sat,x,y)<p.sat_low}
+  svc=(not serviced) or serviced(x,y),unhappy=peekp(pl_sat,x,y)<p.sat_low,
+  commute=peekp(pl_cmt,x,y)}
 end
 -- >>> disaster.lua
 -- disaster.lua : fire — the event loop's namesake. zones ignite, burn over
@@ -1372,26 +1376,27 @@ end
 --   keep it a few lines, tucked in a corner; readable over the map.
 local ins_kinds={"res","com","ind"}
 local ins_cols={11,12,10}
+-- a factor light: green when healthy, red when it's the thing to fix.
+local function f(l,fx,fy,ok)
+ print(l,fx,fy,ok and 11 or 8)
+end
+-- inspector = a tiny diagnostic panel. each factor that feeds a building's
+-- health shows green (ok) / red (problem), so "why is it unhappy?" is readable
+-- at a glance: road access, power, service coverage, a reachable market (jobs/
+-- customers/buyers), commute length, and land-value desirability.
 function draw_inspector()
  local ti=tile_info(cur.x,cur.y)
  if not ti then return end
  local x,y=1,8
- rectfill(x,y,x+46,y+29,0)
- rect(x,y,x+46,y+29,5)
- print(ins_kinds[ti.kind].." lv"..ti.dens,x+2,y+2,ins_cols[ti.kind])
- -- status, plainest cause first. "served" = a trading partner is reachable;
- -- say what's missing per kind instead of the cryptic "starved".
- local st="thriving"
- if not ti.access then st="no road"
- elseif not ti.power then st="no power"
- elseif not ti.served then st=ti.kind==1 and "no jobs" or ti.kind==2 and "no trade" or "no buyers"
- elseif ti.unhappy then st="unhappy"
- elseif ti.dens>=2 and not ti.svc then st="needs svc" end
- print(st,x+2,y+9,7)
- -- land value: green desirable / red blighted
- print("val "..ti.val,x+2,y+16,ti.val>140 and 11 or ti.val<116 and 8 or 6)
- -- service coverage (station/park): green ok / grey none
- print(ti.svc and "svc ok" or "svc none",x+2,y+23,ti.svc and 11 or 5)
+ rectfill(x,y,x+52,y+23,0)
+ rect(x,y,x+52,y+23,5)
+ print(ins_kinds[ti.kind].." "..ti.dens,x+2,y+2,ins_cols[ti.kind])
+ f("rd",x+2,y+9,ti.access)
+ f("pwr",x+20,y+9,ti.power)
+ f("svc",x+38,y+9,ti.svc)
+ f("job",x+2,y+16,ti.served)
+ f("cmt",x+20,y+16,ti.commute~=3)   -- red only when a long commute was reported
+ f("des",x+38,y+16,ti.val>=124)
 end
 -- >>> econ.lua
 -- econ.lua : money ($k), tax, time. HEADER — bodies are STUBS for an agent.

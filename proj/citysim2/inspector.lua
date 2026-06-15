@@ -13,24 +13,25 @@
 --   keep it a few lines, tucked in a corner; readable over the map.
 local ins_kinds={"res","com","ind"}
 local ins_cols={11,12,10}
+-- a factor light: green when healthy, red when it's the thing to fix.
+local function f(l,fx,fy,ok)
+ print(l,fx,fy,ok and 11 or 8)
+end
+-- inspector = a tiny diagnostic panel. each factor that feeds a building's
+-- health shows green (ok) / red (problem), so "why is it unhappy?" is readable
+-- at a glance: road access, power, service coverage, a reachable market (jobs/
+-- customers/buyers), commute length, and land-value desirability.
 function draw_inspector()
  local ti=tile_info(cur.x,cur.y)
  if not ti then return end
  local x,y=1,8
- rectfill(x,y,x+46,y+29,0)
- rect(x,y,x+46,y+29,5)
- print(ins_kinds[ti.kind].." lv"..ti.dens,x+2,y+2,ins_cols[ti.kind])
- -- status, plainest cause first. "served" = a trading partner is reachable;
- -- say what's missing per kind instead of the cryptic "starved".
- local st="thriving"
- if not ti.access then st="no road"
- elseif not ti.power then st="no power"
- elseif not ti.served then st=ti.kind==1 and "no jobs" or ti.kind==2 and "no trade" or "no buyers"
- elseif ti.unhappy then st="unhappy"
- elseif ti.dens>=2 and not ti.svc then st="needs svc" end
- print(st,x+2,y+9,7)
- -- land value: green desirable / red blighted
- print("val "..ti.val,x+2,y+16,ti.val>140 and 11 or ti.val<116 and 8 or 6)
- -- service coverage (station/park): green ok / grey none
- print(ti.svc and "svc ok" or "svc none",x+2,y+23,ti.svc and 11 or 5)
+ rectfill(x,y,x+52,y+23,0)
+ rect(x,y,x+52,y+23,5)
+ print(ins_kinds[ti.kind].." "..ti.dens,x+2,y+2,ins_cols[ti.kind])
+ f("rd",x+2,y+9,ti.access)
+ f("pwr",x+20,y+9,ti.power)
+ f("svc",x+38,y+9,ti.svc)
+ f("job",x+2,y+16,ti.served)
+ f("cmt",x+20,y+16,ti.commute~=3)   -- red only when a long commute was reported
+ f("des",x+38,y+16,ti.val>=124)
 end

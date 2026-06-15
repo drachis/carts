@@ -173,5 +173,6 @@ function tile_info(x,y)
  local dn=zone_density(x,y)
  return {kind=k,dens=dn,access=rcomp(x,y)~=0,
   power=dn>0 and powered(x,y) or served(x,y),served=wx~=nil,val=desir(x,y),
-  svc=(not serviced) or serviced(x,y),unhappy=peekp(pl_sat,x,y)<p.sat_low}
+  svc=(not serviced) or serviced(x,y),unhappy=peekp(pl_sat,x,y)<p.sat_low,
+  commute=peekp(pl_cmt,x,y)}
 end

@@ -42,8 +42,9 @@ function ag_report(a)
  if a.dx then sat_add(a.dx,a.dy,p.sat_visit) end
  if a.ox then
   local t=#a.path
-  sat_add(a.ox,a.oy,t<=p.commute_good and p.sat_visit
-   or (t<=p.commute_ok and 0 or -p.sat_visit))
+  if t<=p.commute_good then pokep(pl_cmt,a.ox,a.oy,1) sat_add(a.ox,a.oy,p.sat_visit)
+  elseif t<=p.commute_ok then pokep(pl_cmt,a.ox,a.oy,2)
+  else pokep(pl_cmt,a.ox,a.oy,3) sat_add(a.ox,a.oy,-p.sat_visit) end
  end
 end
 
