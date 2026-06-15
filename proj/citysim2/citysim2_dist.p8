@@ -1,0 +1,1604 @@
+pico-8 cartridge // http://www.pico-8.com
+version 42
+__lua__
+-- citysim2 : agent/market city sim, single 8k cart.
+-- see DESIGN.md (contract + budget) and ../citysim/LEARNINGS.md.
+-- modules are #included in dependency order; add each as it lands.
+-- >>> params.lua
+-- params.lua : every tuning knob lives in the global p. never shadow it.
+-- keep this lean; modules add their own keys as they land.
+p={
+ grid=32,            -- city is grid x grid tiles (<=32 rows frees the sprite bank)
+
+ -- event loop (sim, see DESIGN s3)
+ evt_h=256,          -- timewheel horizon in ticks
+ evt_cap=96,         -- events processed per tick (storm guard)
+ eval_iv=45,         -- ticks between a tile re-evaluating its needs
+ decay_miss=4,       -- consecutive unmet evals before a tile downgrades
+
+ -- zone economy (capacity per density step)
+ r_per=4,            -- residents per residential density
+ c_per=3,            -- jobs per commercial density
+ i_per=4,            -- jobs per industrial density
+ grow_rate=0.45,     -- chance a fully-served zone densifies on an eval
+ decay_rate=0.15,    -- chance a starved zone downgrades on an eval
+
+ -- agents / visibility (the lively-city knob, DESIGN s10)
+ agent_cap=80,       -- max live visible agents
+ show=1,             -- visible cars per filled capacity unit (1=all; lower=sample)
+ trip_life=600,      -- ticks before a stuck agent gives up
+
+ -- congestion (router cost feedback, DESIGN s10)
+ cong_k=3,           -- router cost added per agent sharing a road tile
+ road_reach=2,       -- a zone reaches a road within this many tiles (chebyshev)
+
+ -- economy (money in THOUSANDS of dollars, see LEARNINGS)
+ start_money=2,      -- $2k
+ tax_rate=2,         -- tax points; income scales with this
+ month_frames=600,   -- frames per month (20s @ 30fps)
+ road_up=1,          -- $ per road tile per month (upkeep, in dollars)
+ job_tax=0.5,        -- jobs taxed at this fraction of the pop rate
+ debt_k=-1,          -- debt floor in $k (try_spend won't go below)
+ money_cap=32000,    -- $k ceiling (keeps 16.16 fixed-point from flipping)
+ start_year=1950,
+
+ -- demand / census (derived rci meter, sim.lua)
+ census_iv=30,       -- ticks between census + demand recompute
+ dem_rdiv=32,        -- residential demand divisor
+ dem_div=24,         -- commercial/industrial demand divisor
+ dem_c=0.5,          -- target jobs per resident (commercial)
+ dem_i=0.7,          -- target jobs per resident (industrial)
+ dem_seed=16,        -- baseline external R demand (lets an empty city bootstrap)
+
+ -- terrain (terrain.lua)
+ sea_pct=0.08,       -- fraction of the map below sea level (water)
+ mtn_pct=0.9,        -- elevation percentile above which is mountain
+ terr_blur=2,        -- heightmap smoothing passes
+ river_jit=16,       -- river meander jitter
+ river_len=2,        -- river length as a multiple of grid width (lower=shorter)
+
+ -- desirability / land value (landval.lua); 128 = neutral
+ val_rad=3,          -- influence radius (tiles) for water/pollution
+ val_water=6,        -- desirability per nearby water tile (waterfront +)
+ val_pol=10,         -- desirability lost per nearby polluter (industry/plant)
+ val_cong=2,         -- desirability lost per agent on nearby roads
+ val_park=24,        -- desirability per nearby park (service +)
+ val_div=30,         -- drain 1/val_div of the dirty land-value queue per frame
+                     --   (so the backlog always clears within ~val_div frames)
+
+ -- fire / disasters (disaster.lua)
+ fire_chance=0.0006, -- per-frame odds a random developed zone ignites
+ fire_int=45,        -- frames between a fire's burn ticks
+ burn_ttl=6,         -- burn ticks before a tile collapses to rubble
+ fire_spread=0.45,   -- odds a burn tick spreads to a neighbour zone
+ fire_rad=4,         -- fire-station coverage radius (chebyshev)
+ fire_cover=0.12,    -- spread odds inside station coverage (suppressed)
+ wreck_delay=120,    -- frames after rubble forms before a crew is dispatched
+
+ -- render (render.lua)
+ cong_show=2,        -- agents on a road before it reads as congested
+
+ day_frames=1800,    -- full day/night cycle (60s @ 30fps)
+}
+
+-- build costs in DOLLARS (charged via econ.try_spend, which scales to $k)
+cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60}
+-- >>> data.lua
+-- data.lua : static lookup tables shared by sim + ui. packed with split()
+-- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
+
+-- resources (the things that flow over networks):
+--   1 labor  2 jobs  3 goods  4 power  5 coverage
+res_name=split"labor,jobs,goods,power,coverage"
+res_col=split"11,12,9,10,14"
+
+-- channel: 1 = travels as a VISIBLE road trip (an agent + congestion);
+--          0 = resolved abstractly over its network (no car, no congestion).
+-- power(4) and coverage(5) are off-road -> the implicit "reserved lanes".
+res_road=split"1,1,1,0,0"
+
+-- 0x8000 user-RAM data planes (per-tile bytes, index = x + y*p.grid).
+-- one base address per plane; helpers live in map.lua. (DESIGN s7 / manual 6.7)
+pl_elev=0x8000      -- elevation 0..255
+pl_comp=0x8400      -- road/power network component id
+pl_cap=0x8800       -- building capacity N (caps at 255)
+pl_fill=0x8c00      -- capacity currently served
+pl_cong=0x9000      -- agents currently on this road tile (saturates at 255)
+pl_need=0x9400      -- packed need bits | offer bits
+pl_val=0x9800       -- desirability 0..255 (128 neutral); land value
+pl_fire=0x9c00      -- burn ticks remaining (>0 = on fire); 0 = not burning
+pl_cov=0xa000       -- service coverage (>0 = a station/park serves this tile)
+pl_wire=0xa400      -- power-line overlay (>0 = a wire crosses this road tile)
+-- >>> notify.lua
+-- notify.lua : event log — the city narrates itself ("the sim explains itself").
+-- a small ring of recent notable events; sim/disaster push, hud draws a fading
+-- ticker bottom-left. each entry keeps its tile so callers can flag location.
+-- api: init_log, notify(msg,col,x,y), draw_log; global: log
+log={}
+
+function init_log() log={} end
+
+-- push a notice. col defaults white; x,y optional (the tile it happened on).
+function notify(msg,col,x,y)
+ add(log,{m=msg,c=col or 7,x=x,y=y,t=0})
+ while #log>8 do deli(log,1) end
+end
+
+-- fading ticker: newest at the bottom, dimming over ~4s, then dropped.
+function draw_log()
+ for i=#log,1,-1 do
+  log[i].t+=1
+  if log[i].t>=120 then deli(log,i) end
+ end
+ local n=min(#log,4)
+ for i=1,n do
+  local e=log[#log-i+1]
+  print(e.m,2,113-(i-1)*6,e.t>90 and 5 or e.c)
+ end
+end
+-- >>> sound.lua
+-- sound.lua : sfx slot names + a muted play wrapper. the actual waveforms live
+-- in the cart __sfx__ (authored in gen_gfx.py, reused from citysim1). callers
+-- use snd(slot); a pause-menu item toggles sfx_mute.
+-- api: snd(n); globals: snd_deny/doze/place/fire/boom, sfx_mute
+snd_deny=0
+snd_doze=1
+snd_place=2
+snd_fire=3
+snd_boom=4
+sfx_mute=false
+
+function snd(n)
+ if not sfx_mute then sfx(n) end
+end
+-- >>> map.lua
+-- map.lua : grid helpers, plane accessors, camera
+-- tile encoding (range checks only; no fget):
+--   0 water (not buildable)   1 grass (buildable)   2 mountain (not buildable)
+--   roads    16..31 = 16 + nmask(n=1 e=2 s=4 w=8)
+--   powerlines 32..47 = 32 + nmask
+--   residential 48..51 = 48 + density(0..3)
+--   commercial  52..55 = 52 + density
+--   industrial  56..59 = 56 + density
+
+gw=p.grid  -- 32
+
+function in_bounds(x,y)
+ return x>=0 and y>=0 and x<gw and y<gw
+end
+
+function tile(x,y)
+ return in_bounds(x,y) and mget(x,y) or 0
+end
+
+function set_tile(x,y,s)
+ if in_bounds(x,y) then mset(x,y,s) end
+end
+
+-- tile predicates (id-range checks; no fget)
+function is_road(x,y)
+ local s=tile(x,y) return s>=16 and s<=31
+end
+
+function is_zone(x,y)
+ local s=tile(x,y) return s>=48 and s<=59
+end
+
+function is_buildable(x,y)
+ local s=tile(x,y) return s==1
+end
+
+function conducts(x,y)
+ local s=tile(x,y) return (s>=32 and s<=47) or s==60 -- power lines + plant(60)
+end
+
+-- zone helpers
+function zone_kind(x,y)
+ if not is_zone(x,y) then return nil end
+ return flr((tile(x,y)-48)/4)+1
+end
+
+function zone_density(x,y)
+ if not is_zone(x,y) then return nil end
+ return (tile(x,y)-48)%4
+end
+
+function set_zone(x,y,kind,density)
+ set_tile(x,y,48+(kind-1)*4+density)
+end
+
+-- orthogonal in-bounds neighbours
+function neighbors4(x,y)
+ local n={}
+ if in_bounds(x,y-1) then add(n,{x=x,y=y-1}) end
+ if in_bounds(x+1,y) then add(n,{x=x+1,y=y}) end
+ if in_bounds(x,y+1) then add(n,{x=x,y=y+1}) end
+ if in_bounds(x-1,y) then add(n,{x=x-1,y=y}) end
+ return n
+end
+
+-- autotile bitmask: n=1 e=2 s=4 w=8 where f(x,y) is predicate
+function nmask(x,y,f)
+ local m=0
+ if f(x,y-1) then m+=1 end
+ if f(x+1,y) then m+=2 end
+ if f(x,y+1) then m+=4 end
+ if f(x-1,y) then m+=8 end
+ return m
+end
+
+-- 0x8000 plane accessors (index = x + y*gw).
+-- named peekp/pokep so they don't shadow pico-8 builtins pget/pset.
+function peekp(base,x,y)
+ if not in_bounds(x,y) then return 0 end
+ return peek(base+x+y*gw)
+end
+
+function pokep(base,x,y,v)
+ if in_bounds(x,y) then poke(base+x+y*gw,v) end
+end
+
+function pclr(base)
+ memset(base,0,gw*gw)
+end
+
+-- camera (pixel-smooth ease toward cursor)
+camx,camy=0,0
+
+function update_camera(snap)
+ local px,py=cur.x*8,cur.y*8
+ local tx,ty=camx,camy
+ if px-tx<16  then tx=px-16  end
+ if px-tx>104 then tx=px-104 end
+ if py-ty<16  then ty=py-16  end
+ if py-ty>96  then ty=py-96  end
+ tx=mid(0,tx,gw*8-128)
+ ty=mid(0,ty,gw*8-120)
+ if snap then
+  camx,camy=tx,ty
+ else
+  camx+=mid(-4,tx-camx,4)
+  camy+=mid(-4,ty-camy,4)
+ end
+end
+
+-- init: clear tile grid to grass; zero all planes
+function init_map()
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   mset(x,y,1)
+  end
+ end
+ pclr(pl_elev)
+ pclr(pl_comp)
+ pclr(pl_cap)
+ pclr(pl_fill)
+ pclr(pl_cong)
+ pclr(pl_need)
+ pclr(pl_wire)
+ camx,camy=0,0
+end
+-- >>> router.lua
+-- router.lua : weighted dijkstra + bfs flood
+-- q entries: {x,y,d} positional
+
+function path(x0,y0,x1,y1,pass,cost)
+ if x0==x1 and y0==y1 then return {{x=x0,y=y0}} end
+ local di={} local fr={}
+ local k0=x0+y0*gw
+ di[k0]=0 fr[k0]=-1
+ local q={{x0,y0,0}} local qi=1
+ while qi<=#q do
+  local c=q[qi] qi+=1
+  local cx,cy,cd=c[1],c[2],c[3]
+  local ck=cx+cy*gw
+  if cd<=di[ck] then
+   if cx==x1 and cy==y1 then break end
+   for _,n in pairs(neighbors4(cx,cy)) do
+    local nx,ny=n.x,n.y
+    if pass(nx,ny) then
+     local nk=nx+ny*gw
+     local nd=cd+cost(nx,ny)
+     if di[nk]==nil or nd<di[nk] then
+      di[nk]=nd fr[nk]=ck
+      add(q,{nx,ny,nd})
+     end
+    end
+   end
+  end
+ end
+ if fr[x1+y1*gw]==nil then return nil end
+ local rv={} local k=x1+y1*gw
+ while k~=k0 do
+  add(rv,{x=k%gw,y=flr(k/gw)})
+  k=fr[k]
+ end
+ add(rv,{x=x0,y=y0})
+ local r={}
+ for i=#rv,1,-1 do add(r,rv[i]) end
+ return r
+end
+
+function flood(x0,y0,pass,visit)
+ if not pass(x0,y0) then return end
+ local sn={[x0+y0*gw]=true}
+ local q={{x0,y0}} local qi=1
+ visit(x0,y0)
+ while qi<=#q do
+  local c=q[qi] qi+=1
+  for _,n in pairs(neighbors4(c[1],c[2])) do
+   local nk=n.x+n.y*gw
+   if pass(n.x,n.y) and not sn[nk] then
+    sn[nk]=true visit(n.x,n.y) add(q,{n.x,n.y})
+   end
+  end
+ end
+end
+-- >>> net.lua
+-- net.lua : road connected-components + adjacency helpers
+-- api: update_net, rcomp, connected, powered
+-- private prefix: nt_
+
+ncomp=0  -- number of road components found (global, read by sim)
+pwr={}   -- set of powered tiles (on a power network fed by a plant)
+plants={} -- list of {x,y} plant tiles (smokestack emitters for fx)
+
+function update_net()
+ pclr(pl_comp)
+ ncomp=0
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if is_road(x,y) and peekp(pl_comp,x,y)==0 then
+    ncomp+=1
+    local id=ncomp
+    flood(x,y,is_road,function(fx,fy)
+     pokep(pl_comp,fx,fy,id)
+    end)
+   end
+  end
+ end
+ -- power: flood from each plant (tile 60) over power-carrying tiles. zones carry
+ -- power too (a built-up block conducts), so you don't need a wire to every lot.
+ pwr={}
+ plants={}
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if tile(x,y)==60 then
+    add(plants,{x=x,y=y})
+    flood(x,y,power_carries,function(fx,fy) pwr[fx+fy*gw]=true end)
+   end
+  end
+ end
+end
+
+-- tiles that carry power: wires/plant (conducts), any zone tile (even empty),
+-- and roads with a wire overlay crossing them (pl_wire) — so lines cross roads.
+function power_carries(x,y)
+ return conducts(x,y) or is_zone(x,y) or peekp(pl_wire,x,y)>0
+end
+
+-- the nearest road tile within p.road_reach (chebyshev), scanned ring by ring,
+-- or nil. lets a zone reach a road that's diagonal / up to 2 tiles away.
+function near_road(x,y)
+ for r=0,p.road_reach do
+  for dy=-r,r do
+   for dx=-r,r do
+    if max(abs(dx),abs(dy))==r and is_road(x+dx,y+dy) then
+     return x+dx,y+dy
+    end
+   end
+  end
+ end
+end
+
+function rcomp(x,y)
+ local rx,ry=near_road(x,y)
+ return rx and peekp(pl_comp,rx,ry) or 0
+end
+
+function connected(ax,ay,bx,by)
+ local ca=rcomp(ax,ay)
+ return ca~=0 and ca==rcomp(bx,by)
+end
+
+-- a tile is powered if it (or an orthogonal neighbour, e.g. a zone beside a
+-- power line) is on a plant-fed power network.
+function powered(x,y)
+ if pwr[x+y*gw] then return true end
+ for _,n in pairs(neighbors4(x,y)) do
+  if pwr[n.x+n.y*gw] then return true end
+ end
+ return false
+end
+-- >>> landval.lua
+-- landval.lua : desirability / land value field (pl_val, 0..255, 128 neutral).
+-- sim weights zone growth/decay by desir() so the waterfront booms and the
+-- factory's edge rots. the per-tile box scan is too heavy to redo wholesale, so
+-- recompute is a DIRTY QUEUE: a tile is only re-evaluated when something that
+-- feeds it changes (a build, a fire, an agent's congestion). step_val drains a
+-- slice of the queue each frame (1/val_div), so a static map costs ~nothing and
+-- no dirty tile waits longer than ~val_div frames. update_val does a full sweep
+-- for seed/tests.
+-- api: update_val, step_val, val_dirty, val_dirty_area, desir
+
+-- desirability at one tile: 128 + waterfront/park bonuses - pollution/congestion.
+local function val_at(x,y)
+ local rad=p.val_rad
+ local v=128
+ for dy=-rad,rad do
+  for dx=-rad,rad do
+   local nx,ny=x+dx,y+dy
+   if in_bounds(nx,ny) then
+    local t=tile(nx,ny)
+    if t==0 then v+=p.val_water
+    elseif t==61 then v+=p.val_park
+    elseif (t>=56 and t<=59) or t==60 then v-=p.val_pol end
+    if is_road(nx,ny) then v-=p.val_cong*peekp(pl_cong,nx,ny) end
+   end
+  end
+ end
+ return flr(mid(0,v,255))
+end
+
+-- dirty queue: list of tile indices + a dedup set so a tile is queued once.
+vq={}
+local vqd={}
+
+function val_dirty(x,y)
+ if in_bounds(x,y) then
+  local i=x+y*gw
+  if not vqd[i] then vqd[i]=true add(vq,i) end
+ end
+end
+
+-- a change at (x,y) feeds the land value of every tile whose box reaches it
+-- (within val_rad) — queue that neighbourhood.
+function val_dirty_area(x,y)
+ local rad=p.val_rad
+ for ty=y-rad,y+rad do
+  for tx=x-rad,x+rad do
+   val_dirty(tx,ty)
+  end
+ end
+end
+
+-- drain a slice of the queue: enough that the whole backlog clears in ~val_div
+-- frames regardless of its size (so latency stays ~1s, cost scales with churn).
+function step_val()
+ for _=1,ceil(#vq/p.val_div) do
+  local i=vq[#vq] deli(vq,#vq)
+  vqd[i]=nil
+  pokep(pl_val,i%gw,flr(i/gw),val_at(i%gw,flr(i/gw)))
+ end
+end
+
+-- full sweep (seed + tests): recompute everything and empty the queue.
+function update_val()
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   pokep(pl_val,x,y,val_at(x,y))
+  end
+ end
+ vq={} vqd={}
+end
+
+function desir(x,y)
+ return peekp(pl_val,x,y)
+end
+-- >>> coverage.lua
+-- coverage.lua : the services layer. fire stations (safety) and parks (amenity)
+-- project a coverage field into pl_cov; zones need it to grow TALL (density >=2).
+-- this makes services matter: a sprawl of lv-1 shacks needs stations/parks to
+-- become a real downtown. recomputed on the sim census tick (like land value).
+-- api: update_cov, serviced(x,y); reads tile 62 (station) / 61 (park).
+
+function update_cov()
+ pclr(pl_cov)
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   local s=tile(x,y)
+   if s==62 or s==61 then
+    local r=s==62 and p.fire_rad or p.val_rad
+    for dy=-r,r do
+     for dx=-r,r do
+      pokep(pl_cov,x+dx,y+dy,1)
+     end
+    end
+   end
+  end
+ end
+end
+
+function serviced(x,y)
+ return peekp(pl_cov,x,y)>0
+end
+-- >>> terrain.lua
+-- terrain.lua: white noise + box blur -> PERCENTILE threshold + greedy river.
+-- box-blur narrows the value spread, so we pick sea/mtn from the actual
+-- histogram (so we always get ~water_pct water + ~mtn_pct mountains).
+function gen_terrain()
+ local buf={}
+ for i=0,gw*gw-1 do buf[i]=rnd(256) end
+ for _=1,p.terr_blur do
+  local t={}
+  for y=0,gw-1 do for x=0,gw-1 do
+   local s,n=0,0
+   for j=-1,1 do for i=-1,1 do
+    if in_bounds(x+i,y+j) then s+=buf[x+i+(y+j)*gw] n+=1 end
+   end end
+   t[x+y*gw]=s/n
+  end end
+  buf=t
+ end
+ -- histogram of integer elevations, then percentile cuts
+ local h={}
+ for i=0,255 do h[i]=0 end
+ for i=0,gw*gw-1 do local e=flr(buf[i]) buf[i]=e h[e]+=1 end
+ local cum,sea,mtn,n=0,0,256,gw*gw
+ for i=0,255 do
+  cum+=h[i]
+  if sea==0 and cum>=n*p.sea_pct then sea=i end
+  if mtn==256 and cum>=n*p.mtn_pct then mtn=i end
+ end
+ local bx,by,be=0,0,-1
+ for y=0,gw-1 do for x=0,gw-1 do
+  local e=buf[x+y*gw]
+  pokep(pl_elev,x,y,e)
+  if e>be then be=e bx=x by=y end
+  set_tile(x,y,e<sea and 0 or e>=mtn and 2 or 1)
+ end end
+ -- greedy downhill river; rnd jitter causes meandering
+ -- elev=0 marks visited tiles (river tiles become water anyway)
+ local cx,cy=bx,by
+ for _=1,gw*p.river_len do
+  set_tile(cx,cy,0) pokep(pl_elev,cx,cy,0)
+  if cx==0 or cy==0 or cx==gw-1 or cy==gw-1 then break end
+  local mn,nx,ny=999,cx,cy
+  for _,nb in pairs(neighbors4(cx,cy)) do
+   local ne=peekp(pl_elev,nb.x,nb.y)
+   if ne>0 then
+    ne=ne+rnd(p.river_jit)
+    if ne<mn then mn=ne nx=nb.x ny=nb.y end
+   end
+  end
+  if nx==cx and ny==cy then break end
+  cx=nx cy=ny
+ end
+end
+-- >>> agents.lua
+-- agents.lua : pooled visible trips that realise sim contracts
+-- api: agents, init_agents(), spawn_agent(x0,y0,x1,y1,res), update_agents(), draw_agents()
+-- calls: path (router), is_road (map), peekp/pokep/gw (map), pl_cong (data), res_col (data), p (params)
+
+agents={}
+
+function init_agents()
+ agents={}
+end
+
+-- optional `job`: a closure run once the agent reaches its destination (not on
+-- life-expiry). lets a trip realise an effect on arrival, e.g. a wrecking crew
+-- clearing rubble. returns true if the trip was actually dispatched.
+function spawn_agent(x0,y0,x1,y1,res,job)
+ if #agents>=p.agent_cap then return end
+ local pa=path(x0,y0,x1,y1,
+  is_road,
+  function(x,y) return 1+p.cong_k*peekp(pl_cong,x,y) end)
+ if pa and #pa>1 then
+  -- enter first tile
+  pokep(pl_cong,x0,y0,min(255,peekp(pl_cong,x0,y0)+1))
+  add(agents,{
+   path=pa, i=2,
+   px=x0*8+4, py=y0*8+4,
+   tx=x0, ty=y0,
+   res=res, col=res_col[res],
+   life=p.trip_life, job=job
+  })
+  return true
+ end
+end
+
+local function ag_remove(a)
+ pokep(pl_cong,a.tx,a.ty,max(0,peekp(pl_cong,a.tx,a.ty)-1))
+end
+
+function update_agents()
+ local keep={}
+ for _,a in pairs(agents) do
+  a.life-=1
+  local alive=a.life>0 and a.i<=#a.path
+  if alive then
+   -- move 1px toward centre of current target node
+   local n=a.path[a.i]
+   local tnx=n.x*8+4
+   local tny=n.y*8+4
+   local dx=tnx-a.px
+   local dy=tny-a.py
+   if dx~=0 then
+    a.px+=sgn(dx)
+   elseif dy~=0 then
+    a.py+=sgn(dy)
+   end
+   -- crossed into a new tile?
+   local ntx=flr(a.px/8)
+   local nty=flr(a.py/8)
+   if ntx~=a.tx or nty~=a.ty then
+    pokep(pl_cong,a.tx,a.ty,max(0,peekp(pl_cong,a.tx,a.ty)-1))
+    pokep(pl_cong,ntx,nty,min(255,peekp(pl_cong,ntx,nty)+1))
+    -- congestion just changed here -> land value nearby is stale; queue it.
+    if val_dirty_area then val_dirty_area(ntx,nty) end
+    a.tx=ntx
+    a.ty=nty
+   end
+   -- reached this node's centre?
+   if a.px==tnx and a.py==tny then
+    a.i+=1
+   end
+   if a.i>#a.path then
+    alive=false
+   end
+  end
+  if alive then
+   add(keep,a)
+  else
+   ag_remove(a)
+   -- arrived (path complete, not life-expired)? run its on-arrive job.
+   if a.job and a.i>#a.path then a.job() end
+  end
+ end
+ agents=keep
+end
+
+function draw_agents()
+ for _,a in pairs(agents) do
+  pset(a.px,a.py,a.col)
+  pset(a.px+1,a.py,a.col)
+  pset(a.px,a.py+1,a.col)
+  pset(a.px+1,a.py+1,a.col)
+ end
+end
+-- >>> sim.lua
+-- sim.lua : event-driven rci core (timewheel + grow/decay + commuters)
+-- api: init_sim, sim_seed, update_sim, schedule, tile_info, sm_index
+--      globals: evq, tick, pop, jobs, demand, idx
+-- calls: is_zone, zone_kind, zone_density, set_zone, neighbors4, is_road,
+--        rcomp, connected, spawn_agent, p, gw
+-- private prefix: sm_
+
+evq={}
+tick=0
+pop=0
+jobs=0
+demand={r=0,c=0,i=0}
+idx={}  -- offer index: idx[comp][kind] = list of {x,y} developed zone tiles
+
+function init_sim()
+ evq={}
+ for i=1,p.evt_h do add(evq,{}) end
+ tick=0 pop=0 jobs=0
+ demand={r=0,c=0,i=0}
+ idx={}
+end
+
+function schedule(dt,ev)
+ add(evq[(tick+dt)%p.evt_h+1],ev)
+end
+
+-- rebuild the per-road-component offer index from developed zones.
+-- a need looks up idx[mycomponent][complement_kind] -> already-reachable tiles.
+function sm_index()
+ idx={}
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if is_zone(x,y) and zone_density(x,y)>0 then
+    local c=rcomp(x,y)
+    if c~=0 then
+     idx[c]=idx[c] or {}
+     local k=zone_kind(x,y)
+     idx[c][k]=idx[c][k] or {}
+     add(idx[c][k],{x=x,y=y})
+    end
+   end
+  end
+ end
+end
+
+function sim_seed()
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if is_zone(x,y) then schedule((x+y)%p.eval_iv,{k=1,x=x,y=y}) end
+  end
+ end
+ sm_index()
+ update_val()
+ if update_cov then update_cov() end
+end
+
+local function sm_adj_road(x,y)
+ local rx,ry=near_road(x,y)
+ if rx then return {x=rx,y=ry} end
+end
+
+-- who each kind wants: R->jobs(C/I); C->customers(R)+goods(I); I->workers(R)+buyers(C)
+local sm_wants={[1]={2,3},[2]={1,3},[3]={1,2}}
+
+-- a reachable developed complement of tile (x,y); returns wx,wy or nil
+local function sm_complement(x,y,k)
+ local c=rcomp(x,y)
+ if c==0 or not idx[c] then return end
+ for _,wk in pairs(sm_wants[k]) do
+  local l=idx[c][wk]
+  if l and #l>0 then
+   local t=l[1+flr(rnd(#l))]
+   return t.x,t.y
+  end
+ end
+end
+
+local function sm_eval(x,y)
+ if not is_zone(x,y) then return end
+ local k=zone_kind(x,y)
+ local d=zone_density(x,y)
+ local access=rcomp(x,y)~=0
+ local wx,wy=sm_complement(x,y,k)
+ local found=wx~=nil
+ local pw=powered(x,y)
+ local dv=desir(x,y)  -- 0..255, 128 neutral: weights grow up / decay down
+ -- demand for this kind (-1..1): the rci meter actually drives the city.
+ local dmd=k==1 and demand.r or k==2 and demand.c or demand.i
+ -- service gate: growing TALL (density >=2) needs station/park coverage.
+ local svc=(not serviced) or d<1 or serviced(x,y)
+ if access and found and pw and dmd>0 and svc and d<3 and rnd(1)<p.grow_rate*dv/128 then
+  set_zone(x,y,k,d+1)
+  if d+1==3 and notify then notify("district booming",res_col[k],x,y) end
+ elseif (not access or not found or not pw or dmd<-0.5 or (d>=2 and not svc)) and d>0
+  and rnd(1)<p.decay_rate*(256-dv)/128 then
+  set_zone(x,y,k,d-1)
+  if d-1==0 and notify then notify("zone abandoned",5,x,y) end
+ end
+ -- visible commuter (per p.show, throttled by time-of-day traffic)
+ local tf=traffic_factor and traffic_factor() or 1
+ if found and d>0 and rnd(1)<p.show*tf then
+  local o=sm_adj_road(x,y)
+  local w=sm_adj_road(wx,wy)
+  if o and w then
+   -- a commercial<->industry trip carries goods (freight); else it's labor
+   local ck=zone_kind(wx,wy)
+   local res=((k==2 and ck==3) or (k==3 and ck==2)) and 3 or 1
+   spawn_agent(o.x,o.y,w.x,w.y,res)
+  end
+ end
+ schedule(p.eval_iv,{k=1,x=x,y=y})
+end
+
+local sm_cd=0
+local sm_id=flr(p.census_iv/2)  -- offset from census so the two don't co-spike
+local function sm_census()
+ local r,cj,ij=0,0,0
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if is_zone(x,y) then
+    local k=zone_kind(x,y)
+    local d=zone_density(x,y)
+    if k==1 then r+=d*p.r_per
+    elseif k==2 then cj+=d*p.c_per
+    else ij+=d*p.i_per end
+   end
+  end
+ end
+ pop=r jobs=cj+ij
+ demand.r=mid(-1,(jobs+p.dem_seed-pop)/p.dem_rdiv,1)
+ demand.c=mid(-1,(pop*p.dem_c-cj)/p.dem_div,1)
+ demand.i=mid(-1,(pop*p.dem_i-ij)/p.dem_div,1)
+end
+
+function update_sim()
+ tick+=1
+ local bi=tick%p.evt_h+1
+ local b=evq[bi]
+ local n=min(#b,p.evt_cap)
+ for i=1,n do
+  if b[i].k==1 then sm_eval(b[i].x,b[i].y)
+  elseif ev_hook then ev_hook(b[i]) end
+ end
+ evq[bi]={}
+ -- amortized maintenance: land value refreshes a couple rows EVERY frame (no
+ -- per-second spike); census + offer index run periodically but on separate
+ -- frames so their scans never stack. coverage is event-driven (tools.lua).
+ step_val()
+ sm_cd-=1
+ if sm_cd<=0 then sm_cd=p.census_iv sm_census() end
+ sm_id-=1
+ if sm_id<=0 then sm_id=p.census_iv sm_index() end
+end
+
+function tile_info(x,y)
+ if not is_zone(x,y) then return nil end
+ local k=zone_kind(x,y)
+ local wx=sm_complement(x,y,k)
+ return {kind=k,dens=zone_density(x,y),access=rcomp(x,y)~=0,
+  power=powered(x,y),served=wx~=nil,val=desir(x,y),
+  svc=(not serviced) or serviced(x,y)}
+end
+-- >>> disaster.lua
+-- disaster.lua : fire — the event loop's namesake. zones ignite, burn over
+-- timewheel ticks (k=2 events via ev_hook), spread to neighbours, and collapse
+-- to rubble (tile 63). a fire station (tile 62) suppresses fire in its radius.
+-- api: init_fire, ignite, start_fire, maybe_ignite, draw_fire, fire_covered
+--      globals: fires (active burning tiles), ev_hook (sim dispatch target)
+-- calls: is_zone, zone_density, neighbors4, peekp/pokep, schedule, update_net, p
+-- pl_fire holds burn ticks remaining; fires[] mirrors it for cheap drawing.
+
+fires={}
+
+function init_fire()
+ fires={}
+ pclr(pl_fire)
+ ev_hook=dis_hook  -- sim routes non-eval events here: k=2 burn, k=3 cleanup
+end
+
+-- timewheel dispatcher for disaster events.
+function dis_hook(e)
+ if e.k==2 then fire_handler(e)
+ elseif e.k==3 then wreck_dispatch(e) end
+end
+
+-- is a fire station within fire_rad (chebyshev) of (x,y)?
+function fire_covered(x,y)
+ for dy=-p.fire_rad,p.fire_rad do
+  for dx=-p.fire_rad,p.fire_rad do
+   if tile(x+dx,y+dy)==62 then return true end
+  end
+ end
+end
+
+local function unfire(x,y)
+ pokep(pl_fire,x,y,0)
+ for i=#fires,1,-1 do
+  if fires[i].x==x and fires[i].y==y then deli(fires,i) end
+ end
+end
+
+-- start a fire on a developed zone tile; schedule its first burn tick.
+function ignite(x,y)
+ if peekp(pl_fire,x,y)>0 then return end
+ if not (is_zone(x,y) and zone_density(x,y)>0) then return end
+ pokep(pl_fire,x,y,p.burn_ttl)
+ add(fires,{x=x,y=y})
+ if notify then notify("fire!",8,x,y) end
+ if snd then snd(snd_fire) end
+ schedule(p.fire_int,{k=2,x=x,y=y})
+end
+
+-- one burn tick (timewheel k=2 event). spreads, then ages toward rubble.
+function fire_handler(e)
+ local x,y=e.x,e.y
+ local t=peekp(pl_fire,x,y)
+ if t<=0 then return end  -- already out
+ local cov=fire_covered(x,y)
+ if cov and rnd(1)<0.6 then unfire(x,y) return end  -- crews knock it down
+ local sp=cov and p.fire_cover or p.fire_spread
+ for n in all(neighbors4(x,y)) do
+  if rnd(1)<sp then ignite(n.x,n.y) end
+ end
+ t-=1
+ if t<=0 then
+  unfire(x,y)
+  set_tile(x,y,63)  -- collapse to rubble (blocks growth until cleared)
+  if notify then notify("burned to rubble",5,x,y) end
+  update_net()
+  if val_dirty_area then val_dirty_area(x,y) end
+  schedule(p.wreck_delay,{k=3,x=x,y=y})  -- summon the wrecking crew
+ else
+  pokep(pl_fire,x,y,t)
+  schedule(p.fire_int,{k=2,x=x,y=y})
+ end
+end
+
+-- ignite a random developed zone (menu item + random-ignition source).
+function start_fire()
+ local c={}
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if is_zone(x,y) and zone_density(x,y)>0 and peekp(pl_fire,x,y)==0 then
+    add(c,{x=x,y=y})
+   end
+  end
+ end
+ if #c>0 then local t=c[1+flr(rnd(#c))] ignite(t.x,t.y) end
+end
+
+function maybe_ignite()
+ if rnd(1)<p.fire_chance then start_fire() end
+end
+
+-- flames over burning tiles (caller has set camera to world space).
+function draw_fire()
+ for f in all(fires) do
+  local x,y=f.x*8,f.y*8
+  rectfill(x+2,y+3,x+5,y+7,8)
+  for i=0,2 do
+   pset(x+2+flr(rnd(4)),y+1+flr(rnd(5)),rnd(1)<0.5 and 9 or 10)
+  end
+ end
+end
+
+-- a road tile orthogonally adjacent to (x,y), or nil.
+local function adj_road(x,y)
+ for n in all(neighbors4(x,y)) do
+  if is_road(n.x,n.y) then return n end
+ end
+end
+
+-- the fire station (tile 62) nearest (x,y) by manhattan distance; the station
+-- doubles as the public-works depot the wrecking crew rolls out from.
+local function nearest_station(x,y)
+ local best,bd
+ for sy=0,gw-1 do
+  for sx=0,gw-1 do
+   if tile(sx,sy)==62 then
+    local d=abs(sx-x)+abs(sy-y)
+    if not bd or d<bd then bd=d best={x=sx,y=sy} end
+   end
+  end
+ end
+ return best
+end
+
+-- k=3 event: send a wrecking crew to clear a rubble tile. it drives out from
+-- the nearest station and clears the lot on arrival (the trip's on-arrive job).
+function wreck_dispatch(e)
+ local rx,ry=e.x,e.y
+ if tile(rx,ry)~=63 then return end  -- already cleared or bulldozed
+ local function clear()
+  if tile(rx,ry)==63 then
+   set_tile(rx,ry,1) update_net()
+   if val_dirty_area then val_dirty_area(rx,ry) end
+   if notify then notify("crew cleared rubble",11,rx,ry) end
+   if fx_burst then fx_burst(rx*8+4,ry*8+4,5,6) end
+   if snd then snd(snd_doze) end
+  end
+ end
+ local st=nearest_station(rx,ry)
+ if st then
+  local o,w=adj_road(st.x,st.y),adj_road(rx,ry)
+  if o and w and spawn_agent(o.x,o.y,w.x,w.y,4,clear) then return end
+  clear()  -- depot exists but no road route: crew clears it anyway
+  return
+ end
+ -- no depot yet: retry later (a station may get built before a bulldozer).
+ schedule(p.wreck_delay*4,{k=3,x=rx,y=ry})
+end
+-- >>> fx.lua
+-- fx.lua : particles — the juice. smokestacks puff, fires belch dark smoke,
+-- placing/dozing kicks up dust. a small capped pool; update moves+ages, draw
+-- runs in world space (inside draw_world, after the night pal reset so embers
+-- stay bright). emitters read plants[] (net.lua) and fires[] (disaster.lua).
+-- api: init_fx, update_fx, draw_fx, fx_burst(px,py,col,n); global: parts
+parts={}
+local fxc=0
+
+function init_fx() parts={} fxc=0 end
+
+local function spawn(x,y,dx,dy,life,col,puff)
+ if #parts<72 then add(parts,{x=x,y=y,dx=dx,dy=dy,l=life,c=col,r=puff and 0,puff=puff}) end
+end
+
+-- a rising smoke puff from world-pixel (px,py); dark for fire, grey for plant.
+-- puff=true -> drawn as a growing circfill cloud (v1 look), not a single pixel.
+local function smoke(px,py,dark)
+ spawn(px,py,(rnd(2)-1)*0.2,-0.3-rnd(0.3),24+rnd(16),dark and 5 or 6,true)
+end
+
+-- an outward burst (dust on placement, sparks on collapse).
+function fx_burst(px,py,col,n)
+ for i=1,n do
+  local a=rnd(1)
+  spawn(px,py,cos(a)*rnd(1.2),sin(a)*rnd(1.2)-0.3,8+rnd(8),col)
+ end
+end
+
+function update_fx()
+ for i=#parts,1,-1 do
+  local q=parts[i]
+  q.x+=q.dx q.y+=q.dy q.dy+=0.02 q.l-=1
+  -- puffs swell as they rise; smoke cools grey->dark as it ages
+  if q.puff then q.r=min(2.5,q.r+0.05) end
+  if q.c==6 and q.l<10 then q.c=5 end
+  if q.l<=0 then deli(parts,i) end
+ end
+ fxc+=1
+ if fxc%4==0 then
+  for f in all(fires) do smoke(f.x*8+2+rnd(4),f.y*8,true) end
+ end
+ if fxc%8==0 then
+  for pl in all(plants) do
+   if rnd(1)<0.6 then smoke(pl.x*8+1+rnd(2),pl.y*8,false) end
+  end
+ end
+end
+
+function draw_fx()
+ for q in all(parts) do
+  if q.puff then
+   circfill(q.x,q.y,q.r,q.c)
+  else
+   pset(q.x,q.y,q.c)
+  end
+ end
+end
+-- >>> tools.lua
+-- tools.lua : cursor, tool palette, placement.
+-- HEADER: cursor move/draw are live; apply_tool + tool_put are STUBS for an
+-- agent to flesh out against the contract in the comments below.
+-- api: init_tools, update_tools, apply_tool, tool_put, draw_cursor
+--      globals: cur, tool, tools_list
+
+-- tools: road / r-zone / c-zone / i-zone / power / plant / park / bulldoze.
+-- ids 1..5 are stable; "park"/"bulldoze" are dispatched by NAME (below) so new
+-- buildings can be inserted before bulldoze without re-indexing the logic.
+tools_list=split"road,r-zone,c-zone,i-zone,power,plant,park,fire,bulldoze"
+tool=1
+local tb_lx,tb_ly=-1,-1  -- last tile painted (for drag-build)
+
+function init_tools()
+ cur={x=16,y=16}
+ tool=1
+end
+
+function update_tools()
+ -- cursor (live): dpad moves, button O (4) cycles tool, button X (5) applies.
+ if btnp(0) then cur.x=max(0,cur.x-1) end
+ if btnp(1) then cur.x=min(gw-1,cur.x+1) end
+ if btnp(2) then cur.y=max(0,cur.y-1) end
+ if btnp(3) then cur.y=min(gw-1,cur.y+1) end
+ if btnp(4) then tool=tool%#tools_list+1 end
+ -- apply on press; hold + move the cursor to drag-build/bulldoze a line
+ if btnp(5) then
+  apply_tool() tb_lx,tb_ly=cur.x,cur.y
+ elseif btn(5) and (cur.x~=tb_lx or cur.y~=tb_ly) then
+  apply_tool() tb_lx,tb_ly=cur.x,cur.y
+ end
+ update_camera()
+end
+
+-- STUB (agent: flesh out). what id the current tool would place at x,y, or nil
+-- if invalid. used by the ghost preview + apply_tool.
+--   road(1)   -> 16 (autotiled by refresh) on buildable(grass) ; nil otherwise
+--   r/c/i(2,3,4) -> a zone plot (set via set_zone(x,y,kind,0)) on buildable
+--   power(5)  -> 32 (autotiled) on buildable
+--   bulldoze(6) -> 1 (grass) on anything > grass
+function tool_put(t,x,y)
+ if t==1 then
+  return (is_buildable(x,y) or tile(x,y)==0) and 16 or nil  -- roads bridge water
+ elseif t==5 then
+  return is_buildable(x,y) and 32 or nil
+ elseif t>=2 and t<=4 then
+  return is_buildable(x,y) and (48+(t-2)*4) or nil
+ elseif t==6 then
+  return is_buildable(x,y) and 60 or nil
+ elseif tools_list[t]=="park" then
+  return is_buildable(x,y) and 61 or nil
+ elseif tools_list[t]=="fire" then
+  return is_buildable(x,y) and 62 or nil
+ elseif tools_list[t]=="bulldoze" then
+  return tile(x,y)>1 and 1 or nil
+ end
+ return nil
+end
+
+-- STUB (agent: flesh out). place the current tool at cur:
+--   - validate via tool_put / is_buildable; zones use set_zone(x,y,kind,0),
+--     roads/power use set_tile then refresh autotile of the tile + 4 neighbours
+--     (set_tile(16+nmask(...,is_road)) / 80? no — power 32+nmask(...,conducts)).
+--   - bulldoze -> set_tile(cur.x,cur.y,1).
+--   - after any change: update_net(); and for a NEW zone tile, schedule a sim
+--     eval: schedule(0,{k=1,x=cur.x,y=cur.y}) so the sim picks it up live.
+function apply_tool()
+ local x,y=cur.x,cur.y
+ local before=tile(x,y)
+ local n=tools_list[tool]
+ if n=="bulldoze" then
+  if (tile(x,y)>1 or peekp(pl_wire,x,y)>0) and try_spend(cost.dozer) then
+   set_tile(x,y,1)
+   pokep(pl_wire,x,y,0)  -- also remove any wire overlay
+   update_net()
+  end
+ elseif tool==6 then
+  if is_buildable(x,y) and try_spend(cost.plant) then
+   set_tile(x,y,60)
+   update_net()
+  end
+ elseif n=="park" then
+  if is_buildable(x,y) and try_spend(cost.park) then
+   set_tile(x,y,61)
+  end
+ elseif n=="fire" then
+  if is_buildable(x,y) and try_spend(cost.fire) then
+   set_tile(x,y,62)
+  end
+ elseif tool>=2 and tool<=4 then
+  if is_buildable(x,y) and try_spend(cost.zone) then
+   set_zone(x,y,tool-1,0)
+   update_net()
+   schedule(0,{k=1,x=x,y=y})
+  end
+ elseif tool==1 then
+  if tool_put(1,x,y) and try_spend(cost.road) then
+   set_tile(x,y,16+nmask(x,y,is_road))
+   for nb in all(neighbors4(x,y)) do
+    if is_road(nb.x,nb.y) then
+     set_tile(nb.x,nb.y,16+nmask(nb.x,nb.y,is_road))
+    end
+   end
+   update_net()
+  end
+ elseif tool==5 then
+  if is_road(x,y) then
+   -- lay a wire crossing the road (overlay plane; the road stays a road)
+   if peekp(pl_wire,x,y)==0 and try_spend(cost.power) then
+    pokep(pl_wire,x,y,1)
+    update_net()
+   end
+  elseif tool_put(5,x,y) and try_spend(cost.power) then
+   set_tile(x,y,32+nmask(x,y,conducts))
+   for nb in all(neighbors4(x,y)) do
+    if conducts(nb.x,nb.y) then
+     set_tile(nb.x,nb.y,32+nmask(nb.x,nb.y,conducts))
+    end
+   end
+   update_net()
+  end
+ end
+ -- dust kick + sound on any successful change; deny blip if nothing happened
+ local now=tile(x,y)
+ if now~=before then
+  if fx_burst then fx_burst(x*8+4,y*8+4,before>1 and 5 or 6,5) end
+  if snd then snd(before>1 and snd_doze or snd_place) end
+  -- queue the land value the change touched; the rest of the map stays static.
+  if val_dirty_area then val_dirty_area(x,y) end
+  -- coverage only changes when a station/park is built or removed: refresh then.
+  if update_cov and (before==61 or before==62 or now==61 or now==62) then
+   update_cov()
+  end
+ elseif snd and n~="bulldoze" then
+  snd(snd_deny)
+ end
+end
+
+function draw_cursor()
+ -- live: outline the cursor tile (caller has set camera to world space)
+ local x,y=cur.x*8,cur.y*8
+ rect(x,y,x+7,y+7,7)
+end
+
+-- each tool's icon is its own tile sprite (sprite id == tile id); bulldoze=X.
+-- cost keys line up with tools_list so the label can show the price.
+local tb_spr=split"16,48,52,56,32,60,61,62,-1"
+local tb_cost=split"road,zone,zone,zone,power,plant,park,fire,dozer"
+
+-- bottom tool palette: always-visible icons (no more blind cycling), current
+-- tool boxed, with its name + cost beside the strip. runs in SCREEN space.
+function draw_toolbar()
+ rectfill(0,118,127,127,0)
+ for i=1,#tools_list do
+  local x=2+(i-1)*9
+  local s=tb_spr[i]
+  if s>=0 then spr(s,x,119)
+  else line(x+1,120,x+6,125,8) line(x+6,120,x+1,125,8) end -- bulldoze X
+  if i==tool then rect(x-1,118,x+8,127,7) end
+ end
+ local lx=2+#tools_list*9+2
+ print(tools_list[tool],lx,119,10)
+ local ck=tb_cost[tool]
+ if ck and cost[ck] then print("$"..cost[ck],lx,125,6) end
+end
+-- >>> render.lua
+-- render.lua : world drawing. HEADER — draw_world is a STUB for an agent.
+-- api: draw_world
+-- NOTE sprite id == tile id, so map() renders the tile grid directly.
+-- contract (flesh this out):
+--   camera(camx,camy)
+--   map(0,0,0,0,gw,gw)            -- the tiles (sprites match ids)
+--   -- light overlays: e.g. faint congestion on busy roads from
+--   --   peekp(pl_cong,x,y) over the visible window, animated water sparkle;
+--   --   keep it cheap and don't fight the sprite art.
+--   draw_agents()                 -- the moving commuters (agents.lua)
+--   draw_cursor()                 -- the cursor outline (tools.lua)
+--   camera()                      -- reset so the glue draws hud in screen space
+-- congestion is shown on the minimap (minimap.lua), not as a world overlay.
+-- animated sparkle on visible water tiles (cheap: only the camera window).
+function draw_water()
+ local t=flr((tick or 0)/8)
+ local x0,y0=flr(camx/8),flr(camy/8)
+ for ty=y0,y0+16 do
+  for tx=x0,x0+16 do
+   if tile(tx,ty)==0 and (tx*3+ty*7+t)%6==0 then
+    pset(tx*8+(tx+t)%5+1,ty*8+(ty*3)%5+1,7)
+   end
+  end
+ end
+end
+
+-- flashing lightning bolt over zones that lack power (the v1 "no power" cue).
+function draw_alerts()
+ if tick%16>=8 then return end           -- blink
+ local x0,y0=flr(camx/8),flr(camy/8)
+ for ty=y0,y0+16 do
+  for tx=x0,x0+16 do
+   if is_zone(tx,ty) and not powered(tx,ty) then
+    local sx,sy=tx*8,ty*8
+    line(sx+4,sy+1,sx+2,sy+4,10)
+    line(sx+2,sy+4,sx+5,sy+4,10)
+    line(sx+5,sy+4,sx+3,sy+7,10)
+   end
+  end
+ end
+end
+
+-- power-line overlay where a wire crosses a road (pl_wire); the road shows under.
+function draw_wires()
+ local x0,y0=flr(camx/8),flr(camy/8)
+ for ty=y0,y0+16 do
+  for tx=x0,x0+16 do
+   if peekp(pl_wire,tx,ty)>0 then
+    local sx,sy=tx*8,ty*8
+    line(sx,sy+3,sx+7,sy+3,0)
+    pset(sx+2,sy+2,0) pset(sx+5,sy+4,0)
+   end
+  end
+ end
+end
+
+function draw_world()
+ camera(camx,camy)
+ night_pal()              -- dusk/night colour remap (no-op at midday)
+ map(0,0,0,0,gw,gw)
+ draw_agents()
+ pal()                    -- reset so fire/cursor draw at full brightness
+ draw_water()             -- water glints (bright, after the night remap)
+ draw_wires()             -- wires crossing roads
+ draw_fire()
+ draw_fx()
+ draw_alerts()            -- no-power lightning bolts
+ draw_cursor()
+ camera()
+end
+-- >>> inspector.lua
+-- inspector.lua : the sim explains itself. HEADER — draw_inspector is a STUB.
+-- api: draw_inspector
+-- shows tile_info(cur.x,cur.y) for the tile under the cursor.
+-- contract (flesh this out):
+--   local ti=tile_info(cur.x,cur.y)   -- nil if not a zone (then draw nothing)
+--   ti = {kind=1/2/3, dens=0..3, access=bool, served=bool}
+--   draw a small panel in SCREEN space (camera already reset by draw_world):
+--     - rectfill an OPAQUE background first, then a rect border  <-- citysim bug
+--       was a panel with no bg; always back panels.
+--     - line 1: kind label ("res"/"com"/"ind") + " lv"..dens
+--     - line 2: status — "no road" if not access, else "starved" if not served,
+--       else "thriving" (served).
+--   keep it a few lines, tucked in a corner; readable over the map.
+local ins_kinds={"res","com","ind"}
+local ins_cols={11,12,10}
+function draw_inspector()
+ local ti=tile_info(cur.x,cur.y)
+ if not ti then return end
+ local x,y=1,8
+ rectfill(x,y,x+46,y+29,0)
+ rect(x,y,x+46,y+29,5)
+ print(ins_kinds[ti.kind].." lv"..ti.dens,x+2,y+2,ins_cols[ti.kind])
+ local st="thriving"
+ if not ti.access then st="no road"
+ elseif not ti.power then st="no power"
+ elseif not ti.served then st="starved"
+ elseif ti.dens>=2 and not ti.svc then st="needs svc" end
+ print(st,x+2,y+9,7)
+ -- land value: green desirable / red blighted
+ print("val "..ti.val,x+2,y+16,ti.val>140 and 11 or ti.val<116 and 8 or 6)
+ -- service coverage (station/park): green ok / grey none
+ print(ti.svc and "svc ok" or "svc none",x+2,y+23,ti.svc and 11 or 5)
+end
+-- >>> econ.lua
+-- econ.lua : money ($k), tax, time. HEADER — bodies are STUBS for an agent.
+-- api: init_econ, update_econ, try_spend, mfmt; globals money, tax_rate, month, year
+-- calls: pop, jobs (sim census), p
+-- money is stored in THOUSANDS of dollars (16.16 fixed-point flips past 32767),
+-- so costs/income are in dollars and scaled /1000 here (see ../citysim/LEARNINGS).
+
+money=2
+tax_rate=2
+month=1
+year=p.start_year
+ec_f=0
+
+function init_econ()
+ money=p.start_money
+ tax_rate=p.tax_rate
+ month=1 year=p.start_year
+ ec_f=0
+end
+
+-- format a $k value: <$1k -> "$NNN", then "$N.Nk", then "$N.Nm". signed.
+function mfmt(v)
+ local s=v<0 and "-$" or "$"
+ local a=abs(v)
+ if a<1 then return s..flr(a*1000+0.5) end
+ local u="k"
+ if a>=1000 then a=a/1000 u="m" end
+ local w=flr(a)
+ local f=flr((a-w)*10)
+ return s..w..(f>0 and "."..f or "")..u
+end
+
+-- spend n DOLLARS; allow down to -$1k debt; return true if allowed.
+function try_spend(n)
+ local d=n/1000
+ if money-d>=p.debt_k then money-=d return true end
+ return false
+end
+
+-- advance time + apply monthly income/upkeep. call every frame from the glue.
+function update_econ()
+ ec_f+=1
+ if ec_f<p.month_frames then return end
+ ec_f=0
+ month=month%12+1
+ if month==1 then year+=1 end
+ local income=pop*tax_rate+flr(jobs*tax_rate*p.job_tax)
+ local roads=0
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if is_road(x,y) then roads+=1 end
+  end
+ end
+ local upkeep=roads*p.road_up
+ money=min(p.money_cap,money+(income-upkeep)/1000)
+end
+-- >>> hud.lua
+-- hud.lua : top status bar + RCI demand bars.
+-- api: draw_hud
+-- calls: money/mfmt/month/year (econ), pop/jobs/demand (sim)
+-- runs in SCREEN space (called after draw_world reset the camera).
+local mon=split"jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec"
+local hd_lbl=split"r,c,i"
+local hd_col=split"11,12,10"
+local hd_dim=split"3,13,4"
+
+function draw_hud()
+ rectfill(0,0,127,6,0)
+ -- money
+ print(mfmt(money),0,1,money<0 and 8 or 11)
+ -- pop (jobs moved to the minimap detail view to free space)
+ print("p"..pop,32,1,14)
+ -- date
+ print(mon[month].." "..year,58,1,7)
+ -- rci demand bars (x=104..126, midline y=4)
+ local bx=104
+ local hd_dv={demand.r,demand.c,demand.i}
+ rectfill(bx,4,bx+22,4,5)
+ for i=1,3 do
+  local lx=bx+(i-1)*8
+  print(hd_lbl[i],lx,1,hd_col[i])
+  local h=mid(-3,flr(hd_dv[i]*3+0.5),3)
+  if h>0 then
+   rectfill(lx+3,4-h,lx+4,4,hd_col[i])
+  elseif h<0 then
+   rectfill(lx+3,4,lx+4,4-h,hd_dim[i])
+  end
+ end
+end
+-- >>> minimap.lua
+-- minimap.lua : whole-city overview. HEADER — draw_minimap is a STUB.
+-- api: draw_minimap
+-- calls: tile/zone_kind/zone_density/is_road (map), gw, p
+-- the player toggles a map mode (glue owns the toggle + calling this); runs in
+-- SCREEN space. ALWAYS back the panel with an opaque rect (citysim's overview
+-- had no bg and was unreadable).
+
+local mm_ox,mm_oy=16,16
+
+-- developed zones show their kind colour (R green / C blue / I yellow);
+-- empty (density 0) zones show grey so zoned-but-unbuilt land is still visible
+-- (an empty R plot used to draw grass-green and vanished on the map).
+local mm_zb={11,12,10}
+local mm_empty=6
+
+function draw_minimap()
+ rectfill(mm_ox-1,mm_oy-1,mm_ox+96,mm_oy+96,0)
+ rect(mm_ox-1,mm_oy-1,mm_ox+96,mm_oy+96,5)
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   local t=tile(x,y)
+   local c
+   if t==0 then
+    c=1
+   elseif t==2 then
+    c=13
+   elseif is_road(x,y) then
+    c=peekp(pl_cong,x,y)>p.cong_show and 8 or 5 -- busy roads glow red
+   else
+    local k=zone_kind(x,y)
+    if k then
+     c=(zone_density(x,y)>0) and mm_zb[k] or mm_empty
+    else
+     c=3
+    end
+   end
+   rectfill(mm_ox+x*3,mm_oy+y*3,mm_ox+x*3+2,mm_oy+y*3+2,c)
+  end
+ end
+ rect(mm_ox+flr(camx/8)*3,mm_oy+flr(camy/8)*3,
+      mm_ox+flr(camx/8)*3+16*3,mm_oy+flr(camy/8)*3+15*3,7)
+ -- detail line: pop / jobs (moved off the top bar) + net monthly money
+ print("pop "..pop.."  job "..jobs,mm_ox,mm_oy+98,7)
+end
+-- >>> daynight.lua
+-- daynight.lua : day/night cycle via a draw-palette remap (pal), NOT a dither
+-- overlay — PICO-8's fill transparency doesn't darken the map, but pal() does
+-- (citysim1 lesson). night_pal() darkens every colour to a moodier one while
+-- leaving lit-window white (7) bright, so the night city glows. render.lua
+-- wraps the map/agents draw in night_pal()..pal().
+-- api: day_phase, night_pal; reads sim `tick`, period p.day_frames.
+
+-- 0=noon (brightest) .. 1=midnight (darkest). starts at noon (tick 0).
+function day_phase()
+ return (1-cos((tick or 0)/p.day_frames))/2
+end
+
+-- colour i -> darker i. index 7 (white) stays 7 so windows/lights glow.
+local night_lut=split"1,1,1,2,5,5,7,2,4,9,3,13,1,2,4"
+local eve_lut=split"1,2,3,4,5,13,7,8,9,9,3,13,13,2,4"
+
+-- traffic ebbs at night: ~1 at midday down to ~0.3 at midnight, so the roads
+-- visibly breathe with the day/night cycle (sim scales commuter spawns by this).
+function traffic_factor()
+ return 1-0.7*day_phase()
+end
+
+-- apply the dusk/night remap if it's dark enough (no-op at midday).
+function night_pal()
+ local dk=day_phase()
+ local l=dk>0.62 and night_lut or (dk>0.34 and eve_lut)
+ if l then for i=1,15 do pal(i,l[i]) end end
+end
+-- >>> save.lua
+-- save.lua : save/load via cstore/reload to a companion cart. HEADER — stubs.
+-- api: save_city, load_city
+-- calls: money/month/year/tax_rate (econ); update_net, init_sim, sim_seed (sim);
+--        init_agents (agents); pclr + pl_cong (map/data); gw, mset/mget.
+-- layout (manual 6.7): tile grid lives in the map region 0x2000; the sim data
+-- planes live at 0x8000 (6 planes x 1024 = 0x1800). companion cart "citysave2.p8"
+-- must exist on disk. money is $k (store the integer part).
+
+function save_city()
+ local m=flr(money)
+ mset(120,0,42)
+ mset(121,0,m%256) mset(122,0,flr(m/256))
+ mset(123,0,month) mset(124,0,year-1900) mset(125,0,tax_rate)
+ cstore(0x2000,0x2000,0x1000,"citysave2.p8")
+ cstore(0x0,0x8000,0x1800,"citysave2.p8")
+end
+
+function load_city()
+ reload(0x2000,0x2000,0x1000,"citysave2.p8")
+ if mget(120,0)~=42 then return end
+ reload(0x8000,0x0,0x1800,"citysave2.p8")
+ money=mget(121,0)+mget(122,0)*256
+ month=mget(123,0) year=1900+mget(124,0) tax_rate=mget(125,0)
+ init_agents() pclr(pl_cong) update_net() init_sim() sim_seed()
+end
+
+-- glue owns _init/_update/_draw; modules never define them.
+function _init()
+ init_map()
+ gen_terrain()
+ update_net()
+ init_agents()
+ init_sim()
+ sim_seed()
+ init_econ()
+ init_fire()
+ init_log()
+ init_fx()
+ init_tools()
+ update_camera(true)
+ mapview=false
+ menuitem(1,"save city",save_city)
+ menuitem(2,"load city",load_city)
+ menuitem(3,"map view",function() mapview=not mapview end)
+ menuitem(4,"start fire",start_fire)
+ menuitem(5,"sound: on",function() sfx_mute=not sfx_mute return true end)
+end
+
+function _update()
+ update_tools()
+ update_sim()
+ update_agents()
+ update_econ()
+ update_fx()
+ maybe_ignite()
+end
+
+function _draw()
+ cls(0)
+ draw_world()
+ if mapview then draw_minimap() else draw_inspector() end
+ draw_log()
+ draw_hud()
+ draw_toolbar()
+end
+
+__gfx__
+cccccccc333333333335533300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+ccc1cccc333b33333357d53300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+cccccc1c33333333355ddd5300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+c1cccccc33333b3355d6d6d500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+cccc1ccc3333b3335d6d6d6500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+1cccccccb3333333dddddddd00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+cccc1ccc333333b35d5dd5d500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+cc1ccccc333333335555555500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+66666666655555566666666665555555666666666555555666666666655555556666666655555556666666665555555566666666555555566666666655555555
+65555556655a555665555555655a555565555556655a555665555555655a555555555556555a555655555555555a555555555556555a555655555555555a5555
+65555556655555566555555565555555655555566555555665555555655555555555555655555556555555555555555555555556555555565555555555555555
+655a5556655a5556655a5555655a5555655a5556655a5556655a5555655a55555a5a55565a5a55565a5a55555a5a55555a5a55565a5a55565a5a55555a5a5555
+6555a5566555a5566555a5a56555a5a56555a5566555a5566555a5a56555a5a55555a5565555a5565555a5a55555a5a55555a5565555a5565555a5a55555a5a5
+65555556655555566555555565555555655555566555555665555555655555555555555655555556555555555555555555555556555555565555555555555555
+655555566555555665555555655555556555a5566555a5566555a5556555a555555555565555555655555555555555555555a5565555a5565555a5555555a555
+66666666666666666666666666666666655555566555555665555555655555556666666666666666666666666666666655555556555555565555555555555555
+33333333333033333333333333303333333333333330333333333333333033333333333333303333333333333330333333333333333033333333333333303333
+33333333333033333333333333303333333333333330333333333333333033333333333333303333333333333330333333333333333033333333333333303333
+33333333333033333333333333303333333333333330333333333333333033333333333333303333333333333330333333333333333033333333333333303333
+33303333333033333330000033300000333033333330333333300000333000000000333300003333000000000000000000003333000033330000000000000000
+33303333333433333334333333343333333433333334333333343333333433333334333333343333333433333334333333343333333433333334333333343333
+33333333333333333333333333333333333033333330333333303333333033333333333333333333333333333333333333303333333033333330333333303333
+33333333333333333333333333333333333033333330333333303333333033333333333333333333333333333333333333303333333033333330333333303333
+33333333333333333333333333333333333033333330333333303333333033333333333333333333333333333333333333303333333033333330333333303333
+b3b3b3bb333333333333333333333333c3c3c3cc333333333333333333333333a3a3a3aa33333333333333333333333336333633333333333333333333533533
+3333333333333333333333333f7f7ff33333333333333333333333333171711333333333333333333333333334747443343334333bb33bb33666666355656555
+b333333b33333333333333333ffffff3c333333c333333333333333331111113a333333a333333333333333334444443555555553bbb3bb36888888656555655
+33333333333333333f7f7ff33f7f7ff33333333333333333317171133171711333333333333333333474744334747443559a955533b3eb336882288665555565
+b333333b333333333ffffff33ffffff3c333333c333333333111111331111113a333333a33333333344444433444444355aaa5553433b3336882288655656556
+333333333f7f7ff33f7f7ff33f7f7ff3333333333171711331717113317171133333333334747443347474433474744355595555333bb3b36888888653565555
+b333333b3ffffff33ffffff33ffffff3c333333c311111133111111331111113a333333a3444444334444443344444435555555533b333b36777777655555655
+b3b3b3b3bbbbbbbbbbbbbbbbbbbbbbbbc3c3c3c3cccccccccccccccccccccccca3a3a3a3aaaaaaaaaaaaaaaaaaaaaaaa88888888333333333777777355555555
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__gff__
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+000800001e15024150000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000800000c6500a650086500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000800002413030130000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000c0000182501e250182501e25000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000600002c13030130000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
