@@ -40,6 +40,7 @@ p={
  dem_div=24,         -- commercial/industrial demand divisor
  dem_c=0.5,          -- target jobs per resident (commercial)
  dem_i=0.7,          -- target jobs per resident (industrial)
+ dem_seed=8,         -- baseline external R demand (lets an empty city bootstrap)
 
  -- terrain (terrain.lua)
  sea_pct=0.14,       -- fraction of the map below sea level (water)

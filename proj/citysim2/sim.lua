@@ -84,10 +84,12 @@ local function sm_eval(x,y)
  local found=wx~=nil
  local pw=powered(x,y)
  local dv=desir(x,y)  -- 0..255, 128 neutral: weights grow up / decay down
- if access and found and pw and d<3 and rnd(1)<p.grow_rate*dv/128 then
+ -- demand for this kind (-1..1): the rci meter actually drives the city.
+ local dmd=k==1 and demand.r or k==2 and demand.c or demand.i
+ if access and found and pw and dmd>0 and d<3 and rnd(1)<p.grow_rate*dv/128*dmd then
   set_zone(x,y,k,d+1)
   if d+1==3 and notify then notify("district booming",res_col[k],x,y) end
- elseif (not access or not found or not pw) and d>0
+ elseif (not access or not found or not pw or dmd<-0.5) and d>0
   and rnd(1)<p.decay_rate*(256-dv)/128 then
   set_zone(x,y,k,d-1)
   if d-1==0 and notify then notify("zone abandoned",5,x,y) end
@@ -121,7 +123,7 @@ local function sm_census()
   end
  end
  pop=r jobs=cj+ij
- demand.r=mid(-1,(jobs-pop)/p.dem_rdiv,1)
+ demand.r=mid(-1,(jobs+p.dem_seed-pop)/p.dem_rdiv,1)
  demand.c=mid(-1,(pop*p.dem_c-cj)/p.dem_div,1)
  demand.i=mid(-1,(pop*p.dem_i-ij)/p.dem_div,1)
 end
