@@ -7,9 +7,11 @@
 
 local mm_ox,mm_oy=16,16
 
--- zone colour tables: kind 1/2/3 -> bright, dim
+-- developed zones show their kind colour (R green / C blue / I yellow);
+-- empty (density 0) zones show grey so zoned-but-unbuilt land is still visible
+-- (an empty R plot used to draw grass-green and vanished on the map).
 local mm_zb={11,12,10}
-local mm_zd={3,1,4}
+local mm_empty=6
 
 function draw_minimap()
  rectfill(mm_ox-1,mm_oy-1,mm_ox+96,mm_oy+96,0)
@@ -27,7 +29,7 @@ function draw_minimap()
    else
     local k=zone_kind(x,y)
     if k then
-     c=(zone_density(x,y)>0) and mm_zb[k] or mm_zd[k]
+     c=(zone_density(x,y)>0) and mm_zb[k] or mm_empty
     else
      c=3
     end

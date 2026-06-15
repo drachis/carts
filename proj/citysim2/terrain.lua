@@ -35,7 +35,7 @@ function gen_terrain()
  -- greedy downhill river; rnd jitter causes meandering
  -- elev=0 marks visited tiles (river tiles become water anyway)
  local cx,cy=bx,by
- for _=1,gw*4 do
+ for _=1,gw*p.river_len do
   set_tile(cx,cy,0) pokep(pl_elev,cx,cy,0)
   if cx==0 or cy==0 or cx==gw-1 or cy==gw-1 then break end
   local mn,nx,ny=999,cx,cy

@@ -88,7 +88,7 @@ local function sm_eval(x,y)
  local dmd=k==1 and demand.r or k==2 and demand.c or demand.i
  -- service gate: growing TALL (density >=2) needs station/park coverage.
  local svc=(not serviced) or d<1 or serviced(x,y)
- if access and found and pw and dmd>0 and svc and d<3 and rnd(1)<p.grow_rate*dv/128*dmd then
+ if access and found and pw and dmd>0 and svc and d<3 and rnd(1)<p.grow_rate*dv/128 then
   set_zone(x,y,k,d+1)
   if d+1==3 and notify then notify("district booming",res_col[k],x,y) end
  elseif (not access or not found or not pw or dmd<-0.5 or (d>=2 and not svc)) and d>0

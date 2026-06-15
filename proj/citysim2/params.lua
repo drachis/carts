@@ -6,14 +6,14 @@ p={
  -- event loop (sim, see DESIGN s3)
  evt_h=256,          -- timewheel horizon in ticks
  evt_cap=96,         -- events processed per tick (storm guard)
- eval_iv=90,         -- ticks between a tile re-evaluating its needs
+ eval_iv=45,         -- ticks between a tile re-evaluating its needs
  decay_miss=4,       -- consecutive unmet evals before a tile downgrades
 
  -- zone economy (capacity per density step)
  r_per=4,            -- residents per residential density
  c_per=3,            -- jobs per commercial density
  i_per=4,            -- jobs per industrial density
- grow_rate=0.25,     -- chance a fully-served zone densifies on an eval
+ grow_rate=0.45,     -- chance a fully-served zone densifies on an eval
  decay_rate=0.15,    -- chance a starved zone downgrades on an eval
 
  -- agents / visibility (the lively-city knob, DESIGN s10)
@@ -41,13 +41,14 @@ p={
  dem_div=24,         -- commercial/industrial demand divisor
  dem_c=0.5,          -- target jobs per resident (commercial)
  dem_i=0.7,          -- target jobs per resident (industrial)
- dem_seed=8,         -- baseline external R demand (lets an empty city bootstrap)
+ dem_seed=16,        -- baseline external R demand (lets an empty city bootstrap)
 
  -- terrain (terrain.lua)
- sea_pct=0.14,       -- fraction of the map below sea level (water)
+ sea_pct=0.08,       -- fraction of the map below sea level (water)
  mtn_pct=0.9,        -- elevation percentile above which is mountain
  terr_blur=2,        -- heightmap smoothing passes
- river_jit=28,       -- river meander jitter
+ river_jit=16,       -- river meander jitter
+ river_len=2,        -- river length as a multiple of grid width (lower=shorter)
 
  -- desirability / land value (landval.lua); 128 = neutral
  val_rad=3,          -- influence radius (tiles) for water/pollution
