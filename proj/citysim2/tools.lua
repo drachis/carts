@@ -53,18 +53,18 @@ end
 function apply_tool()
  local x,y=cur.x,cur.y
  if tool==6 then
-  if tile(x,y)>1 then
+  if tile(x,y)>1 and try_spend(cost.dozer) then
    set_tile(x,y,1)
    update_net()
   end
  elseif tool>=2 and tool<=4 then
-  if is_buildable(x,y) then
+  if is_buildable(x,y) and try_spend(cost.zone) then
    set_zone(x,y,tool-1,0)
    update_net()
    schedule(0,{k=1,x=x,y=y})
   end
  elseif tool==1 then
-  if tool_put(1,x,y) then
+  if tool_put(1,x,y) and try_spend(cost.road) then
    set_tile(x,y,16+nmask(x,y,is_road))
    for nb in all(neighbors4(x,y)) do
     if is_road(nb.x,nb.y) then
@@ -74,7 +74,7 @@ function apply_tool()
    update_net()
   end
  elseif tool==5 then
-  if tool_put(5,x,y) then
+  if tool_put(5,x,y) and try_spend(cost.power) then
    set_tile(x,y,32+nmask(x,y,conducts))
    for nb in all(neighbors4(x,y)) do
     if conducts(nb.x,nb.y) then

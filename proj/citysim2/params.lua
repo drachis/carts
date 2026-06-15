@@ -31,3 +31,6 @@ p={
  road_up=1,          -- $ per road tile per month (upkeep, in dollars)
  day_frames=1800,    -- full day/night cycle (60s @ 30fps)
 }
+
+-- build costs in DOLLARS (charged via econ.try_spend, which scales to $k)
+cost={road=10,power=5,zone=50,dozer=2}

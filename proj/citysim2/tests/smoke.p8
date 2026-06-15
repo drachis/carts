@@ -107,6 +107,15 @@ money=2
 ok(try_spend(1000) and money==1,"try_spend deducts $k")
 ok(not try_spend(10000),"try_spend rejects past the debt floor")
 
+-- placement costs money + is denied when broke
+init_map()
+money=2
+cur={x=5,y=5} tool=2 apply_tool()
+ok(zone_kind(5,5)==1 and money<2,"placing a zone charges money")
+money=-1
+cur={x=6,y=5} tool=2 apply_tool()
+ok(not is_zone(6,5),"placement denied when broke")
+
 -- save / load round-trip (grid + scalars via companion cart)
 init_map()
 for x=4,10 do set_tile(x,5,16) end
