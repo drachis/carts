@@ -62,6 +62,7 @@ p={
  fire_spread=0.45,   -- odds a burn tick spreads to a neighbour zone
  fire_rad=4,         -- fire-station coverage radius (chebyshev)
  fire_cover=0.12,    -- spread odds inside station coverage (suppressed)
+ wreck_delay=120,    -- frames after rubble forms before a crew is dispatched
 
  -- render (render.lua)
  cong_show=2,        -- agents on a road before it reads as congested

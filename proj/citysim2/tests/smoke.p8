@@ -10,6 +10,7 @@ __lua__
 #include ../router.lua
 #include ../net.lua
 #include ../landval.lua
+#include ../coverage.lua
 #include ../terrain.lua
 #include ../agents.lua
 #include ../sim.lua
@@ -71,6 +72,7 @@ for x=6,10 do set_tile(x,8,32) end -- power line above the zones
 set_tile(8,7,60)                    -- power plant feeding the line
 set_zone(6,9,1,1)   -- residential beside the road + line
 set_zone(10,9,2,1)  -- commercial beside the road + line
+set_tile(8,11,62)   -- fire station: service coverage unlocks tall growth
 update_net()
 ok(connected(6,9,10,9),"the two zones share a road network")
 ok(powered(6,9) and powered(10,9),"zones beside a plant-fed line are powered")
@@ -88,6 +90,15 @@ ok(pop>0 and jobs>0,"census: pop="..pop.." jobs="..jobs)
 ok(spawned,"commuters spawned between home and work")
 local ti=tile_info(6,9)
 ok(ti~=nil and ti.kind==1,"tile_info reports the zone")
+
+-- service gate: the SAME setup with no station/park caps growth at lv1
+init_map()
+for x=4,12 do set_tile(x,10,16) end
+for x=6,10 do set_tile(x,8,32) end set_tile(8,7,60)
+set_zone(6,9,1,1) set_zone(10,9,2,1)
+update_net() init_sim() init_agents() sim_seed()
+for i=1,2000 do update_sim() update_agents() end
+ok(zone_density(6,9)<=1 and zone_density(10,9)<=1,"no service -> growth caps at lv1")
 
 -- tools: placement applies + hooks the sim/net
 init_map()
@@ -180,6 +191,27 @@ ok(not is_buildable(10,10),"rubble blocks rebuild until bulldozed")
 money=5
 cur={x=10,y=10} tool=9 apply_tool()
 ok(tile(10,10)==1,"bulldozing rubble clears to grass")
+
+-- coverage: stations + parks project a service field; zones need it to grow tall
+init_map()
+set_tile(10,10,62)  -- fire station
+update_cov()
+ok(serviced(10,10),"fire station provides coverage")
+ok(serviced(12,12),"coverage reaches within fire_rad")
+ok(not serviced(24,24),"far tiles are uncovered")
+set_tile(24,24,61)  -- park
+update_cov()
+ok(serviced(24,24),"a park provides coverage too")
+
+-- wrecking crew: rubble near a station gets a crew dispatched that clears it
+init_map() init_sim() init_fire() init_agents()
+for x=4,12 do set_tile(x,10,16) end
+set_tile(5,9,62)    -- station (depot) beside the road
+set_tile(9,9,63)    -- rubble beside the road, reachable from the depot
+update_net()
+schedule(1,{k=3,x=9,y=9})
+for i=1,800 do update_sim() update_agents() end
+ok(tile(9,9)==1,"wrecking crew cleared the rubble")
 
 -- a fire station suppresses fire within its radius (no rubble)
 init_map()

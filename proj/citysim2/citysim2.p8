@@ -12,6 +12,7 @@ __lua__
 #include router.lua
 #include net.lua
 #include landval.lua
+#include coverage.lua
 #include terrain.lua
 #include agents.lua
 #include sim.lua

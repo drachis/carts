@@ -51,6 +51,7 @@ function sim_seed()
  end
  sm_index()
  update_val()
+ if update_cov then update_cov() end
 end
 
 local function sm_adj_road(x,y)
@@ -86,10 +87,12 @@ local function sm_eval(x,y)
  local dv=desir(x,y)  -- 0..255, 128 neutral: weights grow up / decay down
  -- demand for this kind (-1..1): the rci meter actually drives the city.
  local dmd=k==1 and demand.r or k==2 and demand.c or demand.i
- if access and found and pw and dmd>0 and d<3 and rnd(1)<p.grow_rate*dv/128*dmd then
+ -- service gate: growing TALL (density >=2) needs station/park coverage.
+ local svc=(not serviced) or d<1 or serviced(x,y)
+ if access and found and pw and dmd>0 and svc and d<3 and rnd(1)<p.grow_rate*dv/128*dmd then
   set_zone(x,y,k,d+1)
   if d+1==3 and notify then notify("district booming",res_col[k],x,y) end
- elseif (not access or not found or not pw or dmd<-0.5) and d>0
+ elseif (not access or not found or not pw or dmd<-0.5 or (d>=2 and not svc)) and d>0
   and rnd(1)<p.decay_rate*(256-dv)/128 then
   set_zone(x,y,k,d-1)
   if d-1==0 and notify then notify("zone abandoned",5,x,y) end
@@ -140,7 +143,10 @@ function update_sim()
  end
  evq[bi]={}
  sm_cd-=1
- if sm_cd<=0 then sm_cd=p.census_iv sm_index() sm_census() update_val() end
+ if sm_cd<=0 then
+  sm_cd=p.census_iv sm_index() sm_census() update_val()
+  if update_cov then update_cov() end
+ end
 end
 
 function tile_info(x,y)
@@ -148,5 +154,6 @@ function tile_info(x,y)
  local k=zone_kind(x,y)
  local wx=sm_complement(x,y,k)
  return {kind=k,dens=zone_density(x,y),access=rcomp(x,y)~=0,
-  power=powered(x,y),served=wx~=nil,val=desir(x,y)}
+  power=powered(x,y),served=wx~=nil,val=desir(x,y),
+  svc=(not serviced) or serviced(x,y)}
 end

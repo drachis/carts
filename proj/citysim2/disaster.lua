@@ -11,7 +11,13 @@ fires={}
 function init_fire()
  fires={}
  pclr(pl_fire)
- ev_hook=fire_handler  -- sim routes non-eval (k~=1) events here
+ ev_hook=dis_hook  -- sim routes non-eval events here: k=2 burn, k=3 cleanup
+end
+
+-- timewheel dispatcher for disaster events.
+function dis_hook(e)
+ if e.k==2 then fire_handler(e)
+ elseif e.k==3 then wreck_dispatch(e) end
 end
 
 -- is a fire station within fire_rad (chebyshev) of (x,y)?
@@ -55,9 +61,10 @@ function fire_handler(e)
  t-=1
  if t<=0 then
   unfire(x,y)
-  set_tile(x,y,63)  -- collapse to rubble (blocks growth until bulldozed)
+  set_tile(x,y,63)  -- collapse to rubble (blocks growth until cleared)
   if notify then notify("burned to rubble",5,x,y) end
   update_net()
+  schedule(p.wreck_delay,{k=3,x=x,y=y})  -- summon the wrecking crew
  else
   pokep(pl_fire,x,y,t)
   schedule(p.fire_int,{k=2,x=x,y=y})
@@ -90,4 +97,50 @@ function draw_fire()
    pset(x+2+flr(rnd(4)),y+1+flr(rnd(5)),rnd(1)<0.5 and 9 or 10)
   end
  end
+end
+
+-- a road tile orthogonally adjacent to (x,y), or nil.
+local function adj_road(x,y)
+ for n in all(neighbors4(x,y)) do
+  if is_road(n.x,n.y) then return n end
+ end
+end
+
+-- the fire station (tile 62) nearest (x,y) by manhattan distance; the station
+-- doubles as the public-works depot the wrecking crew rolls out from.
+local function nearest_station(x,y)
+ local best,bd
+ for sy=0,gw-1 do
+  for sx=0,gw-1 do
+   if tile(sx,sy)==62 then
+    local d=abs(sx-x)+abs(sy-y)
+    if not bd or d<bd then bd=d best={x=sx,y=sy} end
+   end
+  end
+ end
+ return best
+end
+
+-- k=3 event: send a wrecking crew to clear a rubble tile. it drives out from
+-- the nearest station and clears the lot on arrival (the trip's on-arrive job).
+function wreck_dispatch(e)
+ local rx,ry=e.x,e.y
+ if tile(rx,ry)~=63 then return end  -- already cleared or bulldozed
+ local function clear()
+  if tile(rx,ry)==63 then
+   set_tile(rx,ry,1) update_net()
+   if notify then notify("crew cleared rubble",11,rx,ry) end
+   if fx_burst then fx_burst(rx*8+4,ry*8+4,5,6) end
+   if snd then snd(snd_doze) end
+  end
+ end
+ local st=nearest_station(rx,ry)
+ if st then
+  local o,w=adj_road(st.x,st.y),adj_road(rx,ry)
+  if o and w and spawn_agent(o.x,o.y,w.x,w.y,4,clear) then return end
+  clear()  -- depot exists but no road route: crew clears it anyway
+  return
+ end
+ -- no depot yet: retry later (a station may get built before a bulldozer).
+ schedule(p.wreck_delay*4,{k=3,x=rx,y=ry})
 end

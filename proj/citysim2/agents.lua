@@ -8,7 +8,10 @@ function init_agents()
  agents={}
 end
 
-function spawn_agent(x0,y0,x1,y1,res)
+-- optional `job`: a closure run once the agent reaches its destination (not on
+-- life-expiry). lets a trip realise an effect on arrival, e.g. a wrecking crew
+-- clearing rubble. returns true if the trip was actually dispatched.
+function spawn_agent(x0,y0,x1,y1,res,job)
  if #agents>=p.agent_cap then return end
  local pa=path(x0,y0,x1,y1,
   is_road,
@@ -21,8 +24,9 @@ function spawn_agent(x0,y0,x1,y1,res)
    px=x0*8+4, py=y0*8+4,
    tx=x0, ty=y0,
    res=res, col=res_col[res],
-   life=p.trip_life
+   life=p.trip_life, job=job
   })
+  return true
  end
 end
 
@@ -68,6 +72,8 @@ function update_agents()
    add(keep,a)
   else
    ag_remove(a)
+   -- arrived (path complete, not life-expired)? run its on-arrive job.
+   if a.job and a.i>#a.path then a.job() end
   end
  end
  agents=keep

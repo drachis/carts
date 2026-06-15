@@ -21,3 +21,4 @@ pl_cong=0x9000      -- agents currently on this road tile (saturates at 255)
 pl_need=0x9400      -- packed need bits | offer bits
 pl_val=0x9800       -- desirability 0..255 (128 neutral); land value
 pl_fire=0x9c00      -- burn ticks remaining (>0 = on fire); 0 = not burning
+pl_cov=0xa000       -- service coverage (>0 = a station/park serves this tile)

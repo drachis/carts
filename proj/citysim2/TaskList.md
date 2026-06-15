@@ -57,11 +57,22 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
   header→agent. round-trip verified in smoke.
 
 ## Disasters
-- ☑ disaster.lua (428) — fire. Zones ignite (random p.fire_chance or "start fire"
-  menu), burn over timewheel **k=2 events via ev_hook** (sim stays decoupled),
-  spread to neighbours, collapse to rubble (tile 63, blocks growth until dozed).
-  Fire station (tile 62, "fire" tool, cost.fire) suppresses within p.fire_rad.
-  pl_fire plane (0x9c00) = burn ticks; fires[] mirrors it for draw_fire flames.
+- ☑ disaster.lua (428→~600) — fire. Zones ignite (random p.fire_chance or "start
+  fire" menu), burn over timewheel **k=2 events via ev_hook** (sim stays
+  decoupled), spread to neighbours, collapse to rubble (tile 63). Fire station
+  (tile 62, "fire" tool, cost.fire) suppresses within p.fire_rad. pl_fire plane
+  (0x9c00) = burn ticks; fires[] mirrors it for draw_fire flames.
+- ☑ **wrecking crew** — rubble schedules a **k=3 cleanup event** (p.wreck_delay);
+  a crew agent (yellow) drives out from the nearest fire-station depot and clears
+  the lot to grass on arrival (new agents.lua on-arrive **job** hook). No depot ->
+  retries later; the station now matters for fire AND cleanup.
+
+## Sim depth
+- ☑ coverage.lua (83) — the services layer. Fire stations + parks project a
+  coverage field (pl_cov, 0xa000); recomputed on the census tick. Zones need
+  service to grow TALL (density >=2) — a sprawl of lv-1 shacks needs stations/
+  parks to become downtown. serviced() read by sm_eval (gate) + tile_info +
+  inspector ("svc ok"/"svc none", "needs svc" status).
 
 ## Legibility ("the sim explains itself")
 - ☑ notify.lua — event log. notify(msg,col,x,y) ring (cap 8); draw_log fades a
@@ -115,12 +126,13 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 | minimap | 300 | 203 |
 | save | 220 | 138 |
 | landval | 200 | 134 |
-| disaster | 200 | 428 |
+| coverage | 100 | 83 |
+| disaster | 200 | ~600 |
 | notify | 150 | 122 |
 | daynight | 50 | 76 |
 | fx | 200 | 280 |
 | sound | 60 | 29 |
-| cart total | 8192 | 5885 |
+| cart total | 8192 | 6329 |
 
 Tests: `tests/smoke.p8` (55 logic asserts) + `tests/draw.p8` (headless draw-path
 compile check for render/inspector/hud/minimap/daynight, which smoke skips).
