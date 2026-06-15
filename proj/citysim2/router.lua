@@ -38,18 +38,22 @@ function path(x0,y0,x1,y1,pass,cost)
  return r
 end
 
-function flood(x0,y0,pass,visit)
+-- BFS over pass-tiles. optional max caps the number of tiles visited (nearest
+-- first), giving e.g. a power plant a finite capacity/reach.
+function flood(x0,y0,pass,visit,max)
  if not pass(x0,y0) then return end
  local sn={[x0+y0*gw]=true}
  local q={{x0,y0}} local qi=1
  visit(x0,y0)
+ local cnt=1
  while qi<=#q do
   local c=q[qi] qi+=1
   for _,n in pairs(neighbors4(c[1],c[2])) do
    local nk=n.x+n.y*gw
    if pass(n.x,n.y) and not sn[nk] then
-    sn[nk]=true visit(n.x,n.y) add(q,{n.x,n.y})
+    sn[nk]=true visit(n.x,n.y) add(q,{n.x,n.y}) cnt+=1
    end
   end
+  if max and cnt>=max then break end
  end
 end

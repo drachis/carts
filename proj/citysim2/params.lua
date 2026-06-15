@@ -32,6 +32,9 @@ p={
  tax_rate=2,         -- tax points; income scales with this
  month_frames=600,   -- frames per month (20s @ 30fps)
  road_up=1,          -- $ per road tile per month (upkeep, in dollars)
+ plant_up=8,         -- $ per plant per month; a big plant costs 4x this
+ plant_cap=90,       -- tiles a normal plant can power (nearest first)
+ bigplant_cap=260,   -- tiles a big plant can power (high cost + upkeep)
  job_tax=0.5,        -- jobs taxed at this fraction of the pop rate
  debt_k=-1,          -- debt floor in $k (try_spend won't go below)
  money_cap=32000,    -- $k ceiling (keeps 16.16 fixed-point from flipping)
@@ -77,4 +80,4 @@ p={
 }
 
 -- build costs in DOLLARS (charged via econ.try_spend, which scales to $k)
-cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250}
+cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}

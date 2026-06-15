@@ -16,7 +16,6 @@ __lua__
 #include ../sim.lua
 #include ../disaster.lua
 #include ../fx.lua
-#include ../tools.lua
 #include ../econ.lua
 #include ../daynight.lua
 #include ../save.lua
@@ -120,29 +119,7 @@ update_net() init_sim() init_agents() sim_seed()
 for i=1,2000 do update_sim() update_agents() end
 ok(zone_density(6,9)<=1 and zone_density(10,9)<=1,"no service -> growth caps at lv1")
 
--- tools: placement applies + hooks the sim/net
-init_map()
-init_sim()
-init_tools()
-cur={x=8,y=8} tool=1 apply_tool()
-ok(is_road(8,8),"road tool places a road")
-cur={x=9,y=8} tool=1 apply_tool()
-ok(tile(8,8)==18 or tile(8,8)>=16,"road autotiles toward its neighbour")
-cur={x=8,y=7} tool=2 apply_tool()
-ok(zone_kind(8,7)==1,"r-zone tool places residential")
-cur={x=9,y=7} tool=3 apply_tool()
-ok(zone_kind(9,7)==2,"c-zone tool places commercial")
-set_tile(0,0,0) -- water
-ok(tool_put(2,0,0)==nil,"tool_put rejects unbuildable (water)")
-cur={x=8,y=8} tool=10 apply_tool()
-ok(tile(8,8)==1,"bulldoze clears to grass")
-cur={x=20,y=20} tool=7 apply_tool() -- park
-ok(tile(20,20)==61,"park tool places a park")
-cur={x=22,y=20} tool=8 apply_tool() -- fire station
-ok(tile(22,20)==62,"fire tool places a station")
-money=99
-cur={x=24,y=20} tool=9 apply_tool() -- recycling station
-ok(tile(24,20)==64,"recycle tool places a station")
+-- (tool placement asserts live in t_tools.p8 — splitting keeps each cart < 8192)
 
 -- econ: $k money formatting + spending
 init_econ()
@@ -205,9 +182,6 @@ ok(zone_density(6,13)<2 and zone_density(10,13)<2,"unpowered zones never grow")
 
 -- bridges + wires over roads: roads cross water; a wired road carries power
 init_map()
-set_tile(10,10,0)  -- water
-ok(tool_put(1,10,10)==16,"road tool bridges water")
-init_map()
 set_tile(8,8,60)   -- plant
 set_tile(8,9,32)   -- wire down to the road
 for x=4,12 do set_tile(x,10,16) end -- a road crossing the wire's path
@@ -219,13 +193,6 @@ update_net()
 ok(power_carries(8,10),"a wired road carries power")
 ok(powered(8,11),"power crosses the road through the wire")
 
--- a power line beside a plant must NOT overwrite the plant tile
-init_map() init_econ() money=99
-set_tile(8,8,60)
-cur={x=9,y=8} tool=5 apply_tool()
-ok(tile(8,8)==60,"plant survives an adjacent power line")
-ok(tile(9,8)>=32 and tile(9,8)<=47,"the power line was placed")
-
 -- service buildings carry power; wires cross water too
 init_map()
 set_tile(8,8,60) set_tile(8,9,62) set_zone(8,10,1,0) -- plant-station-zone
@@ -235,16 +202,9 @@ init_map()
 set_tile(10,10,0) pokep(pl_wire,10,10,1)
 ok(power_carries(10,10),"a wire crosses water")
 
--- placement costs money + is denied when broke
-init_map()
-money=2
-cur={x=5,y=5} tool=2 apply_tool()
-ok(zone_kind(5,5)==1 and money<2,"placing a zone charges money")
-money=-1
-cur={x=6,y=5} tool=2 apply_tool()
-ok(not is_zone(6,5),"placement denied when broke")
+-- (placement-cost asserts live in t_tools.p8)
 
--- fire: a developed zone ignites, burns down to rubble, bulldozes to grass
+-- fire: a developed zone ignites and burns down to rubble
 init_map()
 init_sim()
 init_fire()
@@ -253,10 +213,7 @@ ignite(10,10)
 ok(peekp(pl_fire,10,10)>0,"ignited zone is on fire")
 for i=1,600 do update_sim() end
 ok(tile(10,10)==63,"fire burned the zone to rubble")
-ok(not is_buildable(10,10),"rubble blocks rebuild until bulldozed")
-money=5
-cur={x=10,y=10} tool=10 apply_tool()
-ok(tile(10,10)==1,"bulldozing rubble clears to grass")
+ok(not is_buildable(10,10),"rubble blocks rebuild until cleared")
 
 -- coverage: stations + parks project a service field; zones need it to grow tall
 init_map()

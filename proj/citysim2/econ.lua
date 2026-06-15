@@ -44,12 +44,14 @@ function update_econ()
  month=month%12+1
  if month==1 then year+=1 end
  local income=pop*tax_rate+flr(jobs*tax_rate*p.job_tax)
- local roads=0
+ local upkeep=0
  for y=0,gw-1 do
   for x=0,gw-1 do
-   if is_road(x,y) then roads+=1 end
+   local s=tile(x,y)
+   if is_road(x,y) then upkeep+=p.road_up
+   elseif s==60 then upkeep+=p.plant_up
+   elseif s==65 then upkeep+=p.plant_up*4 end  -- big plant: high maintenance
   end
  end
- local upkeep=roads*p.road_up
  money=min(p.money_cap,money+(income-upkeep)/1000)
 end

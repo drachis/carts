@@ -26,9 +26,13 @@ function update_net()
  plants={}
  for y=0,gw-1 do
   for x=0,gw-1 do
-   if tile(x,y)==60 then
+   local s=tile(x,y)
+   if s==60 or s==65 then
     add(plants,{x=x,y=y})
-    flood(x,y,power_carries,function(fx,fy) pwr[fx+fy*gw]=true end)
+    -- each plant powers a finite number of tiles (nearest first); a big plant
+    -- (65) reaches far more — that's what you pay the high cost/upkeep for.
+    flood(x,y,power_carries,function(fx,fy) pwr[fx+fy*gw]=true end,
+     s==65 and p.bigplant_cap or p.plant_cap)
    end
   end
  end
@@ -38,7 +42,7 @@ end
 -- (park 61 / station 62), and a wire overlay crossing a road or water (pl_wire).
 function power_carries(x,y)
  local s=tile(x,y)
- return conducts(x,y) or is_zone(x,y) or s==61 or s==62 or s==64 or peekp(pl_wire,x,y)>0
+ return conducts(x,y) or is_zone(x,y) or s==61 or s==62 or s==64 or s==65 or peekp(pl_wire,x,y)>0
 end
 
 -- the nearest road tile within p.road_reach (chebyshev), scanned ring by ring,

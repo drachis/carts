@@ -88,6 +88,10 @@ S[64] = [  # recycling station: green-trimmed works depot (wrecking-crew base)
     "33333333","3bbbbbb3","b655556b","b6b33b6b",
     "b6b33b6b","b655556b","3bbbbbb3","36666663",
 ]
+S[65] = [  # big power plant: a palette-swap of the plant (lighter, red core)
+    "36333633","38333833","66666666","66898666",
+    "66999666","66686666","66666666","88888888",
+]
 
 rows=[["0"]*128 for _ in range(64)]
 for sid,art in S.items():

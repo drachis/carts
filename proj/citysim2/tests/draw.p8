@@ -36,7 +36,7 @@ for x=4,10 do set_tile(x,8,16) end
 set_zone(5,7,1,1) set_zone(9,7,2,1)
 set_tile(7,6,60) set_tile(20,20,61) set_tile(22,20,62)
 update_net() ignite(5,7) fx_burst(40,40,7,4)
-cur={x=8,y=8} tool=1
+cur={x=8,y=8} select_tool("road") picking=true
 camx=0 camy=0
 tick=900  -- midnight-ish, so the night pal path runs
 

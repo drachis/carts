@@ -1,5 +1,9 @@
 # citysim2 — design contract (agent/market city sim)
 
+> **DIRECTIVE (user, 2026-06-15): SINGLE CART ONLY. Do NOT split into a multicart.**
+> When this one 8192-token cart is full, the iteration is DONE — we stop adding
+> and move on. Spend the remaining budget deliberately; no "escape hatch" planning.
+
 Successor to `proj/citysim`. Same genre (PICO-8 SimCity-style RCI builder), but
 the simulation is **agent- and market-driven** instead of formula-driven. The
 goal is **legible emergence**: you can watch the city run as traffic, and click
