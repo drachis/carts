@@ -113,6 +113,21 @@ money=2
 ok(try_spend(1000) and money==1,"try_spend deducts $k")
 ok(not try_spend(10000),"try_spend rejects past the debt floor")
 
+-- goods chain: connected industry + commercial run freight (res 3)
+init_map()
+for x=4,12 do set_tile(x,10,16) end
+for x=6,10 do set_tile(x,8,32) end set_tile(8,7,60)
+set_zone(6,9,3,1)   -- industry
+set_zone(10,9,2,1)  -- commercial
+update_net()
+init_sim() init_agents() sim_seed()
+local freight=false
+for i=1,2000 do
+ update_sim() update_agents()
+ for _,a in pairs(agents) do if a.res==3 then freight=true end end
+end
+ok(freight,"industry<->commercial run goods freight (res 3)")
+
 -- desirability: water raises land value, industry lowers it
 init_map()
 init_agents()

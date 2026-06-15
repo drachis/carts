@@ -59,7 +59,8 @@ local function sm_adj_road(x,y)
  end
 end
 
-local sm_wants={[1]={2,3},[2]={1},[3]={1}}
+-- who each kind wants: R->jobs(C/I); C->customers(R)+goods(I); I->workers(R)+buyers(C)
+local sm_wants={[1]={2,3},[2]={1,3},[3]={1,2}}
 
 -- a reachable developed complement of tile (x,y); returns wx,wy or nil
 local function sm_complement(x,y,k)
@@ -93,7 +94,12 @@ local function sm_eval(x,y)
  if found and d>0 and rnd(1)<p.show then
   local o=sm_adj_road(x,y)
   local w=sm_adj_road(wx,wy)
-  if o and w then spawn_agent(o.x,o.y,w.x,w.y,1) end
+  if o and w then
+   -- a commercial<->industry trip carries goods (freight); else it's labor
+   local ck=zone_kind(wx,wy)
+   local res=((k==2 and ck==3) or (k==3 and ck==2)) and 3 or 1
+   spawn_agent(o.x,o.y,w.x,w.y,res)
+  end
  end
  schedule(p.eval_iv,{k=1,x=x,y=y})
 end
