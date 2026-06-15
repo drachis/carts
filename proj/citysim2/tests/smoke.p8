@@ -11,6 +11,7 @@ __lua__
 #include ../terrain.lua
 #include ../agents.lua
 #include ../sim.lua
+#include ../disaster.lua
 #include ../tools.lua
 #include ../econ.lua
 #include ../save.lua
@@ -98,10 +99,12 @@ cur={x=9,y=7} tool=3 apply_tool()
 ok(zone_kind(9,7)==2,"c-zone tool places commercial")
 set_tile(0,0,0) -- water
 ok(tool_put(2,0,0)==nil,"tool_put rejects unbuildable (water)")
-cur={x=8,y=8} tool=8 apply_tool()
+cur={x=8,y=8} tool=9 apply_tool()
 ok(tile(8,8)==1,"bulldoze clears to grass")
 cur={x=20,y=20} tool=7 apply_tool() -- park
 ok(tile(20,20)==61,"park tool places a park")
+cur={x=22,y=20} tool=8 apply_tool() -- fire station
+ok(tile(22,20)==62,"fire tool places a station")
 
 -- econ: $k money formatting + spending
 init_econ()
@@ -159,6 +162,31 @@ ok(zone_kind(5,5)==1 and money<2,"placing a zone charges money")
 money=-1
 cur={x=6,y=5} tool=2 apply_tool()
 ok(not is_zone(6,5),"placement denied when broke")
+
+-- fire: a developed zone ignites, burns down to rubble, bulldozes to grass
+init_map()
+init_sim()
+init_fire()
+set_zone(10,10,1,2) -- developed residential
+ignite(10,10)
+ok(peekp(pl_fire,10,10)>0,"ignited zone is on fire")
+for i=1,600 do update_sim() end
+ok(tile(10,10)==63,"fire burned the zone to rubble")
+ok(not is_buildable(10,10),"rubble blocks rebuild until bulldozed")
+money=5
+cur={x=10,y=10} tool=9 apply_tool()
+ok(tile(10,10)==1,"bulldozing rubble clears to grass")
+
+-- a fire station suppresses fire within its radius (no rubble)
+init_map()
+init_sim()
+init_fire()
+set_tile(12,12,62)   -- fire station
+set_zone(12,13,1,2)  -- developed zone in coverage
+ok(fire_covered(12,13),"zone is inside station coverage")
+ignite(12,13)
+for i=1,600 do update_sim() end
+ok(tile(12,13)~=63,"fire station suppressed the fire")
 
 -- save / load round-trip (grid + scalars via companion cart)
 init_map()

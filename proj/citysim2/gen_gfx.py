@@ -76,6 +76,14 @@ S[61] = [  # park: bushes, a flower, a path
     "33333333","3bb33bb3","3bbb3bb3","33b3eb33",
     "3433b333","333bb3b3","33b333b3","33333333",
 ]
+S[62] = [  # fire station: red house, white bay door, "ladder" roof
+    "33333333","36666663","68888886","68822886",
+    "68822886","68888886","67777776","37777773",
+]
+S[63] = [  # rubble: charred grey debris over scorched ground
+    "33533533","55656555","56555655","65555565",
+    "55656556","53565555","55555655","55555555",
+]
 
 rows=[["0"]*128 for _ in range(64)]
 for sid,art in S.items():

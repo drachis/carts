@@ -56,6 +56,13 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
   grid (0x2000) + planes (0x8000) to companion cart; rebuilds transient state.
   header→agent. round-trip verified in smoke.
 
+## Disasters
+- ☑ disaster.lua (428) — fire. Zones ignite (random p.fire_chance or "start fire"
+  menu), burn over timewheel **k=2 events via ev_hook** (sim stays decoupled),
+  spread to neighbours, collapse to rubble (tile 63, blocks growth until dozed).
+  Fire station (tile 62, "fire" tool, cost.fire) suppresses within p.fire_rad.
+  pl_fire plane (0x9c00) = burn ticks; fires[] mirrors it for draw_fire flames.
+
 ## Polish (HELD — do not start until base game playtested; reserve ~820)
 - ☐ daynight.lua (50) — sprite-bank swap (needs night sprites in gen_gfx)
 - ☐ fx.lua (200) — particles
@@ -94,7 +101,8 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 | minimap | 300 | 203 |
 | save | 220 | 138 |
 | landval | 200 | 134 |
-| cart total | 8192 | 4578 |
+| disaster | 200 | 428 |
+| cart total | 8192 | 5087 |
 
 ## Research depth built (this session, autonomous)
 - ☑ economy loop — placement costs money (try_spend), denied when broke.

@@ -130,7 +130,8 @@ function update_sim()
  local b=evq[bi]
  local n=min(#b,p.evt_cap)
  for i=1,n do
-  if b[i].k==1 then sm_eval(b[i].x,b[i].y) end
+  if b[i].k==1 then sm_eval(b[i].x,b[i].y)
+  elseif ev_hook then ev_hook(b[i]) end
  end
  evq[bi]={}
  sm_cd-=1

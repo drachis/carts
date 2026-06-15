@@ -54,6 +54,14 @@ p={
  val_cong=2,         -- desirability lost per agent on nearby roads
  val_park=24,        -- desirability per nearby park (service +)
 
+ -- fire / disasters (disaster.lua)
+ fire_chance=0.0006, -- per-frame odds a random developed zone ignites
+ fire_int=45,        -- frames between a fire's burn ticks
+ burn_ttl=6,         -- burn ticks before a tile collapses to rubble
+ fire_spread=0.45,   -- odds a burn tick spreads to a neighbour zone
+ fire_rad=4,         -- fire-station coverage radius (chebyshev)
+ fire_cover=0.12,    -- spread odds inside station coverage (suppressed)
+
  -- render (render.lua)
  cong_show=2,        -- agents on a road before it reads as congested
 
@@ -61,4 +69,4 @@ p={
 }
 
 -- build costs in DOLLARS (charged via econ.try_spend, which scales to $k)
-cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2}
+cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60}

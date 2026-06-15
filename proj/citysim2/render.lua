@@ -15,6 +15,7 @@ function draw_world()
  camera(camx,camy)
  map(0,0,0,0,gw,gw)
  draw_agents()
+ draw_fire()
  draw_cursor()
  camera()
 end

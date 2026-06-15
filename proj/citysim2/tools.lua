@@ -7,7 +7,7 @@
 -- tools: road / r-zone / c-zone / i-zone / power / plant / park / bulldoze.
 -- ids 1..5 are stable; "park"/"bulldoze" are dispatched by NAME (below) so new
 -- buildings can be inserted before bulldoze without re-indexing the logic.
-tools_list=split"road,r-zone,c-zone,i-zone,power,plant,park,bulldoze"
+tools_list=split"road,r-zone,c-zone,i-zone,power,plant,park,fire,bulldoze"
 tool=1
 
 function init_tools()
@@ -43,6 +43,8 @@ function tool_put(t,x,y)
   return is_buildable(x,y) and 60 or nil
  elseif tools_list[t]=="park" then
   return is_buildable(x,y) and 61 or nil
+ elseif tools_list[t]=="fire" then
+  return is_buildable(x,y) and 62 or nil
  elseif tools_list[t]=="bulldoze" then
   return tile(x,y)>1 and 1 or nil
  end
@@ -72,6 +74,10 @@ function apply_tool()
  elseif n=="park" then
   if is_buildable(x,y) and try_spend(cost.park) then
    set_tile(x,y,61)
+  end
+ elseif n=="fire" then
+  if is_buildable(x,y) and try_spend(cost.fire) then
+   set_tile(x,y,62)
   end
  elseif tool>=2 and tool<=4 then
   if is_buildable(x,y) and try_spend(cost.zone) then
