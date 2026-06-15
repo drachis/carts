@@ -61,10 +61,13 @@ ok(cong==0,"congestion fully released after agents gone (sum "..cong..")")
 -- sim core: R + C zones joined by a road grow and generate commuters
 init_map()
 for x=4,12 do set_tile(x,10,16) end
-set_zone(6,9,1,1)   -- residential beside the road
-set_zone(10,9,2,1)  -- commercial beside the road
+for x=6,10 do set_tile(x,8,32) end -- power line above the zones
+set_tile(8,7,60)                    -- power plant feeding the line
+set_zone(6,9,1,1)   -- residential beside the road + line
+set_zone(10,9,2,1)  -- commercial beside the road + line
 update_net()
 ok(connected(6,9,10,9),"the two zones share a road network")
+ok(powered(6,9) and powered(10,9),"zones beside a plant-fed line are powered")
 init_sim()
 init_agents()
 sim_seed()
@@ -94,7 +97,7 @@ cur={x=9,y=7} tool=3 apply_tool()
 ok(zone_kind(9,7)==2,"c-zone tool places commercial")
 set_tile(0,0,0) -- water
 ok(tool_put(2,0,0)==nil,"tool_put rejects unbuildable (water)")
-cur={x=8,y=8} tool=6 apply_tool()
+cur={x=8,y=8} tool=7 apply_tool()
 ok(tile(8,8)==1,"bulldoze clears to grass")
 
 -- econ: $k money formatting + spending
@@ -106,6 +109,16 @@ ok(mfmt(-3)=="-$3k","mfmt negative")
 money=2
 ok(try_spend(1000) and money==1,"try_spend deducts $k")
 ok(not try_spend(10000),"try_spend rejects past the debt floor")
+
+-- power gating: an unpowered (no plant) zone never grows
+init_map()
+for x=4,12 do set_tile(x,14,16) end
+set_zone(6,13,1,1) set_zone(10,13,2,1)
+update_net()
+ok(not powered(6,13),"no plant -> not powered")
+init_sim() sim_seed()
+for i=1,2000 do update_sim() end
+ok(zone_density(6,13)<2 and zone_density(10,13)<2,"unpowered zones never grow")
 
 -- placement costs money + is denied when broke
 init_map()

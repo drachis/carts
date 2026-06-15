@@ -4,8 +4,8 @@
 -- api: init_tools, update_tools, apply_tool, tool_put, draw_cursor
 --      globals: cur, tool, tools_list
 
--- tool ids: 1 road  2 r-zone  3 c-zone  4 i-zone  5 power  6 bulldoze
-tools_list=split"road,r-zone,c-zone,i-zone,power,bulldoze"
+-- tool ids: 1 road  2 r-zone  3 c-zone  4 i-zone  5 power  6 plant  7 bulldoze
+tools_list=split"road,r-zone,c-zone,i-zone,power,plant,bulldoze"
 tool=1
 
 function init_tools()
@@ -38,6 +38,8 @@ function tool_put(t,x,y)
  elseif t>=2 and t<=4 then
   return is_buildable(x,y) and (48+(t-2)*4) or nil
  elseif t==6 then
+  return is_buildable(x,y) and 60 or nil
+ elseif t==7 then
   return tile(x,y)>1 and 1 or nil
  end
  return nil
@@ -52,9 +54,14 @@ end
 --     eval: schedule(0,{k=1,x=cur.x,y=cur.y}) so the sim picks it up live.
 function apply_tool()
  local x,y=cur.x,cur.y
- if tool==6 then
+ if tool==7 then
   if tile(x,y)>1 and try_spend(cost.dozer) then
    set_tile(x,y,1)
+   update_net()
+  end
+ elseif tool==6 then
+  if is_buildable(x,y) and try_spend(cost.plant) then
+   set_tile(x,y,60)
    update_net()
   end
  elseif tool>=2 and tool<=4 then

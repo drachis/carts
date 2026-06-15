@@ -23,6 +23,7 @@ function draw_inspector()
  print(label,x+2,y+2,ins_cols[ti.kind])
  local st="thriving"
  if not ti.access then st="no road"
+ elseif not ti.power then st="no power"
  elseif not ti.served then st="starved" end
  print(st,x+2,y+9,7)
 end

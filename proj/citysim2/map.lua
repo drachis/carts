@@ -35,7 +35,7 @@ function is_buildable(x,y)
 end
 
 function conducts(x,y)
- local s=tile(x,y) return s>=16 and s<=47 -- roads 16..31 + power 32..47
+ local s=tile(x,y) return (s>=32 and s<=47) or s==60 -- power lines + plant(60)
 end
 
 -- zone helpers

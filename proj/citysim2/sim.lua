@@ -80,9 +80,10 @@ local function sm_eval(x,y)
  local access=rcomp(x,y)~=0
  local wx,wy=sm_complement(x,y,k)
  local found=wx~=nil
- if access and found and d<3 and rnd(1)<p.grow_rate then
+ local pw=powered(x,y)
+ if access and found and pw and d<3 and rnd(1)<p.grow_rate then
   set_zone(x,y,k,d+1)
- elseif (not access or not found) and d>0 and rnd(1)<p.decay_rate then
+ elseif (not access or not found or not pw) and d>0 and rnd(1)<p.decay_rate then
   set_zone(x,y,k,d-1)
  end
  -- visible commuter (per p.show)
@@ -131,5 +132,6 @@ function tile_info(x,y)
  if not is_zone(x,y) then return nil end
  local k=zone_kind(x,y)
  local wx=sm_complement(x,y,k)
- return {kind=k,dens=zone_density(x,y),access=rcomp(x,y)~=0,served=wx~=nil}
+ return {kind=k,dens=zone_density(x,y),access=rcomp(x,y)~=0,
+  power=powered(x,y),served=wx~=nil}
 end

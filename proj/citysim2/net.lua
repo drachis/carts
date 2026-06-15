@@ -3,6 +3,7 @@
 -- private prefix: nt_
 
 ncomp=0  -- number of road components found (global, read by sim)
+pwr={}   -- set of powered tiles (on a power network fed by a plant)
 
 function update_net()
  pclr(pl_comp)
@@ -15,6 +16,15 @@ function update_net()
     flood(x,y,is_road,function(fx,fy)
      pokep(pl_comp,fx,fy,id)
     end)
+   end
+  end
+ end
+ -- power: flood from each plant (tile 60) over conducting tiles (lines+plants)
+ pwr={}
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if tile(x,y)==60 then
+    flood(x,y,conducts,function(fx,fy) pwr[fx+fy*gw]=true end)
    end
   end
  end
@@ -34,5 +44,12 @@ function connected(ax,ay,bx,by)
  return ca~=0 and ca==rcomp(bx,by)
 end
 
--- stub: real power network (offer-index over power channel) comes with sim
-function powered(x,y) return true end
+-- a tile is powered if it (or an orthogonal neighbour, e.g. a zone beside a
+-- power line) is on a plant-fed power network.
+function powered(x,y)
+ if pwr[x+y*gw] then return true end
+ for _,n in pairs(neighbors4(x,y)) do
+  if pwr[n.x+n.y*gw] then return true end
+ end
+ return false
+end

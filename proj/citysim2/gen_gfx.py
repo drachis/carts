@@ -68,6 +68,11 @@ for ki in range(3):
     for d in range(4):
         S[48+ki*4+d]=zone(ki,d)
 
+S[60] = [  # power plant: grey block, smokestacks, orange core
+    "36333633","34333433","55555555","559a9555",
+    "55aaa555","55595555","55555555","88888888",
+]
+
 rows=[["0"]*128 for _ in range(64)]
 for sid,art in S.items():
     sr,sc=(sid//16)*8,(sid%16)*8

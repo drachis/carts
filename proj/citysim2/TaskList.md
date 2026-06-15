@@ -27,8 +27,9 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 - ☑ sim.lua (1800→**733**) — timewheel event loop; eval-driven grow/decay gated
   by road access + a reachable complement (via the **offer index** `idx[comp][kind]`,
   built here); spawns commuters (p.show); derived census. **Core loop ALIVE**
-  (connected R+C grow to density 3 + cars run). ⚠ evt_cap overflow drops events
-  (fine small; revisit at scale). TODO later: arrive-events, real `powered()`.
+  (connected R+C grow to density 3 + cars run). Growth now also gated by
+  `powered()` (real: net floods from plant tiles over power lines). ⚠ evt_cap
+  overflow drops events (fine small; revisit at scale). TODO: arrive-events.
 
 ## Generation
 - ☑ terrain.lua (220→**384**) — box-blur fBM heightmap → **percentile** thresholds
