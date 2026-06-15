@@ -61,32 +61,37 @@ function update_tools()
  end
 end
 
+-- the bulldoze ACTION (no charge): peel a wire / raze a building to its plot /
+-- re-plot remembered rubble / give a bridge back its water / else clear to grass,
+-- then re-autotile neighbouring roads+lines and rebuild the net. shared by the
+-- tool and the autonomous wrecking crew. returns true if it changed the tile.
+function raze(x,y)
+ if peekp(pl_wire,x,y)>0 then pokep(pl_wire,x,y,0)
+ elseif is_zone(x,y) and zone_density(x,y)>0 then
+  set_zone(x,y,zone_kind(x,y),0) pokep(pl_sat,x,y,p.sat_seed)
+ elseif tile(x,y)==63 and peekp(pl_zk,x,y)>0 then
+  set_zone(x,y,peekp(pl_zk,x,y),0) pokep(pl_sat,x,y,p.sat_seed) pokep(pl_zk,x,y,0)
+ elseif tile(x,y)>1 then
+  if peekp(pl_bridge,x,y)>0 then set_tile(x,y,0) pokep(pl_bridge,x,y,0)
+  else set_tile(x,y,1) end
+ else return end
+ for nb in all(neighbors4(x,y)) do
+  if is_road(nb.x,nb.y) then set_tile(nb.x,nb.y,16+nmask(nb.x,nb.y,is_road))
+  elseif tile(nb.x,nb.y)>=32 and tile(nb.x,nb.y)<=47 then
+   set_tile(nb.x,nb.y,32+nmask(nb.x,nb.y,conducts)) end
+ end
+ update_net()
+ if val_dirty_area then val_dirty_area(x,y) end
+ return true
+end
+
 function apply_tool()
  local x,y=cur.x,cur.y
  local before=tile(x,y)
  local t=cur_tool()
  local pc=t[4]
  if pc=="d" then
-  if peekp(pl_wire,x,y)>0 then            -- peel a wire overlay first
-   if try_spend(cost.dozer) then pokep(pl_wire,x,y,0) update_net() end
-  elseif is_zone(x,y) and zone_density(x,y)>0 then
-   -- raze the BUILDING but keep the zoning (v1 lesson); it can rebuild
-   if try_spend(cost.dozer) then
-    set_zone(x,y,zone_kind(x,y),0) pokep(pl_sat,x,y,p.sat_seed) update_net()
-   end
-  elseif tile(x,y)>1 and try_spend(cost.dozer) then
-   -- a bulldozed bridge gives the water back; everything else clears to grass
-   if peekp(pl_bridge,x,y)>0 then set_tile(x,y,0) pokep(pl_bridge,x,y,0)
-   else set_tile(x,y,1) end
-   -- re-autotile neighbouring roads / power lines so a removed junction resets
-   -- (an L-corner left after dozing the rest of a box collapses to a stub).
-   for nb in all(neighbors4(x,y)) do
-    if is_road(nb.x,nb.y) then set_tile(nb.x,nb.y,16+nmask(nb.x,nb.y,is_road))
-    elseif tile(nb.x,nb.y)>=32 and tile(nb.x,nb.y)<=47 then
-     set_tile(nb.x,nb.y,32+nmask(nb.x,nb.y,conducts)) end
-   end
-   update_net()
-  end
+  if (peekp(pl_wire,x,y)>0 or tile(x,y)>1) and try_spend(cost.dozer) then raze(x,y) end
  elseif pc=="b" then                       -- a building on grass
   if is_buildable(x,y) and try_spend(cost[t[3]]) then
    set_tile(x,y,t[5]) update_net()

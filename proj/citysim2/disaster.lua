@@ -138,17 +138,10 @@ end
 function wreck_dispatch(e)
  local rx,ry=e.x,e.y
  if tile(rx,ry)~=63 then return end  -- already cleared or bulldozed
+ -- the crew autonomously bulldozes the rubble on arrival (shared raze()).
  local function clear()
-  if tile(rx,ry)==63 then
-   -- restore the empty zoned plot it remembers (so the district can rebuild),
-   -- else just clear to grass. matches bulldoze keeping the zoning.
-   local zk=peekp(pl_zk,rx,ry)
-   if zk>0 then set_zone(rx,ry,zk,0) pokep(pl_sat,rx,ry,p.sat_seed) pokep(pl_zk,rx,ry,0)
-   else set_tile(rx,ry,1) end
-   update_net()
-   if val_dirty_area then val_dirty_area(rx,ry) end
+  if tile(rx,ry)==63 and raze(rx,ry) then
    if notify then notify("crew cleared rubble",11,rx,ry) end
-   if fx_burst then fx_burst(rx*8+4,ry*8+4,5,6) end
    if snd then snd(snd_doze) end
   end
  end
