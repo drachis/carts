@@ -57,6 +57,8 @@ function update_agents()
    if ntx~=a.tx or nty~=a.ty then
     pokep(pl_cong,a.tx,a.ty,max(0,peekp(pl_cong,a.tx,a.ty)-1))
     pokep(pl_cong,ntx,nty,min(255,peekp(pl_cong,ntx,nty)+1))
+    -- congestion just changed here -> land value nearby is stale; queue it.
+    if val_dirty_area then val_dirty_area(ntx,nty) end
     a.tx=ntx
     a.ty=nty
    end

@@ -55,9 +55,8 @@ function sim_seed()
 end
 
 local function sm_adj_road(x,y)
- for _,n in pairs(neighbors4(x,y)) do
-  if is_road(n.x,n.y) then return n end
- end
+ local rx,ry=near_road(x,y)
+ if rx then return {x=rx,y=ry} end
 end
 
 -- who each kind wants: R->jobs(C/I); C->customers(R)+goods(I); I->workers(R)+buyers(C)
@@ -146,7 +145,7 @@ function update_sim()
  -- amortized maintenance: land value refreshes a couple rows EVERY frame (no
  -- per-second spike); census + offer index run periodically but on separate
  -- frames so their scans never stack. coverage is event-driven (tools.lua).
- step_val(p.val_step)
+ step_val()
  sm_cd-=1
  if sm_cd<=0 then sm_cd=p.census_iv sm_census() end
  sm_id-=1

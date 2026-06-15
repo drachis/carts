@@ -64,6 +64,7 @@ function fire_handler(e)
   set_tile(x,y,63)  -- collapse to rubble (blocks growth until cleared)
   if notify then notify("burned to rubble",5,x,y) end
   update_net()
+  if val_dirty_area then val_dirty_area(x,y) end
   schedule(p.wreck_delay,{k=3,x=x,y=y})  -- summon the wrecking crew
  else
   pokep(pl_fire,x,y,t)
@@ -129,6 +130,7 @@ function wreck_dispatch(e)
  local function clear()
   if tile(rx,ry)==63 then
    set_tile(rx,ry,1) update_net()
+   if val_dirty_area then val_dirty_area(rx,ry) end
    if notify then notify("crew cleared rubble",11,rx,ry) end
    if fx_burst then fx_burst(rx*8+4,ry*8+4,5,6) end
    if snd then snd(snd_doze) end

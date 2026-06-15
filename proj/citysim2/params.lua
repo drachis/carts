@@ -23,6 +23,7 @@ p={
 
  -- congestion (router cost feedback, DESIGN s10)
  cong_k=3,           -- router cost added per agent sharing a road tile
+ road_reach=2,       -- a zone reaches a road within this many tiles (chebyshev)
 
  -- economy (money in THOUSANDS of dollars, see LEARNINGS)
  start_money=2,      -- $2k
@@ -54,7 +55,8 @@ p={
  val_pol=10,         -- desirability lost per nearby polluter (industry/plant)
  val_cong=2,         -- desirability lost per agent on nearby roads
  val_park=24,        -- desirability per nearby park (service +)
- val_step=1,         -- land-value rows refreshed per frame (~full sweep/sec)
+ val_div=30,         -- drain 1/val_div of the dirty land-value queue per frame
+                     --   (so the backlog always clears within ~val_div frames)
 
  -- fire / disasters (disaster.lua)
  fire_chance=0.0006, -- per-frame odds a random developed zone ignites

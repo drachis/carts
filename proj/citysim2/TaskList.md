@@ -80,6 +80,22 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
   emits "fire!"/"burned to rubble". Calls guarded (`if notify then`) so modules
   stay decoupled. Each notice keeps its tile for future location-flagging.
 
+## Playtest feedback (2026-06-15) — work top to bottom
+Sim/build rules:
+- ☐ empty zones should transmit power (zones conduct, not just lines/plant)
+- ☐ zones buildable within 2 tiles of a road (diagonal-from-road must work)
+- ☐ bridges (roads over water) + power lines over roads (so lakes aren't walls)
+- ☐ drag to build / bulldoze (hold button, paint along the cursor)
+Indicators/art:
+- ☐ no-power flashing lightning-bolt over unpowered zones (v1 had it)
+- ☐ R zone blends into grass by day — give it a distinct building colour
+- ☐ water reads black-with-sparkles — recolour to actual blue
+- ☐ smoke should be puffy circfill clouds (v1), not single pixels
+UI:
+- ☐ bring back the v1 toolbar (visible palette; blind cycling feels bad)
+- ☐ top HUD overlaps date/RCI; "j0"=jobs — move jobs into the minimap detail
+- ☐ minimap feels incomplete vs v1 (v1 had city/power/value views + $ summary)
+
 ## Polish (juice)
 - ☑ daynight.lua (76) — day/night cycle via **pal() colour remap** (NOT a dither
   overlay — PICO-8 fill transparency doesn't darken the map; citysim1 lesson).

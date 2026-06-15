@@ -20,26 +20,42 @@ function update_net()
    end
   end
  end
- -- power: flood from each plant (tile 60) over conducting tiles (lines+plants)
+ -- power: flood from each plant (tile 60) over power-carrying tiles. zones carry
+ -- power too (a built-up block conducts), so you don't need a wire to every lot.
  pwr={}
  plants={}
  for y=0,gw-1 do
   for x=0,gw-1 do
    if tile(x,y)==60 then
     add(plants,{x=x,y=y})
-    flood(x,y,conducts,function(fx,fy) pwr[fx+fy*gw]=true end)
+    flood(x,y,power_carries,function(fx,fy) pwr[fx+fy*gw]=true end)
+   end
+  end
+ end
+end
+
+-- tiles that carry power: wires/plant (conducts) plus any zone tile (even empty).
+function power_carries(x,y)
+ return conducts(x,y) or is_zone(x,y)
+end
+
+-- the nearest road tile within p.road_reach (chebyshev), scanned ring by ring,
+-- or nil. lets a zone reach a road that's diagonal / up to 2 tiles away.
+function near_road(x,y)
+ for r=0,p.road_reach do
+  for dy=-r,r do
+   for dx=-r,r do
+    if max(abs(dx),abs(dy))==r and is_road(x+dx,y+dy) then
+     return x+dx,y+dy
+    end
    end
   end
  end
 end
 
 function rcomp(x,y)
- if is_road(x,y) then return peekp(pl_comp,x,y) end
- local nb=neighbors4(x,y)
- for _,n in pairs(nb) do
-  if is_road(n.x,n.y) then return peekp(pl_comp,n.x,n.y) end
- end
- return 0
+ local rx,ry=near_road(x,y)
+ return rx and peekp(pl_comp,rx,ry) or 0
 end
 
 function connected(ax,ay,bx,by)

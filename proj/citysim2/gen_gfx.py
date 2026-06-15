@@ -5,7 +5,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CART = os.path.join(HERE, "citysim2.p8")
 S = {}  # id -> 8 rows of 8 hex digits
 
-S[0] = ["1111111c","11c11111","1111111c","111c1111","c1111111","1111c111","11111111","c111111c"]  # water
+S[0] = ["cccccccc","ccc1cccc","cccccc1c","c1cccccc","cccc1ccc","1ccccccc","cccc1ccc","cc1ccccc"]  # water: blue with subtle ripples
 S[1] = ["33333333","333b3333","33333333","33333b33","3333b333","b3333333","333333b3","33333333"]  # grass
 S[2] = ["33355333","3357d533","355ddd53","55d6d6d5","5d6d6d65","dddddddd","5d5dd5d5","55555555"]  # mountain
 
@@ -47,7 +47,7 @@ for m in range(16): S[32+m]=wire(m)
 
 # zones 48..59 : R(48-51) C(52-55) I(56-59), density 0..3. d0 = dashed plot,
 # d1..3 = a building of growing height in the zone colour (R grn,C blu,I yel).
-ZC={0:("b","3"),1:("c","1"),2:("a","4")}  # (accent, body) per kind index
+ZC={0:("b","f"),1:("c","1"),2:("a","4")}  # (accent, body): R tan, C navy, I brown
 def zone(ki,d):
     acc,body=ZC[ki]
     g=[["3"]*8 for _ in range(8)]

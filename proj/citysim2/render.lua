@@ -24,6 +24,22 @@ function draw_water()
  end
 end
 
+-- flashing lightning bolt over zones that lack power (the v1 "no power" cue).
+function draw_alerts()
+ if tick%16>=8 then return end           -- blink
+ local x0,y0=flr(camx/8),flr(camy/8)
+ for ty=y0,y0+16 do
+  for tx=x0,x0+16 do
+   if is_zone(tx,ty) and not powered(tx,ty) then
+    local sx,sy=tx*8,ty*8
+    line(sx+4,sy+1,sx+2,sy+4,10)
+    line(sx+2,sy+4,sx+5,sy+4,10)
+    line(sx+5,sy+4,sx+3,sy+7,10)
+   end
+  end
+ end
+end
+
 function draw_world()
  camera(camx,camy)
  night_pal()              -- dusk/night colour remap (no-op at midday)
@@ -33,6 +49,7 @@ function draw_world()
  draw_water()             -- water glints (bright, after the night remap)
  draw_fire()
  draw_fx()
+ draw_alerts()            -- no-power lightning bolts
  draw_cursor()
  camera()
 end

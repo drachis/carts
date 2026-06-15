@@ -159,6 +159,17 @@ set_tile(15,15,61) -- park
 update_val()
 ok(desir(16,15)>128,"a park raises desirability ("..desir(16,15)..")")
 
+-- dirty queue: a change only recomputes its neighbourhood, drained over time
+init_map()
+update_val()
+ok(#vq==0,"full sweep empties the dirty queue")
+set_tile(5,5,0)        -- new water, not yet reflected
+val_dirty_area(5,5)
+ok(#vq>0,"a change queues dirty tiles")
+for i=1,p.val_div*2 do step_val() end
+ok(#vq==0,"the queue drains (cost scales with backlog)")
+ok(desir(7,5)>128,"drained recompute sees the new water ("..desir(7,5)..")")
+
 -- power gating: an unpowered (no plant) zone never grows
 init_map()
 for x=4,12 do set_tile(x,14,16) end
