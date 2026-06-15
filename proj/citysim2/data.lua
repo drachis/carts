@@ -30,3 +30,4 @@ pl_pow=0xac00       -- power-network component id per carrier tile (supply/deman
 pl_chg=0xb000       -- per-building power battery charge (0..pwr_cap)
 pl_pdist=0xb400     -- power-network distance to the nearest plant (hops; 255=none)
 pl_cmt=0xb800       -- last commute grade reported here (0 none/1 good/2 ok/3 long)
+pl_bridge=0xbc00    -- 1 = this road tile is a bridge (built over water)

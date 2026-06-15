@@ -59,6 +59,26 @@ function draw_wires()
  end
 end
 
+-- bridges read as a road deck spanning water: blue at the deck edges (the water
+-- it crosses) + dark pylons, oriented by which way the road runs.
+function draw_bridges()
+ local x0,y0=flr(camx/8),flr(camy/8)
+ for ty=y0,y0+16 do
+  for tx=x0,x0+16 do
+   if peekp(pl_bridge,tx,ty)>0 then
+    local sx,sy=tx*8,ty*8
+    if is_road(tx-1,ty) or is_road(tx+1,ty) then
+     line(sx,sy,sx+7,sy,12) line(sx,sy+7,sx+7,sy+7,12)
+     pset(sx+2,sy+7,13) pset(sx+5,sy+7,13)
+    else
+     line(sx,sy,sx,sy+7,12) line(sx+7,sy,sx+7,sy+7,12)
+     pset(sx+7,sy+2,13) pset(sx+7,sy+5,13)
+    end
+   end
+  end
+ end
+end
+
 function draw_world()
  camera(camx,camy)
  night_pal()              -- dusk/night colour remap (no-op at midday)
@@ -66,6 +86,7 @@ function draw_world()
  draw_agents()
  pal()                    -- reset so fire/cursor draw at full brightness
  draw_water()             -- water glints (bright, after the night remap)
+ draw_bridges()           -- bridge decks over water
  draw_wires()             -- wires crossing roads
  draw_fire()
  draw_alerts()            -- no-power lightning bolts

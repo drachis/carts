@@ -130,5 +130,6 @@ function init_map()
  pclr(pl_chg)
  pclr(pl_pdist)
  pclr(pl_cmt)
+ pclr(pl_bridge)
  camx,camy=0,0
 end

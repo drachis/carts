@@ -103,7 +103,7 @@ p={
 cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}
 -- >>> version.lua
 -- version.lua : build id (short git hash), stamped by build_cart.py.
-ver="eb30c1c"
+ver="b3e94b5"
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -137,6 +137,7 @@ pl_pow=0xac00       -- power-network component id per carrier tile (supply/deman
 pl_chg=0xb000       -- per-building power battery charge (0..pwr_cap)
 pl_pdist=0xb400     -- power-network distance to the nearest plant (hops; 255=none)
 pl_cmt=0xb800       -- last commute grade reported here (0 none/1 good/2 ok/3 long)
+pl_bridge=0xbc00    -- 1 = this road tile is a bridge (built over water)
 -- >>> notify.lua
 -- notify.lua : event log — the city narrates itself ("the sim explains itself").
 -- a small ring of recent notable events; sim/disaster push, hud draws a fading
@@ -312,6 +313,7 @@ function init_map()
  pclr(pl_chg)
  pclr(pl_pdist)
  pclr(pl_cmt)
+ pclr(pl_bridge)
  camx,camy=0,0
 end
 -- >>> router.lua
@@ -1185,7 +1187,9 @@ function apply_tool()
     set_zone(x,y,zone_kind(x,y),0) pokep(pl_sat,x,y,p.sat_seed) update_net()
    end
   elseif tile(x,y)>1 and try_spend(cost.dozer) then
-   set_tile(x,y,1)                     -- empty zone / road / building -> grass
+   -- a bulldozed bridge gives the water back; everything else clears to grass
+   if peekp(pl_bridge,x,y)>0 then set_tile(x,y,0) pokep(pl_bridge,x,y,0)
+   else set_tile(x,y,1) end
    -- re-autotile neighbouring roads / power lines so a removed junction resets
    -- (an L-corner left after dozing the rest of a box collapses to a stub).
    for nb in all(neighbors4(x,y)) do
@@ -1206,6 +1210,7 @@ function apply_tool()
   end
  elseif pc=="r" then                       -- road (bridges water)
   if (is_buildable(x,y) or tile(x,y)==0) and try_spend(cost.road) then
+   if tile(x,y)==0 then pokep(pl_bridge,x,y,1) end  -- built over water = a bridge
    set_tile(x,y,16+nmask(x,y,is_road))
    for nb in all(neighbors4(x,y)) do
     if is_road(nb.x,nb.y) then set_tile(nb.x,nb.y,16+nmask(nb.x,nb.y,is_road)) end
@@ -1333,6 +1338,26 @@ function draw_wires()
  end
 end
 
+-- bridges read as a road deck spanning water: blue at the deck edges (the water
+-- it crosses) + dark pylons, oriented by which way the road runs.
+function draw_bridges()
+ local x0,y0=flr(camx/8),flr(camy/8)
+ for ty=y0,y0+16 do
+  for tx=x0,x0+16 do
+   if peekp(pl_bridge,tx,ty)>0 then
+    local sx,sy=tx*8,ty*8
+    if is_road(tx-1,ty) or is_road(tx+1,ty) then
+     line(sx,sy,sx+7,sy,12) line(sx,sy+7,sx+7,sy+7,12)
+     pset(sx+2,sy+7,13) pset(sx+5,sy+7,13)
+    else
+     line(sx,sy,sx,sy+7,12) line(sx+7,sy,sx+7,sy+7,12)
+     pset(sx+7,sy+2,13) pset(sx+7,sy+5,13)
+    end
+   end
+  end
+ end
+end
+
 function draw_world()
  camera(camx,camy)
  night_pal()              -- dusk/night colour remap (no-op at midday)
@@ -1340,6 +1365,7 @@ function draw_world()
  draw_agents()
  pal()                    -- reset so fire/cursor draw at full brightness
  draw_water()             -- water glints (bright, after the night remap)
+ draw_bridges()           -- bridge decks over water
  draw_wires()             -- wires crossing roads
  draw_fire()
  draw_alerts()            -- no-power lightning bolts
@@ -1570,6 +1596,7 @@ function save_city()
  -- pl_wire (wire-over-road/water overlay) lives past the 0x9800 plane block, so
  -- save it separately into the free file gap at 0x1800 (before the 0x2000 grid).
  cstore(0x1800,pl_wire,0x400,"citysave2.p8")
+ cstore(0x1c00,pl_bridge,0x400,"citysave2.p8")  -- bridge flags (free gap < grid)
 end
 
 function load_city()
@@ -1577,6 +1604,7 @@ function load_city()
  if mget(120,0)~=42 then return end
  reload(0x8000,0x0,0x1800,"citysave2.p8")
  reload(pl_wire,0x1800,0x400,"citysave2.p8")  -- before update_net (it reads pl_wire)
+ reload(pl_bridge,0x1c00,0x400,"citysave2.p8")
  money=mget(121,0)+mget(122,0)*256
  month=mget(123,0) year=1900+mget(124,0) tax_rate=mget(125,0)
  init_agents() pclr(pl_cong) update_net() init_sim() sim_seed()

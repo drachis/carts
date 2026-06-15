@@ -68,6 +68,9 @@ ok(not is_zone(0,0),"zone tool rejects water")
 init_map() init_tools() money=99
 set_tile(10,10,0) select_tool("road") cur={x=10,y=10} apply_tool()
 ok(is_road(10,10),"road bridges water")
+ok(peekp(pl_bridge,10,10)==1,"a road over water is flagged a bridge")
+select_tool("bulldoze") apply_tool()
+ok(tile(10,10)==0 and peekp(pl_bridge,10,10)==0,"bulldozing a bridge gives the water back")
 init_map() init_tools() money=99
 set_tile(8,8,60) select_tool("power") cur={x=9,y=8} apply_tool()
 ok(tile(8,8)==60,"plant survives an adjacent power line")

@@ -75,7 +75,9 @@ function apply_tool()
     set_zone(x,y,zone_kind(x,y),0) pokep(pl_sat,x,y,p.sat_seed) update_net()
    end
   elseif tile(x,y)>1 and try_spend(cost.dozer) then
-   set_tile(x,y,1)                     -- empty zone / road / building -> grass
+   -- a bulldozed bridge gives the water back; everything else clears to grass
+   if peekp(pl_bridge,x,y)>0 then set_tile(x,y,0) pokep(pl_bridge,x,y,0)
+   else set_tile(x,y,1) end
    -- re-autotile neighbouring roads / power lines so a removed junction resets
    -- (an L-corner left after dozing the rest of a box collapses to a stub).
    for nb in all(neighbors4(x,y)) do
@@ -96,6 +98,7 @@ function apply_tool()
   end
  elseif pc=="r" then                       -- road (bridges water)
   if (is_buildable(x,y) or tile(x,y)==0) and try_spend(cost.road) then
+   if tile(x,y)==0 then pokep(pl_bridge,x,y,1) end  -- built over water = a bridge
    set_tile(x,y,16+nmask(x,y,is_road))
    for nb in all(neighbors4(x,y)) do
     if is_road(nb.x,nb.y) then set_tile(nb.x,nb.y,16+nmask(nb.x,nb.y,is_road)) end
