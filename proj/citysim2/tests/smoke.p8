@@ -15,7 +15,6 @@ __lua__
 #include ../agents.lua
 #include ../sim.lua
 #include ../disaster.lua
-#include ../fx.lua
 #include ../econ.lua
 #include ../daynight.lua
 #include ../save.lua
@@ -72,7 +71,7 @@ set_tile(8,7,60)                    -- power plant feeding the line
 set_zone(6,9,1,1)   -- residential beside the road + line
 set_zone(10,9,2,1)  -- commercial beside the road + line
 set_tile(8,11,62)   -- fire station: service coverage unlocks tall growth
-update_net()
+update_net() pwr_tick()
 ok(connected(6,9,10,9),"the two zones share a road network")
 ok(powered(6,9) and powered(10,9),"zones beside a plant-fed line are powered")
 init_sim()
@@ -97,7 +96,7 @@ init_map()
 set_zone(5,5,1,0) set_zone(6,5,2,0) set_zone(7,5,3,0)
 for x=5,7 do set_tile(x,6,16) end
 set_tile(4,5,60)   -- plant beside R; power conducts through the zone row
-update_net()
+update_net() pwr_tick()
 ok(powered(5,5) and powered(7,5),"minimal city is powered")
 ok(rcomp(5,5)~=0,"minimal city has road access")
 init_sim() init_agents() sim_seed()
@@ -187,20 +186,32 @@ set_tile(8,9,32)   -- wire down to the road
 for x=4,12 do set_tile(x,10,16) end -- a road crossing the wire's path
 set_tile(8,11,32)  -- wire continues on the far side
 update_net()
-ok(not powered(8,11),"plain road blocks power (no crossing yet)")
+ok(not served(8,11),"plain road blocks power (no crossing yet)")
 pokep(pl_wire,8,10,1) -- lay a wire across the road tile
 update_net()
 ok(power_carries(8,10),"a wired road carries power")
-ok(powered(8,11),"power crosses the road through the wire")
+ok(served(8,11),"power crosses the road through the wire")
 
 -- service buildings carry power; wires cross water too
 init_map()
 set_tile(8,8,60) set_tile(8,9,62) set_zone(8,10,1,0) -- plant-station-zone
-update_net()
+update_net() pwr_tick()
 ok(powered(8,10),"power flows through a service building")
 init_map()
 set_tile(10,10,0) pokep(pl_wire,10,10,1)
 ok(power_carries(10,10),"a wire crosses water")
+
+-- commute: a zone whose only complement is beyond commute_max won't grow
+init_map()
+local ocm=p.commute_max p.commute_max=2
+for x=4,16 do set_tile(x,10,16) end                 -- long road
+for x=4,16 do set_tile(x,8,32) end set_tile(4,7,60) -- powered line above
+set_zone(5,9,1,0) set_zone(15,9,2,0)                -- R and C 10 tiles apart
+update_net()
+init_sim() init_agents() sim_seed()
+for i=1,2000 do update_sim() update_agents() end
+ok(zone_density(5,9)==0,"a long commute blocks growth")
+p.commute_max=ocm
 
 -- rolling brownouts: when demand exceeds supply only some zones are lit at once
 init_map()
@@ -208,7 +219,7 @@ local osup=p.plant_sup p.plant_sup=2 tick=0
 for x=4,10 do set_tile(x,9,16) end
 set_tile(4,8,60)                    -- plant
 for x=5,9 do set_zone(x,8,1,1) end  -- 5 R zones lv1: demand 4 (@noon) > supply 2
-update_net()
+update_net() pwr_tick()
 local lit=0
 for x=5,9 do if powered(x,8) then lit+=1 end end
 ok(lit>0 and lit<5,"brownout: only some zones powered at once ("..lit..")")
@@ -283,12 +294,6 @@ ok(day_phase()<0.01,"noon is brightest (phase ~0)")
 tick=flr(p.day_frames/2)
 ok(day_phase()>0.99,"midnight is darkest (phase ~1)")
 
--- fx: a burst spawns particles that then age out
-init_map() init_fire() init_fx()
-fx_burst(80,80,7,5)
-ok(#parts==5,"fx_burst spawns particles")
-for i=1,30 do update_fx() end
-ok(#parts==0,"particles age out")
 
 -- save / load round-trip (grid + scalars via companion cart)
 init_map()

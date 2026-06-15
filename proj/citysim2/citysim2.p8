@@ -18,7 +18,6 @@ __lua__
 #include agents.lua
 #include sim.lua
 #include disaster.lua
-#include fx.lua
 #include tools.lua
 #include render.lua
 #include inspector.lua
@@ -39,7 +38,6 @@ function _init()
  init_econ()
  init_fire()
  init_log()
- init_fx()
  init_tools()
  update_camera(true)
  mapview=false
@@ -55,7 +53,6 @@ function _update()
  update_sim()
  update_agents()
  update_econ()
- update_fx()
  maybe_ignite()
 end
 

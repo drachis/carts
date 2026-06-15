@@ -84,6 +84,9 @@ local function sm_eval(x,y)
  local access=rcomp(x,y)~=0
  local wx,wy=sm_complement(x,y,k)
  local found=wx~=nil
+ -- commute: how far the nearest job/home is. too far -> nobody wants to move in,
+ -- so the zone won't grow (its commute drags its desirability).
+ local near=found and abs(x-wx)+abs(y-wy)<=p.commute_max
  local pw=powered(x,y)
  local dv=desir(x,y)  -- 0..255, 128 neutral: weights grow up / decay down
  -- demand for this kind (-1..1): the rci meter actually drives the city.
@@ -93,7 +96,7 @@ local function sm_eval(x,y)
  -- settling grace: a new building can't starve for ~a year (time to find work).
  local g=peekp(pl_grace,x,y)
  if g>0 then pokep(pl_grace,x,y,g-1) end
- if access and found and pw and dmd>0 and svc and d<3 and rnd(1)<p.grow_rate*dv/128 then
+ if access and near and pw and dmd>0 and svc and d<3 and rnd(1)<p.grow_rate*dv/128 then
   set_zone(x,y,k,d+1)
   pokep(pl_grace,x,y,p.grace)  -- a fresh building resets the settling clock
   if d+1==3 and notify then notify("district booming",res_col[k],x,y) end
@@ -151,6 +154,7 @@ function update_sim()
  -- per-second spike); census + offer index run periodically but on separate
  -- frames so their scans never stack. coverage is event-driven (tools.lua).
  step_val()
+ if tick%p.pwr_iv==0 then pwr_tick() end  -- battery drain/refill each power hour
  sm_cd-=1
  if sm_cd<=0 then sm_cd=p.census_iv sm_census() end
  sm_id-=1
@@ -160,8 +164,9 @@ end
 function tile_info(x,y)
  if not is_zone(x,y) then return nil end
  local k=zone_kind(x,y)
- local wx=sm_complement(x,y,k)
+ local wx,wy=sm_complement(x,y,k)
  return {kind=k,dens=zone_density(x,y),access=rcomp(x,y)~=0,
   power=powered(x,y),served=wx~=nil,val=desir(x,y),
-  svc=(not serviced) or serviced(x,y),settling=peekp(pl_grace,x,y)>0}
+  svc=(not serviced) or serviced(x,y),settling=peekp(pl_grace,x,y)>0,
+  remote=wx~=nil and abs(x-wx)+abs(y-wy)>p.commute_max}
 end

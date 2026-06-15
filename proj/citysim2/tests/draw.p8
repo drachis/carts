@@ -18,7 +18,6 @@ __lua__
 #include ../agents.lua
 #include ../sim.lua
 #include ../disaster.lua
-#include ../fx.lua
 #include ../tools.lua
 #include ../render.lua
 #include ../inspector.lua
@@ -31,12 +30,12 @@ __lua__
 srand(1)
 init_map() gen_terrain() update_net()
 init_agents() init_sim() sim_seed()
-init_econ() init_fire() init_log() init_fx() init_tools()
+init_econ() init_fire() init_log() init_tools()
 -- lay a little city so the draw paths touch real state
 for x=4,10 do set_tile(x,8,16) end
 set_zone(5,7,1,1) set_zone(9,7,2,1)
 set_tile(7,6,60) set_tile(20,20,61) set_tile(22,20,62)
-update_net() ignite(5,7) fx_burst(40,40,7,4)
+update_net() ignite(5,7)
 cur={x=8,y=8} select_tool("road") picking=true
 camx=0 camy=0
 tick=900  -- midnight-ish, so the night pal path runs

@@ -22,6 +22,7 @@ p={
  agent_cap=80,       -- max live visible agents
  show=1,             -- visible cars per filled capacity unit (1=all; lower=sample)
  trip_life=600,      -- ticks before a stuck agent gives up
+ commute_max=12,     -- max tiles to a job/home before a zone won't grow (commute)
 
  -- congestion (router cost feedback, DESIGN s10)
  cong_k=3,           -- router cost added per agent sharing a road tile
@@ -40,6 +41,9 @@ p={
  -- by day_phase: R sips most at night, C most by day, I steady (R,C,I order).
  pwr_day=split"4,11,9",   -- midday draw x10 per kind
  pwr_night=split"11,4,9", -- midnight draw x10 per kind
+ pwr_cap=7,          -- a building's power battery (drains 1 per pwr_iv "hour")
+ pwr_pkt=4,          -- energy packet size; grabbed only when there's room for one
+ pwr_iv=30,          -- frames per power hour (battery drains/refills on this tick)
  job_tax=0.5,        -- jobs taxed at this fraction of the pop rate
  debt_k=-1,          -- debt floor in $k (try_spend won't go below)
  money_cap=32000,    -- $k ceiling (keeps 16.16 fixed-point from flipping)

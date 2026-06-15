@@ -29,6 +29,7 @@ p={
  agent_cap=80,       -- max live visible agents
  show=1,             -- visible cars per filled capacity unit (1=all; lower=sample)
  trip_life=600,      -- ticks before a stuck agent gives up
+ commute_max=12,     -- max tiles to a job/home before a zone won't grow (commute)
 
  -- congestion (router cost feedback, DESIGN s10)
  cong_k=3,           -- router cost added per agent sharing a road tile
@@ -47,6 +48,9 @@ p={
  -- by day_phase: R sips most at night, C most by day, I steady (R,C,I order).
  pwr_day=split"4,11,9",   -- midday draw x10 per kind
  pwr_night=split"11,4,9", -- midnight draw x10 per kind
+ pwr_cap=7,          -- a building's power battery (drains 1 per pwr_iv "hour")
+ pwr_pkt=4,          -- energy packet size; grabbed only when there's room for one
+ pwr_iv=30,          -- frames per power hour (battery drains/refills on this tick)
  job_tax=0.5,        -- jobs taxed at this fraction of the pop rate
  debt_k=-1,          -- debt floor in $k (try_spend won't go below)
  money_cap=32000,    -- $k ceiling (keeps 16.16 fixed-point from flipping)
@@ -93,7 +97,7 @@ p={
 cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}
 -- >>> version.lua
 -- version.lua : build id (short git hash), stamped by build_cart.py.
-ver="78c6066"
+ver="0fa735f"
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -124,6 +128,7 @@ pl_cov=0xa000       -- service coverage (>0 = a station/park serves this tile)
 pl_wire=0xa400      -- power-line overlay (>0 = a wire crosses this road tile)
 pl_grace=0xa800     -- "settling" evals left for a new building before it starves
 pl_pow=0xac00       -- power-network component id per carrier tile (supply/demand)
+pl_chg=0xb000       -- per-building power battery charge (0..pwr_cap)
 -- >>> notify.lua
 -- notify.lua : event log — the city narrates itself ("the sim explains itself").
 -- a small ring of recent notable events; sim/disaster push, hud draws a fading
@@ -296,6 +301,7 @@ function init_map()
  pclr(pl_wire)
  pclr(pl_grace)
  pclr(pl_pow)
+ pclr(pl_chg)
  camx,camy=0,0
 end
 -- >>> router.lua
@@ -441,10 +447,11 @@ function connected(ax,ay,bx,by)
  return ca~=0 and ca==rcomp(bx,by)
 end
 
--- is (x,y) drawing power right now? its network needs a plant (supply>0); if
--- supply meets demand everyone's lit, else only `supply` of `demand` consumers
--- are served at a time and the served window ROTATES -> rolling brownouts.
-function powered(x,y)
+-- is the GRID delivering to (x,y) this instant? network needs a plant (supply>0);
+-- if supply meets demand everyone's served, else only `supply` of `demand`
+-- consumers at a time and the served window ROTATES (rolling brownouts). demand
+-- is per-kind tier units weighted by time of day.
+function served(x,y)
  local id=peekp(pl_pow,x,y)
  if id==0 then
   for _,n in pairs(neighbors4(x,y)) do
@@ -452,16 +459,35 @@ function powered(x,y)
   end
  end
  local s=psup[id or 0] or 0
- if s==0 then return false end          -- no plant on this network
- -- current demand = sum over kinds of (tier units) * time-of-day draw
+ if s==0 then return false end
  local pd,d=pdem[id],0
  if pd then
   local dp=day_phase and day_phase() or 0
   for k=1,3 do d+=pd[k]*(p.pwr_day[k]+(p.pwr_night[k]-p.pwr_day[k])*dp) end
   d=flr(d/10)
  end
- if s>=d then return true end           -- supply meets demand: all lit
+ if s>=d then return true end
  return (x+y*gw+flr((tick or 0)/p.brownout_iv))%d<s
+end
+
+-- hourly battery pass: every building drains 1, and grabs a full packet only
+-- when it has room for one AND the grid is serving it. a building that misses a
+-- packet coasts on its battery, then goes dark -> blackouts roll out of phase.
+function pwr_tick()
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if is_zone(x,y) then
+    local c=max(0,peekp(pl_chg,x,y)-1)
+    if c<=p.pwr_cap-p.pwr_pkt and served(x,y) then c=min(p.pwr_cap,c+p.pwr_pkt) end
+    pokep(pl_chg,x,y,c)
+   end
+  end
+ end
+end
+
+-- a building is powered if its battery has charge.
+function powered(x,y)
+ return peekp(pl_chg,x,y)>0
 end
 -- >>> landval.lua
 -- landval.lua : desirability / land value field (pl_val, 0..255, 128 neutral).
@@ -792,6 +818,9 @@ local function sm_eval(x,y)
  local access=rcomp(x,y)~=0
  local wx,wy=sm_complement(x,y,k)
  local found=wx~=nil
+ -- commute: how far the nearest job/home is. too far -> nobody wants to move in,
+ -- so the zone won't grow (its commute drags its desirability).
+ local near=found and abs(x-wx)+abs(y-wy)<=p.commute_max
  local pw=powered(x,y)
  local dv=desir(x,y)  -- 0..255, 128 neutral: weights grow up / decay down
  -- demand for this kind (-1..1): the rci meter actually drives the city.
@@ -801,7 +830,7 @@ local function sm_eval(x,y)
  -- settling grace: a new building can't starve for ~a year (time to find work).
  local g=peekp(pl_grace,x,y)
  if g>0 then pokep(pl_grace,x,y,g-1) end
- if access and found and pw and dmd>0 and svc and d<3 and rnd(1)<p.grow_rate*dv/128 then
+ if access and near and pw and dmd>0 and svc and d<3 and rnd(1)<p.grow_rate*dv/128 then
   set_zone(x,y,k,d+1)
   pokep(pl_grace,x,y,p.grace)  -- a fresh building resets the settling clock
   if d+1==3 and notify then notify("district booming",res_col[k],x,y) end
@@ -859,6 +888,7 @@ function update_sim()
  -- per-second spike); census + offer index run periodically but on separate
  -- frames so their scans never stack. coverage is event-driven (tools.lua).
  step_val()
+ if tick%p.pwr_iv==0 then pwr_tick() end  -- battery drain/refill each power hour
  sm_cd-=1
  if sm_cd<=0 then sm_cd=p.census_iv sm_census() end
  sm_id-=1
@@ -868,10 +898,11 @@ end
 function tile_info(x,y)
  if not is_zone(x,y) then return nil end
  local k=zone_kind(x,y)
- local wx=sm_complement(x,y,k)
+ local wx,wy=sm_complement(x,y,k)
  return {kind=k,dens=zone_density(x,y),access=rcomp(x,y)~=0,
   power=powered(x,y),served=wx~=nil,val=desir(x,y),
-  svc=(not serviced) or serviced(x,y),settling=peekp(pl_grace,x,y)>0}
+  svc=(not serviced) or serviced(x,y),settling=peekp(pl_grace,x,y)>0,
+  remote=wx~=nil and abs(x-wx)+abs(y-wy)>p.commute_max}
 end
 -- >>> disaster.lua
 -- disaster.lua : fire — the event loop's namesake. zones ignite, burn over
@@ -1037,64 +1068,6 @@ function fire_engine(x,y)
    if fx_burst then fx_burst(x*8+4,y*8+4,7,6) end
   end
  end)
-end
--- >>> fx.lua
--- fx.lua : particles — the juice. smokestacks puff, fires belch dark smoke,
--- placing/dozing kicks up dust. a small capped pool; update moves+ages, draw
--- runs in world space (inside draw_world, after the night pal reset so embers
--- stay bright). emitters read plants[] (net.lua) and fires[] (disaster.lua).
--- api: init_fx, update_fx, draw_fx, fx_burst(px,py,col,n); global: parts
-parts={}
-local fxc=0
-
-function init_fx() parts={} fxc=0 end
-
-local function spawn(x,y,dx,dy,life,col,puff)
- if #parts<72 then add(parts,{x=x,y=y,dx=dx,dy=dy,l=life,c=col,r=puff and 0,puff=puff}) end
-end
-
--- a slow rising smoke puff from world-pixel (px,py); dark for fire, grey plant.
--- drifts up in a tight column and dissipates (shrinks) rather than popping.
-local function smoke(px,py,dark)
- spawn(px,py,(rnd(2)-1)*0.08,-0.18-rnd(0.14),28+rnd(16),dark and 5 or 6,true)
-end
-
--- an outward burst (dust on placement, sparks on collapse).
-function fx_burst(px,py,col,n)
- for i=1,n do
-  local a=rnd(1)
-  spawn(px,py,cos(a)*rnd(1.2),sin(a)*rnd(1.2)-0.3,8+rnd(8),col)
- end
-end
-
-function update_fx()
- for i=#parts,1,-1 do
-  local q=parts[i]
-  q.x+=q.dx q.y+=q.dy q.dy+=0.02 q.l-=1
-  -- puffs swell a little as they rise; smoke cools grey->dark as it ages
-  if q.puff then q.r=min(2,q.r+0.03) end
-  if q.c==6 and q.l<14 then q.c=5 end
-  if q.l<=0 then deli(parts,i) end
- end
- fxc+=1
- if fxc%4==0 then
-  for f in all(fires) do smoke(f.x*8+2+rnd(4),f.y*8,true) end
- end
- if fxc%8==0 then
-  for pl in all(plants) do
-   if rnd(1)<0.6 then smoke(pl.x*8+1+rnd(2),pl.y*8,false) end
-  end
- end
-end
-
-function draw_fx()
- for q in all(parts) do
-  if q.puff then
-   circfill(q.x,q.y,min(q.r,q.l*0.18),q.c)  -- shrink as it dies = dissipating
-  else
-   pset(q.x,q.y,q.c)
-  end
- end
 end
 -- >>> tools.lua
 -- tools.lua : cursor + a 2D, data-driven tool palette + placement.
@@ -1323,7 +1296,6 @@ function draw_world()
  draw_water()             -- water glints (bright, after the night remap)
  draw_wires()             -- wires crossing roads
  draw_fire()
- draw_fx()
  draw_alerts()            -- no-power lightning bolts
  draw_cursor()
  camera()
@@ -1358,6 +1330,7 @@ function draw_inspector()
  elseif not ti.power then st="no power"
  elseif ti.settling then st="settling in"
  elseif not ti.served then st=ti.kind==1 and "no jobs" or ti.kind==2 and "no trade" or "no buyers"
+ elseif ti.remote then st="long commute"
  elseif ti.dens>=2 and not ti.svc then st="needs svc" end
  print(st,x+2,y+9,7)
  -- land value: green desirable / red blighted
@@ -1574,7 +1547,6 @@ function _init()
  init_econ()
  init_fire()
  init_log()
- init_fx()
  init_tools()
  update_camera(true)
  mapview=false
@@ -1590,7 +1562,6 @@ function _update()
  update_sim()
  update_agents()
  update_econ()
- update_fx()
  maybe_ignite()
 end
 

@@ -68,7 +68,6 @@ function draw_world()
  draw_water()             -- water glints (bright, after the night remap)
  draw_wires()             -- wires crossing roads
  draw_fire()
- draw_fx()
  draw_alerts()            -- no-power lightning bolts
  draw_cursor()
  camera()

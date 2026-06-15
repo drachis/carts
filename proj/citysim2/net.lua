@@ -80,10 +80,11 @@ function connected(ax,ay,bx,by)
  return ca~=0 and ca==rcomp(bx,by)
 end
 
--- is (x,y) drawing power right now? its network needs a plant (supply>0); if
--- supply meets demand everyone's lit, else only `supply` of `demand` consumers
--- are served at a time and the served window ROTATES -> rolling brownouts.
-function powered(x,y)
+-- is the GRID delivering to (x,y) this instant? network needs a plant (supply>0);
+-- if supply meets demand everyone's served, else only `supply` of `demand`
+-- consumers at a time and the served window ROTATES (rolling brownouts). demand
+-- is per-kind tier units weighted by time of day.
+function served(x,y)
  local id=peekp(pl_pow,x,y)
  if id==0 then
   for _,n in pairs(neighbors4(x,y)) do
@@ -91,14 +92,33 @@ function powered(x,y)
   end
  end
  local s=psup[id or 0] or 0
- if s==0 then return false end          -- no plant on this network
- -- current demand = sum over kinds of (tier units) * time-of-day draw
+ if s==0 then return false end
  local pd,d=pdem[id],0
  if pd then
   local dp=day_phase and day_phase() or 0
   for k=1,3 do d+=pd[k]*(p.pwr_day[k]+(p.pwr_night[k]-p.pwr_day[k])*dp) end
   d=flr(d/10)
  end
- if s>=d then return true end           -- supply meets demand: all lit
+ if s>=d then return true end
  return (x+y*gw+flr((tick or 0)/p.brownout_iv))%d<s
+end
+
+-- hourly battery pass: every building drains 1, and grabs a full packet only
+-- when it has room for one AND the grid is serving it. a building that misses a
+-- packet coasts on its battery, then goes dark -> blackouts roll out of phase.
+function pwr_tick()
+ for y=0,gw-1 do
+  for x=0,gw-1 do
+   if is_zone(x,y) then
+    local c=max(0,peekp(pl_chg,x,y)-1)
+    if c<=p.pwr_cap-p.pwr_pkt and served(x,y) then c=min(p.pwr_cap,c+p.pwr_pkt) end
+    pokep(pl_chg,x,y,c)
+   end
+  end
+ end
+end
+
+-- a building is powered if its battery has charge.
+function powered(x,y)
+ return peekp(pl_chg,x,y)>0
 end

@@ -127,5 +127,6 @@ function init_map()
  pclr(pl_wire)
  pclr(pl_grace)
  pclr(pl_pow)
+ pclr(pl_chg)
  camx,camy=0,0
 end

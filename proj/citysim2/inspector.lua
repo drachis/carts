@@ -27,6 +27,7 @@ function draw_inspector()
  elseif not ti.power then st="no power"
  elseif ti.settling then st="settling in"
  elseif not ti.served then st=ti.kind==1 and "no jobs" or ti.kind==2 and "no trade" or "no buyers"
+ elseif ti.remote then st="long commute"
  elseif ti.dens>=2 and not ti.svc then st="needs svc" end
  print(st,x+2,y+9,7)
  -- land value: green desirable / red blighted
