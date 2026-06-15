@@ -91,15 +91,18 @@ end
 -- camera (pixel-smooth ease toward cursor)
 camx,camy=0,0
 
+-- the playfield is the screen between the top HUD (7px) and bottom toolbar
+-- (10px). keep the cursor inside it, and let camy dip to -7 / rise so the edge
+-- rows sit just below the HUD / above the toolbar (not hidden under either).
 function update_camera(snap)
  local px,py=cur.x*8,cur.y*8
  local tx,ty=camx,camy
  if px-tx<16  then tx=px-16  end
  if px-tx>104 then tx=px-104 end
  if py-ty<16  then ty=py-16  end
- if py-ty>96  then ty=py-96  end
+ if py-ty>100 then ty=py-100 end
  tx=mid(0,tx,gw*8-128)
- ty=mid(0,ty,gw*8-120)
+ ty=mid(-7,ty,gw*8-118)
  if snap then
   camx,camy=tx,ty
  else
@@ -122,5 +125,6 @@ function init_map()
  pclr(pl_cong)
  pclr(pl_need)
  pclr(pl_wire)
+ pclr(pl_grace)
  camx,camy=0,0
 end

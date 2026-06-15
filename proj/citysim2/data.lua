@@ -23,3 +23,4 @@ pl_val=0x9800       -- desirability 0..255 (128 neutral); land value
 pl_fire=0x9c00      -- burn ticks remaining (>0 = on fire); 0 = not burning
 pl_cov=0xa000       -- service coverage (>0 = a station/park serves this tile)
 pl_wire=0xa400      -- power-line overlay (>0 = a wire crosses this road tile)
+pl_grace=0xa800     -- "settling" evals left for a new building before it starves

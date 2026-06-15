@@ -15,6 +15,8 @@ p={
  i_per=4,            -- jobs per industrial density
  grow_rate=0.45,     -- chance a fully-served zone densifies on an eval
  decay_rate=0.15,    -- chance a starved zone downgrades on an eval
+ grace=160,          -- evals a NEW building is "settling" before it can starve
+                     --   (~1 in-game year; gives agents time to find work)
 
  -- agents / visibility (the lively-city knob, DESIGN s10)
  agent_cap=80,       -- max live visible agents

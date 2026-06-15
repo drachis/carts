@@ -10,9 +10,9 @@ function day_phase()
  return (1-cos((tick or 0)/p.day_frames))/2
 end
 
--- colour i -> darker i. index 7 (white) stays 7 so windows/lights glow.
-local night_lut=split"1,1,1,2,5,5,7,2,4,9,3,13,1,2,4"
-local eve_lut=split"1,2,3,4,5,13,7,8,9,9,3,13,13,2,4"
+-- night LUT: dims structures a notch but KEEPS water blue (12), grass green (3),
+-- and the lit windows/lamps (7,10) glowing, so the map stays readable after dark.
+local night_lut=split"1,2,3,2,5,5,7,8,4,10,3,12,1,2,4"
 
 -- traffic ebbs at night: ~1 at midday down to ~0.3 at midnight, so the roads
 -- visibly breathe with the day/night cycle (sim scales commuter spawns by this).
@@ -20,9 +20,9 @@ function traffic_factor()
  return 1-0.7*day_phase()
 end
 
--- apply the dusk/night remap if it's dark enough (no-op at midday).
+-- two states only: day (no remap) or night. no morning/evening tween.
 function night_pal()
- local dk=day_phase()
- local l=dk>0.62 and night_lut or (dk>0.34 and eve_lut)
- if l then for i=1,15 do pal(i,l[i]) end end
+ if day_phase()>0.5 then
+  for i=1,15 do pal(i,night_lut[i]) end
+ end
 end

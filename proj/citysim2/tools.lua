@@ -69,9 +69,11 @@ function apply_tool()
  local before=tile(x,y)
  local n=tools_list[tool]
  if n=="bulldoze" then
-  if (tile(x,y)>1 or peekp(pl_wire,x,y)>0) and try_spend(cost.dozer) then
+  if peekp(pl_wire,x,y)>0 then
+   -- peel the wire overlay first, leaving the road/water underneath
+   if try_spend(cost.dozer) then pokep(pl_wire,x,y,0) update_net() end
+  elseif tile(x,y)>1 and try_spend(cost.dozer) then
    set_tile(x,y,1)
-   pokep(pl_wire,x,y,0)  -- also remove any wire overlay
    update_net()
   end
  elseif tool==6 then
@@ -90,6 +92,7 @@ function apply_tool()
  elseif tool>=2 and tool<=4 then
   if is_buildable(x,y) and try_spend(cost.zone) then
    set_zone(x,y,tool-1,0)
+   pokep(pl_grace,x,y,p.grace)  -- new plot gets a year to settle
    update_net()
    schedule(0,{k=1,x=x,y=y})
   end
@@ -104,16 +107,17 @@ function apply_tool()
    update_net()
   end
  elseif tool==5 then
-  if is_road(x,y) then
-   -- lay a wire crossing the road (overlay plane; the road stays a road)
+  if is_road(x,y) or tile(x,y)==0 then
+   -- lay a wire crossing a road or water (overlay plane; the tile stays put)
    if peekp(pl_wire,x,y)==0 and try_spend(cost.power) then
     pokep(pl_wire,x,y,1)
     update_net()
    end
   elseif tool_put(5,x,y) and try_spend(cost.power) then
    set_tile(x,y,32+nmask(x,y,conducts))
+   -- re-autotile only neighbouring power LINES (32..47); never a plant/zone
    for nb in all(neighbors4(x,y)) do
-    if conducts(nb.x,nb.y) then
+    if tile(nb.x,nb.y)>=32 and tile(nb.x,nb.y)<=47 then
      set_tile(nb.x,nb.y,32+nmask(nb.x,nb.y,conducts))
     end
    end
@@ -152,14 +156,15 @@ local tb_cost=split"road,zone,zone,zone,power,plant,park,fire,dozer"
 function draw_toolbar()
  rectfill(0,118,127,127,0)
  for i=1,#tools_list do
-  local x=2+(i-1)*9
+  local x=1+(i-1)*9
   local s=tb_spr[i]
   if s>=0 then spr(s,x,119)
   else line(x+1,120,x+6,125,8) line(x+6,120,x+1,125,8) end -- bulldoze X
   if i==tool then rect(x-1,118,x+8,127,7) end
  end
- local lx=2+#tools_list*9+2
- print(tools_list[tool],lx,119,10)
+ -- tool name + cost on ONE line in the space right of the icons
+ local lx=1+#tools_list*9+1
  local ck=tb_cost[tool]
- if ck and cost[ck] then print("$"..cost[ck],lx,125,6) end
+ local lbl=tools_list[tool]..(ck and cost[ck] and " $"..cost[ck] or "")
+ print(lbl,min(lx,128-#lbl*4),121,10)
 end

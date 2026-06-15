@@ -88,10 +88,14 @@ local function sm_eval(x,y)
  local dmd=k==1 and demand.r or k==2 and demand.c or demand.i
  -- service gate: growing TALL (density >=2) needs station/park coverage.
  local svc=(not serviced) or d<1 or serviced(x,y)
+ -- settling grace: a new building can't starve for ~a year (time to find work).
+ local g=peekp(pl_grace,x,y)
+ if g>0 then pokep(pl_grace,x,y,g-1) end
  if access and found and pw and dmd>0 and svc and d<3 and rnd(1)<p.grow_rate*dv/128 then
   set_zone(x,y,k,d+1)
+  pokep(pl_grace,x,y,p.grace)  -- a fresh building resets the settling clock
   if d+1==3 and notify then notify("district booming",res_col[k],x,y) end
- elseif (not access or not found or not pw or dmd<-0.5 or (d>=2 and not svc)) and d>0
+ elseif g==0 and (not access or not found or not pw or dmd<-0.5 or (d>=2 and not svc)) and d>0
   and rnd(1)<p.decay_rate*(256-dv)/128 then
   set_zone(x,y,k,d-1)
   if d-1==0 and notify then notify("zone abandoned",5,x,y) end
@@ -158,5 +162,5 @@ function tile_info(x,y)
  local wx=sm_complement(x,y,k)
  return {kind=k,dens=zone_density(x,y),access=rcomp(x,y)~=0,
   power=powered(x,y),served=wx~=nil,val=desir(x,y),
-  svc=(not serviced) or serviced(x,y)}
+  svc=(not serviced) or serviced(x,y),settling=peekp(pl_grace,x,y)>0}
 end

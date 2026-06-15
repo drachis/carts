@@ -196,6 +196,22 @@ update_net()
 ok(power_carries(8,10),"a wired road carries power")
 ok(powered(8,11),"power crosses the road through the wire")
 
+-- a power line beside a plant must NOT overwrite the plant tile
+init_map() init_econ() money=99
+set_tile(8,8,60)
+cur={x=9,y=8} tool=5 apply_tool()
+ok(tile(8,8)==60,"plant survives an adjacent power line")
+ok(tile(9,8)>=32 and tile(9,8)<=47,"the power line was placed")
+
+-- service buildings carry power; wires cross water too
+init_map()
+set_tile(8,8,60) set_tile(8,9,62) set_zone(8,10,1,0) -- plant-station-zone
+update_net()
+ok(powered(8,10),"power flows through a service building")
+init_map()
+set_tile(10,10,0) pokep(pl_wire,10,10,1)
+ok(power_carries(10,10),"a wire crosses water")
+
 -- placement costs money + is denied when broke
 init_map()
 money=2

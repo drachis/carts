@@ -12,10 +12,10 @@ local function spawn(x,y,dx,dy,life,col,puff)
  if #parts<72 then add(parts,{x=x,y=y,dx=dx,dy=dy,l=life,c=col,r=puff and 0,puff=puff}) end
 end
 
--- a rising smoke puff from world-pixel (px,py); dark for fire, grey for plant.
--- puff=true -> drawn as a growing circfill cloud (v1 look), not a single pixel.
+-- a slow rising smoke puff from world-pixel (px,py); dark for fire, grey plant.
+-- drifts up in a tight column and dissipates (shrinks) rather than popping.
 local function smoke(px,py,dark)
- spawn(px,py,(rnd(2)-1)*0.2,-0.3-rnd(0.3),24+rnd(16),dark and 5 or 6,true)
+ spawn(px,py,(rnd(2)-1)*0.08,-0.18-rnd(0.14),28+rnd(16),dark and 5 or 6,true)
 end
 
 -- an outward burst (dust on placement, sparks on collapse).
@@ -30,9 +30,9 @@ function update_fx()
  for i=#parts,1,-1 do
   local q=parts[i]
   q.x+=q.dx q.y+=q.dy q.dy+=0.02 q.l-=1
-  -- puffs swell as they rise; smoke cools grey->dark as it ages
-  if q.puff then q.r=min(2.5,q.r+0.05) end
-  if q.c==6 and q.l<10 then q.c=5 end
+  -- puffs swell a little as they rise; smoke cools grey->dark as it ages
+  if q.puff then q.r=min(2,q.r+0.03) end
+  if q.c==6 and q.l<14 then q.c=5 end
   if q.l<=0 then deli(parts,i) end
  end
  fxc+=1
@@ -49,7 +49,7 @@ end
 function draw_fx()
  for q in all(parts) do
   if q.puff then
-   circfill(q.x,q.y,q.r,q.c)
+   circfill(q.x,q.y,min(q.r,q.l*0.18),q.c)  -- shrink as it dies = dissipating
   else
    pset(q.x,q.y,q.c)
   end

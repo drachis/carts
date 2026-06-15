@@ -21,7 +21,7 @@ function draw_minimap()
    local t=tile(x,y)
    local c
    if t==0 then
-    c=1
+    c=12
    elseif t==2 then
     c=13
    elseif is_road(x,y) then
