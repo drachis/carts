@@ -39,4 +39,6 @@ function draw_minimap()
  end
  rect(mm_ox+flr(camx/8)*3,mm_oy+flr(camy/8)*3,
       mm_ox+flr(camx/8)*3+16*3,mm_oy+flr(camy/8)*3+15*3,7)
+ -- detail line: pop / jobs (moved off the top bar) + net monthly money
+ print("pop "..pop.."  job "..jobs,mm_ox,mm_oy+98,7)
 end

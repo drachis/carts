@@ -11,12 +11,10 @@ function draw_hud()
  rectfill(0,0,127,6,0)
  -- money
  print(mfmt(money),0,1,money<0 and 8 or 11)
- -- pop
- print("p"..pop,34,1,14)
- -- jobs
- print("j"..jobs,58,1,6)
+ -- pop (jobs moved to the minimap detail view to free space)
+ print("p"..pop,32,1,14)
  -- date
- print(mon[month].." "..year,80,1,7)
+ print(mon[month].." "..year,58,1,7)
  -- rci demand bars (x=104..126, midline y=4)
  local bx=104
  local hd_dv={demand.r,demand.c,demand.i}

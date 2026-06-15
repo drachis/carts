@@ -9,6 +9,7 @@
 -- buildings can be inserted before bulldoze without re-indexing the logic.
 tools_list=split"road,r-zone,c-zone,i-zone,power,plant,park,fire,bulldoze"
 tool=1
+local tb_lx,tb_ly=-1,-1  -- last tile painted (for drag-build)
 
 function init_tools()
  cur={x=16,y=16}
@@ -22,7 +23,12 @@ function update_tools()
  if btnp(2) then cur.y=max(0,cur.y-1) end
  if btnp(3) then cur.y=min(gw-1,cur.y+1) end
  if btnp(4) then tool=tool%#tools_list+1 end
- if btnp(5) then apply_tool() end
+ -- apply on press; hold + move the cursor to drag-build/bulldoze a line
+ if btnp(5) then
+  apply_tool() tb_lx,tb_ly=cur.x,cur.y
+ elseif btn(5) and (cur.x~=tb_lx or cur.y~=tb_ly) then
+  apply_tool() tb_lx,tb_ly=cur.x,cur.y
+ end
  update_camera()
 end
 
@@ -127,4 +133,26 @@ function draw_cursor()
  -- live: outline the cursor tile (caller has set camera to world space)
  local x,y=cur.x*8,cur.y*8
  rect(x,y,x+7,y+7,7)
+end
+
+-- each tool's icon is its own tile sprite (sprite id == tile id); bulldoze=X.
+-- cost keys line up with tools_list so the label can show the price.
+local tb_spr=split"16,48,52,56,32,60,61,62,-1"
+local tb_cost=split"road,zone,zone,zone,power,plant,park,fire,dozer"
+
+-- bottom tool palette: always-visible icons (no more blind cycling), current
+-- tool boxed, with its name + cost beside the strip. runs in SCREEN space.
+function draw_toolbar()
+ rectfill(0,118,127,127,0)
+ for i=1,#tools_list do
+  local x=2+(i-1)*9
+  local s=tb_spr[i]
+  if s>=0 then spr(s,x,119)
+  else line(x+1,120,x+6,125,8) line(x+6,120,x+1,125,8) end -- bulldoze X
+  if i==tool then rect(x-1,118,x+8,127,7) end
+ end
+ local lx=2+#tools_list*9+2
+ print(tools_list[tool],lx,119,10)
+ local ck=tb_cost[tool]
+ if ck and cost[ck] then print("$"..cost[ck],lx,125,6) end
 end

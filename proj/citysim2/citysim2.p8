@@ -64,7 +64,7 @@ function _draw()
  if mapview then draw_minimap() else draw_inspector() end
  draw_log()
  draw_hud()
- print(tools_list[tool],1,121,10)
+ draw_toolbar()
 end
 __gfx__
 cccccccc333333333335533300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
