@@ -105,7 +105,7 @@ p={
 cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}
 -- >>> version.lua
 -- version.lua : build id (short git hash), stamped by build_cart.py.
-ver="030603b"
+ver="6e33a6c"
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -713,7 +713,10 @@ function update_agents()
  local keep={}
  for _,a in pairs(agents) do
   a.life-=1
+  -- a road on the trip was bulldozed? the path is broken -> abandon the trip
+  -- (no arrival, so no satisfaction report). otherwise it'd drive over grass.
   local alive=a.life>0 and a.i<=#a.path
+   and is_road(a.tx,a.ty) and is_road(a.path[a.i].x,a.path[a.i].y)
   if alive then
    -- move 1px toward centre of current target node
    local n=a.path[a.i]

@@ -55,7 +55,10 @@ function update_agents()
  local keep={}
  for _,a in pairs(agents) do
   a.life-=1
+  -- a road on the trip was bulldozed? the path is broken -> abandon the trip
+  -- (no arrival, so no satisfaction report). otherwise it'd drive over grass.
   local alive=a.life>0 and a.i<=#a.path
+   and is_road(a.tx,a.ty) and is_road(a.path[a.i].x,a.path[a.i].y)
   if alive then
    -- move 1px toward centre of current target node
    local n=a.path[a.i]

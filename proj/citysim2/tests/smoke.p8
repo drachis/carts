@@ -63,6 +63,16 @@ local cong=0
 for y=0,gw-1 do for x=0,gw-1 do cong+=peekp(pl_cong,x,y) end end
 ok(cong==0,"congestion fully released after agents gone (sum "..cong..")")
 
+-- bulldozing a road under a trip in progress abandons it
+init_map() init_agents()
+for x=4,20 do set_tile(x,8,16) end
+spawn_agent(4,8,20,8,1)
+for i=1,20 do update_agents() end   -- get it rolling
+ok(#agents==1,"trip under way")
+set_tile(12,8,1)                    -- bulldoze a road tile ahead of it
+for i=1,300 do update_agents() end
+ok(#agents==0,"removing a road interrupts the trip in progress")
+
 -- sim core: R + C zones joined by a road grow and generate commuters
 init_map()
 for x=4,12 do set_tile(x,10,16) end
