@@ -108,7 +108,7 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 | terrain| 220 | 384 |
 | sim    | 1800 | 733 |
 | tools  | 1000 | 398 |
-| render | 550 | 111 |
+| render | 550 | 168 |
 | inspector | 300 | 108 |
 | econ | 200 | 230 |
 | hud | 500 | 170 |
@@ -120,7 +120,10 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 | daynight | 50 | 76 |
 | fx | 200 | 280 |
 | sound | 60 | 29 |
-| cart total | 8192 | 5771 |
+| cart total | 8192 | 5885 |
+
+Tests: `tests/smoke.p8` (55 logic asserts) + `tests/draw.p8` (headless draw-path
+compile check for render/inspector/hud/minimap/daynight, which smoke skips).
 
 ## Research depth built (this session, autonomous)
 - ☑ economy loop — placement costs money (try_spend), denied when broke.
