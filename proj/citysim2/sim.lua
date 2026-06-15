@@ -136,5 +136,5 @@ function tile_info(x,y)
  local k=zone_kind(x,y)
  local wx=sm_complement(x,y,k)
  return {kind=k,dens=zone_density(x,y),access=rcomp(x,y)~=0,
-  power=powered(x,y),served=wx~=nil}
+  power=powered(x,y),served=wx~=nil,val=desir(x,y)}
 end

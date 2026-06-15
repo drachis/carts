@@ -17,13 +17,14 @@ function draw_inspector()
  local ti=tile_info(cur.x,cur.y)
  if not ti then return end
  local x,y=1,8
- rectfill(x,y,x+46,y+15,0)
- rect(x,y,x+46,y+15,5)
- local label=ins_kinds[ti.kind].." lv"..ti.dens
- print(label,x+2,y+2,ins_cols[ti.kind])
+ rectfill(x,y,x+46,y+22,0)
+ rect(x,y,x+46,y+22,5)
+ print(ins_kinds[ti.kind].." lv"..ti.dens,x+2,y+2,ins_cols[ti.kind])
  local st="thriving"
  if not ti.access then st="no road"
  elseif not ti.power then st="no power"
  elseif not ti.served then st="starved" end
  print(st,x+2,y+9,7)
+ -- land value: green desirable / red blighted
+ print("val "..ti.val,x+2,y+16,ti.val>140 and 11 or ti.val<116 and 8 or 6)
 end
