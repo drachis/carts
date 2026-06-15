@@ -7,15 +7,17 @@
 -- api: init_tools, update_tools, apply_tool, cur_tool, select_tool, draw_*,
 --      globals: cur, tcat, trow, picking
 cats={
- {{"r-zone",48,"zone","z",1},{"c-zone",52,"zone","z",2},{"i-zone",56,"zone","z",3}},
- {{"road",16,"road","r"},{"power",32,"power","w"},{"plant",60,"plant","b",60},{"big plant",65,"bigplant","b",65}},
- {{"park",61,"park","b",61},{"fire",62,"fire","b",62},{"recycle",64,"recycle","b",64}},
- {{"bulldoze",-1,"dozer","d"}},
+ {{"road",16,"road","r"}},                                         -- roads
+ {{"r-zone",48,"zone","z",1},{"c-zone",52,"zone","z",2},{"i-zone",56,"zone","z",3}}, -- zones
+ {{"power",32,"power","w"},{"plant",60,"plant","b",60},{"big plant",65,"bigplant","b",65}}, -- power
+ {{"park",61,"park","b",61},{"fire",62,"fire","b",62},{"recycle",64,"recycle","b",64}}, -- services
+ {{"bulldoze",-1,"dozer","d"}},                                    -- bulldozer
 }
 tcat=1
-trow={1,1,1,1}
+trow={}  -- selected row per category; filled by init_tools (one per #cats)
 picking=false
 local tb_lx,tb_ly=-1,-1  -- last tile painted (drag-build)
+for i=1,#cats do trow[i]=1 end
 
 function cur_tool() return cats[tcat][trow[tcat]] end
 
@@ -30,7 +32,8 @@ end
 
 function init_tools()
  cur={x=16,y=16}
- tcat=1 trow={1,1,1,1} picking=false
+ tcat=1 picking=false
+ for i=1,#cats do trow[i]=1 end
 end
 
 function update_tools()
@@ -38,8 +41,9 @@ function update_tools()
   -- dpad drives the palette: left/right category, up/down type
   if btnp(0) then tcat=max(1,tcat-1) end
   if btnp(1) then tcat=min(#cats,tcat+1) end
-  if btnp(2) then trow[tcat]=max(1,trow[tcat]-1) end
-  if btnp(3) then trow[tcat]=min(#cats[tcat],trow[tcat]+1) end
+  -- up moves UP the fan (toward higher rows, which draw higher on screen)
+  if btnp(2) then trow[tcat]=min(#cats[tcat],trow[tcat]+1) end
+  if btnp(3) then trow[tcat]=max(1,trow[tcat]-1) end
   if btnp(4) or btnp(5) then picking=false end
  else
   if btnp(0) then cur.x=max(0,cur.x-1) end
@@ -127,6 +131,8 @@ function draw_toolbar()
  for ci=1,#cats do
   local x=1+(ci-1)*9
   tb_icon(cats[ci][trow[ci]][2],x,119)
+  -- chevron hint: this category has more types stacked (up/down to reveal)
+  if #cats[ci]>1 then pset(x+3,117,7) pset(x+2,118,7) pset(x+4,118,7) end
   if ci==tcat then rect(x-1,118,x+8,127,7) end
  end
  if picking then

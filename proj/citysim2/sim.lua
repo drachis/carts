@@ -108,10 +108,9 @@ local function sm_eval(x,y)
   local o=sm_adj_road(x,y)
   local w=sm_adj_road(wx,wy)
   if o and w then
-   -- a commercial<->industry trip carries goods (freight); else it's labor
-   local ck=zone_kind(wx,wy)
-   local res=((k==2 and ck==3) or (k==3 and ck==2)) and 3 or 1
-   spawn_agent(o.x,o.y,w.x,w.y,res)
+   -- colour the trip by where it's headed (res_col: 1 R green/2 C blue/3 I orange)
+   -- so you see varied traffic, not a sea of green
+   spawn_agent(o.x,o.y,w.x,w.y,zone_kind(wx,wy))
   end
  end
  schedule(p.eval_iv,{k=1,x=x,y=y})

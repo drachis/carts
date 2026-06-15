@@ -21,11 +21,12 @@ def road(m):
         for y in range(8): g[y][0]="6"
     if not e:
         for y in range(8): g[y][7]="6"
-    g[3][3]="a"; g[4][4]="a"
+    # dashed centre line, all on row 3 / col 3 (no zig-zag), toward each side
+    g[3][3]="a"
     if n: g[1][3]="a"
-    if s: g[6][4]="a"
+    if s: g[6][3]="a"
     if w: g[3][1]="a"
-    if e: g[4][6]="a"
+    if e: g[3][6]="a"
     return ["".join(r) for r in g]
 for m in range(16): S[16+m]=road(m)
 
@@ -55,14 +56,28 @@ def zone(ki,d):
         for i in range(0,8,2):
             g[0][i]=acc; g[7][i]=acc; g[i][0]=acc; g[i][7]=acc
         return ["".join(r) for r in g]
-    h=1+d*2  # building height grows with density
-    for y in range(8-h,8):
+    h=2+d*2          # building height grows with density
+    top=8-h
+    for y in range(top,8):
         for x in range(1,7):
             g[y][x]=body
-    for y in range(8-h,8,2):
-        for x in range(2,6,2):
-            g[y][x]="7"  # lit windows
-    for x in range(8): g[7][x]=acc  # coloured base strip
+    for x in range(1,7): g[7][x]=acc      # coloured base strip
+    # each kind gets a distinct silhouette so they don't all read the same
+    if ki==0:        # residential: pitched roof + paired windows
+        for x in range(2,6): g[top][x]=acc
+        g[top][1]=body; g[top][6]=body    # trim corners -> a peak
+        for y in range(top+1,7,2):
+            g[y][2]="7"; g[y][4]="7"
+    elif ki==1:      # commercial: flat cornice + banded office windows
+        for x in range(1,7): g[top][x]=acc
+        for y in range(top+1,7):
+            if (y-top)%2:
+                for x in range(2,6): g[y][x]="7"
+    else:            # industrial: flat roof + smokestack + vent glow
+        for x in range(1,7): g[top][x]=acc
+        if top-1>=0: g[top-1][5]="5"
+        for y in range(top+2,7,2):
+            g[y][2]="9"
     return ["".join(r) for r in g]
 for ki in range(3):
     for d in range(4):
