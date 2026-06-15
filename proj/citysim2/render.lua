@@ -13,9 +13,12 @@
 -- congestion is shown on the minimap (minimap.lua), not as a world overlay.
 function draw_world()
  camera(camx,camy)
+ night_pal()              -- dusk/night colour remap (no-op at midday)
  map(0,0,0,0,gw,gw)
  draw_agents()
+ pal()                    -- reset so fire/cursor draw at full brightness
  draw_fire()
+ draw_fx()
  draw_cursor()
  camera()
 end

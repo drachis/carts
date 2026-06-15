@@ -13,6 +13,7 @@ __lua__
 #include ../agents.lua
 #include ../sim.lua
 #include ../disaster.lua
+#include ../fx.lua
 #include ../tools.lua
 #include ../econ.lua
 #include ../daynight.lua
@@ -202,6 +203,13 @@ tick=0
 ok(day_phase()<0.01,"noon is brightest (phase ~0)")
 tick=flr(p.day_frames/2)
 ok(day_phase()>0.99,"midnight is darkest (phase ~1)")
+
+-- fx: a burst spawns particles that then age out
+init_map() init_fire() init_fx()
+fx_burst(80,80,7,5)
+ok(#parts==5,"fx_burst spawns particles")
+for i=1,30 do update_fx() end
+ok(#parts==0,"particles age out")
 
 -- save / load round-trip (grid + scalars via companion cart)
 init_map()

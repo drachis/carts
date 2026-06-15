@@ -69,11 +69,15 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
   emits "fire!"/"burned to rubble". Calls guarded (`if notify then`) so modules
   stay decoupled. Each notice keeps its tile for future location-flagging.
 
-## Polish
-- ☑ daynight.lua (66) — day/night cycle. Dithered darkness over the world scaled
-  by time of day (sim `tick`, period p.day_frames); zone lit windows glow through
-  the dither. day_phase() 0=noon..1=midnight. Cheaper than a sprite-bank swap.
-- ☐ fx.lua (200) — particles (plant/fire smoke, construction dust)
+## Polish (juice)
+- ☑ daynight.lua (76) — day/night cycle via **pal() colour remap** (NOT a dither
+  overlay — PICO-8 fill transparency doesn't darken the map; citysim1 lesson).
+  night/dusk LUTs darken everything but keep white(7) so lit windows glow.
+  render.lua wraps map+agents in night_pal()..pal(); fire/fx draw bright.
+- ☑ fx.lua (280) — particles. Capped pool (72); plant smokestacks puff, fires
+  belch dark smoke (from fires[]), placing/dozing kicks dust (apply_tool diff).
+  net.lua now tracks plants[] so fx emits without a grid scan. Draws bright,
+  in world space after the night pal reset.
 - ☐ sfx/music hooks (60)
 
 ## Method
@@ -111,8 +115,9 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 | landval | 200 | 134 |
 | disaster | 200 | 428 |
 | notify | 150 | 122 |
-| daynight | 50 | 66 |
-| cart total | 8192 | 5365 |
+| daynight | 50 | 76 |
+| fx | 200 | 280 |
+| cart total | 8192 | 5701 |
 
 ## Research depth built (this session, autonomous)
 - ☑ economy loop — placement costs money (try_spend), denied when broke.

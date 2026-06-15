@@ -60,6 +60,7 @@ end
 --     eval: schedule(0,{k=1,x=cur.x,y=cur.y}) so the sim picks it up live.
 function apply_tool()
  local x,y=cur.x,cur.y
+ local before=tile(x,y)
  local n=tools_list[tool]
  if n=="bulldoze" then
   if tile(x,y)>1 and try_spend(cost.dozer) then
@@ -105,6 +106,10 @@ function apply_tool()
    end
    update_net()
   end
+ end
+ -- dust kick on any successful change (grey for build, dark for dozing)
+ if fx_burst and tile(x,y)~=before then
+  fx_burst(x*8+4,y*8+4,before>1 and 5 or 6,5)
  end
 end
 

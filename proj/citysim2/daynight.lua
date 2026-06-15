@@ -1,20 +1,22 @@
--- daynight.lua : a day/night cycle. cheap dithered darkness over the world,
--- scaled by time of day (sim's `tick` clock, period p.day_frames). the zone
--- sprites' lit windows show through the dither, so the night city glows.
--- api: draw_night, day_phase; runs in SCREEN space, after draw_world.
+-- daynight.lua : day/night cycle via a draw-palette remap (pal), NOT a dither
+-- overlay — PICO-8's fill transparency doesn't darken the map, but pal() does
+-- (citysim1 lesson). night_pal() darkens every colour to a moodier one while
+-- leaving lit-window white (7) bright, so the night city glows. render.lua
+-- wraps the map/agents draw in night_pal()..pal().
+-- api: day_phase, night_pal; reads sim `tick`, period p.day_frames.
 
 -- 0=noon (brightest) .. 1=midnight (darkest). starts at noon (tick 0).
 function day_phase()
  return (1-cos((tick or 0)/p.day_frames))/2
 end
 
-function draw_night()
+-- colour i -> darker i. index 7 (white) stays 7 so windows/lights glow.
+local night_lut=split"1,1,1,2,5,5,7,2,4,9,3,13,1,2,4"
+local eve_lut=split"1,2,3,4,5,13,7,8,9,9,3,13,13,2,4"
+
+-- apply the dusk/night remap if it's dark enough (no-op at midday).
+function night_pal()
  local dk=day_phase()
- if dk<0.22 then return end          -- broad daylight: no overlay
- -- pick a denser black dither as it gets darker; ".1" = transparent gaps.
- if dk<0.45 then fillp(0b0000100000000010.1)
- elseif dk<0.7 then fillp(0b0101000010100000.1)
- else fillp(0b0101101001011010.1) end
- rectfill(0,7,127,127,0)
- fillp()
+ local l=dk>0.62 and night_lut or (dk>0.34 and eve_lut)
+ if l then for i=1,15 do pal(i,l[i]) end end
 end

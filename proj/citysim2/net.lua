@@ -4,6 +4,7 @@
 
 ncomp=0  -- number of road components found (global, read by sim)
 pwr={}   -- set of powered tiles (on a power network fed by a plant)
+plants={} -- list of {x,y} plant tiles (smokestack emitters for fx)
 
 function update_net()
  pclr(pl_comp)
@@ -21,9 +22,11 @@ function update_net()
  end
  -- power: flood from each plant (tile 60) over conducting tiles (lines+plants)
  pwr={}
+ plants={}
  for y=0,gw-1 do
   for x=0,gw-1 do
    if tile(x,y)==60 then
+    add(plants,{x=x,y=y})
     flood(x,y,conducts,function(fx,fy) pwr[fx+fy*gw]=true end)
    end
   end
