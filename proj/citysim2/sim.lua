@@ -24,13 +24,15 @@ function schedule(dt,ev)
  add(evq[(tick+dt)%p.evt_h+1],ev)
 end
 
--- rebuild the per-road-component offer index from developed zones.
--- a need looks up idx[mycomponent][complement_kind] -> already-reachable tiles.
+-- rebuild the per-road-component offer index from zones. ALL zones count, even
+-- empty (density 0) ones: a zoned-but-unbuilt plot is a promise of jobs/homes,
+-- so a fresh R next to a fresh C can bootstrap each other (otherwise nothing
+-- ever has a developed complement and the whole city deadlocks at density 0).
 function sm_index()
  idx={}
  for y=0,gw-1 do
   for x=0,gw-1 do
-   if is_zone(x,y) and zone_density(x,y)>0 then
+   if is_zone(x,y) then
     local c=rcomp(x,y)
     if c~=0 then
      idx[c]=idx[c] or {}

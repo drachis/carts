@@ -91,6 +91,26 @@ ok(spawned,"commuters spawned between home and work")
 local ti=tile_info(6,9)
 ok(ti~=nil and ti.kind==1,"tile_info reports the zone")
 
+-- BOOTSTRAP: a minimal city zoned at density 0 (as the tool places it) must
+-- grow from nothing — R/C/I in a row, powered, road below. (regression for the
+-- density-0 deadlock where nothing had a developed complement.)
+init_map()
+set_zone(5,5,1,0) set_zone(6,5,2,0) set_zone(7,5,3,0)
+for x=5,7 do set_tile(x,6,16) end
+set_tile(4,5,60)   -- plant beside R; power conducts through the zone row
+update_net()
+ok(powered(5,5) and powered(7,5),"minimal city is powered")
+ok(rcomp(5,5)~=0,"minimal city has road access")
+init_sim() init_agents() sim_seed()
+local built,cars=false,false
+for i=1,3000 do
+ update_sim() update_agents()
+ if zone_density(5,5)+zone_density(6,5)+zone_density(7,5)>0 then built=true end
+ if #agents>0 then cars=true end
+end
+ok(built,"a density-0 minimal city bootstraps into buildings")
+ok(cars,"commuters appear once buildings develop")
+
 -- service gate: the SAME setup with no station/park caps growth at lv1
 init_map()
 for x=4,12 do set_tile(x,10,16) end
