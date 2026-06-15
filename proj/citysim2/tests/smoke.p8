@@ -247,6 +247,17 @@ ignite(12,13)
 for i=1,600 do update_sim() end
 ok(tile(12,13)~=63,"fire station suppressed the fire")
 
+-- fire engine: a station with road access dispatches an engine that drives out
+-- and saves a burning building (placed beyond passive coverage to isolate it)
+init_map() init_sim() init_fire() init_agents()
+for x=4,12 do set_tile(x,10,16) end
+set_tile(4,9,62)     -- fire station at one end of the road
+set_zone(12,9,1,2)   -- developed zone at the far end (cheb 8 > fire_rad)
+update_net()
+ignite(12,9)
+for i=1,400 do update_sim() update_agents() end
+ok(tile(12,9)~=63 and peekp(pl_fire,12,9)==0,"fire engine saved a distant building")
+
 -- event log: notify pushes a notice; the ring caps at 8
 init_log()
 notify("hello",7,1,2)

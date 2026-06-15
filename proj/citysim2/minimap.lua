@@ -5,7 +5,7 @@
 -- SCREEN space. ALWAYS back the panel with an opaque rect (citysim's overview
 -- had no bg and was unreadable).
 
-local mm_ox,mm_oy=16,16
+local mm_ox,mm_oy=16,13  -- nudged up so the detail line clears the toolbar
 
 -- developed zones show their kind colour (R green / C blue / I yellow);
 -- empty (density 0) zones show grey so zoned-but-unbuilt land is still visible
@@ -39,6 +39,7 @@ function draw_minimap()
  end
  rect(mm_ox+flr(camx/8)*3,mm_oy+flr(camy/8)*3,
       mm_ox+flr(camx/8)*3+16*3,mm_oy+flr(camy/8)*3+15*3,7)
- -- detail line: pop / jobs (moved off the top bar) + net monthly money
- print("pop "..pop.."  job "..jobs,mm_ox,mm_oy+98,7)
+ -- detail line: pop / jobs (moved off the top bar) + build version (git hash)
+ print("pop"..pop.." job"..jobs,mm_ox,mm_oy+98,7)
+ print("v"..ver,mm_ox+72,mm_oy+98,6)
 end

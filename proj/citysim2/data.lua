@@ -4,7 +4,9 @@
 -- resources (the things that flow over networks):
 --   1 labor  2 jobs  3 goods  4 power  5 coverage
 res_name=split"labor,jobs,goods,power,coverage"
-res_col=split"11,12,9,10,14"
+-- index 6 (red) is the fire engine's colour (not a real resource, just reuses
+-- the agent colour table). 1 R-green 2 C-blue 3 I-orange 4 yellow 5 pink 6 red.
+res_col=split"11,12,9,10,14,8"
 
 -- channel: 1 = travels as a VISIBLE road trip (an agent + congestion);
 --          0 = resolved abstractly over its network (no car, no congestion).

@@ -5,6 +5,7 @@ __lua__
 -- see DESIGN.md (contract + budget) and ../citysim/LEARNINGS.md.
 -- modules are #included in dependency order; add each as it lands.
 #include params.lua
+#include version.lua
 #include data.lua
 #include notify.lua
 #include sound.lua
@@ -59,7 +60,9 @@ function _update()
 end
 
 function _draw()
- cls(0)
+ -- water is tile/sprite 0, which map() never draws — so clear to the water
+ -- colour (blue by day, navy by night) and the "empty" water tiles read as sea.
+ cls(day_phase()>0.5 and 1 or 12)
  draw_world()
  if mapview then draw_minimap() else draw_inspector() end
  draw_log()

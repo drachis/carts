@@ -86,6 +86,9 @@ p={
 
 -- build costs in DOLLARS (charged via econ.try_spend, which scales to $k)
 cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}
+-- >>> version.lua
+-- version.lua : build id (short git hash), stamped by build_cart.py.
+ver="a2b3f92"
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -93,7 +96,9 @@ cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigp
 -- resources (the things that flow over networks):
 --   1 labor  2 jobs  3 goods  4 power  5 coverage
 res_name=split"labor,jobs,goods,power,coverage"
-res_col=split"11,12,9,10,14"
+-- index 6 (red) is the fire engine's colour (not a real resource, just reuses
+-- the agent colour table). 1 R-green 2 C-blue 3 I-orange 4 yellow 5 pink 6 red.
+res_col=split"11,12,9,10,14,8"
 
 -- channel: 1 = travels as a VISIBLE road trip (an agent + congestion);
 --          0 = resolved abstractly over its network (no car, no congestion).
@@ -767,9 +772,9 @@ local function sm_eval(x,y)
   local o=sm_adj_road(x,y)
   local w=sm_adj_road(wx,wy)
   if o and w then
-   -- colour the trip by where it's headed (res_col: 1 R green/2 C blue/3 I orange)
-   -- so you see varied traffic, not a sea of green
-   spawn_agent(o.x,o.y,w.x,w.y,zone_kind(wx,wy))
+   -- colour the trip by its ORIGIN zone (res_col: R green / C blue / I orange);
+   -- all are non-road colours so cars never blend into the asphalt
+   spawn_agent(o.x,o.y,w.x,w.y,k)
   end
  end
  schedule(p.eval_iv,{k=1,x=x,y=y})
@@ -871,6 +876,7 @@ function ignite(x,y)
  add(fires,{x=x,y=y})
  if notify then notify("fire!",8,x,y) end
  if snd then snd(snd_fire) end
+ fire_engine(x,y)  -- the fire department responds (if a station can reach it)
  schedule(p.fire_int,{k=2,x=x,y=y})
 end
 
@@ -934,13 +940,13 @@ local function adj_road(x,y)
  end
 end
 
--- the recycling station (tile 64) nearest (x,y) by manhattan distance — the
--- depot the (expensive) wrecking crew rolls out from to clear rubble.
-local function nearest_station(x,y)
+-- the station of type `id` nearest (x,y) by manhattan distance — the depot a
+-- vehicle rolls out from (62 fire station for engines, 64 recycling for crews).
+local function nearest_station(x,y,id)
  local best,bd
  for sy=0,gw-1 do
   for sx=0,gw-1 do
-   if tile(sx,sy)==64 then
+   if tile(sx,sy)==id then
     local d=abs(sx-x)+abs(sy-y)
     if not bd or d<bd then bd=d best={x=sx,y=sy} end
    end
@@ -963,7 +969,7 @@ function wreck_dispatch(e)
    if snd then snd(snd_doze) end
   end
  end
- local st=nearest_station(rx,ry)
+ local st=nearest_station(rx,ry,64)
  if st then
   local o,w=adj_road(st.x,st.y),adj_road(rx,ry)
   if o and w and spawn_agent(o.x,o.y,w.x,w.y,4,clear) then return end
@@ -972,6 +978,23 @@ function wreck_dispatch(e)
  end
  -- no depot yet: retry later (a station may get built before a bulldozer).
  schedule(p.wreck_delay*4,{k=3,x=rx,y=ry})
+end
+
+-- send a red fire engine from the nearest fire station (62) to a fresh fire; on
+-- arrival it puts the fire out (so the building is saved, not lost to rubble).
+function fire_engine(x,y)
+ local st=nearest_station(x,y,62)
+ if not st then return end
+ local o,w=adj_road(st.x,st.y),adj_road(x,y)
+ if o and w then
+  spawn_agent(o.x,o.y,w.x,w.y,6,function()
+   if peekp(pl_fire,x,y)>0 then
+    unfire(x,y)
+    if notify then notify("fire out",12,x,y) end
+    if fx_burst then fx_burst(x*8+4,y*8+4,7,6) end
+   end
+  end)
+ end
 end
 -- >>> fx.lua
 -- fx.lua : particles — the juice. smokestacks puff, fires belch dark smoke,
@@ -1043,7 +1066,7 @@ end
 cats={
  {{"road",16,"road","r"}},                                         -- roads
  {{"r-zone",48,"zone","z",1},{"c-zone",52,"zone","z",2},{"i-zone",56,"zone","z",3}}, -- zones
- {{"power",32,"power","w"},{"plant",60,"plant","b",60},{"big plant",65,"bigplant","b",65}}, -- power
+ {{"power",42,"power","w"},{"plant",60,"plant","b",60},{"big plant",65,"bigplant","b",65}}, -- power
  {{"park",61,"park","b",61},{"fire",62,"fire","b",62},{"recycle",64,"recycle","b",64}}, -- services
  {{"bulldoze",-1,"dozer","d"}},                                    -- bulldozer
 }
@@ -1196,20 +1219,15 @@ end
 --   draw_cursor()                 -- the cursor outline (tools.lua)
 --   camera()                      -- reset so the glue draws hud in screen space
 -- congestion is shown on the minimap (minimap.lua), not as a world overlay.
--- PAINT water: map() skips sprite 0 ("empty"), so tile-0 water is never drawn
--- by the tilemap — we fill it blue here, with an animated glint. visible window
--- only (cheap).
+-- the water surface is the cls() colour (see glue _draw); here we just add an
+-- animated glint over the visible water tiles.
 function draw_water()
  local t=flr((tick or 0)/8)
  local x0,y0=flr(camx/8),flr(camy/8)
  for ty=y0,y0+16 do
   for tx=x0,x0+16 do
-   if tile(tx,ty)==0 then
-    local sx,sy=tx*8,ty*8
-    rectfill(sx,sy,sx+7,sy+7,12)
-    if (tx*3+ty*7+t)%4==0 then
-     pset(sx+(tx+t)%6+1,sy+(ty*3)%6+1,7)
-    end
+   if tile(tx,ty)==0 and (tx*3+ty*7+t)%4==0 then
+    pset(tx*8+(tx+t)%6+1,ty*8+(ty*3)%6+1,7)
    end
   end
  end
@@ -1231,15 +1249,19 @@ function draw_alerts()
  end
 end
 
--- power-line overlay where a wire crosses a road (pl_wire); the road shows under.
+-- power-line overlay where a wire crosses a road/water (pl_wire); drawn along
+-- the axis it actually connects (a vertical run draws vertical, not horizontal).
 function draw_wires()
  local x0,y0=flr(camx/8),flr(camy/8)
  for ty=y0,y0+16 do
   for tx=x0,x0+16 do
    if peekp(pl_wire,tx,ty)>0 then
     local sx,sy=tx*8,ty*8
-    line(sx,sy+3,sx+7,sy+3,0)
-    pset(sx+2,sy+2,0) pset(sx+5,sy+4,0)
+    local v=conducts(tx,ty-1) or peekp(pl_wire,tx,ty-1)>0 or conducts(tx,ty+1) or peekp(pl_wire,tx,ty+1)>0
+    local h=conducts(tx-1,ty) or peekp(pl_wire,tx-1,ty)>0 or conducts(tx+1,ty) or peekp(pl_wire,tx+1,ty)>0
+    if v then line(sx+3,sy,sx+3,sy+7,0) end
+    if h then line(sx,sy+3,sx+7,sy+3,0) end
+    if not (v or h) then line(sx,sy+3,sx+7,sy+3,0) end
    end
   end
  end
@@ -1379,11 +1401,12 @@ function draw_hud()
  for i=1,3 do
   local lx=bx+(i-1)*8
   print(hd_lbl[i],lx,1,hd_col[i])
+  -- bar at lx+4 (1px gap after the 3px letter, for readability)
   local h=mid(-3,flr(hd_dv[i]*3+0.5),3)
   if h>0 then
-   rectfill(lx+3,4-h,lx+4,4,hd_col[i])
+   rectfill(lx+4,4-h,lx+5,4,hd_col[i])
   elseif h<0 then
-   rectfill(lx+3,4,lx+4,4-h,hd_dim[i])
+   rectfill(lx+4,4,lx+5,4-h,hd_dim[i])
   end
  end
 end
@@ -1395,7 +1418,7 @@ end
 -- SCREEN space. ALWAYS back the panel with an opaque rect (citysim's overview
 -- had no bg and was unreadable).
 
-local mm_ox,mm_oy=16,16
+local mm_ox,mm_oy=16,13  -- nudged up so the detail line clears the toolbar
 
 -- developed zones show their kind colour (R green / C blue / I yellow);
 -- empty (density 0) zones show grey so zoned-but-unbuilt land is still visible
@@ -1429,8 +1452,9 @@ function draw_minimap()
  end
  rect(mm_ox+flr(camx/8)*3,mm_oy+flr(camy/8)*3,
       mm_ox+flr(camx/8)*3+16*3,mm_oy+flr(camy/8)*3+15*3,7)
- -- detail line: pop / jobs (moved off the top bar) + net monthly money
- print("pop "..pop.."  job "..jobs,mm_ox,mm_oy+98,7)
+ -- detail line: pop / jobs (moved off the top bar) + build version (git hash)
+ print("pop"..pop.." job"..jobs,mm_ox,mm_oy+98,7)
+ print("v"..ver,mm_ox+72,mm_oy+98,6)
 end
 -- >>> daynight.lua
 -- daynight.lua : day/night cycle via a draw-palette remap (pal), NOT a dither
@@ -1520,7 +1544,9 @@ function _update()
 end
 
 function _draw()
- cls(0)
+ -- water is tile/sprite 0, which map() never draws — so clear to the water
+ -- colour (blue by day, navy by night) and the "empty" water tiles read as sea.
+ cls(day_phase()>0.5 and 1 or 12)
  draw_world()
  if mapview then draw_minimap() else draw_inspector() end
  draw_log()

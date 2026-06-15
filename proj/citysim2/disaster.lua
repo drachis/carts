@@ -44,6 +44,7 @@ function ignite(x,y)
  add(fires,{x=x,y=y})
  if notify then notify("fire!",8,x,y) end
  if snd then snd(snd_fire) end
+ fire_engine(x,y)  -- the fire department responds (if a station can reach it)
  schedule(p.fire_int,{k=2,x=x,y=y})
 end
 
@@ -107,13 +108,13 @@ local function adj_road(x,y)
  end
 end
 
--- the recycling station (tile 64) nearest (x,y) by manhattan distance — the
--- depot the (expensive) wrecking crew rolls out from to clear rubble.
-local function nearest_station(x,y)
+-- the station of type `id` nearest (x,y) by manhattan distance — the depot a
+-- vehicle rolls out from (62 fire station for engines, 64 recycling for crews).
+local function nearest_station(x,y,id)
  local best,bd
  for sy=0,gw-1 do
   for sx=0,gw-1 do
-   if tile(sx,sy)==64 then
+   if tile(sx,sy)==id then
     local d=abs(sx-x)+abs(sy-y)
     if not bd or d<bd then bd=d best={x=sx,y=sy} end
    end
@@ -136,7 +137,7 @@ function wreck_dispatch(e)
    if snd then snd(snd_doze) end
   end
  end
- local st=nearest_station(rx,ry)
+ local st=nearest_station(rx,ry,64)
  if st then
   local o,w=adj_road(st.x,st.y),adj_road(rx,ry)
   if o and w and spawn_agent(o.x,o.y,w.x,w.y,4,clear) then return end
@@ -145,4 +146,21 @@ function wreck_dispatch(e)
  end
  -- no depot yet: retry later (a station may get built before a bulldozer).
  schedule(p.wreck_delay*4,{k=3,x=rx,y=ry})
+end
+
+-- send a red fire engine from the nearest fire station (62) to a fresh fire; on
+-- arrival it puts the fire out (so the building is saved, not lost to rubble).
+function fire_engine(x,y)
+ local st=nearest_station(x,y,62)
+ if not st then return end
+ local o,w=adj_road(st.x,st.y),adj_road(x,y)
+ if o and w then
+  spawn_agent(o.x,o.y,w.x,w.y,6,function()
+   if peekp(pl_fire,x,y)>0 then
+    unfire(x,y)
+    if notify then notify("fire out",12,x,y) end
+    if fx_burst then fx_burst(x*8+4,y*8+4,7,6) end
+   end
+  end)
+ end
 end

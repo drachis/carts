@@ -22,11 +22,12 @@ function draw_hud()
  for i=1,3 do
   local lx=bx+(i-1)*8
   print(hd_lbl[i],lx,1,hd_col[i])
+  -- bar at lx+4 (1px gap after the 3px letter, for readability)
   local h=mid(-3,flr(hd_dv[i]*3+0.5),3)
   if h>0 then
-   rectfill(lx+3,4-h,lx+4,4,hd_col[i])
+   rectfill(lx+4,4-h,lx+5,4,hd_col[i])
   elseif h<0 then
-   rectfill(lx+3,4,lx+4,4-h,hd_dim[i])
+   rectfill(lx+4,4,lx+5,4-h,hd_dim[i])
   end
  end
 end

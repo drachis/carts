@@ -5,6 +5,7 @@ __lua__
 -- the logic smoke test skips the draw modules; this exercises them once so a
 -- syntax/runtime error in render/inspector/hud/minimap/daynight is caught.
 #include ../params.lua
+#include ../version.lua
 #include ../data.lua
 #include ../notify.lua
 #include ../sound.lua

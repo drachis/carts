@@ -9,7 +9,7 @@
 cats={
  {{"road",16,"road","r"}},                                         -- roads
  {{"r-zone",48,"zone","z",1},{"c-zone",52,"zone","z",2},{"i-zone",56,"zone","z",3}}, -- zones
- {{"power",32,"power","w"},{"plant",60,"plant","b",60},{"big plant",65,"bigplant","b",65}}, -- power
+ {{"power",42,"power","w"},{"plant",60,"plant","b",60},{"big plant",65,"bigplant","b",65}}, -- power
  {{"park",61,"park","b",61},{"fire",62,"fire","b",62},{"recycle",64,"recycle","b",64}}, -- services
  {{"bulldoze",-1,"dozer","d"}},                                    -- bulldozer
 }

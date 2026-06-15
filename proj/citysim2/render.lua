@@ -11,20 +11,15 @@
 --   draw_cursor()                 -- the cursor outline (tools.lua)
 --   camera()                      -- reset so the glue draws hud in screen space
 -- congestion is shown on the minimap (minimap.lua), not as a world overlay.
--- PAINT water: map() skips sprite 0 ("empty"), so tile-0 water is never drawn
--- by the tilemap — we fill it blue here, with an animated glint. visible window
--- only (cheap).
+-- the water surface is the cls() colour (see glue _draw); here we just add an
+-- animated glint over the visible water tiles.
 function draw_water()
  local t=flr((tick or 0)/8)
  local x0,y0=flr(camx/8),flr(camy/8)
  for ty=y0,y0+16 do
   for tx=x0,x0+16 do
-   if tile(tx,ty)==0 then
-    local sx,sy=tx*8,ty*8
-    rectfill(sx,sy,sx+7,sy+7,12)
-    if (tx*3+ty*7+t)%4==0 then
-     pset(sx+(tx+t)%6+1,sy+(ty*3)%6+1,7)
-    end
+   if tile(tx,ty)==0 and (tx*3+ty*7+t)%4==0 then
+    pset(tx*8+(tx+t)%6+1,ty*8+(ty*3)%6+1,7)
    end
   end
  end
@@ -46,15 +41,19 @@ function draw_alerts()
  end
 end
 
--- power-line overlay where a wire crosses a road (pl_wire); the road shows under.
+-- power-line overlay where a wire crosses a road/water (pl_wire); drawn along
+-- the axis it actually connects (a vertical run draws vertical, not horizontal).
 function draw_wires()
  local x0,y0=flr(camx/8),flr(camy/8)
  for ty=y0,y0+16 do
   for tx=x0,x0+16 do
    if peekp(pl_wire,tx,ty)>0 then
     local sx,sy=tx*8,ty*8
-    line(sx,sy+3,sx+7,sy+3,0)
-    pset(sx+2,sy+2,0) pset(sx+5,sy+4,0)
+    local v=conducts(tx,ty-1) or peekp(pl_wire,tx,ty-1)>0 or conducts(tx,ty+1) or peekp(pl_wire,tx,ty+1)>0
+    local h=conducts(tx-1,ty) or peekp(pl_wire,tx-1,ty)>0 or conducts(tx+1,ty) or peekp(pl_wire,tx+1,ty)>0
+    if v then line(sx+3,sy,sx+3,sy+7,0) end
+    if h then line(sx,sy+3,sx+7,sy+3,0) end
+    if not (v or h) then line(sx,sy+3,sx+7,sy+3,0) end
    end
   end
  end
