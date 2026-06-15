@@ -3,7 +3,8 @@
 -- private prefix: nt_
 
 ncomp=0  -- number of road components found (global, read by sim)
-pwr={}   -- set of powered tiles (on a power network fed by a plant)
+psup={}  -- supply units per power-network component id
+pdem={}  -- demand units (zones drawing) per power-network component id
 plants={} -- list of {x,y} plant tiles (smokestack emitters for fx)
 
 function update_net()
@@ -20,19 +21,24 @@ function update_net()
    end
   end
  end
- -- power: flood from each plant (tile 60) over power-carrying tiles. zones carry
- -- power too (a built-up block conducts), so you don't need a wire to every lot.
- pwr={}
- plants={}
+ -- power: label connected carrier tiles into networks (pl_pow), summing each
+ -- network's SUPPLY (plants) and DEMAND (one unit per zone tile). powered() then
+ -- compares the two; over capacity -> rolling brownouts. zones carry power too,
+ -- so a built-up block conducts without a wire to every lot.
+ pclr(pl_pow)
+ psup={} pdem={} plants={}
+ local pn=0
  for y=0,gw-1 do
   for x=0,gw-1 do
-   local s=tile(x,y)
-   if s==60 or s==65 then
-    add(plants,{x=x,y=y})
-    -- each plant powers a finite number of tiles (nearest first); a big plant
-    -- (65) reaches far more — that's what you pay the high cost/upkeep for.
-    flood(x,y,power_carries,function(fx,fy) pwr[fx+fy*gw]=true end,
-     s==65 and p.bigplant_cap or p.plant_cap)
+   if power_carries(x,y) and peekp(pl_pow,x,y)==0 then
+    pn+=1 local id=pn
+    flood(x,y,power_carries,function(fx,fy)
+     pokep(pl_pow,fx,fy,id)
+     local s=tile(fx,fy)
+     if s==60 then psup[id]=(psup[id] or 0)+p.plant_sup add(plants,{x=fx,y=fy})
+     elseif s==65 then psup[id]=(psup[id] or 0)+p.bigplant_sup add(plants,{x=fx,y=fy})
+     elseif is_zone(fx,fy) then pdem[id]=(pdem[id] or 0)+1 end
+    end)
    end
   end
  end
@@ -69,12 +75,19 @@ function connected(ax,ay,bx,by)
  return ca~=0 and ca==rcomp(bx,by)
 end
 
--- a tile is powered if it (or an orthogonal neighbour, e.g. a zone beside a
--- power line) is on a plant-fed power network.
+-- is (x,y) drawing power right now? its network needs a plant (supply>0); if
+-- supply meets demand everyone's lit, else only `supply` of `demand` consumers
+-- are served at a time and the served window ROTATES -> rolling brownouts.
 function powered(x,y)
- if pwr[x+y*gw] then return true end
- for _,n in pairs(neighbors4(x,y)) do
-  if pwr[n.x+n.y*gw] then return true end
+ local id=peekp(pl_pow,x,y)
+ if id==0 then
+  for _,n in pairs(neighbors4(x,y)) do
+   id=peekp(pl_pow,n.x,n.y) if id~=0 then break end
+  end
  end
- return false
+ local s=psup[id or 0] or 0
+ if s==0 then return false end          -- no plant on this network
+ local d=pdem[id] or 0
+ if s>=d then return true end           -- supply meets demand: all lit
+ return (x+y*gw+flr((tick or 0)/p.brownout_iv))%d<s
 end

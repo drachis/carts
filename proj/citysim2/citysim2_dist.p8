@@ -40,8 +40,9 @@ p={
  month_frames=600,   -- frames per month (20s @ 30fps)
  road_up=1,          -- $ per road tile per month (upkeep, in dollars)
  plant_up=8,         -- $ per plant per month; a big plant costs 4x this
- plant_cap=90,       -- tiles a normal plant can power (nearest first)
- bigplant_cap=260,   -- tiles a big plant can power (high cost + upkeep)
+ plant_sup=60,       -- power UNITS a plant feeds its network (1 unit per zone)
+ bigplant_sup=180,   -- a big plant feeds far more units
+ brownout_iv=20,     -- frames between rolling-brownout rotations when over capacity
  job_tax=0.5,        -- jobs taxed at this fraction of the pop rate
  debt_k=-1,          -- debt floor in $k (try_spend won't go below)
  money_cap=32000,    -- $k ceiling (keeps 16.16 fixed-point from flipping)
@@ -88,7 +89,7 @@ p={
 cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}
 -- >>> version.lua
 -- version.lua : build id (short git hash), stamped by build_cart.py.
-ver="c5d7c93"
+ver="7e44a3f"
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -118,6 +119,7 @@ pl_fire=0x9c00      -- burn ticks remaining (>0 = on fire); 0 = not burning
 pl_cov=0xa000       -- service coverage (>0 = a station/park serves this tile)
 pl_wire=0xa400      -- power-line overlay (>0 = a wire crosses this road tile)
 pl_grace=0xa800     -- "settling" evals left for a new building before it starves
+pl_pow=0xac00       -- power-network component id per carrier tile (supply/demand)
 -- >>> notify.lua
 -- notify.lua : event log — the city narrates itself ("the sim explains itself").
 -- a small ring of recent notable events; sim/disaster push, hud draws a fading
@@ -289,6 +291,7 @@ function init_map()
  pclr(pl_need)
  pclr(pl_wire)
  pclr(pl_grace)
+ pclr(pl_pow)
  camx,camy=0,0
 end
 -- >>> router.lua
@@ -357,7 +360,8 @@ end
 -- private prefix: nt_
 
 ncomp=0  -- number of road components found (global, read by sim)
-pwr={}   -- set of powered tiles (on a power network fed by a plant)
+psup={}  -- supply units per power-network component id
+pdem={}  -- demand units (zones drawing) per power-network component id
 plants={} -- list of {x,y} plant tiles (smokestack emitters for fx)
 
 function update_net()
@@ -374,19 +378,24 @@ function update_net()
    end
   end
  end
- -- power: flood from each plant (tile 60) over power-carrying tiles. zones carry
- -- power too (a built-up block conducts), so you don't need a wire to every lot.
- pwr={}
- plants={}
+ -- power: label connected carrier tiles into networks (pl_pow), summing each
+ -- network's SUPPLY (plants) and DEMAND (one unit per zone tile). powered() then
+ -- compares the two; over capacity -> rolling brownouts. zones carry power too,
+ -- so a built-up block conducts without a wire to every lot.
+ pclr(pl_pow)
+ psup={} pdem={} plants={}
+ local pn=0
  for y=0,gw-1 do
   for x=0,gw-1 do
-   local s=tile(x,y)
-   if s==60 or s==65 then
-    add(plants,{x=x,y=y})
-    -- each plant powers a finite number of tiles (nearest first); a big plant
-    -- (65) reaches far more — that's what you pay the high cost/upkeep for.
-    flood(x,y,power_carries,function(fx,fy) pwr[fx+fy*gw]=true end,
-     s==65 and p.bigplant_cap or p.plant_cap)
+   if power_carries(x,y) and peekp(pl_pow,x,y)==0 then
+    pn+=1 local id=pn
+    flood(x,y,power_carries,function(fx,fy)
+     pokep(pl_pow,fx,fy,id)
+     local s=tile(fx,fy)
+     if s==60 then psup[id]=(psup[id] or 0)+p.plant_sup add(plants,{x=fx,y=fy})
+     elseif s==65 then psup[id]=(psup[id] or 0)+p.bigplant_sup add(plants,{x=fx,y=fy})
+     elseif is_zone(fx,fy) then pdem[id]=(pdem[id] or 0)+1 end
+    end)
    end
   end
  end
@@ -423,14 +432,21 @@ function connected(ax,ay,bx,by)
  return ca~=0 and ca==rcomp(bx,by)
 end
 
--- a tile is powered if it (or an orthogonal neighbour, e.g. a zone beside a
--- power line) is on a plant-fed power network.
+-- is (x,y) drawing power right now? its network needs a plant (supply>0); if
+-- supply meets demand everyone's lit, else only `supply` of `demand` consumers
+-- are served at a time and the served window ROTATES -> rolling brownouts.
 function powered(x,y)
- if pwr[x+y*gw] then return true end
- for _,n in pairs(neighbors4(x,y)) do
-  if pwr[n.x+n.y*gw] then return true end
+ local id=peekp(pl_pow,x,y)
+ if id==0 then
+  for _,n in pairs(neighbors4(x,y)) do
+   id=peekp(pl_pow,n.x,n.y) if id~=0 then break end
+  end
  end
- return false
+ local s=psup[id or 0] or 0
+ if s==0 then return false end          -- no plant on this network
+ local d=pdem[id] or 0
+ if s>=d then return true end           -- supply meets demand: all lit
+ return (x+y*gw+flr((tick or 0)/p.brownout_iv))%d<s
 end
 -- >>> landval.lua
 -- landval.lua : desirability / land value field (pl_val, 0..255, 128 neutral).

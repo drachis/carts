@@ -202,6 +202,18 @@ init_map()
 set_tile(10,10,0) pokep(pl_wire,10,10,1)
 ok(power_carries(10,10),"a wire crosses water")
 
+-- rolling brownouts: when demand exceeds supply only some zones are lit at once
+init_map()
+local osup=p.plant_sup p.plant_sup=3
+for x=4,10 do set_tile(x,9,16) end
+set_tile(4,8,60)                    -- plant
+for x=5,9 do set_zone(x,8,1,0) end  -- 5 zones, demand 5 > supply 3
+update_net()
+local lit=0
+for x=5,9 do if powered(x,8) then lit+=1 end end
+ok(lit>0 and lit<5,"brownout: only some zones powered at once ("..lit..")")
+p.plant_sup=osup
+
 -- (placement-cost asserts live in t_tools.p8)
 
 -- fire: a developed zone ignites and burns down to rubble
