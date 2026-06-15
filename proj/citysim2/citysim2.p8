@@ -21,6 +21,7 @@ __lua__
 #include econ.lua
 #include hud.lua
 #include minimap.lua
+#include daynight.lua
 #include save.lua
 
 -- glue owns _init/_update/_draw; modules never define them.
@@ -54,6 +55,7 @@ end
 function _draw()
  cls(0)
  draw_world()
+ draw_night()
  if mapview then draw_minimap() else draw_inspector() end
  draw_log()
  draw_hud()

@@ -15,6 +15,7 @@ __lua__
 #include ../disaster.lua
 #include ../tools.lua
 #include ../econ.lua
+#include ../daynight.lua
 #include ../save.lua
 
 local pass,fail=0,0
@@ -195,6 +196,12 @@ notify("hello",7,1,2)
 ok(#log==1 and log[1].x==1 and log[1].y==2,"notify records an event with its tile")
 for i=1,12 do notify("spam",7) end
 ok(#log==8,"event log ring caps at 8")
+
+-- day/night: phase stays in 0..1; noon (tick 0) is brightest
+tick=0
+ok(day_phase()<0.01,"noon is brightest (phase ~0)")
+tick=flr(p.day_frames/2)
+ok(day_phase()>0.99,"midnight is darkest (phase ~1)")
 
 -- save / load round-trip (grid + scalars via companion cart)
 init_map()

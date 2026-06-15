@@ -69,9 +69,11 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
   emits "fire!"/"burned to rubble". Calls guarded (`if notify then`) so modules
   stay decoupled. Each notice keeps its tile for future location-flagging.
 
-## Polish (HELD — do not start until base game playtested; reserve ~820)
-- ☐ daynight.lua (50) — sprite-bank swap (needs night sprites in gen_gfx)
-- ☐ fx.lua (200) — particles
+## Polish
+- ☑ daynight.lua (66) — day/night cycle. Dithered darkness over the world scaled
+  by time of day (sim `tick`, period p.day_frames); zone lit windows glow through
+  the dither. day_phase() 0=noon..1=midnight. Cheaper than a sprite-bank swap.
+- ☐ fx.lua (200) — particles (plant/fire smoke, construction dust)
 - ☐ sfx/music hooks (60)
 
 ## Method
@@ -109,7 +111,8 @@ Status: ☐ todo · ◐ in progress · ☑ done · ⚠ over budget / needs trim
 | landval | 200 | 134 |
 | disaster | 200 | 428 |
 | notify | 150 | 122 |
-| cart total | 8192 | 5263 |
+| daynight | 50 | 66 |
+| cart total | 8192 | 5365 |
 
 ## Research depth built (this session, autonomous)
 - ☑ economy loop — placement costs money (try_spend), denied when broke.
