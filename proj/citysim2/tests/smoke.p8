@@ -7,6 +7,7 @@ __lua__
 #include ../map.lua
 #include ../router.lua
 #include ../net.lua
+#include ../landval.lua
 #include ../terrain.lua
 #include ../agents.lua
 #include ../sim.lua
@@ -109,6 +110,16 @@ ok(mfmt(-3)=="-$3k","mfmt negative")
 money=2
 ok(try_spend(1000) and money==1,"try_spend deducts $k")
 ok(not try_spend(10000),"try_spend rejects past the debt floor")
+
+-- desirability: water raises land value, industry lowers it
+init_map()
+init_agents()
+set_tile(5,5,0)    -- water
+set_tile(25,5,56)  -- industry
+update_val()
+ok(desir(7,5)>128,"waterfront raises desirability ("..desir(7,5)..")")
+ok(desir(27,5)<128,"industry lowers desirability ("..desir(27,5)..")")
+ok(desir(15,20)==128,"neutral away from everything")
 
 -- power gating: an unpowered (no plant) zone never grows
 init_map()

@@ -9,6 +9,7 @@ __lua__
 #include map.lua
 #include router.lua
 #include net.lua
+#include landval.lua
 #include terrain.lua
 #include agents.lua
 #include sim.lua

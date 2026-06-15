@@ -50,6 +50,7 @@ function sim_seed()
   end
  end
  sm_index()
+ update_val()
 end
 
 local function sm_adj_road(x,y)
@@ -81,9 +82,11 @@ local function sm_eval(x,y)
  local wx,wy=sm_complement(x,y,k)
  local found=wx~=nil
  local pw=powered(x,y)
- if access and found and pw and d<3 and rnd(1)<p.grow_rate then
+ local dv=desir(x,y)  -- 0..255, 128 neutral: weights grow up / decay down
+ if access and found and pw and d<3 and rnd(1)<p.grow_rate*dv/128 then
   set_zone(x,y,k,d+1)
- elseif (not access or not found or not pw) and d>0 and rnd(1)<p.decay_rate then
+ elseif (not access or not found or not pw) and d>0
+  and rnd(1)<p.decay_rate*(256-dv)/128 then
   set_zone(x,y,k,d-1)
  end
  -- visible commuter (per p.show)
@@ -125,7 +128,7 @@ function update_sim()
  end
  evq[bi]={}
  sm_cd-=1
- if sm_cd<=0 then sm_cd=p.census_iv sm_index() sm_census() end
+ if sm_cd<=0 then sm_cd=p.census_iv sm_index() sm_census() update_val() end
 end
 
 function tile_info(x,y)

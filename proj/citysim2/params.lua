@@ -47,6 +47,13 @@ p={
  terr_blur=2,        -- heightmap smoothing passes
  river_jit=28,       -- river meander jitter
 
+ -- desirability / land value (landval.lua); 128 = neutral
+ val_rad=3,          -- influence radius (tiles) for water/pollution
+ val_water=6,        -- desirability per nearby water tile (waterfront +)
+ val_pol=10,         -- desirability lost per nearby polluter (industry/plant)
+ val_cong=2,         -- desirability lost per agent on nearby roads
+ val_park=24,        -- desirability per nearby park (service +)
+
  -- render (render.lua)
  cong_show=2,        -- agents on a road before it reads as congested
 

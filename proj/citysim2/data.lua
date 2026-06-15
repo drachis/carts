@@ -19,3 +19,4 @@ pl_cap=0x8800       -- building capacity N (caps at 255)
 pl_fill=0x8c00      -- capacity currently served
 pl_cong=0x9000      -- agents currently on this road tile (saturates at 255)
 pl_need=0x9400      -- packed need bits | offer bits
+pl_val=0x9800       -- desirability 0..255 (128 neutral); land value
