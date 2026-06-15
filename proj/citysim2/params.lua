@@ -52,8 +52,6 @@ p={
  sea_pct=0.08,       -- fraction of the map below sea level (water)
  mtn_pct=0.9,        -- elevation percentile above which is mountain
  terr_blur=2,        -- heightmap smoothing passes
- river_jit=16,       -- river meander jitter
- river_len=2,        -- river length as a multiple of grid width (lower=shorter)
 
  -- desirability / land value (landval.lua); 128 = neutral
  val_rad=3,          -- influence radius (tiles) for water/pollution

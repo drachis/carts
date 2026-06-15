@@ -59,8 +59,6 @@ p={
  sea_pct=0.08,       -- fraction of the map below sea level (water)
  mtn_pct=0.9,        -- elevation percentile above which is mountain
  terr_blur=2,        -- heightmap smoothing passes
- river_jit=16,       -- river meander jitter
- river_len=2,        -- river length as a multiple of grid width (lower=shorter)
 
  -- desirability / land value (landval.lua); 128 = neutral
  val_rad=3,          -- influence radius (tiles) for water/pollution
@@ -532,9 +530,10 @@ function serviced(x,y)
  return peekp(pl_cov,x,y)>0
 end
 -- >>> terrain.lua
--- terrain.lua: white noise + box blur -> PERCENTILE threshold + greedy river.
--- box-blur narrows the value spread, so we pick sea/mtn from the actual
--- histogram (so we always get ~water_pct water + ~mtn_pct mountains).
+-- terrain.lua : white noise + box blur -> PERCENTILE threshold. simple coastline
+-- + lakes, no meandering river (it crowded the buildable land and cost tokens).
+-- box-blur narrows the value spread, so sea/mtn come from the actual histogram
+-- (always ~sea_pct water + the top (1-mtn_pct) as mountains).
 function gen_terrain()
  local buf={}
  for i=0,gw*gw-1 do buf[i]=rnd(256) end
@@ -559,30 +558,11 @@ function gen_terrain()
   if sea==0 and cum>=n*p.sea_pct then sea=i end
   if mtn==256 and cum>=n*p.mtn_pct then mtn=i end
  end
- local bx,by,be=0,0,-1
  for y=0,gw-1 do for x=0,gw-1 do
   local e=buf[x+y*gw]
   pokep(pl_elev,x,y,e)
-  if e>be then be=e bx=x by=y end
   set_tile(x,y,e<sea and 0 or e>=mtn and 2 or 1)
  end end
- -- greedy downhill river; rnd jitter causes meandering
- -- elev=0 marks visited tiles (river tiles become water anyway)
- local cx,cy=bx,by
- for _=1,gw*p.river_len do
-  set_tile(cx,cy,0) pokep(pl_elev,cx,cy,0)
-  if cx==0 or cy==0 or cx==gw-1 or cy==gw-1 then break end
-  local mn,nx,ny=999,cx,cy
-  for _,nb in pairs(neighbors4(cx,cy)) do
-   local ne=peekp(pl_elev,nb.x,nb.y)
-   if ne>0 then
-    ne=ne+rnd(p.river_jit)
-    if ne<mn then mn=ne nx=nb.x ny=nb.y end
-   end
-  end
-  if nx==cx and ny==cy then break end
-  cx=nx cy=ny
- end
 end
 -- >>> agents.lua
 -- agents.lua : pooled visible trips that realise sim contracts
@@ -1056,15 +1036,16 @@ end
 -- tools.lua : cursor + a 2D, data-driven tool palette + placement.
 -- palette is COLUMNS (left/right = category) of TOOLS (up/down = type). press O
 -- to enter pick-mode (dpad drives the palette), O/X to leave. adding a building
--- is one data row. each tool: n=name i=icon-sprite c=cost-key
---   p=place-code: z zone(a=kind) · r road · w power · b building(a=tile) · d doze
+-- is one data row. each tool is a POSITIONAL array (keys cost tokens):
+--   [1]=name [2]=icon-sprite [3]=cost-key [4]=place-code [5]=arg
+--   place-code: z zone(arg=kind) · r road · w power · b building(arg=tile) · d doze
 -- api: init_tools, update_tools, apply_tool, cur_tool, select_tool, draw_*,
 --      globals: cur, tcat, trow, picking
 cats={
- {{n="r-zone",i=48,c="zone",p="z",a=1},{n="c-zone",i=52,c="zone",p="z",a=2},{n="i-zone",i=56,c="zone",p="z",a=3}},
- {{n="road",i=16,c="road",p="r"},{n="power",i=32,c="power",p="w"},{n="plant",i=60,c="plant",p="b",a=60},{n="big plant",i=65,c="bigplant",p="b",a=65}},
- {{n="park",i=61,c="park",p="b",a=61},{n="fire",i=62,c="fire",p="b",a=62},{n="recycle",i=64,c="recycle",p="b",a=64}},
- {{n="bulldoze",i=-1,c="dozer",p="d"}},
+ {{"r-zone",48,"zone","z",1},{"c-zone",52,"zone","z",2},{"i-zone",56,"zone","z",3}},
+ {{"road",16,"road","r"},{"power",32,"power","w"},{"plant",60,"plant","b",60},{"big plant",65,"bigplant","b",65}},
+ {{"park",61,"park","b",61},{"fire",62,"fire","b",62},{"recycle",64,"recycle","b",64}},
+ {{"bulldoze",-1,"dozer","d"}},
 }
 tcat=1
 trow={1,1,1,1}
@@ -1077,7 +1058,7 @@ function cur_tool() return cats[tcat][trow[tcat]] end
 function select_tool(name)
  for ci=1,#cats do
   for ri=1,#cats[ci] do
-   if cats[ci][ri].n==name then tcat=ci trow[ci]=ri return end
+   if cats[ci][ri][1]==name then tcat=ci trow[ci]=ri return end
   end
  end
 end
@@ -1115,7 +1096,7 @@ function apply_tool()
  local x,y=cur.x,cur.y
  local before=tile(x,y)
  local t=cur_tool()
- local pc=t.p
+ local pc=t[4]
  if pc=="d" then
   if peekp(pl_wire,x,y)>0 then            -- peel a wire overlay first
    if try_spend(cost.dozer) then pokep(pl_wire,x,y,0) update_net() end
@@ -1123,12 +1104,12 @@ function apply_tool()
    set_tile(x,y,1) update_net()
   end
  elseif pc=="b" then                       -- a building on grass
-  if is_buildable(x,y) and try_spend(cost[t.c]) then
-   set_tile(x,y,t.a) update_net()
+  if is_buildable(x,y) and try_spend(cost[t[3]]) then
+   set_tile(x,y,t[5]) update_net()
   end
  elseif pc=="z" then                       -- a zone plot (settling grace)
   if is_buildable(x,y) and try_spend(cost.zone) then
-   set_zone(x,y,t.a,0) pokep(pl_grace,x,y,p.grace)
+   set_zone(x,y,t[5],0) pokep(pl_grace,x,y,p.grace)
    update_net() schedule(0,{k=1,x=x,y=y})
   end
  elseif pc=="r" then                       -- road (bridges water)
@@ -1180,7 +1161,7 @@ function draw_toolbar()
  rectfill(0,118,127,127,0)
  for ci=1,#cats do
   local x=1+(ci-1)*9
-  tb_icon(cats[ci][trow[ci]].i,x,119)
+  tb_icon(cats[ci][trow[ci]][2],x,119)
   if ci==tcat then rect(x-1,118,x+8,127,7) end
  end
  if picking then
@@ -1188,12 +1169,12 @@ function draw_toolbar()
   for ri=1,#cats[tcat] do
    local y=118-ri*9
    rectfill(x-1,y-1,x+8,y+8,0)
-   tb_icon(cats[tcat][ri].i,x,y)
+   tb_icon(cats[tcat][ri][2],x,y)
    if ri==trow[tcat] then rect(x-1,y-1,x+8,y+8,7) end
   end
  end
  local t=cur_tool()
- local lbl=t.n..(cost[t.c] and " $"..cost[t.c] or "")
+ local lbl=t[1]..(cost[t[3]] and " $"..cost[t[3]] or "")
  print(lbl,min(1+#cats*9+2,128-#lbl*4),121,10)
 end
 -- >>> render.lua
