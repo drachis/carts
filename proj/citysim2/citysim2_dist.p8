@@ -22,14 +22,20 @@ p={
  i_per=4,            -- jobs per industrial density
  grow_rate=0.45,     -- chance a fully-served zone densifies on an eval
  decay_rate=0.15,    -- chance a starved zone downgrades on an eval
- grace=160,          -- evals a NEW building is "settling" before it can starve
-                     --   (~1 in-game year; gives agents time to find work)
+ -- satisfaction battery (pl_sat, 0..255): agents top it up by fulfilling the
+ -- building's purpose; it decays otherwise. growth needs it; starvation decays.
+ sat_seed=200,       -- a new/just-grown building opens with this much goodwill
+ sat_decay=10,       -- satisfaction lost each eval (needs go unmet over time)
+ sat_grow=60,        -- min satisfaction to densify
+ sat_low=24,         -- below this a building loses tenants (decays)
+ sat_visit=40,       -- satisfaction an agent delivers (visit / good commute)
 
  -- agents / visibility (the lively-city knob, DESIGN s10)
  agent_cap=80,       -- max live visible agents
  show=1,             -- visible cars per filled capacity unit (1=all; lower=sample)
  trip_life=600,      -- ticks before a stuck agent gives up
- commute_max=12,     -- max tiles to a job/home before a zone won't grow (commute)
+ commute_good=6,     -- a commute this short (road tiles) delights the resident
+ commute_ok=14,      -- up to here is tolerable; beyond it sours their building
 
  -- congestion (router cost feedback, DESIGN s10)
  cong_k=3,           -- router cost added per agent sharing a road tile
@@ -99,7 +105,7 @@ p={
 cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}
 -- >>> version.lua
 -- version.lua : build id (short git hash), stamped by build_cart.py.
-ver="ccae91b"
+ver="ae96d2c"
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -128,7 +134,7 @@ pl_val=0x9800       -- desirability 0..255 (128 neutral); land value
 pl_fire=0x9c00      -- burn ticks remaining (>0 = on fire); 0 = not burning
 pl_cov=0xa000       -- service coverage (>0 = a station/park serves this tile)
 pl_wire=0xa400      -- power-line overlay (>0 = a wire crosses this road tile)
-pl_grace=0xa800     -- "settling" evals left for a new building before it starves
+pl_sat=0xa800       -- per-building satisfaction battery (0..255); agents refresh it
 pl_pow=0xac00       -- power-network component id per carrier tile (supply/demand)
 pl_chg=0xb000       -- per-building power battery charge (0..pwr_cap)
 pl_pdist=0xb400     -- power-network distance to the nearest plant (hops; 255=none)
@@ -302,7 +308,7 @@ function init_map()
  pclr(pl_cong)
  pclr(pl_need)
  pclr(pl_wire)
- pclr(pl_grace)
+ pclr(pl_sat)
  pclr(pl_pow)
  pclr(pl_chg)
  pclr(pl_pdist)
@@ -660,9 +666,9 @@ function init_agents()
  agents={}
 end
 
--- optional `job`: a closure run once the agent reaches its destination (not on
--- life-expiry). lets a trip realise an effect on arrival, e.g. a wrecking crew
--- clearing rubble. returns true if the trip was actually dispatched.
+-- optional `job`: a closure run once the agent reaches its destination (service
+-- vehicles). commuters instead carry ox/oy/dx/dy (set by the caller) and report
+-- satisfaction on arrival. returns the agent (so the caller can tag it), or nil.
 function spawn_agent(x0,y0,x1,y1,res,job)
  if #agents>=p.agent_cap then return end
  local pa=path(x0,y0,x1,y1,
@@ -671,14 +677,31 @@ function spawn_agent(x0,y0,x1,y1,res,job)
  if pa and #pa>1 then
   -- enter first tile
   pokep(pl_cong,x0,y0,min(255,peekp(pl_cong,x0,y0)+1))
-  add(agents,{
+  local a={
    path=pa, i=2,
    px=x0*8+4, py=y0*8+4,
    tx=x0, ty=y0,
    res=res, col=res_col[res],
    life=p.trip_life, job=job
-  })
-  return true
+  }
+  add(agents,a)
+  return a
+ end
+end
+
+-- nudge a building's satisfaction battery (clamped to a byte).
+function sat_add(x,y,dv)
+ pokep(pl_sat,x,y,mid(0,peekp(pl_sat,x,y)+dv,255))
+end
+
+-- a commuter reached its destination: the destination got a visit/customer/
+-- delivery, and the origin home hears how the commute went (good/ok/too long).
+function ag_report(a)
+ if a.dx then sat_add(a.dx,a.dy,p.sat_visit) end
+ if a.ox then
+  local t=#a.path
+  sat_add(a.ox,a.oy,t<=p.commute_good and p.sat_visit
+   or (t<=p.commute_ok and 0 or -p.sat_visit))
  end
 end
 
@@ -725,6 +748,7 @@ function update_agents()
     if a.job or a.ret then
      alive=false
     else
+     ag_report(a)  -- tell home + destination how this trip went
      a.ret=true
      local r={}
      for j=#a.path,1,-1 do add(r,a.path[j]) end
@@ -805,7 +829,10 @@ end
 function sim_seed()
  for y=0,gw-1 do
   for x=0,gw-1 do
-   if is_zone(x,y) then schedule((x+y)%p.eval_iv,{k=1,x=x,y=y}) end
+   if is_zone(x,y) then
+    schedule((x+y)%p.eval_iv,{k=1,x=x,y=y})
+    pokep(pl_sat,x,y,p.sat_seed)  -- existing/loaded buildings start with goodwill
+   end
   end
  end
  sm_index()
@@ -841,23 +868,21 @@ local function sm_eval(x,y)
  local access=rcomp(x,y)~=0
  local wx,wy=sm_complement(x,y,k)
  local found=wx~=nil
- -- commute: how far the nearest job/home is. too far -> nobody wants to move in,
- -- so the zone won't grow (its commute drags its desirability).
- local near=found and abs(x-wx)+abs(y-wy)<=p.commute_max
  local pw=powered(x,y)
  local dv=desir(x,y)  -- 0..255, 128 neutral: weights grow up / decay down
  -- demand for this kind (-1..1): the rci meter actually drives the city.
  local dmd=k==1 and demand.r or k==2 and demand.c or demand.i
  -- service gate: growing TALL (density >=2) needs station/park coverage.
  local svc=(not serviced) or d<1 or serviced(x,y)
- -- settling grace: a new building can't starve for ~a year (time to find work).
- local g=peekp(pl_grace,x,y)
- if g>0 then pokep(pl_grace,x,y,g-1) end
- if access and near and pw and dmd>0 and svc and d<3 and rnd(1)<p.grow_rate*dv/128 then
+ -- satisfaction battery: decays each eval; AGENTS refill it (a good commute home,
+ -- a visitor to a shop, freight to a factory). high sat grows; starved decays.
+ local sat=max(0,peekp(pl_sat,x,y)-p.sat_decay)
+ pokep(pl_sat,x,y,sat)
+ if access and found and pw and dmd>0 and svc and sat>=p.sat_grow and d<3 and rnd(1)<p.grow_rate*dv/128 then
   set_zone(x,y,k,d+1)
-  pokep(pl_grace,x,y,p.grace)  -- a fresh building resets the settling clock
+  pokep(pl_sat,x,y,p.sat_seed)  -- a fresh storey opens with goodwill
   if d+1==3 and notify then notify("district booming",res_col[k],x,y) end
- elseif g==0 and (not access or not found or not pw or dmd<-0.5 or (d>=2 and not svc)) and d>0
+ elseif (not access or not found or not pw or dmd<-0.5 or sat<p.sat_low or (d>=2 and not svc)) and d>0
   and rnd(1)<p.decay_rate*(256-dv)/128 then
   set_zone(x,y,k,d-1)
   if d-1==0 and notify then notify("zone abandoned",5,x,y) end
@@ -868,9 +893,10 @@ local function sm_eval(x,y)
   local o=sm_adj_road(x,y)
   local w=sm_adj_road(wx,wy)
   if o and w then
-   -- colour the trip by its ORIGIN zone (res_col: R green / C blue / I orange);
-   -- all are non-road colours so cars never blend into the asphalt
-   spawn_agent(o.x,o.y,w.x,w.y,k)
+   -- colour by ORIGIN zone (R green / C blue / I orange). tag the trip with its
+   -- home + destination so on arrival it reports satisfaction to both buildings.
+   local a=spawn_agent(o.x,o.y,w.x,w.y,k)
+   if a then a.ox=x a.oy=y a.dx=wx a.dy=wy end
   end
  end
  schedule(p.eval_iv,{k=1,x=x,y=y})
@@ -924,8 +950,7 @@ function tile_info(x,y)
  local wx,wy=sm_complement(x,y,k)
  return {kind=k,dens=zone_density(x,y),access=rcomp(x,y)~=0,
   power=powered(x,y),served=wx~=nil,val=desir(x,y),
-  svc=(not serviced) or serviced(x,y),settling=peekp(pl_grace,x,y)>0,
-  remote=wx~=nil and abs(x-wx)+abs(y-wy)>p.commute_max}
+  svc=(not serviced) or serviced(x,y),unhappy=peekp(pl_sat,x,y)<p.sat_low}
 end
 -- >>> disaster.lua
 -- disaster.lua : fire — the event loop's namesake. zones ignite, burn over
@@ -1167,7 +1192,7 @@ function apply_tool()
   elseif is_zone(x,y) and zone_density(x,y)>0 then
    -- raze the BUILDING but keep the zoning (v1 lesson); it can rebuild
    if try_spend(cost.dozer) then
-    set_zone(x,y,zone_kind(x,y),0) pokep(pl_grace,x,y,p.grace) update_net()
+    set_zone(x,y,zone_kind(x,y),0) pokep(pl_sat,x,y,p.sat_seed) update_net()
    end
   elseif tile(x,y)>1 and try_spend(cost.dozer) then
    set_tile(x,y,1) update_net()       -- empty zone / road / building -> grass
@@ -1178,7 +1203,7 @@ function apply_tool()
   end
  elseif pc=="z" then                       -- a zone plot (settling grace)
   if is_buildable(x,y) and try_spend(cost.zone) then
-   set_zone(x,y,t[5],0) pokep(pl_grace,x,y,p.grace)
+   set_zone(x,y,t[5],0) pokep(pl_sat,x,y,p.sat_seed)
    update_net() schedule(0,{k=1,x=x,y=y})
   end
  elseif pc=="r" then                       -- road (bridges water)
@@ -1351,9 +1376,8 @@ function draw_inspector()
  local st="thriving"
  if not ti.access then st="no road"
  elseif not ti.power then st="no power"
- elseif ti.settling then st="settling in"
  elseif not ti.served then st=ti.kind==1 and "no jobs" or ti.kind==2 and "no trade" or "no buyers"
- elseif ti.remote then st="long commute"
+ elseif ti.unhappy then st="unhappy"
  elseif ti.dens>=2 and not ti.svc then st="needs svc" end
  print(st,x+2,y+9,7)
  -- land value: green desirable / red blighted

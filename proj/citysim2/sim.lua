@@ -48,7 +48,10 @@ end
 function sim_seed()
  for y=0,gw-1 do
   for x=0,gw-1 do
-   if is_zone(x,y) then schedule((x+y)%p.eval_iv,{k=1,x=x,y=y}) end
+   if is_zone(x,y) then
+    schedule((x+y)%p.eval_iv,{k=1,x=x,y=y})
+    pokep(pl_sat,x,y,p.sat_seed)  -- existing/loaded buildings start with goodwill
+   end
   end
  end
  sm_index()
@@ -84,23 +87,21 @@ local function sm_eval(x,y)
  local access=rcomp(x,y)~=0
  local wx,wy=sm_complement(x,y,k)
  local found=wx~=nil
- -- commute: how far the nearest job/home is. too far -> nobody wants to move in,
- -- so the zone won't grow (its commute drags its desirability).
- local near=found and abs(x-wx)+abs(y-wy)<=p.commute_max
  local pw=powered(x,y)
  local dv=desir(x,y)  -- 0..255, 128 neutral: weights grow up / decay down
  -- demand for this kind (-1..1): the rci meter actually drives the city.
  local dmd=k==1 and demand.r or k==2 and demand.c or demand.i
  -- service gate: growing TALL (density >=2) needs station/park coverage.
  local svc=(not serviced) or d<1 or serviced(x,y)
- -- settling grace: a new building can't starve for ~a year (time to find work).
- local g=peekp(pl_grace,x,y)
- if g>0 then pokep(pl_grace,x,y,g-1) end
- if access and near and pw and dmd>0 and svc and d<3 and rnd(1)<p.grow_rate*dv/128 then
+ -- satisfaction battery: decays each eval; AGENTS refill it (a good commute home,
+ -- a visitor to a shop, freight to a factory). high sat grows; starved decays.
+ local sat=max(0,peekp(pl_sat,x,y)-p.sat_decay)
+ pokep(pl_sat,x,y,sat)
+ if access and found and pw and dmd>0 and svc and sat>=p.sat_grow and d<3 and rnd(1)<p.grow_rate*dv/128 then
   set_zone(x,y,k,d+1)
-  pokep(pl_grace,x,y,p.grace)  -- a fresh building resets the settling clock
+  pokep(pl_sat,x,y,p.sat_seed)  -- a fresh storey opens with goodwill
   if d+1==3 and notify then notify("district booming",res_col[k],x,y) end
- elseif g==0 and (not access or not found or not pw or dmd<-0.5 or (d>=2 and not svc)) and d>0
+ elseif (not access or not found or not pw or dmd<-0.5 or sat<p.sat_low or (d>=2 and not svc)) and d>0
   and rnd(1)<p.decay_rate*(256-dv)/128 then
   set_zone(x,y,k,d-1)
   if d-1==0 and notify then notify("zone abandoned",5,x,y) end
@@ -111,9 +112,10 @@ local function sm_eval(x,y)
   local o=sm_adj_road(x,y)
   local w=sm_adj_road(wx,wy)
   if o and w then
-   -- colour the trip by its ORIGIN zone (res_col: R green / C blue / I orange);
-   -- all are non-road colours so cars never blend into the asphalt
-   spawn_agent(o.x,o.y,w.x,w.y,k)
+   -- colour by ORIGIN zone (R green / C blue / I orange). tag the trip with its
+   -- home + destination so on arrival it reports satisfaction to both buildings.
+   local a=spawn_agent(o.x,o.y,w.x,w.y,k)
+   if a then a.ox=x a.oy=y a.dx=wx a.dy=wy end
   end
  end
  schedule(p.eval_iv,{k=1,x=x,y=y})
@@ -167,6 +169,5 @@ function tile_info(x,y)
  local wx,wy=sm_complement(x,y,k)
  return {kind=k,dens=zone_density(x,y),access=rcomp(x,y)~=0,
   power=powered(x,y),served=wx~=nil,val=desir(x,y),
-  svc=(not serviced) or serviced(x,y),settling=peekp(pl_grace,x,y)>0,
-  remote=wx~=nil and abs(x-wx)+abs(y-wy)>p.commute_max}
+  svc=(not serviced) or serviced(x,y),unhappy=peekp(pl_sat,x,y)<p.sat_low}
 end

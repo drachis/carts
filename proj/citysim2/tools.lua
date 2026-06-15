@@ -72,7 +72,7 @@ function apply_tool()
   elseif is_zone(x,y) and zone_density(x,y)>0 then
    -- raze the BUILDING but keep the zoning (v1 lesson); it can rebuild
    if try_spend(cost.dozer) then
-    set_zone(x,y,zone_kind(x,y),0) pokep(pl_grace,x,y,p.grace) update_net()
+    set_zone(x,y,zone_kind(x,y),0) pokep(pl_sat,x,y,p.sat_seed) update_net()
    end
   elseif tile(x,y)>1 and try_spend(cost.dozer) then
    set_tile(x,y,1) update_net()       -- empty zone / road / building -> grass
@@ -83,7 +83,7 @@ function apply_tool()
   end
  elseif pc=="z" then                       -- a zone plot (settling grace)
   if is_buildable(x,y) and try_spend(cost.zone) then
-   set_zone(x,y,t[5],0) pokep(pl_grace,x,y,p.grace)
+   set_zone(x,y,t[5],0) pokep(pl_sat,x,y,p.sat_seed)
    update_net() schedule(0,{k=1,x=x,y=y})
   end
  elseif pc=="r" then                       -- road (bridges water)

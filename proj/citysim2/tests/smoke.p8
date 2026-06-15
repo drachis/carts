@@ -201,17 +201,22 @@ init_map()
 set_tile(10,10,0) pokep(pl_wire,10,10,1)
 ok(power_carries(10,10),"a wire crosses water")
 
--- commute: a zone whose only complement is beyond commute_max won't grow
+-- satisfaction battery: agents report back to buildings (the desire framework)
 init_map()
-local ocm=p.commute_max p.commute_max=2
-for x=4,16 do set_tile(x,10,16) end                 -- long road
-for x=4,16 do set_tile(x,8,32) end set_tile(4,7,60) -- powered line above
-set_zone(5,9,1,0) set_zone(15,9,2,0)                -- R and C 10 tiles apart
-update_net()
-init_sim() init_agents() sim_seed()
-for i=1,2000 do update_sim() update_agents() end
-ok(zone_density(5,9)==0,"a long commute blocks growth")
-p.commute_max=ocm
+sat_add(8,8,50)
+ok(peekp(pl_sat,8,8)==50,"sat_add nudges the battery")
+-- a visitor refreshes the destination building
+init_map() pokep(pl_sat,8,8,20)
+ag_report({path={{x=1,y=1},{x=2,y=1}},dx=8,dy=8})
+ok(peekp(pl_sat,8,8)==20+p.sat_visit,"a visitor refreshes the destination")
+-- a short commute home raises desire; a long one lowers it
+init_map() pokep(pl_sat,5,5,100)
+ag_report({path={{x=1,y=5},{x=2,y=5}},ox=5,oy=5})   -- 2-tile commute (good)
+ok(peekp(pl_sat,5,5)>100,"a short commute raises the building's desire")
+init_map() pokep(pl_sat,5,5,100)
+local lp={} for i=1,20 do add(lp,{x=i,y=5}) end       -- a 20-tile commute (too long)
+ag_report({path=lp,ox=5,oy=5})
+ok(peekp(pl_sat,5,5)<100,"a long commute lowers the building's desire")
 
 -- rolling brownouts: when demand exceeds supply only some zones are lit at once
 init_map()

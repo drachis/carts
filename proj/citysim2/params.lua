@@ -15,14 +15,20 @@ p={
  i_per=4,            -- jobs per industrial density
  grow_rate=0.45,     -- chance a fully-served zone densifies on an eval
  decay_rate=0.15,    -- chance a starved zone downgrades on an eval
- grace=160,          -- evals a NEW building is "settling" before it can starve
-                     --   (~1 in-game year; gives agents time to find work)
+ -- satisfaction battery (pl_sat, 0..255): agents top it up by fulfilling the
+ -- building's purpose; it decays otherwise. growth needs it; starvation decays.
+ sat_seed=200,       -- a new/just-grown building opens with this much goodwill
+ sat_decay=10,       -- satisfaction lost each eval (needs go unmet over time)
+ sat_grow=60,        -- min satisfaction to densify
+ sat_low=24,         -- below this a building loses tenants (decays)
+ sat_visit=40,       -- satisfaction an agent delivers (visit / good commute)
 
  -- agents / visibility (the lively-city knob, DESIGN s10)
  agent_cap=80,       -- max live visible agents
  show=1,             -- visible cars per filled capacity unit (1=all; lower=sample)
  trip_life=600,      -- ticks before a stuck agent gives up
- commute_max=12,     -- max tiles to a job/home before a zone won't grow (commute)
+ commute_good=6,     -- a commute this short (road tiles) delights the resident
+ commute_ok=14,      -- up to here is tolerable; beyond it sours their building
 
  -- congestion (router cost feedback, DESIGN s10)
  cong_k=3,           -- router cost added per agent sharing a road tile

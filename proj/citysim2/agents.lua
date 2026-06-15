@@ -8,9 +8,9 @@ function init_agents()
  agents={}
 end
 
--- optional `job`: a closure run once the agent reaches its destination (not on
--- life-expiry). lets a trip realise an effect on arrival, e.g. a wrecking crew
--- clearing rubble. returns true if the trip was actually dispatched.
+-- optional `job`: a closure run once the agent reaches its destination (service
+-- vehicles). commuters instead carry ox/oy/dx/dy (set by the caller) and report
+-- satisfaction on arrival. returns the agent (so the caller can tag it), or nil.
 function spawn_agent(x0,y0,x1,y1,res,job)
  if #agents>=p.agent_cap then return end
  local pa=path(x0,y0,x1,y1,
@@ -19,14 +19,31 @@ function spawn_agent(x0,y0,x1,y1,res,job)
  if pa and #pa>1 then
   -- enter first tile
   pokep(pl_cong,x0,y0,min(255,peekp(pl_cong,x0,y0)+1))
-  add(agents,{
+  local a={
    path=pa, i=2,
    px=x0*8+4, py=y0*8+4,
    tx=x0, ty=y0,
    res=res, col=res_col[res],
    life=p.trip_life, job=job
-  })
-  return true
+  }
+  add(agents,a)
+  return a
+ end
+end
+
+-- nudge a building's satisfaction battery (clamped to a byte).
+function sat_add(x,y,dv)
+ pokep(pl_sat,x,y,mid(0,peekp(pl_sat,x,y)+dv,255))
+end
+
+-- a commuter reached its destination: the destination got a visit/customer/
+-- delivery, and the origin home hears how the commute went (good/ok/too long).
+function ag_report(a)
+ if a.dx then sat_add(a.dx,a.dy,p.sat_visit) end
+ if a.ox then
+  local t=#a.path
+  sat_add(a.ox,a.oy,t<=p.commute_good and p.sat_visit
+   or (t<=p.commute_ok and 0 or -p.sat_visit))
  end
 end
 
@@ -73,6 +90,7 @@ function update_agents()
     if a.job or a.ret then
      alive=false
     else
+     ag_report(a)  -- tell home + destination how this trip went
      a.ret=true
      local r={}
      for j=#a.path,1,-1 do add(r,a.path[j]) end
