@@ -294,12 +294,16 @@ ok(#parts==0,"particles age out")
 init_map()
 for x=4,10 do set_tile(x,5,16) end
 set_zone(6,4,1,1)
+set_tile(8,3,32)      -- a power-line tile
+pokep(pl_wire,5,5,1)  -- a wire overlay crossing a road/water
 money=7 month=5 year=1963 tax_rate=3
 save_city()
-money=1 month=1 year=1950 set_tile(6,4,1)
+money=1 month=1 year=1950 set_tile(6,4,1) set_tile(8,3,1) pokep(pl_wire,5,5,0)
 load_city()
 ok(money==7 and month==5 and year==1963 and tax_rate==3,"save/load restores scalars")
 ok(zone_kind(6,4)==1,"save/load restores the grid")
+ok(tile(8,3)==32,"save/load restores power-line tiles")
+ok(peekp(pl_wire,5,5)==1,"save/load restores wire overlays")
 
 printh("---- "..pass.." passed, "..fail.." failed ----")
 if fail>0 then printh("test result: fail") else printh("test result: pass") end

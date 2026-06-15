@@ -93,7 +93,7 @@ p={
 cost={road=10,power=5,plant=150,zone=50,park=20,dozer=2,fire=60,recycle=250,bigplant=500}
 -- >>> version.lua
 -- version.lua : build id (short git hash), stamped by build_cart.py.
-ver="44502d4"
+ver="79b3fb7"
 -- >>> data.lua
 -- data.lua : static lookup tables shared by sim + ui. packed with split()
 -- so each is ~2 tokens instead of one-per-entry (see LEARNINGS).
@@ -1548,12 +1548,16 @@ function save_city()
  mset(123,0,month) mset(124,0,year-1900) mset(125,0,tax_rate)
  cstore(0x2000,0x2000,0x1000,"citysave2.p8")
  cstore(0x0,0x8000,0x1800,"citysave2.p8")
+ -- pl_wire (wire-over-road/water overlay) lives past the 0x9800 plane block, so
+ -- save it separately into the free file gap at 0x1800 (before the 0x2000 grid).
+ cstore(0x1800,pl_wire,0x400,"citysave2.p8")
 end
 
 function load_city()
  reload(0x2000,0x2000,0x1000,"citysave2.p8")
  if mget(120,0)~=42 then return end
  reload(0x8000,0x0,0x1800,"citysave2.p8")
+ reload(pl_wire,0x1800,0x400,"citysave2.p8")  -- before update_net (it reads pl_wire)
  money=mget(121,0)+mget(122,0)*256
  month=mget(123,0) year=1900+mget(124,0) tax_rate=mget(125,0)
  init_agents() pclr(pl_cong) update_net() init_sim() sim_seed()
