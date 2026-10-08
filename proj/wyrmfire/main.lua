@@ -6,6 +6,7 @@ function new_game()
  new_dragon()
  score,kills,wrath,heralded=0,0,1,0
  combo,combo_timer,fury,fury_time=0,0,0,0
+ shown_score,combo_pop,coin_run,reel_time=0,0,0,0
  shake,freeze,flash=0,0,0
  message,message_timer,reinforce_timer="",0,300
  cam_x,cam_y=dragon.x-64,dragon.y-64
@@ -35,20 +36,64 @@ function multiplier()
  return min(1+combo\5,config.max_multiplier)
 end
 
+-- pico-8 numbers stop at 32767, so score is kept in tens and shown
+-- with a zero on the end: room for 327,670 points
+function points(tens)
+ return flr(tens).."0"
+end
+
 -- every kill and ruin goes through here. hits in quick succession
 -- build a combo that multiplies the score and feeds the fury meter.
-function add_score(points,x,y)
+function add_score(worth,x,y)
  combo+=1
+ combo_pop=3
  combo_timer=config.combo_frames
- local gained=points*multiplier()
- score=min(32000,score+gained)
+ local gained=worth*multiplier()
+ score+=gained/10
  if fury_time==0 then
-  fury=min(100,fury+points/4)
+  fury=min(100,fury+worth/4)
  end
  add_particle(x,y-6,0,-.5,30,"text").text="+"..gained
  if streaks[combo] then
   announce(streaks[combo])
   sfx(sound.roar)
+ end
+end
+
+-- a coin reaching the dragon: a little score, and it keeps the
+-- combo alive, so a realm left burning keeps the streak cooking.
+-- each ding is a note higher than the last: the coin sfx's first
+-- byte is its pitch, poked just before it plays.
+function collect_coin()
+ coin_run+=1
+ score+=config.coin_value*multiplier()/10
+ combo_timer=config.combo_frames
+ if fury_time==0 then
+  fury=min(100,fury+.5)
+ end
+ poke(0x3200+sound.coin*68,24+coin_run%32)
+ sfx(sound.coin)
+end
+
+-- the boon reel: flicker through the boons, then land on one
+function update_reel()
+ if reel_time==0 then return end
+ reel_time-=1
+ if reel_time%3==0 then
+  reel=rnd(boons)
+  announce(reel.name,20)
+  sfx(sound.coin)
+ end
+ if reel_time==0 then
+  for key,value in pairs(parse_record(reel.stats,"/")) do
+   dragon[key]+=value
+   -- during an inferno the calm stats must gain it too
+   if fury_time>0 and calm_stats[key] then
+    calm_stats[key]+=value
+   end
+  end
+  announce("boon: "..reel.name,120)
+  sfx(sound.fanfare)
  end
 end
 
@@ -105,9 +150,35 @@ function draw_compass()
  end
 end
 
+-- flames lick in from the screen edges when things are going well,
+-- in the colors of the dragon's own breath
+function draw_blaze()
+ local ramp=split(dragon.flame)
+ for i=0,127,2 do
+  local reach=3+rnd(4)+sin(i/50+frame/40)*3
+  local color=ramp[2+flr(rnd(3))]
+  line(i,127,i,127-reach,color)
+  if i>9 then
+   line(0,i,reach,i,color)
+   line(127,i,127-reach,i,color)
+  end
+ end
+end
+
 function draw_hud()
  local blink=frame%8<4
  if state=="play" then
+  if fury_time>0 or reel_time>0 or multiplier()==config.max_multiplier then
+   draw_blaze()
+  end
+  if combo>1 then
+   -- the hit counter swells for a moment with each new hit
+   local text,width=combo.." hits",4
+   if combo_pop>0 then
+    text,width="\^w\^t"..text,8
+   end
+   print(text,126-#(combo.." hits")*width,13,blink and 10 or 9)
+  end
   draw_compass()
   -- a red frame beats when the dragon is close to death
   if dragon.hp<30 and frame%20<10 then
@@ -123,7 +194,8 @@ function draw_hud()
  draw_bar(2,4,34,dragon.fire/dragon.max_fire,9,4)
  draw_bar(2,7,34,fury_time>0 and fury_time/config.fury_frames or fury/100,
   (fury_time>0 or fury>=100) and blink and 7 or 10,5)
- print(score,40,2,7)
+ -- the score rolls up to its true value like a payout counter
+ print(points(shown_score),40,2,shown_score<flr(score) and 10 or 7)
  print("ko "..kills,66,2,6)
  if combo>1 then
   -- the combo and how long is left to keep it going
@@ -141,7 +213,7 @@ function draw_hud()
   draw_bar(60,122,65,boss.hp/spec.hp,8,2)
  end
  if message_timer>0 then
-  print_centered(message,14,10)
+  print_centered(message,22)
  end
 end
 
@@ -154,7 +226,7 @@ function draw_title()
  print_centered("x  charge & devour",78,6)
  print_centered("press x",90,7)
  if high_score>0 then
-  print_centered("best "..high_score,106,10)
+  print_centered("best "..points(high_score),106,10)
  end
 end
 
@@ -163,7 +235,7 @@ function draw_game_over()
  local razed=flr((1-#buildings/#all_buildings)*100)
  rectfill(0,44,127,86,0)
  print_centered(won and "camelot is ash" or "the dragon is slain",50,won and 10 or 8)
- print_centered("score "..score.."  best "..high_score,60,7)
+ print_centered("score "..points(score).."  best "..points(high_score),60,7)
  print_centered(kills.." slain  "..razed.."% razed",68,6)
  if frame-end_frame>45 then
   print_centered("press x",78,5)
@@ -194,8 +266,9 @@ function _update()
   update_buildings()
   update_settlements()
   update_wrath()
+  update_reel()
   combo_timer-=1
-  if combo_timer<=0 then combo=0 end
+  if combo_timer<=0 then combo,coin_run=0,0 end
  elseif state=="title" then
   if pressed then state="play" end
  elseif pressed and frame-end_frame>45 then
@@ -203,6 +276,8 @@ function _update()
  end
  update_fire()
  update_particles()
+ shown_score+=ceil((flr(score)-shown_score)/6)
+ combo_pop-=1
  shake*=.8
  message_timer-=1
 end

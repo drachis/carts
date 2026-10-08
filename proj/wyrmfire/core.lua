@@ -26,10 +26,11 @@ function announce(text,frames)
  message,message_timer=text,frames or 90
 end
 
+-- with no color the text flickers through the colors of fire
 function print_centered(text,y,color)
  local x=64-#text*2
  print(text,x+1,y+1,0)
- print(text,x,y,color)
+ print(text,x,y,color or fire_ramp[2+frame\2%4])
 end
 
 -- shake the screen and, for the big hits, freeze the game a moment
@@ -38,7 +39,11 @@ function jolt(amount,stop)
  freeze=max(freeze,stop or 0)
 end
 
--- kind is "fire", "smoke", "debris", "ring", "text" or "body".
+-- a fire particle's colors from dying to newborn, unless it
+-- carries a ramp of its own (the dragon's `flame` stat)
+fire_ramp=split"5,8,9,10,7"
+
+-- kind is "fire", "smoke", "debris", "ring", "coin", "text" or "body".
 -- embers ignite where they die. the particle is returned so the
 -- caller can add what its kind needs (size, text, sprite).
 function add_particle(x,y,vx,vy,life,kind,ember)
@@ -52,6 +57,20 @@ end
 -- an expanding shockwave
 function ring(x,y,size)
  add_particle(x,y,0,0,10,"ring").size=size
+end
+
+-- gold that scatters, then flies to the dragon (see update_particles)
+function coins(x,y,count)
+ for i=1,count do
+  add_particle(x,y,rnd(6)-3,rnd(6)-3,600,"coin")
+ end
+end
+
+-- a wheel of embers that set light to wherever they land
+function embers(x,y,count,speed)
+ for i=1,count do
+  add_particle(x,y,cos(i/count)*speed,sin(i/count)*speed,14+rnd(8),"fire",true)
+ end
 end
 
 function burst(x,y,count,spread)
@@ -74,6 +93,20 @@ function update_particles()
   elseif p.kind=="body" then
    -- flung into the air, then down again
    p.vy+=.25
+  elseif p.kind=="coin" then
+   p.vx*=.9
+   p.vy*=.9
+   -- after a moment on the ground it is drawn to the hoard
+   if p.span-p.life>12 then
+    local dx,dy=dragon.x-p.x,dragon.y-p.y
+    local distance=max(length(dx,dy),1)
+    p.vx+=dx/distance*.8
+    p.vy+=dy/distance*.8
+    if distance<8 then
+     collect_coin()
+     p.life=0
+    end
+   end
   end
   if p.life<=0 then
    if p.ember and rnd()<.3 then
@@ -88,13 +121,16 @@ function draw_particles()
  for p in all(particles) do
   local life=p.life
   if p.kind=="fire" then
-   -- white hot, cooling through yellow and red to smoke
-   local color=life>18 and 7 or life>12 and 10 or life>7 and 9 or life>3 and 8 or 5
-   circfill(p.x,p.y,life\6,color)
+   -- white hot, cooling down its ramp of colors to smoke
+   -- the dragon's own breath (it has a ramp) is drawn heavier
+   circfill(p.x,p.y,life/(p.ramp and 4.5 or 6),(p.ramp or fire_ramp)[min(life\4+1,5)])
   elseif p.kind=="smoke" then
    circfill(p.x,p.y,1,life>10 and 5 or 6)
   elseif p.kind=="ring" then
    circ(p.x,p.y,p.size*(1-life/p.span),life>4 and 7 or 9)
+  elseif p.kind=="coin" then
+   circfill(p.x,p.y,1,life%6<3 and 10 or 9)
+   pset(p.x,p.y-1,7)
   elseif p.kind=="text" then
    print(p.text,p.x-#p.text*2,p.y,life%4<2 and 7 or 10)
   elseif p.kind=="body" then

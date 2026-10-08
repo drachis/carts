@@ -58,6 +58,10 @@ function update_fire()
    ignite(tx+flr(rnd(3))-1,ty+flr(rnd(3))-1,true)
    set_tile_state(tx,ty,heat-1)
    if heat==1 then
+    -- slow-burning ground (trees, wheat) sometimes pays as it goes
+    if fget(mget(tx,ty))>=64 and rnd()<.25 then
+     coins(tx*8+4,ty*8+4,1)
+    end
     mset(tx,ty,mget(tx,ty)+16)
    end
   end
@@ -134,6 +138,9 @@ function damage_building(building,amount)
  add_score(spec.score,x,y)
  burst(x,y,size*1.5,size)
  ring(x,y,size*2)
+ -- it pays out, and throws fire at its neighbours
+ coins(x,y,spec.score\10+2)
+ embers(x,y,8,2.5)
  -- the bigger it was, the longer the world holds its breath
  jolt(size/2,size/4)
  sfx(sound.crash)
@@ -147,6 +154,9 @@ function damage_building(building,amount)
   add_score(home.spec.bounty,x,y-8)
   heal_dragon(25)
   flash=2
+  -- jackpot: a fountain of gold and a spin of the boon reel
+  coins(x,y,30)
+  reel_time=config.reel_frames
  end
  if spec.goal then end_game("won") end
 end
@@ -184,6 +194,8 @@ function update_buildings()
   end
   if building.burn>0 then
    building.burn-=1
+   -- a burning building drips gold for as long as it lasts
+   if frame%30==0 then coins(x,y,1) end
    if rnd()<.3 then
     add_particle(
      building.x+rnd(size),building.y+rnd(size),

@@ -51,9 +51,31 @@ end
 
 _init()
 assert(goal,"the realm has no goal building")
+for boon in all(boons) do
+ for key in pairs(parse_record(boon.stats,"/")) do
+  assert(dragon[key],boon.name.." boosts unknown stat "..key)
+ end
+end
+state="play"
+
+-- the scripted run rarely razes a whole settlement, so spin the boon
+-- reel by hand until it has landed a good number of times
+local hp_before=dragon.max_hp
+for spin=1,40 do
+ reel_time=config.reel_frames
+ while reel_time>0 do update_reel() end
+end
+assert(dragon.max_hp>hp_before,"forty spins never landed on iron scales")
+new_game()
 state="play"
 
 local max_units,max_particles,max_burning,max_combo,infernos=0,0,0,0,0
+local spins,coins_banked=0,0
+local real_collect_coin=collect_coin
+function collect_coin()
+ coins_banked+=1
+ real_collect_coin()
+end
 local shot_saved=false
 
 for n=1,soak_frames do
@@ -73,13 +95,14 @@ for n=1,soak_frames do
  max_particles=max(max_particles,#particles)
  max_combo=max(max_combo,combo)
  if fury_time==config.fury_frames-1 then infernos+=1 end
+ if reel_time==1 then spins+=1 end
  if n%30==0 then
   max_burning=max(max_burning,burning_tiles())
  end
 
- -- screenshot mid-breath, once the fight is under way
+ -- screenshot mid-breath during the first inferno
  local mid_breath=held[4] and n%90>20
- if n>=400 and not shot_saved and mid_breath and dragon.flash==0 then
+ if fury_time>0 and fury_time<200 and not shot_saved and mid_breath then
   shot_saved=true
   cstore(0,screen_address,screen_bytes,"shot_fb.p8")
  end
@@ -91,5 +114,5 @@ printh("buildings "..#buildings.."/"..#all_buildings
  .." max units="..max_units.." particles="..max_particles
  .." burning tiles="..max_burning)
 printh("max combo="..max_combo.." infernos="..infernos
- .." accel after="..dragon.accel)
+ .." reel spins="..spins.." coins banked="..coins_banked)
 extcmd("shutdown")

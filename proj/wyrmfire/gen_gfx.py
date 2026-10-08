@@ -154,6 +154,9 @@ SFX = [
     "00050000" + "0c4201042014415",                           # 7 catapult
     "00030000" + "0c530085300c53008525",                      # 8 eat
     "00060000" + "2415024140000002415024130",                 # 9 alarm bell
+    # 10 coin: one triangle-wave note, so its first byte is just its pitch,
+    # which main.lua pokes to make each coin ring higher than the last
+    "00040000" + "30055",
 ]
 
 # --- music: two bass patterns over one drum loop, in d minor ---

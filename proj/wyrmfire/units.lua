@@ -49,6 +49,7 @@ function damage_unit(unit,amount,eaten)
   jolt(8,8)
   flash=2
   ring(unit.x,unit.y,40)
+  coins(unit.x,unit.y,25)
  end
  if eaten then
   heal_dragon(spec.meal)
@@ -62,6 +63,7 @@ function damage_unit(unit,amount,eaten)
  if spec.score>0 then
   kills+=1
   add_score(spec.score,unit.x,unit.y)
+  coins(unit.x,unit.y,1)
  end
 end
 
@@ -92,7 +94,7 @@ unit_ai={}
 function unit_ai.melee(unit,dir_x,dir_y,distance)
  local spec=unit.spec
  if distance<=11 and unit.cooldown<=0 then
-  damage_dragon(spec.damage)
+  damage_dragon(spec.damage,dir_x,dir_y,spec.knock)
   unit.cooldown=spec.cooldown
  end
  if distance>10 then

@@ -13,10 +13,18 @@ function heal_dragon(amount)
  dragon.hp=min(dragon.max_hp,dragon.hp+amount)
 end
 
-function damage_dragon(amount)
+-- a heavy blow also has a direction and a `knock` that throws the
+-- dragon back along it
+function damage_dragon(amount,dir_x,dir_y,knock)
  if state!="play" then return end
- -- a charging dragon shrugs off half
- if dragon.charge>0 then amount/=2 end
+ if dragon.charge>0 then
+  -- a charging dragon shrugs off half, and is not moved
+  amount/=2
+ elseif knock then
+  dragon.vx+=dir_x*knock
+  dragon.vy+=dir_y*knock
+  jolt(5,2)
+ end
  dragon.hp-=amount
  dragon.flash=6
  dragon.calm=150
@@ -45,22 +53,40 @@ end
 function in_breath(x,y,mouth_x,mouth_y,radius)
  local dx,dy=x-mouth_x,y-mouth_y
  local distance=length(dx,dy)
- if distance>dragon.breath_range+radius then return false end
+ if distance>dragon.breath_range*dragon.power+radius then return false end
  if distance<6+radius then return true end
  return abs(angle_diff(atan2(dx,dy),dragon.angle))<dragon.breath_arc
 end
 
+-- a breath is one long exhale: fiercest and longest-reaching on
+-- full lungs, guttering as they empty. once empty the dragon is
+-- winded and must let go of the button to breathe in.
 function breathe_fire(mouth_x,mouth_y)
  local d=dragon
+ local power=.4+d.fire/d.max_fire
+ local flames=d.breath_flames
+ d.power=power
  d.fire-=d.breath_cost
- d.fire_delay=30
- for i=1,d.breath_flames do
+ d.fire_delay=8
+ if d.fire<=0 then d.winded=true end
+ if not d.exhaling then
+  -- the first gasp is a blast
+  d.exhaling=true
+  flames*=5
+  jolt(4)
+  sfx(sound.roar)
+ end
+ -- it rumbles, and pushes the dragon back
+ jolt(1)
+ d.vx-=cos(d.angle)*.08*power
+ d.vy-=sin(d.angle)*.08*power
+ for i=1,flames do
   local angle=d.angle+rnd(.1)-.05
-  local speed=d.breath_speed+rnd(1.5)
+  local speed=(d.breath_speed+rnd(1.5))*power
   add_particle(
    mouth_x,mouth_y,
    cos(angle)*speed+d.vx,sin(angle)*speed+d.vy,
-   16+rnd(8),"fire",true)
+   16+rnd(8),"fire",true).ramp=split(d.flame)
  end
  -- the flames are for show; damage is a cone test every few frames
  if frame%4!=0 then return end
@@ -69,13 +95,13 @@ function breathe_fire(mouth_x,mouth_y)
   if in_breath(unit.x,unit.y,mouth_x,mouth_y,0) then
    local fire_taken=unit.spec.fire_taken
    if fire_taken>config.fireproof then unit.burn=60 end
-   damage_unit(unit,d.breath_damage*fire_taken)
+   damage_unit(unit,d.breath_damage*fire_taken*power)
   end
  end
  for building in all(buildings) do
   if in_breath(building.center_x,building.center_y,mouth_x,mouth_y,building.size/2) then
    building.burn=max(building.burn,200)
-   damage_building(building,d.breath_damage)
+   damage_building(building,d.breath_damage*power)
   end
  end
 end
@@ -109,10 +135,7 @@ function inferno()
    building.burn=300
   end
  end
- -- a wheel of embers that set light to wherever they land
- for angle=0,1,.03 do
-  add_particle(x,y,cos(angle)*4,sin(angle)*4,14+rnd(8),"fire",true)
- end
+ embers(x,y,34,4)
  ring(x,y,config.nova_range)
  announce("inferno!")
  jolt(8,6)
@@ -159,21 +182,38 @@ function update_dragon()
  local forward_x,forward_y=cos(d.angle),sin(d.angle)
  local head_x,head_y=d.x+forward_x*11,d.y+forward_y*11
  -- button 4 (z) breathes, button 5 (x) charges
- local breathing=btn(4) and d.fire>1 and d.charge<=0
+ if not btn(4) then d.winded=false end
+ local breathing=btn(4) and not d.winded and d.charge<=0 and d.windup<=0
 
  if fury_time>0 then
   fury_time-=1
   if fury_time==0 then boost_dragon(calm_stats) end
  end
 
- if d.charge>0 then
+ -- the dragon can turn, and so aim, unless it is mid-charge
+ local target=(input_x!=0 or input_y!=0) and atan2(input_x,input_y)
+ if target and d.charge<=0 then
+  d.angle=(d.angle+mid(-d.turn_rate,angle_diff(target,d.angle),d.turn_rate))%1
+ end
+
+ if d.windup>0 then
+  -- coil back for a moment, then burst forward
+  d.windup-=1
+  d.vx,d.vy=-forward_x,-forward_y
+  if d.windup==0 then
+   d.charge=d.charge_frames
+   d.charge_id+=1
+   d.vx,d.vy=forward_x*d.charge_speed,forward_y*d.charge_speed
+   jolt(4,1)
+   ring(d.x,d.y,16)
+   sfx(sound.roar)
+  end
+ elseif d.charge>0 then
   d.charge-=1
   charge_impacts(head_x,head_y)
   add_particle(tail[3].x,tail[3].y,0,0,8,"fire")
  else
-  if input_x!=0 or input_y!=0 then
-   local target=atan2(input_x,input_y)
-   d.angle=(d.angle+mid(-d.turn_rate,angle_diff(target,d.angle),d.turn_rate))%1
+  if target then
    local accel=breathing and d.breath_accel or d.accel
    d.vx+=cos(target)*accel
    d.vy+=sin(target)*accel
@@ -183,12 +223,8 @@ function update_dragon()
   if btnp(5) and d.charge_cooldown<=0 then
    -- charging with the fire held and fury full is an inferno
    if btn(4) and fury>=100 then inferno() end
-   d.charge=d.charge_frames
+   d.windup=d.charge_windup
    d.charge_cooldown=d.charge_recover
-   d.charge_id+=1
-   d.vx,d.vy=forward_x*d.charge_speed,forward_y*d.charge_speed
-   jolt(3)
-   sfx(sound.roar)
   end
  end
 
@@ -200,9 +236,16 @@ function update_dragon()
  if breathing then
   breathe_fire(head_x,head_y)
  else
+  d.exhaling=false
   d.fire_delay-=1
-  if d.fire_delay<=0 then
-   d.fire=min(d.max_fire,d.fire+d.fire_regen)
+  if d.fire_delay<=0 and d.fire<d.max_fire then
+   -- breathe in: a deep gulp at first, slowing as the lungs fill
+   d.fire=min(d.max_fire,d.fire+d.fire_regen+(d.max_fire-d.fire)*d.inhale)
+   -- air is drawn in to the mouth
+   local angle=rnd()
+   add_particle(
+    head_x+cos(angle)*12,head_y+sin(angle)*12,
+    -cos(angle)*2+d.vx,-sin(angle)*2+d.vy,6,"smoke")
   end
  end
 
@@ -217,7 +260,8 @@ function draw_dragon()
  local fx,fy=cos(d.angle),sin(d.angle) -- forward
  local sx,sy=-fy,fx                    -- sideways
  local charging=d.charge>0
- local flap=charging and -1 or sin(frame/16)
+ -- wings swept back in a charge, raised high while coiling for one
+ local flap=charging and -1 or d.windup>0 and 1 or sin(frame/16)
 
  -- shadow: far below when soaring, tight when diving
  local drop=charging and 2 or 7

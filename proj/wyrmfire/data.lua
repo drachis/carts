@@ -26,10 +26,10 @@ function parse_table(text)
  return rows
 end
 
--- lines of key=value
-function parse_record(text)
+-- lines of key=value (or one line, with another separator)
+function parse_record(text,separator)
  local record={}
- for line in all(split(text,"\n")) do
+ for line in all(split(text,separator or "\n")) do
   local pair=split(line,"=")
   if pair[2] then record[pair[1]]=pair[2] end
  end
@@ -64,6 +64,7 @@ die=4
 fanfare=6
 eat=8
 alarm=9
+coin=10
 ]]
 
 config=parse_record[[
@@ -76,6 +77,21 @@ combo_frames=120
 max_multiplier=5
 fury_frames=240
 nova_range=56
+coin_value=2
+reel_frames=45
+]]
+
+-- razing a settlement spins the reel and lands on one of these.
+-- each stat is added to the dragon's, for the rest of the game.
+boons=parse_table[[
+name,stats
+long flame,breath_range=10/breath_speed=0.5
+wide maw,breath_arc=0.025
+swift wings,accel=0.05
+iron scales,max_hp=25/hp=25
+deep lungs,max_fire=30/fire=30
+hot blood,regen=0.04
+battering ram,charge_damage=15/bite_damage=10
 ]]
 
 -- called out when a combo reaches this many hits
@@ -90,6 +106,7 @@ streaks=parse_record[[
 fury_stats=[[
 body=10
 wing=9
+flame=1,13,12,12,7
 accel=0.4
 breath_range=64
 breath_arc=0.14
@@ -113,24 +130,29 @@ max_hp=100
 regen=0.04
 fire=100
 max_fire=100
-fire_regen=0.5
+fire_regen=0.3
+inhale=0.06
+power=1
 accel=0.3
 breath_accel=0.12
 friction=0.88
 turn_rate=0.04
 body=8
 wing=2
+flame=5,8,9,10,7
 breath_range=44
 breath_arc=0.09
-breath_cost=0.9
+breath_cost=2
 breath_damage=2
 breath_speed=2.5
-breath_flames=3
-charge_speed=5
+breath_flames=4
+charge_windup=7
+charge_speed=6
 charge_frames=12
 charge_recover=45
 charge_damage=30
 bite_damage=40
+windup=0
 charge=0
 charge_cooldown=0
 charge_id=0
@@ -143,21 +165,22 @@ calm=0
 -- the dragon gains when the unit dies. fire_taken scales
 -- breath damage; at or below config.fireproof a unit never ignites.
 -- ranged units hold at range and back off inside range*keep_away.
--- color recolors the legend sprite's gold.
+-- color recolors the legend sprite's gold. a melee unit with a
+-- knock throws the dragon back that hard when it lands a blow.
 unit_specs=parse_table[[
-name,sprite,hp,speed,damage,cooldown,fire_taken,score,meal,ai,range,keep_away,shot,color
+name,sprite,hp,speed,damage,cooldown,fire_taken,score,meal,ai,range,keep_away,shot,color,knock
 serf,64,3,0.5,1,30,1,5,2,melee
 archer,65,4,0.45,2,70,1,10,2,ranged,60,0.4,arrow
-knight,66,12,0.8,4,30,0.5,25,3,melee
+knight,66,12,0.8,4,30,0.5,25,3,melee,,,,,4
 champion,67,20,0.5,4,90,0.3,50,3,ranged,70,0.4,holy
 ballista,69,15,0.2,8,120,0.7,40,0,ranged,100,0,bolt
 catapult,70,15,0.2,12,150,0.7,40,0,ranged,110,0,rock
 sheep,71,1,0.3,0,0,1,0,10,sheep
-sir gawain,68,60,1,6,40,0.3,500,30,legend,,,,11
-sir percival,68,80,1,6,40,0.3,500,30,legend,,,,14
-sir galahad,68,100,1,6,40,0.3,500,30,legend,,,,7
-sir lancelot,68,120,1,6,40,0.3,500,30,legend,,,,13
-king arthur,68,140,1,10,40,0.3,500,30,legend,,,excalibur,10
+sir gawain,68,60,1,6,40,0.3,500,30,legend,,,,11,6
+sir percival,68,80,1,6,40,0.3,500,30,legend,,,,14,6
+sir galahad,68,100,1,6,40,0.3,500,30,legend,,,,7,6
+sir lancelot,68,120,1,6,40,0.3,500,30,legend,,,,13,6
+king arthur,68,140,1,10,40,0.3,500,30,legend,,,excalibur,10,7
 ]]
 
 -- size 0 draws a streak, otherwise a ball of that radius. a lobbed
@@ -199,13 +222,14 @@ camelot,6,1,0,14,1000,knight/knight/archer/champion,keep:-1:-1/tower:-4:-4/tower
 -- right, top to bottom.
 realm=split"lair:the lair,village:ashford,village:millbrook,village:thornby,town:oakhampton,town:harrowgate,village:dunmere,town:wexcombe,camelot:camelot"
 
--- wrath rises with score. each level has its own reinforcements and
--- may send a legend.
+-- wrath rises with score (kept in tens, so 200 here is 2000 on
+-- screen). each level has its own reinforcements and may send a
+-- legend.
 wrath_levels=parse_table[[
 name,score,legend,pool
 wary,0,,serf/serf/archer
-alarmed,600,sir gawain,serf/archer/knight
-mustering,1800,sir percival,archer/knight/knight/champion
-crusading,4000,sir galahad,knight/knight/champion/ballista/catapult
-desperate,7500,sir lancelot,knight/champion/champion/ballista/catapult/catapult
+alarmed,200,sir gawain,serf/archer/knight
+mustering,700,sir percival,archer/knight/knight/champion
+crusading,1600,sir galahad,knight/knight/champion/ballista/catapult
+desperate,3000,sir lancelot,knight/champion/champion/ballista/catapult/catapult
 ]]
