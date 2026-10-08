@@ -65,7 +65,7 @@ function add_score(worth,x,y)
  combo_timer=config.combo_frames
  local gained=worth*multiplier()
  score+=gained/10
- add_fury(worth/4)
+ add_fury(worth/6)
  -- only the bigger prizes are spelled out, to keep the screen clear
  if gained>=100 then
   add_particle(x,y-6,0,-.5,30,"text").text="+"..gained
@@ -84,7 +84,7 @@ function collect_coin()
  coin_run+=1
  score+=config.coin_value*multiplier()/10
  combo_timer=config.combo_frames
- add_fury(.5)
+ add_fury(.3)
  poke(0x3200+sound.coin*68,24+coin_run%32)
  sfx(sound.coin)
 end

@@ -74,14 +74,14 @@ max_particles=320
 alarm_range=110
 fireproof=0.35
 guardian_at=0.6
-combo_frames=120
+combo_frames=100
 max_multiplier=5
 fury_frames=240
 nova_range=56
 coin_value=2
 reel_frames=45
 battle_rush=4
-lull_frames=600
+lull_frames=450
 ]]
 
 -- the dragon's ages, from the whelp it starts as (dragon_stats) to
