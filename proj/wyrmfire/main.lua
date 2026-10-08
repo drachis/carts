@@ -7,7 +7,7 @@ function new_game()
  score,kills,wrath,heralded=0,0,1,0
  combo,combo_timer,fury,fury_time=0,0,0,0
  shown_score,combo_pop,coin_run,reel_time=0,0,0,0
- hoard,hoard_goal=0,config.first_growth
+ hoard=0
  shake,freeze,flash=0,0,0
  message,message_timer,reinforce_timer="",0,300
  cam_x,cam_y=dragon.x-64,dragon.y-64
@@ -26,10 +26,11 @@ end
 
 -- the music's speed lives in sfx memory (byte 65 of each 68-byte
 -- sfx), so poking it there makes the band play faster as the
--- realm's wrath grows. sfx 16..18 are the music's patterns.
+-- realm's wrath grows, and faster again in the thick of a battle.
+-- sfx 16..18 are the music's patterns.
 function set_tempo()
  for pattern=16,18 do
-  poke(0x3241+pattern*68,16-wrath*2)
+  poke(0x3241+pattern*68,max(5,17-wrath*2-(battle and 3 or 0)))
  end
 end
 
@@ -80,7 +81,14 @@ function collect_coin()
  sfx(sound.coin)
  -- and it is added to the hoard, which the dragon grows on
  hoard+=1
- if hoard>=hoard_goal then grow() end
+ if hoard_fill()>=1 then grow() end
+end
+
+-- how far the hoard is towards the dragon's next age, 0 to 1.
+-- at the last age there is nothing left to grow into.
+function hoard_fill()
+ local next_age=ages[age+1]
+ return next_age and hoard/next_age.hoard or 0
 end
 
 -- the boon reel: flicker through the boons, then land on one
@@ -106,8 +114,8 @@ function update_wrath()
   wrath+=1
   announce("the realm is "..next_level.name)
   sfx(sound.fanfare)
-  set_tempo()
  end
+ if frame%30==0 then set_tempo() end
 
  -- newcomers arrive from just off screen
  local angle=rnd()
@@ -120,9 +128,10 @@ function update_wrath()
   if legend then spawn_boss(legend,x,y) end
  end
 
- reinforce_timer-=1
+ -- reinforcements pour in during a battle and thin out between
+ reinforce_timer-=battle and config.battle_rush or 1
  if reinforce_timer<=0 then
-  reinforce_timer=max(90,330-wrath*50)
+  reinforce_timer=700-wrath*100
   for i=1,1+wrath\2 do
    spawn_unit(rnd(list(wrath_levels[wrath].pool)),x+rnd(16)-8,y+rnd(16)-8)
   end
@@ -134,21 +143,23 @@ function draw_bar(x,y,width,fraction,color,back)
  rectfill(x,y,x+width*mid(0,fraction,1),y+1,color)
 end
 
--- an arrow at the screen edge towards the nearest settlement that
--- still stands, so there is always somewhere to go next
+-- an arrow at the screen edge to the next step of the run: the
+-- nearest settlement whose ward still stands (blue), and once
+-- none do, the goal itself (gold)
 function draw_compass()
- local target,nearest=nil,32000
+ local target,nearest=goal.home,32000
  for home in all(settlements) do
   local distance=dragon_distance(home.tx*8,home.ty*8)
-  if home.standing>0 and distance<nearest then
+  if home.wards>0 and distance<nearest then
    target,nearest=home,distance
   end
  end
- if target and nearest>80 then
-  local angle=atan2(target.tx*8-dragon.x,target.ty*8-dragon.y)
+ local dx,dy=target.tx*8-dragon.x,target.ty*8-dragon.y
+ if length(dx,dy)>80 then
+  local angle=atan2(dx,dy)
   local x,y=64+cos(angle)*56,68+sin(angle)*52
-  circfill(x,y,2,8)
-  line(x,y,x+cos(angle)*4,y+sin(angle)*4,10)
+  circfill(x,y,2,wards>0 and 12 or 10)
+  line(x,y,x+cos(angle)*4,y+sin(angle)*4,7)
  end
 end
 
@@ -199,15 +210,17 @@ function draw_hud()
  -- the score rolls up to its true value like a payout counter
  print(points(shown_score),40,1,shown_score<flr(score) and 10 or 7)
  -- the hoard: gold gathered towards the dragon's next growth
- draw_bar(40,7,22,hoard/hoard_goal,10,4)
+ draw_bar(40,7,22,hoard_fill(),10,4)
  print("ko "..kills,66,2,6)
  if combo>1 then
   -- the combo and how long is left to keep it going
   print("x"..multiplier(),94,1,blink and 10 or 9)
   line(94,7,94+combo_timer/config.combo_frames*10,7,10)
  end
+ -- the realm's wrath (red) over the wards still standing (blue)
  for level=1,#wrath_levels do
-  pset(106+level*4,4,level<=wrath and 8 or 5)
+  pset(106+level*4,3,level<=wrath and 8 or 5)
+  if level<=wards then pset(106+level*4,6,12) end
  end
 
  if boss then
@@ -224,7 +237,7 @@ end
 function draw_title()
  rectfill(0,24,127,100,0)
  print("\^w\^twyrmfire",33,31,8)
- print_centered("burn the realm. raze camelot.",48,9)
+ print_centered("burn the churches. raze camelot.",48,9)
  print_centered("arrows  fly",62,6)
  print_centered("z  breathe fire",70,6)
  print_centered("x  charge & devour",78,6)

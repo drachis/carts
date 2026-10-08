@@ -80,16 +80,28 @@ fury_frames=240
 nova_range=56
 coin_value=2
 reel_frames=45
-first_growth=60
-growth_rate=1.3
-max_size=2
 dusk_wrath=3
+battle_rush=4
+lull_frames=600
 ]]
 
--- what the dragon gains each time its hoard fills (the hoard then
--- needs growth_rate times as many coins to fill again). size scales
--- its whole body, its reach and its jaws.
-growth_stats="size=0.1/max_hp=10/hp=30/breath_range=4/charge_damage=4"
+-- the dragon's ages, from the whelp it starts as (dragon_stats) to
+-- a calamity. it comes of age when its hoard holds that many coins,
+-- and gains the stats listed, added to its own.
+--  size scales its whole body, its reach and its jaws.
+--  weight is heft: it shakes the ground with each wingbeat,
+--   crushes what it flies over, shrugs off blows, deepens its
+--   roar and makes the fearful flee at the sight of it.
+--  less accel and turn_rate with more friction is momentum: the
+--   same top speed, but slow to gather and slow to shed.
+ages=parse_table[[
+name,hoard,stats
+whelp,0
+drake,80,size=0.4/weight=1/max_hp=60/hp=60/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5
+wyrm,250,size=0.4/weight=1/max_hp=60/hp=60/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5
+great wyrm,500,size=0.4/weight=1/max_hp=60/hp=60/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5
+calamity,900,size=0.4/weight=1/max_hp=70/hp=70/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5
+]]
 
 -- razing a settlement spins the reel and lands on one of these.
 -- each stat is added to the dragon's, for the rest of the game.
@@ -112,23 +124,20 @@ streaks=parse_record[[
 70=apocalypse!
 ]]
 
--- laid over the dragon's stats while an inferno lasts
+-- laid over the dragon's stats while an inferno lasts. rage
+-- multiplies the breath's power (its reach, speed and damage), so
+-- an inferno is half as strong again whatever the dragon's age.
 fury_stats=[[
 body=10
 wing=9
 flame=1,13,12,12,7
-accel=0.9
-breath_range=64
-breath_arc=0.14
+rage=1.5
 breath_cost=0
-breath_damage=4
-breath_speed=3.8
-breath_flames=6
 charge_recover=20
 ]]
 
--- the dragon starts each game as a copy of this, so anything here
--- can be changed in play (upgrades, curses) without new code.
+-- the dragon starts each game as a copy of this: a whelp. anything
+-- here can be changed in play (ages, boons, fury) without new code.
 -- flight is shmup-tight: top speed is accel/(1-friction), reached
 -- in a few frames. mercy is the frames of safety after a hit.
 dragon_stats=[[
@@ -137,37 +146,39 @@ y=84
 vx=0
 vy=0
 angle=0
-hp=100
-max_hp=100
+hp=50
+max_hp=50
 regen=0.04
-fire=100
-max_fire=100
+fire=60
+max_fire=60
 fire_regen=0.3
 inhale=0.06
 power=1
-size=1
+rage=1
+size=0.6
+weight=0
 snap=0
-accel=0.7
-breath_accel=0.35
+accel=0.8
+breath_accel=0.4
 recoil=0.12
 friction=0.72
-turn_rate=0.1
+turn_rate=0.14
 mercy=20
 body=8
 wing=2
 flame=5,8,9,10,7
-breath_range=44
-breath_arc=0.09
+breath_range=28
+breath_arc=0.08
 breath_cost=2
-breath_damage=2
-breath_speed=2.5
-breath_flames=4
+breath_damage=1.2
+breath_speed=2
+breath_flames=2
 charge_windup=7
-charge_speed=6
+charge_speed=5
 charge_frames=12
 charge_recover=45
-charge_damage=30
-bite_damage=40
+charge_damage=12
+bite_damage=10
 windup=0
 charge=0
 charge_cooldown=0
@@ -217,13 +228,15 @@ rock,0,5,2,50,7,0,,1
 
 -- size is in tiles. spawns is who answers the alarm, survivor who
 -- runs out burning when it falls, guardian the boss that rides out
--- when it is badly hurt. razing a goal building wins the game.
+-- when it is badly hurt. razing a goal building wins the game, but
+-- it cannot be harmed while any ward building stands: the churches
+-- are the spine of a run, the villages its side roads.
 building_specs=parse_table[[
-name,sprite,size,hp,score,spawn_rate,spawns,survivor,guardian,goal
+name,sprite,size,hp,score,spawn_rate,spawns,survivor,guardian,goal,ward
 hut,32,1,10,10,260,serf,serf
 house,33,1,18,25,200,serf,serf
 tower,34,1,50,50,170,archer
-church,36,2,100,120,420,champion
+church,36,2,100,120,420,champion,,,,1
 keep,38,2,700,1000,150,knight/knight/archer/ballista/catapult,,king arthur,1
 ]]
 

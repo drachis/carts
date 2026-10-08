@@ -3,9 +3,21 @@
 
 function new_dragon()
  dragon=parse_record(dragon_stats)
+ age=1
  tail={}
  for i=1,6 do
   add(tail,{x=dragon.x-i*4,y=dragon.y})
+ end
+ tune_voice()
+end
+
+-- the roar is five saw-wave notes in sfx memory (two bytes a note,
+-- the low byte being pitch plus the saw's 0x80). rewriting their
+-- pitch lower for each point of weight takes the dragon's voice
+-- from a whelp's yelp to something that shakes the hills.
+function tune_voice()
+ for note=0,4 do
+  poke(0x3200+sound.roar*68+note*2,0x98-dragon.weight*4-note*2)
  end
 end
 
@@ -32,16 +44,16 @@ function grant(stats)
  end
 end
 
--- the hoard is full: the dragon grows
+-- the hoard is big enough: the dragon comes of age
 function grow()
+ age+=1
  hoard=0
- hoard_goal*=config.growth_rate
- if dragon.size<config.max_size then
-  grant(growth_stats)
-  announce("the dragon grows!",120)
-  roar(90,45)
-  jolt(6,6)
- end
+ grant(ages[age].stats)
+ tune_voice()
+ announce("you are now a "..ages[age].name.."!",150)
+ roar(120,60)
+ jolt(8,10)
+ flash=2
 end
 
 function heal_dragon(amount)
@@ -55,6 +67,8 @@ function damage_dragon(amount,dir_x,dir_y,knock)
  -- the last blow (flash doubles as its moment of invulnerability)
  if state!="play" or dragon.charge>0 or dragon.flash>0 then return end
  if knock then
+  -- the heavier the dragon, the less it is moved
+  knock/=1+dragon.weight
   dragon.vx+=dir_x*knock
   dragon.vy+=dir_y*knock
   jolt(5,2)
@@ -98,7 +112,7 @@ end
 -- winded and must let go of the button to breathe in.
 function breathe_fire(mouth_x,mouth_y)
  local d=dragon
- local power=.4+d.fire/d.max_fire
+ local power=(.4+d.fire/d.max_fire)*d.rage
  local flames=d.breath_flames
  d.power=power
  d.fire-=d.breath_cost
@@ -225,7 +239,11 @@ function update_dragon()
  local forward_x,forward_y=cos(d.angle),sin(d.angle)
  local reach=11*d.size
  local head_x,head_y=d.x+forward_x*reach,d.y+forward_y*reach
- if frame%32==0 then sfx(sound.wings) end
+ -- each wingbeat of a heavy dragon shakes the ground
+ if frame%32==0 then
+  sfx(sound.wings)
+  jolt(d.weight*.75)
+ end
  -- button 4 (z) breathes, button 5 (x) charges
  if not btn(4) then d.winded=false end
  local breathing=btn(4) and not d.winded and d.charge<=0 and d.windup<=0

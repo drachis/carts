@@ -112,6 +112,10 @@ function place_building(kind,tx,ty,home)
   home=home,
  }
  home.standing+=1
+ if spec.ward then
+  wards+=1
+  home.wards+=1
+ end
  add(buildings,building)
  add(all_buildings,building)
  for y=ty,ty+last do
@@ -123,9 +127,11 @@ function place_building(kind,tx,ty,home)
 end
 
 function damage_building(building,amount)
+ local spec=building.spec
+ -- the goal cannot be harmed while a ward still stands
+ if spec.goal and wards>0 then return end
  building.hp-=amount
  if building.hp>0 then return end
- local spec=building.spec
  local tx,ty,last=building.x\8,building.y\8,spec.size-1
  del(buildings,building)
  for y=ty,ty+last do
@@ -157,22 +163,42 @@ function damage_building(building,amount)
   -- jackpot: a fountain of gold and a spin of the boon reel
   coins(x,y,30)
   reel_time=config.reel_frames
+  -- and a rest: the realm reels before it sends anyone else
+  reinforce_timer=config.lull_frames
+ end
+ if spec.ward then
+  wards-=1
+  home.wards-=1
+  flash=2
+  if wards>0 then
+   announce(wards.." wards still guard camelot",120)
+  else
+   -- the finale: nothing is held back any more
+   announce("camelot's ward is broken!",150)
+   wrath=#wrath_levels
+   roar(120,60)
+  end
  end
  if spec.goal then end_game("won") end
 end
 
 -- a settlement the dragon comes near sounds the alarm, once, and
--- its militia turns out
+-- its militia turns out. while the dragon is at a standing
+-- settlement it is in `battle`, which quickens the reinforcements
+-- and the music; open country is the rest between.
 function update_settlements()
+ battle=false
  for home in all(settlements) do
   local spec,x,y=home.spec,home.tx*8,home.ty*8
-  if home.standing>0 and not home.alarmed
-   and dragon_distance(x,y)<spec.radius*8+40 then
-   home.alarmed=true
-   announce(home.name.." sounds the alarm!")
-   sfx(sound.alarm)
-   for i=1,spec.militia do
-    spawn_unit(rnd(list(spec.muster)),x+rnd(48)-24,y+rnd(48)-24)
+  if home.standing>0 and dragon_distance(x,y)<spec.radius*8+40 then
+   battle=true
+   if not home.alarmed then
+    home.alarmed=true
+    announce(home.name.." sounds the alarm!")
+    sfx(sound.alarm)
+    for i=1,spec.militia do
+     spawn_unit(rnd(list(spec.muster)),x+rnd(48)-24,y+rnd(48)-24)
+    end
    end
   end
  end
@@ -182,8 +208,11 @@ function update_buildings()
  for building in all(buildings) do
   local spec,size=building.spec,building.size
   local x,y=building.center_x,building.center_y
+  local distance=dragon_distance(x,y)
+  -- what a heavy dragon flies over is crushed beneath it
+  local harm=distance<dragon.size*6+size/2 and dragon.weight*.15 or 0
   building.spawn_timer-=1
-  if building.spawn_timer<=0 and dragon_distance(x,y)<config.alarm_range then
+  if building.spawn_timer<=0 and distance<config.alarm_range then
    building.spawn_timer=spec.spawn_rate
    spawn_unit(rnd(list(spec.spawns)),x,y+size/2+3)
   end
@@ -206,8 +235,9 @@ function update_buildings()
     local reach=spec.size+2
     ignite(building.x\8+flr(rnd(reach))-1,building.y\8+flr(rnd(reach))-1)
    end
-   damage_building(building,.07)
+   harm+=.07
   end
+  if harm>0 then damage_building(building,harm) end
  end
 end
 
@@ -222,6 +252,10 @@ function draw_buildings()
    if building.hp<spec.hp then
     line(x,y-2,x+size-1,y-2,0)
     line(x,y-2,x+(size-1)*building.hp/spec.hp,y-2,8)
+   end
+   -- the ward over the goal shimmers while it holds
+   if spec.goal and wards>0 then
+    circ(building.center_x,building.center_y,13+frame%8/4,frame%4<2 and 12 or 7)
    end
   end
  end
@@ -289,7 +323,7 @@ end
 
 function generate_world()
  buildings,all_buildings,units,particles,shots={},{},{},{},{}
- fire_row=0
+ fire_row,wards=0,0
  -- the map is two blocks of memory: rows 32..63 at 0x1000 (shared
  -- with the sprite sheet) then rows 0..31 at 0x2000. one memset
  -- clears every tile's state.
@@ -329,6 +363,7 @@ function generate_world()
    spec=settlement_specs[kind],
    name=name,
    standing=0,
+   wards=0,
    tx=(i-1)%3*21+9+flr(rnd(4)),
    ty=(i-1)\3*21+9+flr(rnd(4)),
   })

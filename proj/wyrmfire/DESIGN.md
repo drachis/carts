@@ -60,12 +60,24 @@ cap on how much of the realm burns.
   Volleys and fans are data (`volley` on the unit, `fan` on the shot).
 - **Coins and boons:** ruins and kills pay out coins that home to the dragon
   and keep the combo alive; razing a settlement spins the boon reel.
-- **Being a dragon:** coins fill the hoard; a full hoard grants
-  `growth_stats`, and `size` scales the whole body, its reach and its jaws
-  (`draw_dragon` scales its forward/sideways vectors, so every offset follows).
-  `roar` strikes the not-`brave` with fear on big moments. The jaws snap up
-  anything not brave that passes under the head. The land dims from
-  `dusk_wrath` on via the screen palette.
+- **The spine of a run:** the goal (Camelot's keep) cannot be harmed while any
+  `ward` building (a church) stands. The compass points to the nearest ward,
+  then the goal. The last ward falling sets wrath to maximum for the finale.
+  Villages are optional side roads: food, gold and boons.
+- **Peaks and rests:** being at a standing settlement is a `battle`:
+  reinforcements come `battle_rush` times faster and the music quickens.
+  Razing a settlement buys `lull_frames` of quiet.
+- **Whelp to calamity:** coins fill the hoard; at each threshold in `ages`
+  the dragon comes of age and gains that row's stats. `size` scales the whole
+  body, its reach and its jaws (`draw_dragon` scales its forward/sideways
+  vectors, so every offset follows). `weight` is heft: wingbeats shake the
+  screen, buildings beneath are crushed, blows move it less, its roar is
+  retuned lower in sfx memory, and the not-`brave` flee on sight. Top speed
+  stays the same across ages while `accel` and `turn_rate` fall and `friction`
+  rises, which is what makes the late dragon feel massive.
+- **Being a dragon:** `roar` strikes the not-`brave` with fear on big
+  moments. The jaws snap up anything not brave that passes under the head.
+  The land dims from `dusk_wrath` on via the screen palette.
 - **Juice:** hit-stop and shake via `jolt`, white `flash` frames, shockwave
   rings, score popups, bodies flung by charges, knockback, look-ahead camera.
 
@@ -81,8 +93,11 @@ cap on how much of the realm burns.
 | `main.lua` | States, wrath director, HUD, `_init/_update/_draw` |
 
 `gen_gfx.py` writes sprites, sprite flags and sfx into the carts.
-`run_tests.py` regenerates art, runs the headless soak test (which also checks
-every name the data refers to exists) and saves `shot.png`.
+`run_tests.py` regenerates art, runs two headless carts and saves `shot.png`:
+`tests/test_data.p8` checks every name and stat the data refers to exists and
+prints the dragon at each age; `tests/test_run.p8` soaks whole games with a
+scripted dragon. They are separate because the game plus its tests no longer
+fit in 8192 tokens; the soak harness must shrink as the game grows.
 
 ## Workflow
 

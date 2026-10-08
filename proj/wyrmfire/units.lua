@@ -174,6 +174,10 @@ function update_units()
   unit.cooldown-=1
   unit.flash=max(0,unit.flash-1)
 
+  -- a heavy dragon is dreadful just to be near
+  if spec.brave==0 and distance<dragon.weight*12 then
+   unit.fear=max(unit.fear,20)
+  end
   local ai=unit.burn>0 and "panic" or unit.fear>0 and "flee" or spec.ai
   local move_x,move_y=unit_ai[ai](unit,dx/distance,dy/distance,distance)
   unit.x=mid(4,unit.x+move_x+unit.push_x,507)
