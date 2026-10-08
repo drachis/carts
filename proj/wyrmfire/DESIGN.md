@@ -31,12 +31,28 @@ in one PICO-8 cart's 8192 tokens.** Every design choice below serves that.
 | Sprite flags | Ground fuel: high nibble = fire visits it burns for, low nibble = chance in 16 of catching from a neighbour |
 | Sprite sheet | A ground tile's burnt form is 16 ids later (one row down) |
 | Sprites 128..255 | Not available: shared with map rows 32..63 |
+| Sfx 16..18 | The music. Their speed bytes (`0x3241 + n*68`) are poked to raise the tempo with wrath |
 | `0x4300..0x5dff` | Free (6.9k of user memory) |
 | `cartdata` slot 0 | High score; slots 1..63 free |
 
 Fire is a cellular automaton over the state bytes: 4 rows are visited per
 frame, so each tile is visited every 16 frames. There is no fire list and no
 cap on how much of the realm burns.
+
+## The loop, and where the excitement comes from
+
+- **Beats:** fly to a settlement (compass points at the nearest standing
+  one) -> it sounds the alarm and its militia turns out -> raze every building
+  for a bounty and a heal -> move on. Camelot is the last and hardest.
+- **Combo:** every kill and ruin goes through `add_score`. Hits within
+  `combo_frames` of each other chain; every 5 raise the multiplier, and
+  `streaks` call out milestones.
+- **Fury:** score fills a meter. Charging with fire held when it is full is an
+  inferno: a nova, then `fury_stats` laid over the dragon for a while.
+- **Wrath:** total score raises the realm's response and sends legends; the
+  music speeds up with it.
+- **Juice:** hit-stop and shake via `jolt`, white `flash` frames, shockwave
+  rings, score popups, bodies flung by charges, knockback, look-ahead camera.
 
 ## Modules
 

@@ -12,6 +12,7 @@ local held={}
 function btn(i) return held[i] end
 function btnp(i) return held[i] end
 function sfx() end
+function music() end
 
 local function burning_tiles()
  local count=0
@@ -39,12 +40,20 @@ for level in all(wrath_levels) do
  end
  assert(not level.legend or unit_specs[level.legend],"unknown legend")
 end
+for spec in all(settlement_specs) do
+ for kind in all(list(spec.muster)) do
+  assert(unit_specs[kind],spec.name.." musters unknown "..kind)
+ end
+end
+for entry in all(realm) do
+ assert(settlement_specs[split(entry,":")[1]],"unknown settlement "..entry)
+end
 
 _init()
 assert(goal,"the realm has no goal building")
 state="play"
 
-local max_units,max_particles,max_burning=0,0,0
+local max_units,max_particles,max_burning,max_combo,infernos=0,0,0,0,0
 local shot_saved=false
 
 for n=1,soak_frames do
@@ -62,6 +71,8 @@ for n=1,soak_frames do
 
  max_units=max(max_units,#units)
  max_particles=max(max_particles,#particles)
+ max_combo=max(max_combo,combo)
+ if fury_time==config.fury_frames-1 then infernos+=1 end
  if n%30==0 then
   max_burning=max(max_burning,burning_tiles())
  end
@@ -79,4 +90,6 @@ printh("ok state="..state.." score="..score.." kills="..kills
 printh("buildings "..#buildings.."/"..#all_buildings
  .." max units="..max_units.." particles="..max_particles
  .." burning tiles="..max_burning)
+printh("max combo="..max_combo.." infernos="..infernos
+ .." accel after="..dragon.accel)
 extcmd("shutdown")

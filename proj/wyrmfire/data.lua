@@ -63,14 +63,41 @@ hurt=3
 die=4
 fanfare=6
 eat=8
+alarm=9
 ]]
 
 config=parse_record[[
-max_units=45
+max_units=60
 max_particles=320
 alarm_range=110
 fireproof=0.35
 guardian_at=0.6
+combo_frames=120
+max_multiplier=5
+fury_frames=240
+nova_range=56
+]]
+
+-- called out when a combo reaches this many hits
+streaks=parse_record[[
+10=rampage!
+25=carnage!
+45=massacre!
+70=apocalypse!
+]]
+
+-- laid over the dragon's stats while an inferno lasts
+fury_stats=[[
+body=10
+wing=9
+accel=0.4
+breath_range=64
+breath_arc=0.14
+breath_cost=0
+breath_damage=4
+breath_speed=3.8
+breath_flames=6
+charge_recover=20
 ]]
 
 -- the dragon starts each game as a copy of this, so anything here
@@ -91,10 +118,14 @@ accel=0.3
 breath_accel=0.12
 friction=0.88
 turn_rate=0.04
+body=8
+wing=2
 breath_range=44
 breath_arc=0.09
 breath_cost=0.9
 breath_damage=2
+breath_speed=2.5
+breath_flames=3
 charge_speed=5
 charge_frames=12
 charge_recover=45
@@ -154,25 +185,27 @@ keep,38,2,200,1000,150,knight/knight/archer/ballista/catapult,,king arthur,1
 
 -- fixed buildings are kind:x:y offsets from the centre; the rest
 -- are scattered inside the radius. trees are cleared to `ground`.
+-- when the dragon first comes near, `militia` units drawn from
+-- `muster` turn out; razing every building pays the bounty.
 settlement_specs=parse_table[[
-name,radius,ground,fields,fixed,buildings
-lair,3,19,0
-village,4,1,3,,house/hut/hut/hut/house/hut
-town,5,1,3,,church/tower/tower/house/house/house/house/house/house/hut/hut
-camelot,6,1,0,keep:-1:-1/tower:-4:-4/tower:3:-4/tower:-4:3/tower:3:3,church/tower/tower/house/house/house/house/house
+name,radius,ground,fields,militia,bounty,muster,fixed,buildings
+lair,3,19,0,0,0
+village,4,1,3,6,100,serf/serf/serf/archer,,house/hut/hut/hut/house/hut
+town,5,1,3,10,300,serf/serf/archer/archer/knight,,church/tower/tower/house/house/house/house/house/house/hut/hut
+camelot,6,1,0,14,1000,knight/knight/archer/champion,keep:-1:-1/tower:-4:-4/tower:3:-4/tower:-4:3/tower:3:3,church/tower/tower/house/house/house/house/house
 ]]
 
--- the realm is a 3x3 grid of settlements, read left to right, top
--- to bottom.
-realm=split"lair,village,village,village,town,town,village,town,camelot"
+-- the realm is a 3x3 grid of kind:name settlements, read left to
+-- right, top to bottom.
+realm=split"lair:the lair,village:ashford,village:millbrook,village:thornby,town:oakhampton,town:harrowgate,village:dunmere,town:wexcombe,camelot:camelot"
 
 -- wrath rises with score. each level has its own reinforcements and
 -- may send a legend.
 wrath_levels=parse_table[[
 name,score,legend,pool
 wary,0,,serf/serf/archer
-alarmed,300,sir gawain,serf/archer/knight
-mustering,900,sir percival,archer/knight/knight/champion
-crusading,2000,sir galahad,knight/knight/champion/ballista/catapult
-desperate,3600,sir lancelot,knight/champion/champion/ballista/catapult/catapult
+alarmed,600,sir gawain,serf/archer/knight
+mustering,1800,sir percival,archer/knight/knight/champion
+crusading,4000,sir galahad,knight/knight/champion/ballista/catapult
+desperate,7500,sir lancelot,knight/champion/champion/ballista/catapult/catapult
 ]]

@@ -38,10 +38,10 @@ SPRITES[TREE + BURNT]    = ["55055555","50500505","55044055","05044405","5504405
 SPRITES[WHEAT + BURNT]   = ["55555555","56565656","55555555","00000000","55565556","56555655","55555555","00000000"]  # ash
 SPRITES[ROAD + BURNT]    = ["55655655","56d6d555","5d566d55","6d5d5d65","5566d556","5d565d55","55d55655","55555555"]  # rubble
 
-FUEL[GRASS] = (2, 2)
-FUEL[FLOWERS] = (2, 2)
-FUEL[TREE] = (6, 4)
-FUEL[WHEAT] = (3, 12)
+FUEL[GRASS] = (3, 3)
+FUEL[FLOWERS] = (3, 3)
+FUEL[TREE] = (8, 6)
+FUEL[WHEAT] = (4, 13)
 
 # --- buildings (roof view): row 2, the 2x2 ones spill into row 3 ---
 SPRITES[32] = ["33333333","33999933","39aa9993","39a99943","3999a943","39999443","33444433","33333333"]  # hut
@@ -153,12 +153,36 @@ SFX = [
     "00070000" + "183501c3501f350243502435024345",            # 6 fanfare
     "00050000" + "0c4201042014415",                           # 7 catapult
     "00030000" + "0c530085300c53008525",                      # 8 eat
+    "00060000" + "2415024140000002415024130",                 # 9 alarm bell
 ]
+
+# --- music: two bass patterns over one drum loop, in d minor ---
+# main.lua pokes the speed byte of these sfx to raise the tempo with wrath.
+MUSIC_FIRST_SFX = 16
+BASS_A = [14, 14, 26, 14, 14, 26, 14, 14,  14, 14, 26, 14, 14, 26, 24, 21,
+          10, 10, 22, 10, 10, 22, 10, 10,  12, 12, 24, 12, 12, 24, 21, 19]
+BASS_B = [14, 14, 26, 14, 17, 17, 29, 17,  19, 19, 31, 19, 21, 21, 33, 21,
+          10, 10, 22, 10, 12, 12, 24, 12,  14, 26, 14, 26, 14, 26, 21, 24]
+KICK, SNARE, HAT = "04655", "1e645", "30615"
+DRUMS = [KICK, HAT, SNARE, HAT, KICK, KICK, SNARE, HAT] * 4
+MUSIC_HEADER = "010e0000"
+# flags (1 = loop start, 2 = loop end) then one sfx per channel; 0x41+ is silent
+MUSIC = ["01 10124344", "02 11124344"]
+
+
+def bass(pitches):
+    return MUSIC_HEADER + "".join("%02x130" % pitch for pitch in pitches)
+
+
+def build_sfx():
+    slots = SFX + [""] * (MUSIC_FIRST_SFX - len(SFX))
+    slots += [bass(BASS_A), bass(BASS_B), MUSIC_HEADER + "".join(DRUMS)]
+    return "\n".join((notes + "0" * 168)[:168] for notes in slots)
 
 
 def main():
-    sfx = "\n".join((notes + "0" * 168)[:168] for notes in SFX)
-    data = "\n__gfx__\n%s\n__gff__\n%s\n__sfx__\n%s\n" % (build_gfx(), build_gff(), sfx)
+    data = "\n__gfx__\n%s\n__gff__\n%s\n__sfx__\n%s\n__music__\n%s\n" % (
+        build_gfx(), build_gff(), build_sfx(), "\n".join(MUSIC))
     for cart in CARTS:
         path = os.path.join(HERE, cart)
         source = open(path, encoding="utf-8").read()

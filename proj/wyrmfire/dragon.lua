@@ -54,9 +54,9 @@ function breathe_fire(mouth_x,mouth_y)
  local d=dragon
  d.fire-=d.breath_cost
  d.fire_delay=30
- for i=1,3 do
+ for i=1,d.breath_flames do
   local angle=d.angle+rnd(.1)-.05
-  local speed=2.5+rnd(1.5)
+  local speed=d.breath_speed+rnd(1.5)
   add_particle(
    mouth_x,mouth_y,
    cos(angle)*speed+d.vx,sin(angle)*speed+d.vy,
@@ -80,6 +80,46 @@ function breathe_fire(mouth_x,mouth_y)
  end
 end
 
+-- lay a record of stats over the dragon's own, returning what they
+-- replaced so the change can be undone the same way
+function boost_dragon(stats)
+ local before={}
+ for key,value in pairs(stats) do
+  before[key]=dragon[key]
+  dragon[key]=value
+ end
+ return before
+end
+
+-- spend a full fury meter: a nova of fire, then a spell as a
+-- greater dragon (fury_stats in data.lua)
+function inferno()
+ local x,y=dragon.x,dragon.y
+ fury=0
+ fury_time=config.fury_frames
+ calm_stats=boost_dragon(parse_record(fury_stats))
+ for unit in all(units) do
+  if dragon_distance(unit.x,unit.y)<config.nova_range then
+   unit.burn=90
+   damage_unit(unit,10)
+  end
+ end
+ for building in all(buildings) do
+  if dragon_distance(building.center_x,building.center_y)<config.nova_range then
+   building.burn=300
+  end
+ end
+ -- a wheel of embers that set light to wherever they land
+ for angle=0,1,.03 do
+  add_particle(x,y,cos(angle)*4,sin(angle)*4,14+rnd(8),"fire",true)
+ end
+ ring(x,y,config.nova_range)
+ announce("inferno!")
+ jolt(8,6)
+ flash=3
+ sfx(sound.roar)
+end
+
 -- while charging the head is a battering ram. each charge has an
 -- id so it hits a given target only once.
 function charge_impacts(head_x,head_y)
@@ -87,6 +127,9 @@ function charge_impacts(head_x,head_y)
  for unit in all(units) do
   if unit.charge_id!=d.charge_id and length(unit.x-head_x,unit.y-head_y)<12 then
    unit.charge_id=d.charge_id
+   -- whatever survives the jaws is thrown back
+   unit.push_x,unit.push_y=d.vx,d.vy
+   jolt(3,1)
    damage_unit(unit,d.bite_damage,true)
   end
  end
@@ -118,9 +161,15 @@ function update_dragon()
  -- button 4 (z) breathes, button 5 (x) charges
  local breathing=btn(4) and d.fire>1 and d.charge<=0
 
+ if fury_time>0 then
+  fury_time-=1
+  if fury_time==0 then boost_dragon(calm_stats) end
+ end
+
  if d.charge>0 then
   d.charge-=1
   charge_impacts(head_x,head_y)
+  add_particle(tail[3].x,tail[3].y,0,0,8,"fire")
  else
   if input_x!=0 or input_y!=0 then
    local target=atan2(input_x,input_y)
@@ -132,6 +181,8 @@ function update_dragon()
   d.vx*=d.friction
   d.vy*=d.friction
   if btnp(5) and d.charge_cooldown<=0 then
+   -- charging with the fire held and fury full is an inferno
+   if btn(4) and fury>=100 then inferno() end
    d.charge=d.charge_frames
    d.charge_cooldown=d.charge_recover
    d.charge_id+=1
@@ -175,10 +226,10 @@ function draw_dragon()
  circfill(x+drop-fx*8,y+drop+2-fy*8,4,1)
  fillp()
 
- if d.flash>0 then
-  pal(8,7)
-  pal(2,7)
- end
+ -- drawn in red and purple, then recoloured
+ local hurt=d.flash>0
+ pal(8,hurt and 7 or d.body)
+ pal(2,hurt and 7 or d.wing)
 
  for i=#tail,1,-1 do
   circfill(tail[i].x,tail[i].y,4-i*.5,i%2==0 and 2 or 8)

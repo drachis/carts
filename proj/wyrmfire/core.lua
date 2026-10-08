@@ -32,15 +32,26 @@ function print_centered(text,y,color)
  print(text,x,y,color)
 end
 
-function jolt(amount)
+-- shake the screen and, for the big hits, freeze the game a moment
+function jolt(amount,stop)
  shake=max(shake,amount)
+ freeze=max(freeze,stop or 0)
 end
 
--- kind is "fire", "smoke" or "debris". embers ignite where they die.
+-- kind is "fire", "smoke", "debris", "ring", "text" or "body".
+-- embers ignite where they die. the particle is returned so the
+-- caller can add what its kind needs (size, text, sprite).
 function add_particle(x,y,vx,vy,life,kind,ember)
+ local p={x=x,y=y,vx=vx,vy=vy,life=life,span=life,kind=kind,ember=ember}
  if #particles<config.max_particles then
-  add(particles,{x=x,y=y,vx=vx,vy=vy,life=life,kind=kind,ember=ember})
+  add(particles,p)
  end
+ return p
+end
+
+-- an expanding shockwave
+function ring(x,y,size)
+ add_particle(x,y,0,0,10,"ring").size=size
 end
 
 function burst(x,y,count,spread)
@@ -60,6 +71,9 @@ function update_particles()
   if p.kind=="fire" then
    p.vx*=.92
    p.vy*=.92
+  elseif p.kind=="body" then
+   -- flung into the air, then down again
+   p.vy+=.25
   end
   if p.life<=0 then
    if p.ember and rnd()<.3 then
@@ -79,6 +93,13 @@ function draw_particles()
    circfill(p.x,p.y,life\6,color)
   elseif p.kind=="smoke" then
    circfill(p.x,p.y,1,life>10 and 5 or 6)
+  elseif p.kind=="ring" then
+   circ(p.x,p.y,p.size*(1-life/p.span),life>4 and 7 or 9)
+  elseif p.kind=="text" then
+   print(p.text,p.x-#p.text*2,p.y,life%4<2 and 7 or 10)
+  elseif p.kind=="body" then
+   local tumbling=life%6<3
+   spr(p.sprite,p.x-4,p.y-4,1,1,tumbling,tumbling)
   else
    pset(p.x,p.y,life>8 and 6 or 4)
   end

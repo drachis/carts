@@ -14,6 +14,9 @@ function spawn_unit(kind,x,y,force)
   burn=0,
   flash=0,
   dash=0,
+  -- knockback, which decays
+  push_x=0,
+  push_y=0,
   wander=rnd(),
   -- each unit aims a little off-centre so a mob surrounds the dragon
   offset_x=rnd(16)-8,
@@ -43,17 +46,22 @@ function damage_unit(unit,amount,eaten)
   -- a legend is a feast however it dies
   eaten=true
   announce(spec.name.." has fallen",120)
-  jolt(8)
+  jolt(8,8)
+  flash=2
+  ring(unit.x,unit.y,40)
  end
  if eaten then
   heal_dragon(spec.meal)
   sfx(sound.eat)
+  -- what is left of it is flung clear
+  add_particle(
+   unit.x,unit.y,dragon.vx*.5+rnd(2)-1,-2-rnd(2),24,"body").sprite=spec.sprite
  elseif spec.score>0 then
   sfx(sound.die)
  end
  if spec.score>0 then
   kills+=1
-  score+=spec.score
+  add_score(spec.score,unit.x,unit.y)
  end
 end
 
@@ -153,8 +161,10 @@ function update_units()
 
   local ai=unit.burn>0 and "panic" or spec.ai
   local move_x,move_y=unit_ai[ai](unit,dx/distance,dy/distance,distance)
-  unit.x=mid(4,unit.x+move_x,507)
-  unit.y=mid(4,unit.y+move_y,507)
+  unit.x=mid(4,unit.x+move_x+unit.push_x,507)
+  unit.y=mid(4,unit.y+move_y+unit.push_y,507)
+  unit.push_x*=.8
+  unit.push_y*=.8
   if move_x!=0 then unit.facing_left=move_x<0 end
 
   if burning_at(unit.x\8,unit.y\8) and spec.fire_taken>config.fireproof then

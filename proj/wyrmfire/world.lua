@@ -82,7 +82,7 @@ end
 
 -- places a building with its top-left corner on a tile. returns nil
 -- if the footprint is off the map, occupied or over water.
-function place_building(kind,tx,ty)
+function place_building(kind,tx,ty,home)
  local spec=building_specs[kind]
  local last=spec.size-1
  for y=ty,ty+last do
@@ -105,7 +105,9 @@ function place_building(kind,tx,ty)
   hp=spec.hp,
   burn=0,
   spawn_timer=rnd(spec.spawn_rate),
+  home=home,
  }
+ home.standing+=1
  add(buildings,building)
  add(all_buildings,building)
  for y=ty,ty+last do
@@ -128,15 +130,42 @@ function damage_building(building,amount)
    set_tile_state(x,y,0)
   end
  end
- score+=spec.score
- burst(building.center_x,building.center_y,building.size*1.5,building.size)
- jolt(building.size/2)
+ local x,y,size,home=building.center_x,building.center_y,building.size,building.home
+ add_score(spec.score,x,y)
+ burst(x,y,size*1.5,size)
+ ring(x,y,size*2)
+ -- the bigger it was, the longer the world holds its breath
+ jolt(size/2,size/4)
  sfx(sound.crash)
  if spec.survivor then
-  local survivor=spawn_unit(spec.survivor,building.center_x,building.center_y)
+  local survivor=spawn_unit(spec.survivor,x,y)
   if survivor then survivor.burn=60 end
  end
+ home.standing-=1
+ if home.standing==0 then
+  announce(home.name.." is ash!",120)
+  add_score(home.spec.bounty,x,y-8)
+  heal_dragon(25)
+  flash=2
+ end
  if spec.goal then end_game("won") end
+end
+
+-- a settlement the dragon comes near sounds the alarm, once, and
+-- its militia turns out
+function update_settlements()
+ for home in all(settlements) do
+  local spec,x,y=home.spec,home.tx*8,home.ty*8
+  if home.standing>0 and not home.alarmed
+   and dragon_distance(x,y)<spec.radius*8+40 then
+   home.alarmed=true
+   announce(home.name.." sounds the alarm!")
+   sfx(sound.alarm)
+   for i=1,spec.militia do
+    spawn_unit(rnd(list(spec.muster)),x+rnd(48)-24,y+rnd(48)-24)
+   end
+  end
+ end
 end
 
 function update_buildings()
@@ -219,14 +248,14 @@ function build_settlement(settlement)
  end
  for entry in all(list(spec.fixed)) do
   local kind,x,y=unpack(split(entry,":"))
-  local building=place_building(kind,cx+x,cy+y)
+  local building=place_building(kind,cx+x,cy+y,settlement)
   if building.spec.goal then goal=building end
  end
  for kind in all(list(spec.buildings)) do
   for attempt=1,30 do
    local tx=cx+flr(rnd(radius*2+1))-radius
    local ty=cy+flr(rnd(radius*2+1))-radius
-   if place_building(kind,tx,ty) then break end
+   if place_building(kind,tx,ty,settlement) then break end
   end
  end
  -- wheat fields, each with a sheep, just outside the settlement
@@ -281,10 +310,13 @@ function generate_world()
   mset(river_x+1,y,tile.water)
  end
 
- local settlements={}
- for i,kind in ipairs(realm) do
+ settlements={}
+ for i,entry in ipairs(realm) do
+  local kind,name=unpack(split(entry,":"))
   add(settlements,{
    spec=settlement_specs[kind],
+   name=name,
+   standing=0,
    tx=(i-1)%3*21+9+flr(rnd(4)),
    ty=(i-1)\3*21+9+flr(rnd(4)),
   })
