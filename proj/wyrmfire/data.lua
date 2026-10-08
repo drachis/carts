@@ -206,20 +206,20 @@ calm=0
 -- a fanfare when it falls.
 unit_specs=parse_table[[
 name,sprite,hp,speed,damage,cooldown,fire_taken,score,meal,brave,ai,range,keep_away,shot,color,knock,volley
-serf,64,3,0.5,1,30,1,5,1,0,melee
+serf,64,3,0.7,1,30,1,5,1,0,melee
 archer,65,4,0.45,2,80,1,10,1,0,ranged,70,0.4,arrow,,,3
-knight,66,12,0.8,6,30,0.5,25,3,1,melee,,,,,7
+knight,66,12,1.3,6,30,0.5,25,3,1,melee,,,,,7
 champion,67,20,0.5,6,90,0.3,50,3,1,ranged,80,0.4,holy,,,3
 ballista,69,15,0.2,12,120,0.7,40,0,1,ranged,100,0,bolt
 catapult,70,15,0.2,18,150,0.7,40,0,1,ranged,110,0,rock
 sheep,71,1,0.3,0,0,1,0,10,0,sheep
-lancer,72,18,1.3,7,40,0.5,60,4,1,legend,,,,,9
+lancer,72,18,1.7,7,40,0.5,60,4,1,legend,,,,,9
 merlin,73,220,0.6,10,70,0.3,800,40,1,ranged,90,0.6,arcane,12,,10
-sir gawain,68,60,1,9,40,0.3,500,30,1,legend,,,,11,10
-sir percival,68,80,1,13,40,0.3,500,30,1,legend,,,,14,10
-sir galahad,68,100,1,18,40,0.3,500,30,1,legend,,,,7,10
-sir lancelot,68,120,1,23,40,0.3,500,30,1,legend,,,,13,10
-king arthur,68,160,1,30,40,0.3,500,30,1,legend,,,excalibur,10,12,8
+sir gawain,68,60,1.3,9,40,0.3,500,30,1,legend,,,,11,10
+sir percival,68,80,1.3,13,40,0.3,500,30,1,legend,,,,14,10
+sir galahad,68,100,1.3,18,40,0.3,500,30,1,legend,,,,7,10
+sir lancelot,68,120,1.3,23,40,0.3,500,30,1,legend,,,,13,10
+king arthur,68,160,1.4,30,40,0.3,500,30,1,legend,,,excalibur,10,12,8
 ]]
 
 -- size 0 draws a streak, otherwise a ball of that radius. a lobbed

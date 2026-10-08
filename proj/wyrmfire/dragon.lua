@@ -92,7 +92,9 @@ function damage_dragon(amount,dir_x,dir_y,knock)
  dragon.hp-=amount
  dragon.flash=dragon.mercy
  dragon.calm=240
- jolt(2)
+ -- the harder the blow, the harder the screen is shaken and the
+ -- longer the game holds on it: a pinprick passes, a lunge lands
+ jolt(2+amount/8,amount\12)
  sfx(sound.hurt)
  if dragon.hp<=0 then
   dragon.hp=0
@@ -300,7 +302,7 @@ function update_dragon()
  -- each wingbeat of a heavy dragon shakes the ground
  if frame%32==0 then
   sfx(sound.wings)
-  jolt(d.weight*.75)
+  jolt(d.weight*.5)
  end
  -- button 4 (z) breathes, button 5 (x) charges
  if not btn(4) then d.winded=false end
