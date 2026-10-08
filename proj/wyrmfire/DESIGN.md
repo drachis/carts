@@ -51,6 +51,15 @@ cap on how much of the realm burns.
   inferno: a nova, then `fury_stats` laid over the dragon for a while.
 - **Wrath:** total score raises the realm's response and sends legends; the
   music speeds up with it.
+- **Shmup handling:** flight is near-instant (`accel`, `friction`). Holding
+  breath locks the facing and slows the dragon, so fire is strafed across
+  targets. Only the heart (radius 5, shown while breathing) can be hit by
+  shots; a hit gives `mercy` frames of safety and a charge is untouchable.
+- **Polarity:** orange (wooden) shots burn up in the breath and feed fury;
+  blue (holy) shots must be dodged. Near misses graze, which also feeds fury.
+  Volleys and fans are data (`volley` on the unit, `fan` on the shot).
+- **Coins and boons:** ruins and kills pay out coins that home to the dragon
+  and keep the combo alive; razing a settlement spins the boon reel.
 - **Juice:** hit-stop and shake via `jolt`, white `flash` frames, shockwave
   rings, score popups, bodies flung by charges, knockback, look-ahead camera.
 

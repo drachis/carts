@@ -67,20 +67,26 @@ function damage_unit(unit,amount,eaten)
  end
 end
 
+-- a unit with a volley looses that many shots, fanned by the
+-- shot's own spread
 function shoot(unit,dir_x,dir_y)
  local shot=shot_specs[unit.spec.shot]
- add(shots,{
-  spec=shot,
-  x=unit.x,
-  y=unit.y,
-  vx=dir_x*shot.speed,
-  vy=dir_y*shot.speed,
-  -- lobbed shots lead the target; the landing spot is telegraphed
-  target_x=dragon.x+dragon.vx*25,
-  target_y=dragon.y+dragon.vy*25,
-  damage=unit.spec.damage,
-  age=0,
- })
+ local volley=unit.spec.volley or 1
+ for i=1,volley do
+  local angle=atan2(dir_x,dir_y)+(i-(volley+1)/2)*shot.fan
+  add(shots,{
+   spec=shot,
+   x=unit.x,
+   y=unit.y,
+   vx=cos(angle)*shot.speed,
+   vy=sin(angle)*shot.speed,
+   -- lobbed shots lead the target; the landing spot is telegraphed
+   target_x=dragon.x+dragon.vx*25,
+   target_y=dragon.y+dragon.vy*25,
+   damage=unit.spec.damage,
+   age=0,
+  })
+ end
  sfx(shot.sound)
 end
 
@@ -213,7 +219,15 @@ function update_shots()
     jolt(2)
    end
   else
-   struck=dragon_distance(shot.x,shot.y)<9
+   -- only the dragon's heart can be hit. a near miss is a graze,
+   -- which feeds the fury once per shot.
+   local distance=dragon_distance(shot.x,shot.y)
+   struck=distance<5
+   if distance<16 and not shot.grazed then
+    shot.grazed=true
+    add_fury(2)
+    ring(shot.x,shot.y,4)
+   end
   end
   if struck then damage_dragon(shot.damage) end
   if struck or landed then del(shots,shot) end
@@ -236,12 +250,14 @@ function draw_shots(overhead)
     circ(shot.target_x,shot.target_y,12-progress*10,8)
    end
   elseif not overhead then
+   -- dark rim, bright body, white tip: easy to read at a glance
    if spec.size>0 then
+    circfill(x,y,spec.size+1,0)
     circfill(x,y,spec.size,spec.color)
-    pset(x,y,7)
    else
-    line(x,y,x-shot.vx*1.5,y-shot.vy*1.5,spec.color)
+    line(x,y,x-shot.vx*3,y-shot.vy*3,spec.color)
    end
+   pset(x,y,7)
   end
  end
 end

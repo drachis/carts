@@ -16,17 +16,16 @@ end
 -- a heavy blow also has a direction and a `knock` that throws the
 -- dragon back along it
 function damage_dragon(amount,dir_x,dir_y,knock)
- if state!="play" then return end
- if dragon.charge>0 then
-  -- a charging dragon shrugs off half, and is not moved
-  amount/=2
- elseif knock then
+ -- nothing touches a charging dragon, or one still reeling from
+ -- the last blow (flash doubles as its moment of invulnerability)
+ if state!="play" or dragon.charge>0 or dragon.flash>0 then return end
+ if knock then
   dragon.vx+=dir_x*knock
   dragon.vy+=dir_y*knock
   jolt(5,2)
  end
  dragon.hp-=amount
- dragon.flash=6
+ dragon.flash=dragon.mercy
  dragon.calm=150
  jolt(2)
  sfx(sound.hurt)
@@ -78,8 +77,8 @@ function breathe_fire(mouth_x,mouth_y)
  end
  -- it rumbles, and pushes the dragon back
  jolt(1)
- d.vx-=cos(d.angle)*.08*power
- d.vy-=sin(d.angle)*.08*power
+ d.vx-=cos(d.angle)*d.recoil*power
+ d.vy-=sin(d.angle)*d.recoil*power
  for i=1,flames do
   local angle=d.angle+rnd(.1)-.05
   local speed=(d.breath_speed+rnd(1.5))*power
@@ -91,9 +90,18 @@ function breathe_fire(mouth_x,mouth_y)
  -- the flames are for show; damage is a cone test every few frames
  if frame%4!=0 then return end
  sfx(sound.breath,3)
+ -- shots that can burn are eaten by the flames, and feed the fury
+ for shot in all(shots) do
+  if shot.spec.burns and in_breath(shot.x,shot.y,mouth_x,mouth_y,0) then
+   del(shots,shot)
+   ring(shot.x,shot.y,6)
+   add_fury(3)
+  end
+ end
  for unit in all(units) do
   if in_breath(unit.x,unit.y,mouth_x,mouth_y,0) then
    local fire_taken=unit.spec.fire_taken
+   ring(unit.x,unit.y,5)
    if fire_taken>config.fireproof then unit.burn=60 end
    damage_unit(unit,d.breath_damage*fire_taken*power)
   end
@@ -190,9 +198,10 @@ function update_dragon()
   if fury_time==0 then boost_dragon(calm_stats) end
  end
 
- -- the dragon can turn, and so aim, unless it is mid-charge
+ -- the dragon turns to face the way it flies, except mid-charge,
+ -- and while breathing: then its aim is locked and it strafes
  local target=(input_x!=0 or input_y!=0) and atan2(input_x,input_y)
- if target and d.charge<=0 then
+ if target and d.charge<=0 and not breathing then
   d.angle=(d.angle+mid(-d.turn_rate,angle_diff(target,d.angle),d.turn_rate))%1
  end
 
@@ -270,8 +279,9 @@ function draw_dragon()
  circfill(x+drop-fx*8,y+drop+2-fy*8,4,1)
  fillp()
 
- -- drawn in red and purple, then recoloured
- local hurt=d.flash>0
+ -- drawn in red and purple, then recoloured. it blinks white
+ -- while it cannot be hurt.
+ local hurt=d.flash%4>1
  pal(8,hurt and 7 or d.body)
  pal(2,hurt and 7 or d.wing)
 
@@ -310,4 +320,9 @@ function draw_dragon()
   pset(x+fx*11+sx*side*2,y+fy*11+sy*side*2,10)
  end
  pal()
+ -- while breathing, show the heart: the only part shots can hit
+ if d.exhaling then
+  circfill(x,y,2,frame%4<2 and 12 or 1)
+  pset(x,y,7)
+ end
 end

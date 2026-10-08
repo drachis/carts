@@ -71,6 +71,14 @@ state="play"
 
 local max_units,max_particles,max_burning,max_combo,infernos=0,0,0,0,0
 local spins,coins_banked=0,0
+-- burnt shots and grazes are told apart by the fury they give
+local shots_burnt,grazes=0,0
+local real_add_fury=add_fury
+function add_fury(amount)
+ if amount==3 then shots_burnt+=1 end
+ if amount==2 then grazes+=1 end
+ real_add_fury(amount)
+end
 local real_collect_coin=collect_coin
 function collect_coin()
  coins_banked+=1
@@ -115,4 +123,5 @@ printh("buildings "..#buildings.."/"..#all_buildings
  .." burning tiles="..max_burning)
 printh("max combo="..max_combo.." infernos="..infernos
  .." reel spins="..spins.." coins banked="..coins_banked)
+printh("shots burnt="..shots_burnt.." grazes="..grazes)
 extcmd("shutdown")

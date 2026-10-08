@@ -42,6 +42,14 @@ function points(tens)
  return flr(tens).."0"
 end
 
+-- fury fills from score, coins, grazes and burnt shots, but not
+-- while an inferno is spending it
+function add_fury(amount)
+ if fury_time==0 then
+  fury=min(100,fury+amount)
+ end
+end
+
 -- every kill and ruin goes through here. hits in quick succession
 -- build a combo that multiplies the score and feeds the fury meter.
 function add_score(worth,x,y)
@@ -50,9 +58,7 @@ function add_score(worth,x,y)
  combo_timer=config.combo_frames
  local gained=worth*multiplier()
  score+=gained/10
- if fury_time==0 then
-  fury=min(100,fury+worth/4)
- end
+ add_fury(worth/4)
  add_particle(x,y-6,0,-.5,30,"text").text="+"..gained
  if streaks[combo] then
   announce(streaks[combo])
@@ -68,9 +74,7 @@ function collect_coin()
  coin_run+=1
  score+=config.coin_value*multiplier()/10
  combo_timer=config.combo_frames
- if fury_time==0 then
-  fury=min(100,fury+.5)
- end
+ add_fury(.5)
  poke(0x3200+sound.coin*68,24+coin_run%32)
  sfx(sound.coin)
 end
@@ -290,9 +294,10 @@ function _draw()
   return
  end
  cls()
- -- the camera eases towards a point ahead of the dragon
- cam_x+=(mid(0,dragon.x+dragon.vx*10-64,384)-cam_x)*.2
- cam_y+=(mid(0,dragon.y+dragon.vy*10-64,384)-cam_y)*.2
+ -- the camera eases towards a point ahead of the dragon's nose,
+ -- so there is always room to see what it is aiming at
+ cam_x+=(mid(0,dragon.x+cos(dragon.angle)*24-64,384)-cam_x)*.15
+ cam_y+=(mid(0,dragon.y+sin(dragon.angle)*24-64,384)-cam_y)*.15
  camera(cam_x+rnd(shake)-shake/2,cam_y+rnd(shake)-shake/2)
  map(cam_x\8,cam_y\8,cam_x\8*8,cam_y\8*8,17,17)
  draw_fire()

@@ -87,7 +87,7 @@ boons=parse_table[[
 name,stats
 long flame,breath_range=10/breath_speed=0.5
 wide maw,breath_arc=0.025
-swift wings,accel=0.05
+swift wings,accel=0.1/breath_accel=0.05
 iron scales,max_hp=25/hp=25
 deep lungs,max_fire=30/fire=30
 hot blood,regen=0.04
@@ -107,7 +107,7 @@ fury_stats=[[
 body=10
 wing=9
 flame=1,13,12,12,7
-accel=0.4
+accel=0.9
 breath_range=64
 breath_arc=0.14
 breath_cost=0
@@ -119,6 +119,8 @@ charge_recover=20
 
 -- the dragon starts each game as a copy of this, so anything here
 -- can be changed in play (upgrades, curses) without new code.
+-- flight is shmup-tight: top speed is accel/(1-friction), reached
+-- in a few frames. mercy is the frames of safety after a hit.
 dragon_stats=[[
 x=84
 y=84
@@ -133,10 +135,12 @@ max_fire=100
 fire_regen=0.3
 inhale=0.06
 power=1
-accel=0.3
-breath_accel=0.12
-friction=0.88
-turn_rate=0.04
+accel=0.7
+breath_accel=0.35
+recoil=0.12
+friction=0.72
+turn_rate=0.1
+mercy=20
 body=8
 wing=2
 flame=5,8,9,10,7
@@ -168,30 +172,33 @@ calm=0
 -- color recolors the legend sprite's gold. a melee unit with a
 -- knock throws the dragon back that hard when it lands a blow.
 unit_specs=parse_table[[
-name,sprite,hp,speed,damage,cooldown,fire_taken,score,meal,ai,range,keep_away,shot,color,knock
+name,sprite,hp,speed,damage,cooldown,fire_taken,score,meal,ai,range,keep_away,shot,color,knock,volley
 serf,64,3,0.5,1,30,1,5,2,melee
-archer,65,4,0.45,2,70,1,10,2,ranged,60,0.4,arrow
-knight,66,12,0.8,4,30,0.5,25,3,melee,,,,,4
-champion,67,20,0.5,4,90,0.3,50,3,ranged,70,0.4,holy
+archer,65,4,0.45,2,80,1,10,2,ranged,70,0.4,arrow,,,3
+knight,66,12,0.8,4,30,0.5,25,3,melee,,,,,7
+champion,67,20,0.5,4,90,0.3,50,3,ranged,80,0.4,holy,,,3
 ballista,69,15,0.2,8,120,0.7,40,0,ranged,100,0,bolt
 catapult,70,15,0.2,12,150,0.7,40,0,ranged,110,0,rock
 sheep,71,1,0.3,0,0,1,0,10,sheep
-sir gawain,68,60,1,6,40,0.3,500,30,legend,,,,11,6
-sir percival,68,80,1,6,40,0.3,500,30,legend,,,,14,6
-sir galahad,68,100,1,6,40,0.3,500,30,legend,,,,7,6
-sir lancelot,68,120,1,6,40,0.3,500,30,legend,,,,13,6
-king arthur,68,140,1,10,40,0.3,500,30,legend,,,excalibur,10,7
+sir gawain,68,60,1,6,40,0.3,500,30,legend,,,,11,10
+sir percival,68,80,1,6,40,0.3,500,30,legend,,,,14,10
+sir galahad,68,100,1,6,40,0.3,500,30,legend,,,,7,10
+sir lancelot,68,120,1,6,40,0.3,500,30,legend,,,,13,10
+king arthur,68,140,1,10,40,0.3,500,30,legend,,,excalibur,10,12,8
 ]]
 
 -- size 0 draws a streak, otherwise a ball of that radius. a lobbed
 -- shot ignores speed and lands on its target after `life` frames.
+-- fan is the angle between the shots of a volley. shots are slow
+-- enough to dodge, and come in two kinds: wooden ones (orange)
+-- burn up in the dragon's breath, holy ones (blue) do not.
 shot_specs=parse_table[[
-name,speed,color,size,life,sound,lob
-arrow,2.2,4,0,60,5
-holy,1.6,10,2,60,5
-bolt,4.5,7,0,60,5
-excalibur,3,12,2,50,5
-rock,0,5,2,50,7,1
+name,speed,color,size,life,sound,fan,burns,lob
+arrow,1.5,9,0,90,5,0.04,1
+holy,1.1,12,2,120,5,0.07
+bolt,3,9,0,60,5,0,1
+excalibur,1.6,12,2,90,5,0.125
+rock,0,5,2,50,7,0,,1
 ]]
 
 -- size is in tiles. spawns is who answers the alarm, survivor who
