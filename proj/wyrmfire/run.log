@@ -1,0 +1,3 @@
+RUNNING: tests/test_run.p8
+INFO: ok st=3 score=1570 kos=31 wrath=3 legends=1
+INFO: bld 60/70 maxunits=45 maxparts=124 maxfires=17
