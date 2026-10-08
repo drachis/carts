@@ -60,15 +60,24 @@ cap on how much of the realm burns.
   Volleys and fans are data (`volley` on the unit, `fan` on the shot).
 - **Coins and boons:** ruins and kills pay out coins that home to the dragon
   and keep the combo alive; razing a settlement spins the boon reel.
-- **The spine of a run:** the goal (Camelot's keep) cannot be harmed while any
-  `ward` building (a church) stands. The compass points to the nearest ward,
-  then the goal. The last ward falling sets wrath to maximum for the finale.
-  Villages are optional side roads: food, gold and boons.
+- **The spine of a run:** nothing in a `warded` settlement (Camelot) can be
+  harmed while any `ward` building (a town church) stands; a dome shows it.
+  The compass points to the nearest ward, then the goal. The last ward falling
+  sets wrath to its final level, which brings Merlin and the lancers.
+  Villages are optional side roads: sheep, gold and boons.
+- **Legends have a rhythm** (`unit_ai.legend`, also used by lancers): press
+  the attack, raise a guard no fire can pass (charge it), flash white while
+  gathering, then lunge for triple damage (dodge it, or charge through).
+- **Reading the screen:** the brave and all shots are drawn over the dragon
+  and its fire; melee fighters stand at the edge of its body, not under it.
+  Every HUD gauge is a labelled bar. Popups are only for prizes of 100+.
 - **Peaks and rests:** being at a standing settlement is a `battle`:
   reinforcements come `battle_rush` times faster and the music quickens.
   Razing a settlement buys `lull_frames` of quiet.
-- **Whelp to calamity:** coins fill the hoard; at each threshold in `ages`
-  the dragon comes of age and gains that row's stats. `size` scales the whole
+- **Whelp to calamity:** the dragon grows by eating. Every unit has a `meal`
+  value (sheep 10, commoners 1); at each `meals` threshold in `ages` the
+  dragon comes of age and gains that row's stats. Coins are score, combo
+  upkeep and fury only. `size` scales the whole
   body, its reach and its jaws (`draw_dragon` scales its forward/sideways
   vectors, so every offset follows). `weight` is heft: wingbeats shake the
   screen, buildings beneath are crushed, blows move it less, its roar is
@@ -77,7 +86,6 @@ cap on how much of the realm burns.
   rises, which is what makes the late dragon feel massive.
 - **Being a dragon:** `roar` strikes the not-`brave` with fear on big
   moments. The jaws snap up anything not brave that passes under the head.
-  The land dims from `dusk_wrath` on via the screen palette.
 - **Juice:** hit-stop and shake via `jolt`, white `flash` frames, shockwave
   rings, score popups, bodies flung by charges, knockback, look-ahead camera.
 

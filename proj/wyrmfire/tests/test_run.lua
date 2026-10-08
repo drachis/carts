@@ -19,7 +19,7 @@ local function objective()
  local best,nearest=goal,32000
  for building in all(buildings) do
   local distance=dragon_distance(building.center_x,building.center_y)
-  if building.spec.ward and distance<nearest then
+  if building.spec.ward and building.home.wards>0 and distance<nearest then
    best,nearest=building,distance
   end
  end
@@ -27,7 +27,7 @@ local function objective()
 end
 
 _init()
-assert(wards>0,"the realm has no wards")
+assert(wards==3,"expected the three town churches to be the wards")
 damage_building(goal,50)
 assert(goal.hp==goal.spec.hp,"the goal was harmed through its ward")
 
@@ -41,7 +41,7 @@ end
 new_game()
 state="play"
 
-local max_units,max_combo,game_frames,shot_saved=0,0,0
+local max_units,max_combo,max_cpu,game_frames,shot_saved=0,0,0,0
 
 for n=1,4500 do
  -- head for the objective, breathing in bursts and charging now and then
@@ -57,6 +57,7 @@ for n=1,4500 do
  dragon.hp=max(dragon.hp,20)
  max_units=max(max_units,#units)
  max_combo=max(max_combo,combo)
+ max_cpu=max(max_cpu,stat(1))
  game_frames+=1
 
  -- a finished game is replaced with a fresh one, to stay under load
@@ -77,5 +78,5 @@ end
 
 printh("ok soak: in play "..game_frames.." frames as a "..ages[age].name
  .." wards "..wards.." buildings "..#buildings.."/"..#all_buildings
- .." max units "..max_units.." max combo "..max_combo)
+ .." max units "..max_units.." max combo "..max_combo.." max cpu "..max_cpu)
 extcmd("shutdown")

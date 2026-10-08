@@ -112,7 +112,8 @@ function place_building(kind,tx,ty,home)
   home=home,
  }
  home.standing+=1
- if spec.ward then
+ -- a ward inside the warded city would guard itself forever
+ if spec.ward and home.spec.warded==0 then
   wards+=1
   home.wards+=1
  end
@@ -128,8 +129,8 @@ end
 
 function damage_building(building,amount)
  local spec=building.spec
- -- the goal cannot be harmed while a ward still stands
- if spec.goal and wards>0 then return end
+ -- a warded settlement cannot be harmed while a ward still stands
+ if building.home.spec.warded==1 and wards>0 then return end
  building.hp-=amount
  if building.hp>0 then return end
  local tx,ty,last=building.x\8,building.y\8,spec.size-1
@@ -166,7 +167,7 @@ function damage_building(building,amount)
   -- and a rest: the realm reels before it sends anyone else
   reinforce_timer=config.lull_frames
  end
- if spec.ward then
+ if home.wards>0 and spec.ward then
   wards-=1
   home.wards-=1
   flash=2
@@ -253,11 +254,12 @@ function draw_buildings()
     line(x,y-2,x+size-1,y-2,0)
     line(x,y-2,x+(size-1)*building.hp/spec.hp,y-2,8)
    end
-   -- the ward over the goal shimmers while it holds
-   if spec.goal and wards>0 then
-    circ(building.center_x,building.center_y,13+frame%8/4,frame%4<2 and 12 or 7)
-   end
   end
+ end
+ -- the ward is a dome over the whole of the goal's settlement
+ if wards>0 then
+  local home=goal.home
+  circ(home.tx*8,home.ty*8,60+frame%8/4,frame%4<2 and 12 or 7)
  end
 end
 
@@ -317,7 +319,9 @@ function build_settlement(settlement)
     end
    end
   end
-  spawn_unit("sheep",fx*8+4,fy*8-6)
+  for sheep=1,spec.flock do
+   spawn_unit("sheep",fx*8+rnd(24),fy*8+rnd(16))
+  end
  end
 end
 

@@ -44,10 +44,17 @@ function grant(stats)
  end
 end
 
--- the hoard is big enough: the dragon comes of age
+-- how far the dragon has eaten towards its next age, 0 to 1. at
+-- the last age there is nothing left to grow into.
+function belly_fill()
+ local next_age=ages[age+1]
+ return next_age and belly/next_age.meals or 0
+end
+
+-- it has eaten enough: the dragon comes of age
 function grow()
  age+=1
- hoard=0
+ belly=0
  grant(ages[age].stats)
  tune_voice()
  announce("you are now a "..ages[age].name.."!",150)
@@ -125,8 +132,7 @@ function breathe_fire(mouth_x,mouth_y)
   jolt(4)
   sfx(sound.roar)
  end
- -- it rumbles, and pushes the dragon back
- jolt(1)
+ -- it pushes the dragon back
  d.vx-=cos(d.angle)*d.recoil*power
  d.vy-=sin(d.angle)*d.recoil*power
  for i=1,flames do
@@ -149,9 +155,9 @@ function breathe_fire(mouth_x,mouth_y)
   end
  end
  for unit in all(units) do
-  if in_breath(unit.x,unit.y,mouth_x,mouth_y,0) then
+  -- a raised guard turns the fire aside
+  if not unit.guard and in_breath(unit.x,unit.y,mouth_x,mouth_y,0) then
    local fire_taken=unit.spec.fire_taken
-   ring(unit.x,unit.y,5)
    if fire_taken>config.fireproof then unit.burn=60 end
    damage_unit(unit,d.breath_damage*fire_taken*power)
   end
@@ -390,9 +396,4 @@ function draw_dragon()
   pset(x+fx*11+sx*side*2,y+fy*11+sy*side*2,10)
  end
  pal()
- -- while breathing, show the heart: the only part shots can hit
- if d.exhaling then
-  circfill(x,y,2,frame%4<2 and 12 or 1)
-  pset(x,y,7)
- end
 end

@@ -13,7 +13,8 @@ function spawn_unit(kind,x,y,force)
   cooldown=30+rnd(30),
   burn=0,
   flash=0,
-  dash=0,
+  -- where it is in its fighting cycle (see unit_ai.legend)
+  clock=flr(rnd(100)),
   fear=0,
   -- knockback, which decays
   push_x=0,
@@ -43,8 +44,8 @@ function damage_unit(unit,amount,eaten)
  del(units,unit)
  burst(unit.x,unit.y,4,4)
  if unit==boss then boss=nil end
- if spec.ai=="legend" then
-  -- a legend is a feast however it dies
+ if spec.color then
+  -- a named boss is a feast however it dies
   eaten=true
   announce(spec.name.." has fallen",120)
   jolt(8,8)
@@ -55,6 +56,9 @@ function damage_unit(unit,amount,eaten)
  if eaten then
   heal_dragon(spec.meal)
   sfx(sound.eat)
+  -- eating is how the dragon grows
+  belly+=spec.meal
+  if belly_fill()>=1 then grow() end
   -- what is left of it is flung clear
   add_particle(
    unit.x,unit.y,dragon.vx*.5+rnd(2)-1,-2-rnd(2),24,"body").sprite=spec.sprite
@@ -98,13 +102,15 @@ end
 
 unit_ai={}
 
+-- fights from the edge of the dragon's body, not from under it
 function unit_ai.melee(unit,dir_x,dir_y,distance)
  local spec=unit.spec
- if distance<=11 and unit.cooldown<=0 then
+ local reach=6+dragon.size*8
+ if distance<=reach+2 and unit.cooldown<=0 then
   damage_dragon(spec.damage,dir_x,dir_y,spec.knock)
   unit.cooldown=spec.cooldown
  end
- if distance>10 then
+ if distance>reach then
   return dir_x*spec.speed,dir_y*spec.speed
  end
  return 0,0
@@ -125,20 +131,32 @@ function unit_ai.ranged(unit,dir_x,dir_y,distance)
  return 0,0
 end
 
--- melee, plus sudden dashes and (with a shot) a ranged attack
+-- a legend (or a lancer) fights in a cycle the dragon can learn:
+--  press   : close in and trade blows, loosing its shot if it has one
+--  guard   : stands behind a shield no fire can pass. charge it.
+--  gather  : flashes white, fixed on the dragon. get out of the way.
+--  strike  : a long lunge that does three times the harm
 function unit_ai.legend(unit,dir_x,dir_y,distance)
- local move_x,move_y=unit_ai.melee(unit,dir_x,dir_y,distance)
- if unit.dash>0 then
-  unit.dash-=1
-  return unit.dash_x,unit.dash_y
+ local spec=unit.spec
+ unit.clock=(unit.clock+1)%200
+ local clock=unit.clock
+ unit.guard=clock>110 and clock<160
+ if clock<=110 then
+  if spec.shot and clock==60 then
+   shoot(unit,dir_x,dir_y)
+  end
+  return unit_ai.melee(unit,dir_x,dir_y,distance)
+ elseif clock<185 then
+  if clock>=160 then
+   unit.flash=2
+   unit.dash_x,unit.dash_y=dir_x*5,dir_y*5
+  end
+  return 0,0
  end
- if distance>20 and distance<70 and rnd()<.04 then
-  unit.dash,unit.dash_x,unit.dash_y=12,dir_x*3.5,dir_y*3.5
+ if distance<8+dragon.size*8 then
+  damage_dragon(spec.damage*3,dir_x,dir_y,spec.knock*3)
  end
- if unit.spec.shot and frame%75==0 and distance<100 then
-  shoot(unit,dir_x,dir_y)
- end
- return move_x,move_y
+ return unit.dash_x,unit.dash_y
 end
 
 function unit_ai.sheep(unit,dir_x,dir_y,distance)
@@ -192,10 +210,15 @@ function update_units()
  end
 end
 
-function draw_units()
+-- drawn in two passes: commoners and sheep under the dragon, then
+-- (`threats`) the brave over it and its fire, where they can be seen
+function draw_units(threats)
  for unit in all(units) do
-  if on_screen(unit.x,unit.y,8) then
-   local spec=unit.spec
+  local spec=unit.spec
+  if (spec.brave==1)==threats and on_screen(unit.x,unit.y,8) then
+   if unit.guard then
+    circ(unit.x,unit.y,7,frame%4<2 and 12 or 7)
+   end
    if unit.flash>0 then
     for color=1,15 do pal(color,7) end
    elseif spec.color then
@@ -239,7 +262,6 @@ function update_shots()
    if distance<16 and not shot.grazed then
     shot.grazed=true
     add_fury(2)
-    ring(shot.x,shot.y,4)
    end
   end
   if struck then damage_dragon(shot.damage) end

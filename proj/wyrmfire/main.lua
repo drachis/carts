@@ -7,7 +7,7 @@ function new_game()
  score,kills,wrath,heralded=0,0,1,0
  combo,combo_timer,fury,fury_time=0,0,0,0
  shown_score,combo_pop,coin_run,reel_time=0,0,0,0
- hoard=0
+ belly=0
  shake,freeze,flash=0,0,0
  message,message_timer,reinforce_timer="",0,300
  cam_x,cam_y=dragon.x-64,dragon.y-64
@@ -47,8 +47,13 @@ end
 -- fury fills from score, coins, grazes and burnt shots, but not
 -- while an inferno is spending it
 function add_fury(amount)
- if fury_time==0 then
+ if fury_time==0 and fury<100 then
   fury=min(100,fury+amount)
+  if fury==100 then
+   -- make sure the moment it fills is not missed
+   announce("inferno ready! z+x",120)
+   sfx(sound.fanfare)
+  end
  end
 end
 
@@ -61,7 +66,10 @@ function add_score(worth,x,y)
  local gained=worth*multiplier()
  score+=gained/10
  add_fury(worth/4)
- add_particle(x,y-6,0,-.5,30,"text").text="+"..gained
+ -- only the bigger prizes are spelled out, to keep the screen clear
+ if gained>=100 then
+  add_particle(x,y-6,0,-.5,30,"text").text="+"..gained
+ end
  if streaks[combo] then
   announce(streaks[combo])
   roar(70,30)
@@ -79,16 +87,6 @@ function collect_coin()
  add_fury(.5)
  poke(0x3200+sound.coin*68,24+coin_run%32)
  sfx(sound.coin)
- -- and it is added to the hoard, which the dragon grows on
- hoard+=1
- if hoard_fill()>=1 then grow() end
-end
-
--- how far the hoard is towards the dragon's next age, 0 to 1.
--- at the last age there is nothing left to grow into.
-function hoard_fill()
- local next_age=ages[age+1]
- return next_age and hoard/next_age.hoard or 0
 end
 
 -- the boon reel: flicker through the boons, then land on one
@@ -138,9 +136,11 @@ function update_wrath()
  end
 end
 
-function draw_bar(x,y,width,fraction,color,back)
- rectfill(x,y,x+width,y+1,back)
- rectfill(x,y,x+width*mid(0,fraction,1),y+1,color)
+-- every gauge is a bar with its name written on it
+function draw_bar(label,x,y,width,fraction,color,back)
+ rectfill(x,y,x+width,y+6,back)
+ rectfill(x,y,x+width*mid(0,fraction,1),y+6,color)
+ print(label,x+2,y+1,7)
 end
 
 -- an arrow at the screen edge to the next step of the run: the
@@ -178,72 +178,76 @@ function draw_blaze()
  end
 end
 
+-- top strip: health, fire, score, multiplier. second strip, when
+-- there is one: the boss. bottom strip: growth (the sheep), fury,
+-- and what still stands between the dragon and camelot.
 function draw_hud()
  local blink=frame%8<4
  if state=="play" then
-  if fury_time>0 or reel_time>0 or multiplier()==config.max_multiplier then
-   draw_blaze()
-  end
+  if fury_time>0 then draw_blaze() end
   if combo>1 then
    -- the hit counter swells for a moment with each new hit
    local text,width=combo.." hits",4
    if combo_pop>0 then
     text,width="\^w\^t"..text,8
    end
-   print(text,126-#(combo.." hits")*width,13,blink and 10 or 9)
+   print(text,126-#(combo.." hits")*width,18,blink and 10 or 9)
   end
   draw_compass()
   -- a red frame beats when the dragon is close to death
-  if dragon.hp<30 and frame%20<10 then
-   rect(0,9,127,127,8)
-  end
-  if fury>=100 and blink then
-   print_centered("z+x: inferno!",110,10)
+  if dragon.hp<dragon.max_hp/3 and frame%20<10 then
+   rect(0,8,127,119,8)
   end
  end
 
- rectfill(0,0,127,8,0)
- draw_bar(2,1,34,dragon.hp/dragon.max_hp,8,2)
- draw_bar(2,4,34,dragon.fire/dragon.max_fire,9,4)
- draw_bar(2,7,34,fury_time>0 and fury_time/config.fury_frames or fury/100,
-  (fury_time>0 or fury>=100) and blink and 7 or 10,5)
+ rectfill(0,0,127,7,0)
+ rectfill(0,120,127,127,0)
+ draw_bar("hp",0,0,36,dragon.hp/dragon.max_hp,8,2)
+ draw_bar("fire",39,0,36,dragon.fire/dragon.max_fire,9,4)
  -- the score rolls up to its true value like a payout counter
- print(points(shown_score),40,1,shown_score<flr(score) and 10 or 7)
- -- the hoard: gold gathered towards the dragon's next growth
- draw_bar(40,7,22,hoard_fill(),10,4)
- print("ko "..kills,66,2,6)
+ print(points(shown_score),79,1,shown_score<flr(score) and 10 or 7)
  if combo>1 then
-  -- the combo and how long is left to keep it going
-  print("x"..multiplier(),94,1,blink and 10 or 9)
-  line(94,7,94+combo_timer/config.combo_frames*10,7,10)
+  -- the multiplier and how long is left to keep the combo going
+  print("x"..multiplier(),112,1,blink and 10 or 9)
+  line(112,7,112+combo_timer/config.combo_frames*12,7,10)
  end
- -- the realm's wrath (red) over the wards still standing (blue)
- for level=1,#wrath_levels do
-  pset(106+level*4,3,level<=wrath and 8 or 5)
-  if level<=wards then pset(106+level*4,6,12) end
+
+ -- eat to fill the bar beside the sheep, and grow
+ spr(71,0,120)
+ draw_bar("",9,121,30,belly_fill(),11,3)
+ if fury_time>0 then
+  draw_bar("inferno!",43,121,52,fury_time/config.fury_frames,12,1)
+ elseif fury<100 then
+  draw_bar("fury",43,121,52,fury/100,10,5)
+ else
+  draw_bar("z+x!",43,121,52,1,blink and 7 or 10,5)
+ end
+ if wards>0 then
+  print(wards.." wards",99,122,12)
+ else
+  print("camelot",99,122,10)
  end
 
  if boss then
-  local spec=boss.spec
-  rectfill(0,119,127,127,0)
-  print(spec.name,2,121,spec.color)
-  draw_bar(60,122,65,boss.hp/spec.hp,8,2)
+  draw_bar(boss.spec.name,0,9,127,boss.hp/boss.spec.hp,8,2)
  end
  if message_timer>0 then
-  print_centered(message,22)
+  print_centered(message,27)
  end
 end
 
 function draw_title()
- rectfill(0,24,127,100,0)
- print("\^w\^twyrmfire",33,31,8)
- print_centered("burn the churches. raze camelot.",48,9)
- print_centered("arrows  fly",62,6)
- print_centered("z  breathe fire",70,6)
- print_centered("x  charge & devour",78,6)
- print_centered("press x",90,7)
+ rectfill(0,24,127,112,0)
+ print("\^w\^twyrmfire",33,29,8)
+ print_centered("burn the churches. raze camelot.",44,9)
+ print_centered("arrows  fly",56,6)
+ print_centered("z  breathe fire (locks aim)",63,6)
+ print_centered("x  charge & devour",70,6)
+ print_centered("z+x  inferno, when fury is full",77,6)
+ print_centered("eat sheep to grow",84,11)
+ print_centered("press x",95,7)
  if high_score>0 then
-  print_centered("best "..points(high_score),106,10)
+  print_centered("best "..points(high_score),104,10)
  end
 end
 
@@ -315,10 +319,12 @@ function _draw()
  map(cam_x\8,cam_y\8,cam_x\8*8,cam_y\8*8,17,17)
  draw_fire()
  draw_buildings()
- draw_units()
- draw_shots()
+ draw_units(false)
  draw_dragon()
  draw_particles()
+ -- everything that can hurt the dragon is drawn over it
+ draw_units(true)
+ draw_shots()
  draw_shots(true)
 
  camera()
@@ -327,12 +333,5 @@ function _draw()
  else
   draw_hud()
   if state!="play" then draw_game_over() end
- end
- -- as the realm's wrath climbs, smoke dims the land: the screen
- -- palette swaps the greens for darker ones. pal() above resets
- -- it every frame, so it is set last.
- if wrath>=config.dusk_wrath then
-  pal(3,131,1)
-  pal(11,3,1)
  end
 end

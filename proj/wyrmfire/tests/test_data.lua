@@ -6,7 +6,7 @@ function sfx() end
 
 -- the globals main.lua would have set up
 units,particles={},{}
-shake,freeze,flash,frame,fury_time,hoard=0,0,0,0,0,0
+shake,freeze,flash,frame,fury_time,belly=0,0,0,0,0,0
 
 -- every name the data refers to must exist
 for spec in all(unit_specs) do
