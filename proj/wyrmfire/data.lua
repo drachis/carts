@@ -98,10 +98,10 @@ lull_frames=600
 ages=parse_table[[
 name,meals,stats
 whelp,0
-drake,40,size=0.4/weight=1/max_hp=60/hp=60/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5
-wyrm,110,size=0.4/weight=1/max_hp=60/hp=60/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5
-great wyrm,200,size=0.4/weight=1/max_hp=60/hp=60/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5
-calamity,320,size=0.4/weight=1/max_hp=70/hp=70/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5
+drake,40,size=0.4/weight=1/max_hp=60/hp=60/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5/kick=0.5
+wyrm,110,size=0.4/weight=1/max_hp=60/hp=60/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5/kick=0.5
+great wyrm,200,size=0.4/weight=1/max_hp=60/hp=60/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5/kick=0.5
+calamity,320,size=0.4/weight=1/max_hp=70/hp=70/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5/kick=0.5
 ]]
 
 -- razing a settlement spins the reel and lands on one of these.
@@ -124,6 +124,10 @@ streaks=parse_record[[
 45=massacre!
 70=apocalypse!
 ]]
+
+-- the dragon's body before scaling: pairs of how far along the
+-- spine a circle sits and its radius, from haunches to snout
+body_shape=split"-4,4,0,5,6,3,10,3,13,2"
 
 -- laid over the dragon's stats while an inferno lasts. rage
 -- multiplies the breath's power (its reach, speed and damage), so
@@ -162,6 +166,7 @@ snap=0
 accel=0.8
 breath_accel=0.4
 recoil=0.12
+kick=1.5
 friction=0.72
 turn_rate=0.14
 mercy=20
@@ -203,13 +208,13 @@ unit_specs=parse_table[[
 name,sprite,hp,speed,damage,cooldown,fire_taken,score,meal,brave,ai,range,keep_away,shot,color,knock,volley
 serf,64,3,0.5,1,30,1,5,1,0,melee
 archer,65,4,0.45,2,80,1,10,1,0,ranged,70,0.4,arrow,,,3
-knight,66,12,0.8,4,30,0.5,25,3,1,melee,,,,,7
-champion,67,20,0.5,4,90,0.3,50,3,1,ranged,80,0.4,holy,,,3
-ballista,69,15,0.2,8,120,0.7,40,0,1,ranged,100,0,bolt
-catapult,70,15,0.2,12,150,0.7,40,0,1,ranged,110,0,rock
+knight,66,12,0.8,6,30,0.5,25,3,1,melee,,,,,7
+champion,67,20,0.5,6,90,0.3,50,3,1,ranged,80,0.4,holy,,,3
+ballista,69,15,0.2,12,120,0.7,40,0,1,ranged,100,0,bolt
+catapult,70,15,0.2,18,150,0.7,40,0,1,ranged,110,0,rock
 sheep,71,1,0.3,0,0,1,0,10,0,sheep
-lancer,72,18,1.3,5,40,0.5,60,4,1,legend,,,,,9
-merlin,73,220,0.6,6,70,0.3,800,40,1,ranged,90,0.6,arcane,12,,10
+lancer,72,18,1.3,7,40,0.5,60,4,1,legend,,,,,9
+merlin,73,220,0.6,10,70,0.3,800,40,1,ranged,90,0.6,arcane,12,,10
 sir gawain,68,60,1,9,40,0.3,500,30,1,legend,,,,11,10
 sir percival,68,80,1,13,40,0.3,500,30,1,legend,,,,14,10
 sir galahad,68,100,1,18,40,0.3,500,30,1,legend,,,,7,10

@@ -58,12 +58,14 @@ function damage_unit(unit,amount,eaten)
  if eaten then
   heal_dragon(spec.meal)
   sfx(sound.eat)
-  -- eating is how the dragon grows
-  belly+=spec.meal
-  if belly_fill()>=1 then grow() end
-  -- what is left of it is flung clear
-  add_particle(
-   unit.x,unit.y,dragon.vx*.5+rnd(2)-1,-2-rnd(2),24,"body").sprite=spec.sprite
+  -- eating is how the dragon grows: the meal is flung up and
+  -- flies to the sheep gauge, counting when it gets there. (added
+  -- directly, so that a full particle list cannot lose a meal.)
+  add(particles,{
+   x=unit.x,y=unit.y,vx=rnd(4)-2,vy=-3,
+   life=600,span=600,kind="coin",
+   meal=spec.meal,sprite=spec.sprite,
+  })
  elseif spec.score>0 then
   sfx(sound.die)
  end
@@ -104,15 +106,14 @@ end
 
 unit_ai={}
 
--- fights from the edge of the dragon's body, not from under it
+-- closes until it touches the dragon's body, and strikes from there
 function unit_ai.melee(unit,dir_x,dir_y,distance)
  local spec=unit.spec
- local reach=6+dragon.size*8
- if distance<=reach+2 and unit.cooldown<=0 then
+ if distance<=4 and unit.cooldown<=0 then
   damage_dragon(spec.damage,dir_x,dir_y,spec.knock)
   unit.cooldown=spec.cooldown
  end
- if distance>reach then
+ if distance>2 then
   return dir_x*spec.speed,dir_y*spec.speed
  end
  return 0,0
@@ -155,7 +156,7 @@ function unit_ai.legend(unit,dir_x,dir_y,distance)
   end
   return 0,0
  end
- if distance<8+dragon.size*8 then
+ if distance<=4 then
   damage_dragon(spec.damage*3,dir_x,dir_y,spec.knock*3)
  end
  return unit.dash_x,unit.dash_y
@@ -202,6 +203,10 @@ function update_units()
   local dx=dragon.x+unit.offset_x-unit.x
   local dy=dragon.y+unit.offset_y-unit.y
   local distance=max(length(dx,dy),1)
+  local dir_x,dir_y=dx/distance,dy/distance
+  -- units head for the dragon's middle, but how far away they are
+  -- is measured to its skin, whichever part of it is nearest
+  distance=dragon_gap(unit.x,unit.y)
   unit.cooldown-=1
   unit.flash=max(0,unit.flash-1)
 
@@ -210,7 +215,7 @@ function update_units()
    unit.fear=max(unit.fear,20)
   end
   local ai=unit.burn>0 and "panic" or unit.fear>0 and "flee" or spec.ai
-  local move_x,move_y=unit_ai[ai](unit,dx/distance,dy/distance,distance)
+  local move_x,move_y=unit_ai[ai](unit,dir_x,dir_y,distance)
   unit.x=mid(4,unit.x+move_x+unit.push_x,507)
   unit.y=mid(4,unit.y+move_y+unit.push_y,507)
   unit.push_x*=.8
@@ -260,17 +265,18 @@ function update_shots()
   local struck
   if spec.lob then
    -- harmless in the air, a blast where it lands
-   struck=landed and dragon_distance(shot.target_x,shot.target_y)<14
+   struck=landed and dragon_gap(shot.target_x,shot.target_y)<8
    if landed then
     burst(shot.target_x,shot.target_y,8,6)
     jolt(2)
    end
   else
-   -- only the dragon's heart can be hit. a near miss is a graze,
-   -- which feeds the fury once per shot.
-   local distance=dragon_distance(shot.x,shot.y)
-   struck=distance<5
-   if distance<16 and not shot.grazed then
+   -- a shot hits whatever part of the body it touches (not the
+   -- wings). a near miss is a graze, which feeds the fury once per
+   -- shot.
+   local distance=dragon_gap(shot.x,shot.y)
+   struck=distance<=0
+   if distance<10 and not shot.grazed then
     shot.grazed=true
     add_fury(2)
    end

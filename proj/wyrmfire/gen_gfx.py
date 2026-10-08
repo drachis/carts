@@ -14,7 +14,7 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-CARTS = sys.argv[1:] or ["wyrmfire.p8", "tests/test_run.p8"]
+CARTS = sys.argv[1:] or ["wyrmfire.p8", "tests/test_run.p8", "tests/test_title.p8"]
 BURNT = 16  # sprite id offset from a tile to its burnt form
 
 SPRITES = {}  # id -> 8 rows of 8 hex digits

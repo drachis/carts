@@ -2,12 +2,14 @@ pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
 -- test_run.p8 : headless soak test. run it with: py run_tests.py
+-- soak_main.lua is generated from ../main.lua by run_tests.py
 #include ../data.lua
 #include ../core.lua
 #include ../world.lua
 #include ../units.lua
 #include ../dragon.lua
-#include ../main.lua
+#include soak_main.lua
+#include dump.lua
 #include test_run.lua
 __gfx__
 000000003333333333333333333bb333aa9aaa9a44444444cccccccc444444440000000000000000000000000000000000000000000000000000000000000000

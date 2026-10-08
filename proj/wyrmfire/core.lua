@@ -43,7 +43,7 @@ end
 -- carries a ramp of its own (the dragon's `flame` stat)
 fire_ramp=split"5,8,9,10,7"
 
--- kind is "fire", "smoke", "debris", "ring", "coin", "text" or "body".
+-- kind is "fire", "smoke", "debris", "ring", "coin" or "text".
 -- embers ignite where they die. the particle is returned so the
 -- caller can add what its kind needs (size, text, sprite).
 function add_particle(x,y,vx,vy,life,kind,ember)
@@ -90,21 +90,27 @@ function update_particles()
   if p.kind=="fire" then
    p.vx*=.92
    p.vy*=.92
-  elseif p.kind=="body" then
-   -- flung into the air, then down again
-   p.vy+=.25
   elseif p.kind=="coin" then
    p.vx*=.9
    p.vy*=.9
-   -- after a moment on the ground it is drawn to the hoard
+   -- after a moment it is drawn to where it belongs: a coin to
+   -- the dragon, a meal (something eaten) to the sheep gauge in
+   -- the corner of the screen, where it counts towards growth
    if p.span-p.life>12 then
     local dx,dy=dragon.x-p.x,dragon.y-p.y
+    if p.meal then
+     dx,dy=cam_x+34-p.x,cam_y+4-p.y
+    end
     local distance=max(length(dx,dy),1)
     p.vx+=dx/distance*.8
     p.vy+=dy/distance*.8
     if distance<8 then
-     collect_coin()
      p.life=0
+     if p.meal then
+      feed(p.meal)
+     else
+      collect_coin()
+     end
     end
    end
   end
@@ -129,14 +135,14 @@ function draw_particles()
    circfill(p.x,p.y,1,life>10 and 5 or 6)
   elseif p.kind=="ring" then
    circ(p.x,p.y,p.size*(1-life/p.span),life>4 and 7 or 9)
+  elseif p.meal then
+   local tumbling=life%6<3
+   spr(p.sprite,p.x-4,p.y-4,1,1,tumbling,tumbling)
   elseif p.kind=="coin" then
    circfill(p.x,p.y,1,life%6<3 and 10 or 9)
    pset(p.x,p.y-1,7)
   elseif p.kind=="text" then
    print(p.text,p.x-#p.text*2,p.y,life%4<2 and 7 or 10)
-  elseif p.kind=="body" then
-   local tumbling=life%6<3
-   spr(p.sprite,p.x-4,p.y-4,1,1,tumbling,tumbling)
   else
    pset(p.x,p.y,life>8 and 6 or 4)
   end

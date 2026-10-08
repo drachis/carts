@@ -1,28 +1,77 @@
-"""run_tests.py - regenerate art, run the headless test carts, save a screenshot.
+"""run_tests.py - regenerate art, run the headless test carts, save screenshots.
 
 usage: py run_tests.py
 Set PICO8 to the pico8 executable if it is not in the default location.
 Exits non-zero if a cart fails to run, reports a runtime error, or never
 prints its "ok" line.
 
-There are two carts because the game plus its tests no longer fit in one
-cart's 8192 tokens: test_data checks the data tables without the world or
-main loop, test_run soaks the whole game.
+There are three carts because the game plus its tests no longer fit in one
+cart's 8192 tokens: test_data checks the data tables without the world,
+test_title draws the menus with the whole game, and test_run soaks the game
+with those menus stubbed out to make room for its harness.
+
+Carts print screens as text (tests/dump.lua); each becomes <name>.png here.
 """
 import os
+import re
+import struct
 import subprocess
 import sys
+import zlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PICO8 = os.environ.get("PICO8", r"C:\Program Files (x86)\PICO-8\pico8.exe")
-TEST_CARTS = [os.path.join("tests", "test_data.p8"), os.path.join("tests", "test_run.p8")]
-FRAME_DUMP = os.path.join("tests", "shot_fb.p8")
-SCREENSHOT = "shot.png"
+TEST_CARTS = [os.path.join("tests", name) for name in
+              ("test_data.p8", "test_title.p8", "test_run.p8")]
+# functions the soak cart does without, to make room for its harness
+SOAK_STUBS = ["draw_title", "draw_game_over"]
 TIMEOUT_SECONDS = 180
+SCREEN_ROW = re.compile(r"^INFO: (\w+) ([0-9a-f]{128})$")
+PNG_SCALE = 4
+PALETTE = [(0, 0, 0), (29, 43, 83), (126, 37, 83), (0, 135, 81), (171, 82, 54),
+           (95, 87, 79), (194, 195, 199), (255, 241, 232), (255, 0, 77),
+           (255, 163, 0), (255, 236, 39), (0, 228, 54), (41, 173, 255),
+           (131, 118, 156), (255, 119, 168), (255, 204, 170)]
 
 
 def run(args, **kwargs):
     return subprocess.run(args, cwd=HERE, text=True, capture_output=True, **kwargs)
+
+
+def write_png(path, rows):
+    """Write rows of hex digits (one PICO-8 colour per digit) as a scaled PNG."""
+    def chunk(kind, data):
+        body = kind + data
+        return struct.pack(">I", len(data)) + body + struct.pack(">I", zlib.crc32(body))
+
+    raw = bytearray()
+    for row in rows:
+        line = b"".join(bytes(PALETTE[int(digit, 16)]) * PNG_SCALE for digit in row)
+        raw += (b"\x00" + line) * PNG_SCALE
+    width, height = len(rows[0]) * PNG_SCALE, len(rows) * PNG_SCALE
+    with open(path, "wb") as handle:
+        handle.write(b"\x89PNG\r\n\x1a\n")
+        handle.write(chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)))
+        handle.write(chunk(b"IDAT", zlib.compress(bytes(raw), 9)))
+        handle.write(chunk(b"IEND", b""))
+
+
+def save_screens(log):
+    """Pull dumped screens out of a cart's output; return the rest of it."""
+    screens, rest = {}, []
+    for line in log.splitlines():
+        row = SCREEN_ROW.match(line)
+        if row:
+            screens.setdefault(row.group(1), []).append(row.group(2))
+        else:
+            rest.append(line)
+    for name, rows in screens.items():
+        if len(rows) == 128:
+            write_png(os.path.join(HERE, name + ".png"), rows)
+            rest.append("wrote %s.png" % name)
+        else:
+            rest.append("incomplete screen %s: %d rows" % (name, len(rows)))
+    return "\n".join(rest)
 
 
 def run_cart(cart):
@@ -33,27 +82,39 @@ def run_cart(cart):
         print("FAIL: %s did not exit\n" % cart, hung.stdout or "", hung.stderr or "")
         return False
     log = result.stdout + result.stderr
-    print(log.strip())
+    print(save_screens(log).strip())
     if "INFO: ok " not in log or "error" in log.lower():
-        print("FAIL: %s did not complete cleanly (pico8 exit code %s)" % (cart, result.returncode))
+        print("FAIL: %s did not complete cleanly (pico8 exit code %#x)"
+              % (cart, result.returncode & 0xffffffff))
         return False
     return True
 
 
+def build_soak_main():
+    """Write tests/soak_main.lua: main.lua with the SOAK_STUBS emptied."""
+    source = open(os.path.join(HERE, "main.lua"), encoding="utf-8").read()
+    for name in SOAK_STUBS:
+        # a top-level function runs to the first `end` at the start of a line
+        pattern = r"\nfunction %s\(\).*?\nend\n" % name
+        source, count = re.subn(pattern, "\nfunction %s() end\n" % name, source, flags=re.S)
+        if count != 1:
+            raise RuntimeError("could not find %s in main.lua" % name)
+    with open(os.path.join(HERE, "tests", "soak_main.lua"), "w",
+              encoding="utf-8", newline="\n") as handle:
+        handle.write("-- generated from main.lua by run_tests.py; do not edit\n" + source)
+
+
 def main():
+    build_soak_main()
     gen = run([sys.executable, "gen_gfx.py"])
     print(gen.stdout.strip())
     if gen.returncode != 0:
         print(gen.stderr)
         return 1
-
     for cart in TEST_CARTS:
         if not run_cart(cart):
             return 1
-
-    shot = run([sys.executable, "fb_to_png.py", FRAME_DUMP, SCREENSHOT, "4"])
-    print(shot.stdout.strip() or shot.stderr.strip())
-    return shot.returncode
+    return 0
 
 
 if __name__ == "__main__":

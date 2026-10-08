@@ -1,6 +1,6 @@
--- test_data.lua : checks the data tables against the code, included by
--- test_data.p8 after data, core, units and dragon (no world, no main loop,
--- so there is room for the checks themselves).
+-- test_data.lua : checks the data tables against the code, and whatever
+-- else can be tested without a world. included by test_data.p8 after every
+-- module but world.lua, which leaves room for the checks themselves.
 
 function sfx() end
 
@@ -75,6 +75,17 @@ for step=2,#ages do
 end
 assert(dragon.accel>0 and dragon.turn_rate>0 and dragon.friction<1,
  "the last age cannot fly")
+
+-- spin the boon reel until every boon has landed at least once
+local landed={}
+for spin=1,80 do
+ reel_time=config.reel_frames
+ while reel_time>0 do update_reel() end
+ landed[reel.name]=true
+end
+for boon in all(boons) do
+ assert(landed[boon.name],boon.name.." never came up on the reel")
+end
 
 printh("ok data")
 extcmd("shutdown")

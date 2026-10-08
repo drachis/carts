@@ -6,4 +6,5 @@ __lua__
 #include ../core.lua
 #include ../units.lua
 #include ../dragon.lua
+#include ../main.lua
 #include test_data.lua

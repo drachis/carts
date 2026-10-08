@@ -8,6 +8,7 @@ function new_dragon()
  for i=1,6 do
   add(tail,{x=dragon.x-i*4,y=dragon.y})
  end
+ update_tail()
  tune_voice()
 end
 
@@ -51,6 +52,14 @@ function belly_fill()
  return next_age and belly/next_age.meals or 0
 end
 
+-- a meal reaches the gauge, which pops for a moment
+function feed(meal)
+ belly+=meal
+ belly_pop=8
+ sfx(sound.coin)
+ if belly_fill()>=1 then grow() end
+end
+
 -- it has eaten enough: the dragon comes of age
 function grow()
  age+=1
@@ -82,7 +91,7 @@ function damage_dragon(amount,dir_x,dir_y,knock)
  end
  dragon.hp-=amount
  dragon.flash=dragon.mercy
- dragon.calm=150
+ dragon.calm=240
  jolt(2)
  sfx(sound.hurt)
  if dragon.hp<=0 then
@@ -103,6 +112,40 @@ function update_tail()
   segment.y=prev_y+dy/distance
   prev_x,prev_y=segment.x,segment.y
  end
+ update_body()
+end
+
+-- the dragon's body is a list of circles: five along the spine
+-- from haunches to snout (body_shape in data.lua), then the tail.
+-- it is rebuilt each frame and is both what is drawn and what can
+-- be hit, so the two always agree.
+function update_body()
+ local size=dragon.size
+ body={}
+ for i=1,9,2 do
+  local along=body_shape[i]*size
+  add(body,{
+   x=dragon.x+cos(dragon.angle)*along,
+   y=dragon.y+sin(dragon.angle)*along,
+   r=body_shape[i+1]*size,
+  })
+ end
+ for i,segment in ipairs(tail) do
+  segment.r=(4-i*.5)*size
+  add(body,segment)
+ end
+end
+
+-- how far a point is from the dragon's skin: zero or less is a
+-- touch. far-off points skip the per-circle test.
+function dragon_gap(x,y)
+ local gap=dragon_distance(x,y)
+ if gap<dragon.size*32 then
+  for part in all(body) do
+   gap=min(gap,length(x-part.x,y-part.y)-part.r)
+  end
+ end
+ return gap
 end
 
 -- is a target of this radius inside the cone of fire?
@@ -126,10 +169,13 @@ function breathe_fire(mouth_x,mouth_y)
  d.fire_delay=8
  if d.fire<=0 then d.winded=true end
  if not d.exhaling then
-  -- the first gasp is a blast
+  -- the first gasp is a blast that kicks the dragon back, harder
+  -- the fuller its lungs and the greater its age
   d.exhaling=true
   flames*=5
-  jolt(4)
+  d.vx-=cos(d.angle)*d.kick*power
+  d.vy-=sin(d.angle)*d.kick*power
+  jolt(2+d.kick)
   sfx(sound.roar)
  end
  -- it pushes the dragon back
@@ -367,8 +413,9 @@ function draw_dragon()
  pal(8,hurt and 7 or d.body)
  pal(2,hurt and 7 or d.wing)
 
- for i=#tail,1,-1 do
-  circfill(tail[i].x,tail[i].y,(4-i*.5)*size,i%2==0 and 2 or 8)
+ -- the tail, tip first (body[6] onwards)
+ for i=#body,6,-1 do
+  circfill(body[i].x,body[i].y,body[i].r,i%2==0 and 8 or 2)
  end
 
  for side=-1,1,2 do
@@ -390,10 +437,9 @@ function draw_dragon()
    x+fx*5+sx*side*5,y+fy*5+sy*side*5,6)
  end
 
- -- body: haunches, chest, neck, head, snout. each is a circle at
- -- some distance along the spine.
- for part in all{{-4,4},{0,5},{6,3},{10,3},{13,2}} do
-  circfill(x+fx*part[1],y+fy*part[1],part[2]*size,8)
+ -- haunches, chest, neck, head, snout
+ for i=1,5 do
+  circfill(body[i].x,body[i].y,body[i].r,8)
  end
  for i=-7,5,3 do
   pset(x+fx*i,y+fy*i,2)

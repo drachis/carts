@@ -7,7 +7,7 @@ function new_game()
  score,kills,wrath,heralded=0,0,1,0
  combo,combo_timer,fury,fury_time=0,0,0,0
  shown_score,combo_pop,coin_run,reel_time=0,0,0,0
- belly=0
+ belly,belly_pop=0,0
  shake,freeze,flash=0,0,0
  message,message_timer,reinforce_timer="",0,300
  cam_x,cam_y=dragon.x-64,dragon.y-64
@@ -51,7 +51,7 @@ function add_fury(amount)
   fury=min(100,fury+amount)
   if fury==100 then
    -- make sure the moment it fills is not missed
-   announce("inferno ready! z+x",120)
+   announce("fury is full! \142+\151",120)
    sfx(sound.fanfare)
   end
  end
@@ -205,7 +205,7 @@ function draw_hud()
    rect(0,10,127,127,8)
   end
   if fury>=100 and blink then
-   print_centered("z+x: inferno!",112,10)
+   print_centered("\142+\151 unleash your fury",112,10)
   end
  end
 
@@ -217,9 +217,14 @@ function draw_hud()
  else
   draw_gauge(146,20,fury/100,fury>=100 and blink and 7 or 10,5)
  end
- -- eat to fill the column behind the sheep, and grow
- draw_gauge(32,30,belly_fill(),11,3)
+ -- eat to fill the column behind the sheep, and grow. it flashes
+ -- and sparkles as each meal lands.
+ belly_pop-=1
+ draw_gauge(32,30,belly_fill(),belly_pop>0 and 7 or 11,3)
  spr(71,30,1)
+ if belly_pop>0 then
+  circ(34,4,14-belly_pop,10)
+ end
  -- the score rolls up to its true value like a payout counter
  print(points(shown_score),43,2,shown_score<flr(score) and 10 or 7)
  if combo>1 then
@@ -241,18 +246,31 @@ function draw_hud()
  end
 end
 
+-- a panel over the top of the screen, in reading order: title,
+-- what to do, best score, how to grow, controls. the strip left
+-- clear below it shows the whelp circling its lair, with how to
+-- start flashing over it.
+-- the controls are written with the font's own button glyphs
+-- (\139 \145 \148 \131 are the arrows, \142 is o/z, \151 is x),
+-- each as a command. buttons and commands are two columns, each
+-- one print, so they line up whatever the glyphs' widths.
 function draw_title()
- rectfill(0,24,127,112,0)
- print("\^w\^twyrmfire",33,29,8)
- print_centered("burn the churches. raze camelot.",44,9)
- print_centered("arrows  fly",56,6)
- print_centered("z  breathe fire (locks aim)",63,6)
- print_centered("x  charge & devour",70,6)
- print_centered("z+x  inferno, when fury is full",77,6)
- print_centered("eat sheep to grow",84,11)
- print_centered("press x",95,7)
+ rectfill(0,0,127,76,0)
+ print("\^w\^twyrmfire",33,4,8)
+ print_centered("burn the churches. raze camelot.",19,9)
+ -- the best score takes a line only once there is one, so the
+ -- lines below close up when there is not
+ local y=27
  if high_score>0 then
-  print_centered("best "..points(high_score),104,10)
+  print_centered("best "..points(high_score),y,10)
+  y+=8
+ end
+ spr(71,25,y)
+ print("eat sheep to grow",36,y+2,11)
+ print("\142\n\151\n\142+\151\n\139\145\148\131",14,y+12,7)
+ print("breathe fire\ncharge & devour\nunleash your fury\nfly",52,y+12,6)
+ if frame%30<20 then
+  print_centered("press \151 to play",118,7)
  end
 end
 
@@ -264,7 +282,7 @@ function draw_game_over()
  print_centered("score "..points(score).."  best "..points(high_score),60,7)
  print_centered(kills.." slain  "..razed.."% razed",68,6)
  if frame-end_frame>45 then
-  print_centered("press x",78,5)
+  print_centered("press \151",78,5)
  end
 end
 
@@ -296,6 +314,13 @@ function _update()
   combo_timer-=1
   if combo_timer<=0 then combo,coin_run=0,0 end
  elseif state=="title" then
+  -- the whelp flies a lazy oval over its lair while it waits,
+  -- flat enough to stay inside the strip under the title panel
+  local turn=frame/240
+  dragon.x=84+cos(turn)*30
+  dragon.y=84+sin(turn)*14
+  dragon.angle=atan2(sin(turn)*30,-cos(turn)*14)
+  update_tail()
   if pressed then state="play" end
  elseif pressed and frame-end_frame>45 then
   new_game()
@@ -318,8 +343,15 @@ function _draw()
  cls()
  -- the camera eases towards a point ahead of the dragon's nose,
  -- so there is always room to see what it is aiming at
- cam_x+=(mid(0,dragon.x+cos(dragon.angle)*24-64,384)-cam_x)*.15
- cam_y+=(mid(0,dragon.y+sin(dragon.angle)*24-64,384)-cam_y)*.15
+ -- (half its breath's reach ahead, so the view opens up as it grows)
+ local lead=dragon.breath_range/2
+ cam_x+=(mid(0,dragon.x+cos(dragon.angle)*lead-64,384)-cam_x)*.15
+ cam_y+=(mid(0,dragon.y+sin(dragon.angle)*lead-64,384)-cam_y)*.15
+ -- on the title screen the view is fixed on the lair and lowered,
+ -- so the dragon's oval sits in the strip beneath the panel
+ if state=="title" then
+  cam_x,cam_y=20,-18
+ end
  camera(cam_x+rnd(shake)-shake/2,cam_y+rnd(shake)-shake/2)
  map(cam_x\8,cam_y\8,cam_x\8*8,cam_y\8*8,17,17)
  draw_fire()
