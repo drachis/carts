@@ -44,6 +44,8 @@ function damage_unit(unit,amount,eaten)
  del(units,unit)
  burst(unit.x,unit.y,4,4)
  if unit==boss then boss=nil end
+ -- a town's hero held its dome up
+ if unit.guards then unit.guards.hero=nil end
  if spec.color then
   -- a named boss is a feast however it dies
   eaten=true
@@ -74,8 +76,8 @@ end
 
 -- a unit with a volley looses that many shots, fanned by the
 -- shot's own spread
-function shoot(unit,dir_x,dir_y)
- local shot=shot_specs[unit.spec.shot]
+function shoot(unit,dir_x,dir_y,kind)
+ local shot=shot_specs[kind or unit.spec.shot]
  local volley=unit.spec.volley or 1
  for i=1,volley do
   local angle=atan2(dir_x,dir_y)+(i-(volley+1)/2)*shot.fan
@@ -183,9 +185,20 @@ function unit_ai.panic(unit)
  return cos(unit.wander)*1.2,sin(unit.wander)*1.2
 end
 
+-- units do not stack. each claims the tile it stands on in a
+-- scratch grid in user memory (0x4300, a byte per tile); one that
+-- finds its tile taken is jostled off it. one peek per unit, with
+-- no pair checks and no pathing, however big the mob.
 function update_units()
+ memset(0x4300,0,0x1000)
  for unit in all(units) do
   local spec=unit.spec
+  local cell=0x4300+unit.x\8+unit.y\8*64
+  if peek(cell)>0 then
+   unit.push_x+=rnd(2)-1
+   unit.push_y+=rnd(2)-1
+  end
+  poke(cell,1)
   local dx=dragon.x+unit.offset_x-unit.x
   local dy=dragon.y+unit.offset_y-unit.y
   local distance=max(length(dx,dy),1)
@@ -210,12 +223,10 @@ function update_units()
  end
 end
 
--- drawn in two passes: commoners and sheep under the dragon, then
--- (`threats`) the brave over it and its fire, where they can be seen
-function draw_units(threats)
+function draw_units()
  for unit in all(units) do
   local spec=unit.spec
-  if (spec.brave==1)==threats and on_screen(unit.x,unit.y,8) then
+  if on_screen(unit.x,unit.y,8) then
    if unit.guard then
     circ(unit.x,unit.y,7,frame%4<2 and 12 or 7)
    end

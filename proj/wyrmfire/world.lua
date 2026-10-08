@@ -127,10 +127,24 @@ function place_building(kind,tx,ty,home)
  return building
 end
 
+-- a settlement is under a dome, which nothing can harm and the
+-- dragon cannot enter, while its hero lives or (if it is warded)
+-- while any ward stands
+function shielded(home)
+ return home.hero or home.spec.warded==1 and wards>0
+end
+
+function dome_radius(home)
+ return home.spec.radius*8+10
+end
+
 function damage_building(building,amount)
  local spec=building.spec
- -- a warded settlement cannot be harmed while a ward still stands
- if building.home.spec.warded==1 and wards>0 then return end
+ if shielded(building.home) then
+  -- nor can anything under a dome burn
+  building.burn=0
+  return
+ end
  building.hp-=amount
  if building.hp>0 then return end
  local tx,ty,last=building.x\8,building.y\8,spec.size-1
@@ -191,7 +205,14 @@ function update_settlements()
  battle=false
  for home in all(settlements) do
   local spec,x,y=home.spec,home.tx*8,home.ty*8
-  if home.standing>0 and dragon_distance(x,y)<spec.radius*8+40 then
+  local distance,dome=dragon_distance(x,y),dome_radius(home)
+  if shielded(home) and distance<dome then
+   -- the dome throws the dragon back out to its edge
+   dragon.x=x+(dragon.x-x)*dome/distance
+   dragon.y=y+(dragon.y-y)*dome/distance
+   dragon.charge=0
+  end
+  if home.standing>0 and distance<dome+30 then
    battle=true
    if not home.alarmed then
     home.alarmed=true
@@ -199,6 +220,11 @@ function update_settlements()
     sfx(sound.alarm)
     for i=1,spec.militia do
      spawn_unit(rnd(list(spec.muster)),x+rnd(48)-24,y+rnd(48)-24)
+    end
+    -- its hero comes out to meet the dragon; the dome is theirs
+    if home.hero then
+     spawn_boss(home.hero,x,y)
+     boss.guards=home
     end
    end
   end
@@ -256,10 +282,10 @@ function draw_buildings()
    end
   end
  end
- -- the ward is a dome over the whole of the goal's settlement
- if wards>0 then
-  local home=goal.home
-  circ(home.tx*8,home.ty*8,60+frame%8/4,frame%4<2 and 12 or 7)
+ for home in all(settlements) do
+  if shielded(home) then
+   circ(home.tx*8,home.ty*8,dome_radius(home)+frame%8/4,frame%4<2 and 12 or 7)
+  end
  end
 end
 
@@ -362,10 +388,11 @@ function generate_world()
 
  settlements={}
  for i,entry in ipairs(realm) do
-  local kind,name=unpack(split(entry,":"))
+  local kind,name,hero=unpack(split(entry,":"))
   add(settlements,{
    spec=settlement_specs[kind],
    name=name,
+   hero=hero,
    standing=0,
    wards=0,
    tx=(i-1)%3*21+9+flr(rnd(4)),

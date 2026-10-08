@@ -155,11 +155,17 @@ function breathe_fire(mouth_x,mouth_y)
   end
  end
  for unit in all(units) do
-  -- a raised guard turns the fire aside
-  if not unit.guard and in_breath(unit.x,unit.y,mouth_x,mouth_y,0) then
+  if in_breath(unit.x,unit.y,mouth_x,mouth_y,0) then
    local fire_taken=unit.spec.fire_taken
-   if fire_taken>config.fireproof then unit.burn=60 end
-   damage_unit(unit,d.breath_damage*fire_taken*power)
+   if unit.guard then
+    -- a raised guard throws the fire back
+    if frame%12==0 then
+     shoot(unit,-cos(d.angle),-sin(d.angle),"rebuke")
+    end
+   else
+    if fire_taken>config.fireproof then unit.burn=60 end
+    damage_unit(unit,d.breath_damage*fire_taken*power)
+   end
   end
  end
  for building in all(buildings) do
@@ -215,7 +221,7 @@ function charge_impacts(head_x,head_y)
    unit.charge_id=d.charge_id
    -- whatever survives the jaws is thrown back
    unit.push_x,unit.push_y=d.vx,d.vy
-   jolt(3,1)
+   jolt(3)
    damage_unit(unit,d.bite_damage,true)
   end
  end

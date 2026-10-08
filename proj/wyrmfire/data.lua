@@ -69,7 +69,7 @@ wings=11
 ]]
 
 config=parse_record[[
-max_units=100
+max_units=80
 max_particles=320
 alarm_range=110
 fireproof=0.35
@@ -210,11 +210,11 @@ catapult,70,15,0.2,12,150,0.7,40,0,1,ranged,110,0,rock
 sheep,71,1,0.3,0,0,1,0,10,0,sheep
 lancer,72,18,1.3,5,40,0.5,60,4,1,legend,,,,,9
 merlin,73,220,0.6,6,70,0.3,800,40,1,ranged,90,0.6,arcane,12,,10
-sir gawain,68,60,1,6,40,0.3,500,30,1,legend,,,,11,10
-sir percival,68,80,1,6,40,0.3,500,30,1,legend,,,,14,10
-sir galahad,68,100,1,6,40,0.3,500,30,1,legend,,,,7,10
-sir lancelot,68,120,1,6,40,0.3,500,30,1,legend,,,,13,10
-king arthur,68,140,1,10,40,0.3,500,30,1,legend,,,excalibur,10,12,8
+sir gawain,68,60,1,9,40,0.3,500,30,1,legend,,,,11,10
+sir percival,68,80,1,13,40,0.3,500,30,1,legend,,,,14,10
+sir galahad,68,100,1,18,40,0.3,500,30,1,legend,,,,7,10
+sir lancelot,68,120,1,23,40,0.3,500,30,1,legend,,,,13,10
+king arthur,68,160,1,30,40,0.3,500,30,1,legend,,,excalibur,10,12,8
 ]]
 
 -- size 0 draws a streak, otherwise a ball of that radius. a lobbed
@@ -229,6 +229,7 @@ holy,1.1,12,2,120,5,0.07
 bolt,3,9,0,60,5,0,1
 excalibur,1.6,12,2,90,5,0.125
 arcane,1.2,14,2,110,5,0.1
+rebuke,2.2,10,1,50,5,0
 rock,0,5,2,50,7,0,,1
 ]]
 
@@ -261,9 +262,13 @@ town,5,1,3,2,10,300,0,serf/serf/archer/archer/knight,,church/tower/tower/house/h
 camelot,6,1,0,0,14,1000,1,knight/knight/lancer/archer/champion,keep:-1:-1/tower:-4:-4/tower:3:-4/tower:-4:3/tower:3:3,church/tower/tower/house/house/house/house/house
 ]]
 
--- the realm is a 3x3 grid of kind:name settlements, read left to
--- right, top to bottom.
-realm=split"lair:the lair,village:ashford,village:millbrook,village:thornby,town:oakhampton,town:harrowgate,village:dunmere,town:wexcombe,camelot:camelot"
+-- the realm is a 3x3 grid of kind:name:hero settlements, read left
+-- to right, top to bottom. a settlement with a hero is under a dome
+-- until that hero, who comes out at the alarm, is slain. a legend's
+-- damage is set by how late it is met: its lunge does three times
+-- it, so arthur's 90 fells a whelp in one, a wyrm in two and a
+-- calamity in four.
+realm=split"lair:the lair,village:ashford,village:millbrook,village:thornby,town:oakhampton:sir gawain,town:harrowgate:sir percival,village:dunmere,town:wexcombe:sir galahad,camelot:camelot"
 
 -- wrath rises with score (kept in tens, so 200 here is 2000 on
 -- screen). each level has its own reinforcements and may send a
@@ -272,9 +277,9 @@ realm=split"lair:the lair,village:ashford,village:millbrook,village:thornby,town
 wrath_levels=parse_table[[
 name,score,legend,pool
 wary,0,,serf/serf/archer
-alarmed,200,sir gawain,serf/archer/knight
-mustering,700,sir percival,archer/knight/knight/champion
-crusading,1600,sir galahad,knight/lancer/champion/ballista/catapult
+alarmed,200,,serf/archer/knight
+mustering,700,,archer/knight/knight/champion
+crusading,1600,,knight/lancer/champion/ballista/catapult
 desperate,3000,sir lancelot,knight/lancer/champion/champion/ballista/catapult
 doomed,30000,merlin,lancer/lancer/knight/champion/champion/ballista/catapult
 ]]

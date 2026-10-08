@@ -19,14 +19,37 @@ import threading
 HERE = os.path.dirname(os.path.abspath(__file__))
 PICO8 = os.environ.get("PICO8", r"C:\Program Files (x86)\PICO-8\pico8.exe")
 LIMIT = 8192
+CHAR_LIMIT = 65535
 HEADER = "pico-8 cartridge // http://www.pico-8.com\nversion 42\n__lua__\n"
 FILLER = "_=0\n" * 3000  # comfortably over the limit on its own
 TOO_LARGE = re.compile(r"(\d+)\s*/\s*%d" % LIMIT)
 PROBE_SECONDS = 30
 
 
+def strip_comment_lines(lua):
+    """Drop whole-line comments and indentation, which cost no tokens.
+
+    PICO-8 also limits a cart to 65535 characters of source; the probe carries
+    filler on top of the game, so it sheds what it safely can. Lines inside
+    [[ ]] data strings are left alone.
+    """
+    kept, in_string = [], False
+    for line in lua.splitlines():
+        if not in_string:
+            line = line.strip()
+            if line.startswith("--"):
+                continue
+        if "[[" in line:
+            in_string = True
+        if "]]" in line:
+            in_string = False
+        kept.append(line)
+    return "\n".join(kept)
+
+
 def pico8_count(lua):
     """Token count PICO-8 reports for `lua`, which must be over the limit."""
+    lua = strip_comment_lines(lua)
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as folder:
         cart = os.path.join(folder, "probe.p8")
         with open(cart, "w", encoding="utf-8", newline="\n") as handle:
@@ -76,6 +99,7 @@ def main(argv):
     total = pico8_count(whole + "\n" + FILLER) - filler
     print("%s  %d / %d  (%.0f%%, %d free)" % (
         os.path.basename(cart), total, LIMIT, total * 100.0 / LIMIT, LIMIT - total))
+    print("  %d / %d characters of source (comments included)" % (len(whole), CHAR_LIMIT))
     if len(modules) > 2:
         for label, code in modules:
             print("  %-14s %5d" % (label, pico8_count(code + "\n" + FILLER) - filler))

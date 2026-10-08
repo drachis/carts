@@ -32,7 +32,8 @@ in one PICO-8 cart's 8192 tokens.** Every design choice below serves that.
 | Sprite sheet | A ground tile's burnt form is 16 ids later (one row down) |
 | Sprites 128..255 | Not available: shared with map rows 32..63 |
 | Sfx 16..18 | The music. Their speed bytes (`0x3241 + n*68`) are poked to raise the tempo with wrath |
-| `0x4300..0x5dff` | Free (6.9k of user memory) |
+| `0x4300..0x52ff` | Unit grid: a byte per tile, cleared each frame, so units do not stack |
+| `0x5300..0x5dff` | Free (2.8k of user memory) |
 | `cartdata` slot 0 | High score; slots 1..63 free |
 
 Fire is a cellular automaton over the state bytes: 4 rows are visited per
@@ -60,17 +61,24 @@ cap on how much of the realm burns.
   Volleys and fans are data (`volley` on the unit, `fan` on the shot).
 - **Coins and boons:** ruins and kills pay out coins that home to the dragon
   and keep the combo alive; razing a settlement spins the boon reel.
-- **The spine of a run:** nothing in a `warded` settlement (Camelot) can be
-  harmed while any `ward` building (a town church) stands; a dome shows it.
-  The compass points to the nearest ward, then the goal. The last ward falling
-  sets wrath to its final level, which brings Merlin and the lancers.
-  Villages are optional side roads: sheep, gold and boons.
+- **The spine of a run:** a `shielded` settlement is under a dome: nothing in
+  it can be harmed or burn, and the dragon is pushed back out. Each town's dome
+  holds while its hero (named in `realm`) lives; the hero comes out at the
+  alarm. With the hero slain the town's church (a `ward`) can burn. Camelot's
+  dome holds while any ward stands. The last ward falling sets wrath to its
+  final level, which brings Lancelot, Merlin and the lancers; Arthur guards
+  the keep. Villages are optional side roads: sheep, gold and boons.
 - **Legends have a rhythm** (`unit_ai.legend`, also used by lancers): press
-  the attack, raise a guard no fire can pass (charge it), flash white while
-  gathering, then lunge for triple damage (dodge it, or charge through).
-- **Reading the screen:** the brave and all shots are drawn over the dragon
-  and its fire; melee fighters stand at the edge of its body, not under it.
-  Every HUD gauge is a labelled bar. Popups are only for prizes of 100+.
+  the attack, raise a guard that throws fire back as `rebuke` shots (charge
+  it), flash white while gathering, then lunge for triple damage (dodge it,
+  or charge through). Their damage is set by how late in a run they are met.
+- **Reading the screen:** the dragon flies over everyone; only shots are drawn
+  above it. Melee fighters stand at the edge of its body. Units never share a
+  tile (a scratch grid at `0x4300`, see `update_units`). Popups are only for
+  prizes of 100+. The HUD is one top bar of upward-filling gauges with the
+  compass as a dial in it.
+- **Two budgets:** 8192 tokens and 65535 characters of source, comments
+  included. `count_tokens.py` reports both.
 - **Peaks and rests:** being at a standing settlement is a `battle`:
   reinforcements come `battle_rush` times faster and the music quickens.
   Razing a settlement buys `lull_frames` of quiet.

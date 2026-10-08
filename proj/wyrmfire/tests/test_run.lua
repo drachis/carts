@@ -14,8 +14,10 @@ function btnp(i) return held[i] end
 function sfx() end
 function music() end
 
--- where the scripted dragon heads: the nearest ward, then the goal
+-- where the scripted dragon heads: a boss if one is out, else the
+-- nearest ward, then the goal
 local function objective()
+ if boss then return {center_x=boss.x,center_y=boss.y} end
  local best,nearest=goal,32000
  for building in all(buildings) do
   local distance=dragon_distance(building.center_x,building.center_y)

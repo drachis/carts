@@ -35,7 +35,16 @@ for spec in all(settlement_specs) do
  end
 end
 for entry in all(realm) do
- assert(settlement_specs[split(entry,":")[1]],"unknown settlement "..entry)
+ local kind,name,hero=unpack(split(entry,":"))
+ assert(settlement_specs[kind],"unknown settlement "..entry)
+ assert(not hero or unit_specs[hero],"unknown hero in "..entry)
+end
+-- how many blows of its lunge each legend needs at each age
+for spec in all(unit_specs) do
+ if spec.ai=="legend" and spec.color then
+  local lunge=spec.damage*3
+  printh(spec.name.." lunge "..lunge)
+ end
 end
 
 -- boons and ages may only change stats the dragon has

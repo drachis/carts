@@ -143,9 +143,19 @@ function draw_bar(label,x,y,width,fraction,color,back)
  print(label,x+2,y+1,7)
 end
 
--- an arrow at the screen edge to the next step of the run: the
--- nearest settlement whose ward still stands (blue), and once
--- none do, the goal itself (gold)
+-- a gauge in the top bar: a column that fills from the bottom,
+-- marked with a glyph from the pico-8 font
+function draw_gauge(glyph,x,fraction,color,back)
+ rectfill(x,0,x+8,8,back)
+ if fraction>0 then
+  rectfill(x,9-9*min(fraction,1),x+8,8,color)
+ end
+ print(chr(glyph),x+1,2,7)
+end
+
+-- a dial in the top bar whose needle points to the next step of
+-- the run: the nearest settlement whose ward still stands (blue),
+-- and once none do, the goal itself (gold)
 function draw_compass()
  local target,nearest=goal.home,32000
  for home in all(settlements) do
@@ -154,13 +164,9 @@ function draw_compass()
    target,nearest=home,distance
   end
  end
- local dx,dy=target.tx*8-dragon.x,target.ty*8-dragon.y
- if length(dx,dy)>80 then
-  local angle=atan2(dx,dy)
-  local x,y=64+cos(angle)*56,68+sin(angle)*52
-  circfill(x,y,2,wards>0 and 12 or 10)
-  line(x,y,x+cos(angle)*4,y+sin(angle)*4,7)
- end
+ local angle=atan2(target.tx*8-dragon.x,target.ty*8-dragon.y)
+ circfill(121,4,4,1)
+ line(121,4,121+cos(angle)*4,4+sin(angle)*4,wards>0 and 12 or 10)
 end
 
 -- flames lick in from the screen edges when things are going well,
@@ -178,9 +184,10 @@ function draw_blaze()
  end
 end
 
--- top strip: health, fire, score, multiplier. second strip, when
--- there is one: the boss. bottom strip: growth (the sheep), fury,
--- and what still stands between the dragon and camelot.
+-- one bar along the top: four gauges that fill upwards (heart:
+-- health, spark: fire, star: fury, sheep: growth), the score and
+-- multiplier, the wards left, and the compass. a boss has a bar of
+-- its own along the bottom.
 function draw_hud()
  local blink=frame%8<4
  if state=="play" then
@@ -191,48 +198,46 @@ function draw_hud()
    if combo_pop>0 then
     text,width="\^w\^t"..text,8
    end
-   print(text,126-#(combo.." hits")*width,18,blink and 10 or 9)
+   print(text,126-#(combo.." hits")*width,12,blink and 10 or 9)
   end
-  draw_compass()
   -- a red frame beats when the dragon is close to death
   if dragon.hp<dragon.max_hp/3 and frame%20<10 then
-   rect(0,8,127,119,8)
+   rect(0,10,127,127,8)
+  end
+  if fury>=100 and blink then
+   print_centered("z+x: inferno!",112,10)
   end
  end
 
- rectfill(0,0,127,7,0)
- rectfill(0,120,127,127,0)
- draw_bar("hp",0,0,36,dragon.hp/dragon.max_hp,8,2)
- draw_bar("fire",39,0,36,dragon.fire/dragon.max_fire,9,4)
+ rectfill(0,0,127,9,0)
+ draw_gauge(135,0,dragon.hp/dragon.max_hp,8,2)
+ draw_gauge(133,10,dragon.fire/dragon.max_fire,9,4)
+ if fury_time>0 then
+  draw_gauge(146,20,fury_time/config.fury_frames,12,1)
+ else
+  draw_gauge(146,20,fury/100,fury>=100 and blink and 7 or 10,5)
+ end
+ -- eat to fill the column behind the sheep, and grow
+ draw_gauge(32,30,belly_fill(),11,3)
+ spr(71,30,1)
  -- the score rolls up to its true value like a payout counter
- print(points(shown_score),79,1,shown_score<flr(score) and 10 or 7)
+ print(points(shown_score),43,2,shown_score<flr(score) and 10 or 7)
  if combo>1 then
   -- the multiplier and how long is left to keep the combo going
-  print("x"..multiplier(),112,1,blink and 10 or 9)
-  line(112,7,112+combo_timer/config.combo_frames*12,7,10)
+  print("x"..multiplier(),76,2,blink and 10 or 9)
+  line(76,8,76+combo_timer/config.combo_frames*8,8,10)
  end
-
- -- eat to fill the bar beside the sheep, and grow
- spr(71,0,120)
- draw_bar("",9,121,30,belly_fill(),11,3)
- if fury_time>0 then
-  draw_bar("inferno!",43,121,52,fury_time/config.fury_frames,12,1)
- elseif fury<100 then
-  draw_bar("fury",43,121,52,fury/100,10,5)
- else
-  draw_bar("z+x!",43,121,52,1,blink and 7 or 10,5)
+ -- a dome for each ward still standing
+ for ward=1,wards do
+  circ(86+ward*7,4,2,12)
  end
- if wards>0 then
-  print(wards.." wards",99,122,12)
- else
-  print("camelot",99,122,10)
- end
+ draw_compass()
 
  if boss then
-  draw_bar(boss.spec.name,0,9,127,boss.hp/boss.spec.hp,8,2)
+  draw_bar(boss.spec.name,0,121,127,boss.hp/boss.spec.hp,8,2)
  end
  if message_timer>0 then
-  print_centered(message,27)
+  print_centered(message,22)
  end
 end
 
@@ -319,11 +324,10 @@ function _draw()
  map(cam_x\8,cam_y\8,cam_x\8*8,cam_y\8*8,17,17)
  draw_fire()
  draw_buildings()
- draw_units(false)
+ -- the dragon flies over everyone; only shots are drawn above it
+ draw_units()
  draw_dragon()
  draw_particles()
- -- everything that can hurt the dragon is drawn over it
- draw_units(true)
  draw_shots()
  draw_shots(true)
 
