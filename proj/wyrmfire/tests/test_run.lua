@@ -70,7 +70,8 @@ new_game()
 state="play"
 
 local max_units,max_particles,max_burning,max_combo,infernos=0,0,0,0,0
-local spins,coins_banked=0,0
+local spins,coins_banked,feared,frames_played=0,0,0,0
+local games_won,game_frames=0,0
 -- burnt shots and grazes are told apart by the fury they give
 local shots_burnt,grazes=0,0
 local real_add_fury=add_fury
@@ -78,6 +79,12 @@ function add_fury(amount)
  if amount==3 then shots_burnt+=1 end
  if amount==2 then grazes+=1 end
  real_add_fury(amount)
+end
+local roars=0
+local real_roar=roar
+function roar(reach,frames)
+ roars+=1
+ real_roar(reach,frames)
 end
 local real_collect_coin=collect_coin
 function collect_coin()
@@ -104,6 +111,20 @@ for n=1,soak_frames do
  max_combo=max(max_combo,combo)
  if fury_time==config.fury_frames-1 then infernos+=1 end
  if reel_time==1 then spins+=1 end
+ -- a finished game is replaced with a fresh one, to stay under load
+ if not playing then
+  games_won+=state=="won" and 1 or 0
+  printh("game over: "..state.." after "..game_frames.." frames, size "..dragon.size)
+  game_frames=0
+  new_game()
+  state="play"
+ else
+  game_frames+=1
+  frames_played+=1
+  for unit in all(units) do
+   if unit.fear>0 then feared+=1 break end
+  end
+ end
  if n%30==0 then
   max_burning=max(max_burning,burning_tiles())
  end
@@ -123,5 +144,7 @@ printh("buildings "..#buildings.."/"..#all_buildings
  .." burning tiles="..max_burning)
 printh("max combo="..max_combo.." infernos="..infernos
  .." reel spins="..spins.." coins banked="..coins_banked)
-printh("shots burnt="..shots_burnt.." grazes="..grazes)
+printh("shots burnt="..shots_burnt.." grazes="..grazes
+ .." frames with fear="..feared.."/"..frames_played.." roars="..roars
+ .." dragon size="..dragon.size)
 extcmd("shutdown")

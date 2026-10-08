@@ -157,6 +157,7 @@ SFX = [
     # 10 coin: one triangle-wave note, so its first byte is just its pitch,
     # which main.lua pokes to make each coin ring higher than the last
     "00040000" + "30055",
+    "00060000" + "046200662004610",                           # 11 wingbeat
 ]
 
 # --- music: two bass patterns over one drum loop, in d minor ---

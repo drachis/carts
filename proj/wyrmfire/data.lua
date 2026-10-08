@@ -65,6 +65,7 @@ fanfare=6
 eat=8
 alarm=9
 coin=10
+wings=11
 ]]
 
 config=parse_record[[
@@ -79,7 +80,16 @@ fury_frames=240
 nova_range=56
 coin_value=2
 reel_frames=45
+first_growth=60
+growth_rate=1.3
+max_size=2
+dusk_wrath=3
 ]]
+
+-- what the dragon gains each time its hoard fills (the hoard then
+-- needs growth_rate times as many coins to fill again). size scales
+-- its whole body, its reach and its jaws.
+growth_stats="size=0.1/max_hp=10/hp=30/breath_range=4/charge_damage=4"
 
 -- razing a settlement spins the reel and lands on one of these.
 -- each stat is added to the dragon's, for the rest of the game.
@@ -135,6 +145,8 @@ max_fire=100
 fire_regen=0.3
 inhale=0.06
 power=1
+size=1
+snap=0
 accel=0.7
 breath_accel=0.35
 recoil=0.12
@@ -169,22 +181,24 @@ calm=0
 -- the dragon gains when the unit dies. fire_taken scales
 -- breath damage; at or below config.fireproof a unit never ignites.
 -- ranged units hold at range and back off inside range*keep_away.
--- color recolors the legend sprite's gold. a melee unit with a
+-- color recolors the legend sprite's gold. the brave (1) stand
+-- against the dragon's roar and are too much to swallow in passing;
+-- the rest (0) flee from it and can be snapped up. a melee unit with a
 -- knock throws the dragon back that hard when it lands a blow.
 unit_specs=parse_table[[
-name,sprite,hp,speed,damage,cooldown,fire_taken,score,meal,ai,range,keep_away,shot,color,knock,volley
-serf,64,3,0.5,1,30,1,5,2,melee
-archer,65,4,0.45,2,80,1,10,2,ranged,70,0.4,arrow,,,3
-knight,66,12,0.8,4,30,0.5,25,3,melee,,,,,7
-champion,67,20,0.5,4,90,0.3,50,3,ranged,80,0.4,holy,,,3
-ballista,69,15,0.2,8,120,0.7,40,0,ranged,100,0,bolt
-catapult,70,15,0.2,12,150,0.7,40,0,ranged,110,0,rock
-sheep,71,1,0.3,0,0,1,0,10,sheep
-sir gawain,68,60,1,6,40,0.3,500,30,legend,,,,11,10
-sir percival,68,80,1,6,40,0.3,500,30,legend,,,,14,10
-sir galahad,68,100,1,6,40,0.3,500,30,legend,,,,7,10
-sir lancelot,68,120,1,6,40,0.3,500,30,legend,,,,13,10
-king arthur,68,140,1,10,40,0.3,500,30,legend,,,excalibur,10,12,8
+name,sprite,hp,speed,damage,cooldown,fire_taken,score,meal,brave,ai,range,keep_away,shot,color,knock,volley
+serf,64,3,0.5,1,30,1,5,2,0,melee
+archer,65,4,0.45,2,80,1,10,2,0,ranged,70,0.4,arrow,,,3
+knight,66,12,0.8,4,30,0.5,25,3,1,melee,,,,,7
+champion,67,20,0.5,4,90,0.3,50,3,1,ranged,80,0.4,holy,,,3
+ballista,69,15,0.2,8,120,0.7,40,0,1,ranged,100,0,bolt
+catapult,70,15,0.2,12,150,0.7,40,0,1,ranged,110,0,rock
+sheep,71,1,0.3,0,0,1,0,10,0,sheep
+sir gawain,68,60,1,6,40,0.3,500,30,1,legend,,,,11,10
+sir percival,68,80,1,6,40,0.3,500,30,1,legend,,,,14,10
+sir galahad,68,100,1,6,40,0.3,500,30,1,legend,,,,7,10
+sir lancelot,68,120,1,6,40,0.3,500,30,1,legend,,,,13,10
+king arthur,68,140,1,10,40,0.3,500,30,1,legend,,,excalibur,10,12,8
 ]]
 
 -- size 0 draws a streak, otherwise a ball of that radius. a lobbed
@@ -208,9 +222,9 @@ building_specs=parse_table[[
 name,sprite,size,hp,score,spawn_rate,spawns,survivor,guardian,goal
 hut,32,1,10,10,260,serf,serf
 house,33,1,18,25,200,serf,serf
-tower,34,1,30,50,170,archer
-church,36,2,60,120,420,champion
-keep,38,2,200,1000,150,knight/knight/archer/ballista/catapult,,king arthur,1
+tower,34,1,50,50,170,archer
+church,36,2,100,120,420,champion
+keep,38,2,700,1000,150,knight/knight/archer/ballista/catapult,,king arthur,1
 ]]
 
 -- fixed buildings are kind:x:y offsets from the centre; the rest

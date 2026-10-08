@@ -14,6 +14,7 @@ function spawn_unit(kind,x,y,force)
   burn=0,
   flash=0,
   dash=0,
+  fear=0,
   -- knockback, which decays
   push_x=0,
   push_y=0,
@@ -148,6 +149,12 @@ function unit_ai.sheep(unit,dir_x,dir_y,distance)
  return cos(unit.wander)*.15,sin(unit.wander)*.15
 end
 
+-- dragonfear: run from the dragon until the terror passes
+function unit_ai.flee(unit,dir_x,dir_y)
+ unit.fear-=1
+ return -dir_x*1.2,-dir_y*1.2
+end
+
 -- anyone on fire runs about, spreading it
 function unit_ai.panic(unit)
  unit.burn-=1
@@ -167,7 +174,7 @@ function update_units()
   unit.cooldown-=1
   unit.flash=max(0,unit.flash-1)
 
-  local ai=unit.burn>0 and "panic" or spec.ai
+  local ai=unit.burn>0 and "panic" or unit.fear>0 and "flee" or spec.ai
   local move_x,move_y=unit_ai[ai](unit,dx/distance,dy/distance,distance)
   unit.x=mid(4,unit.x+move_x+unit.push_x,507)
   unit.y=mid(4,unit.y+move_y+unit.push_y,507)
@@ -194,6 +201,8 @@ function draw_units()
    pal()
    if unit.burn>0 then
     pset(unit.x-2+rnd(4),unit.y-5+rnd(3),rnd{9,10})
+   elseif unit.fear>0 then
+    print("!",unit.x-1,unit.y-11,8)
    end
   end
  end

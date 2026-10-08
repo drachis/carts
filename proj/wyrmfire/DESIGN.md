@@ -60,6 +60,12 @@ cap on how much of the realm burns.
   Volleys and fans are data (`volley` on the unit, `fan` on the shot).
 - **Coins and boons:** ruins and kills pay out coins that home to the dragon
   and keep the combo alive; razing a settlement spins the boon reel.
+- **Being a dragon:** coins fill the hoard; a full hoard grants
+  `growth_stats`, and `size` scales the whole body, its reach and its jaws
+  (`draw_dragon` scales its forward/sideways vectors, so every offset follows).
+  `roar` strikes the not-`brave` with fear on big moments. The jaws snap up
+  anything not brave that passes under the head. The land dims from
+  `dusk_wrath` on via the screen palette.
 - **Juice:** hit-stop and shake via `jolt`, white `flash` frames, shockwave
   rings, score popups, bodies flung by charges, knockback, look-ahead camera.
 

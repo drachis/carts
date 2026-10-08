@@ -7,6 +7,7 @@ function new_game()
  score,kills,wrath,heralded=0,0,1,0
  combo,combo_timer,fury,fury_time=0,0,0,0
  shown_score,combo_pop,coin_run,reel_time=0,0,0,0
+ hoard,hoard_goal=0,config.first_growth
  shake,freeze,flash=0,0,0
  message,message_timer,reinforce_timer="",0,300
  cam_x,cam_y=dragon.x-64,dragon.y-64
@@ -62,7 +63,7 @@ function add_score(worth,x,y)
  add_particle(x,y-6,0,-.5,30,"text").text="+"..gained
  if streaks[combo] then
   announce(streaks[combo])
-  sfx(sound.roar)
+  roar(70,30)
  end
 end
 
@@ -77,6 +78,9 @@ function collect_coin()
  add_fury(.5)
  poke(0x3200+sound.coin*68,24+coin_run%32)
  sfx(sound.coin)
+ -- and it is added to the hoard, which the dragon grows on
+ hoard+=1
+ if hoard>=hoard_goal then grow() end
 end
 
 -- the boon reel: flicker through the boons, then land on one
@@ -89,13 +93,7 @@ function update_reel()
   sfx(sound.coin)
  end
  if reel_time==0 then
-  for key,value in pairs(parse_record(reel.stats,"/")) do
-   dragon[key]+=value
-   -- during an inferno the calm stats must gain it too
-   if fury_time>0 and calm_stats[key] then
-    calm_stats[key]+=value
-   end
-  end
+  grant(reel.stats)
   announce("boon: "..reel.name,120)
   sfx(sound.fanfare)
  end
@@ -199,7 +197,9 @@ function draw_hud()
  draw_bar(2,7,34,fury_time>0 and fury_time/config.fury_frames or fury/100,
   (fury_time>0 or fury>=100) and blink and 7 or 10,5)
  -- the score rolls up to its true value like a payout counter
- print(points(shown_score),40,2,shown_score<flr(score) and 10 or 7)
+ print(points(shown_score),40,1,shown_score<flr(score) and 10 or 7)
+ -- the hoard: gold gathered towards the dragon's next growth
+ draw_bar(40,7,22,hoard/hoard_goal,10,4)
  print("ko "..kills,66,2,6)
  if combo>1 then
   -- the combo and how long is left to keep it going
@@ -314,5 +314,12 @@ function _draw()
  else
   draw_hud()
   if state!="play" then draw_game_over() end
+ end
+ -- as the realm's wrath climbs, smoke dims the land: the screen
+ -- palette swaps the greens for darker ones. pal() above resets
+ -- it every frame, so it is set last.
+ if wrath>=config.dusk_wrath then
+  pal(3,131,1)
+  pal(11,3,1)
  end
 end

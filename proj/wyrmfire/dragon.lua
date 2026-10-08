@@ -9,6 +9,41 @@ function new_dragon()
  end
 end
 
+-- a roar is heard `reach` pixels away. everyone there who is not
+-- brave is struck with dragonfear and flees for a while.
+function roar(reach,frames)
+ sfx(sound.roar)
+ ring(dragon.x,dragon.y,reach)
+ for unit in all(units) do
+  if unit.spec.brave==0 and dragon_distance(unit.x,unit.y)<reach then
+   unit.fear=frames+rnd(frames)
+  end
+ end
+end
+
+-- add a record of stats to the dragon's own, for good: boons and
+-- growth. during an inferno the calm stats must gain them too.
+function grant(stats)
+ for key,value in pairs(parse_record(stats,"/")) do
+  dragon[key]+=value
+  if fury_time>0 and calm_stats[key] then
+   calm_stats[key]+=value
+  end
+ end
+end
+
+-- the hoard is full: the dragon grows
+function grow()
+ hoard=0
+ hoard_goal*=config.growth_rate
+ if dragon.size<config.max_size then
+  grant(growth_stats)
+  announce("the dragon grows!",120)
+  roar(90,45)
+  jolt(6,6)
+ end
+end
+
 function heal_dragon(amount)
  dragon.hp=min(dragon.max_hp,dragon.hp+amount)
 end
@@ -37,13 +72,14 @@ end
 
 -- each tail segment is dragged a fixed distance behind the last
 function update_tail()
- local prev_x=dragon.x-cos(dragon.angle)*6
- local prev_y=dragon.y-sin(dragon.angle)*6
+ local size=dragon.size
+ local prev_x=dragon.x-cos(dragon.angle)*6*size
+ local prev_y=dragon.y-sin(dragon.angle)*6*size
  for segment in all(tail) do
   local dx,dy=segment.x-prev_x,segment.y-prev_y
-  local distance=max(length(dx,dy),.01)
-  segment.x=prev_x+dx/distance*3.5
-  segment.y=prev_y+dy/distance*3.5
+  local distance=max(length(dx,dy),.01)/3.5/size
+  segment.x=prev_x+dx/distance
+  segment.y=prev_y+dy/distance
   prev_x,prev_y=segment.x,segment.y
  end
 end
@@ -144,11 +180,10 @@ function inferno()
   end
  end
  embers(x,y,34,4)
- ring(x,y,config.nova_range)
  announce("inferno!")
  jolt(8,6)
  flash=3
- sfx(sound.roar)
+ roar(90,60)
 end
 
 -- while charging the head is a battering ram. each charge has an
@@ -156,7 +191,7 @@ end
 function charge_impacts(head_x,head_y)
  local d=dragon
  for unit in all(units) do
-  if unit.charge_id!=d.charge_id and length(unit.x-head_x,unit.y-head_y)<12 then
+  if unit.charge_id!=d.charge_id and length(unit.x-head_x,unit.y-head_y)<12*d.size then
    unit.charge_id=d.charge_id
    -- whatever survives the jaws is thrown back
    unit.push_x,unit.push_y=d.vx,d.vy
@@ -167,7 +202,7 @@ function charge_impacts(head_x,head_y)
  for building in all(buildings) do
   local x,y=building.center_x,building.center_y
   if building.charge_id!=d.charge_id
-   and length(x-head_x,y-head_y)<8+building.size/2 then
+   and length(x-head_x,y-head_y)<8*d.size+building.size/2 then
    building.charge_id=d.charge_id
    -- hitting a wall ends the charge
    d.charge=min(d.charge,3)
@@ -188,7 +223,9 @@ function update_dragon()
  if btn(3) then input_y+=1 end
 
  local forward_x,forward_y=cos(d.angle),sin(d.angle)
- local head_x,head_y=d.x+forward_x*11,d.y+forward_y*11
+ local reach=11*d.size
+ local head_x,head_y=d.x+forward_x*reach,d.y+forward_y*reach
+ if frame%32==0 then sfx(sound.wings) end
  -- button 4 (z) breathes, button 5 (x) charges
  if not btn(4) then d.winded=false end
  local breathing=btn(4) and not d.winded and d.charge<=0 and d.windup<=0
@@ -235,6 +272,17 @@ function update_dragon()
    d.windup=d.charge_windup
    d.charge_cooldown=d.charge_recover
   end
+  -- jaws: whatever is not brave and passes under the head is
+  -- snapped up, a mouthful at a time
+  d.snap-=1
+  for unit in all(units) do
+   if d.snap<=0 and unit.spec.brave==0
+    and length(unit.x-head_x,unit.y-head_y)<6*d.size then
+    d.snap=10
+    jolt(2,1)
+    damage_unit(unit,d.bite_damage,true)
+   end
+  end
  end
 
  d.charge_cooldown-=1
@@ -266,8 +314,12 @@ end
 function draw_dragon()
  local d=dragon
  local x,y=d.x,d.y
- local fx,fy=cos(d.angle),sin(d.angle) -- forward
- local sx,sy=-fy,fx                    -- sideways
+ -- the forward and sideways vectors are scaled by the dragon's
+ -- size, so every offset below grows with it; radii are scaled
+ -- one by one
+ local size=d.size
+ local fx,fy=cos(d.angle)*size,sin(d.angle)*size
+ local sx,sy=-fy,fx
  local charging=d.charge>0
  -- wings swept back in a charge, raised high while coiling for one
  local flap=charging and -1 or d.windup>0 and 1 or sin(frame/16)
@@ -275,8 +327,8 @@ function draw_dragon()
  -- shadow: far below when soaring, tight when diving
  local drop=charging and 2 or 7
  fillp(0x5a5a.8)
- circfill(x+drop,y+drop+2,8,1)
- circfill(x+drop-fx*8,y+drop+2-fy*8,4,1)
+ circfill(x+drop,y+drop+2,8*size,1)
+ circfill(x+drop-fx*8,y+drop+2-fy*8,4*size,1)
  fillp()
 
  -- drawn in red and purple, then recoloured. it blinks white
@@ -286,7 +338,7 @@ function draw_dragon()
  pal(2,hurt and 7 or d.wing)
 
  for i=#tail,1,-1 do
-  circfill(tail[i].x,tail[i].y,4-i*.5,i%2==0 and 2 or 8)
+  circfill(tail[i].x,tail[i].y,(4-i*.5)*size,i%2==0 and 2 or 8)
  end
 
  for side=-1,1,2 do
@@ -296,7 +348,7 @@ function draw_dragon()
   local shoulder_x,shoulder_y=x+fx*2+sx*side*3,y+fy*2+sy*side*3
   local tip_x,tip_y=x+sx*side*span-fx*sweep,y+sy*side*span-fy*sweep
   local edge_x,edge_y=x-fx*7+sx*side*3-tip_x,y-fy*7+sy*side*3-tip_y
-  for i=0,1,.07 do
+  for i=0,1,.07/size do
    line(shoulder_x,shoulder_y,tip_x+edge_x*i,tip_y+edge_y*i,2)
   end
   for bone in all{0,.4,.75} do
@@ -311,7 +363,7 @@ function draw_dragon()
  -- body: haunches, chest, neck, head, snout. each is a circle at
  -- some distance along the spine.
  for part in all{{-4,4},{0,5},{6,3},{10,3},{13,2}} do
-  circfill(x+fx*part[1],y+fy*part[1],part[2],8)
+  circfill(x+fx*part[1],y+fy*part[1],part[2]*size,8)
  end
  for i=-7,5,3 do
   pset(x+fx*i,y+fy*i,2)
