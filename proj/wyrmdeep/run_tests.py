@@ -42,7 +42,10 @@ def save_screens(log):
 
 
 def run_cart(cart):
-    process = subprocess.Popen([PICO8, "-x", cart], cwd=HERE, text=True,
+    # the soak runs in a window: headless pico-8 sometimes dies on it with an
+    # access violation, as it did on wyrmfire (see ../wyrmfire/DESIGN.md)
+    mode = "-run" if cart.endswith("test_run.p8") else "-x"
+    process = subprocess.Popen([PICO8, mode, cart], cwd=HERE, text=True,
                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     # a cart that is over budget or has a syntax error idles instead of
     # exiting, so stop it at the time limit

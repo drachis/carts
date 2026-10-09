@@ -94,7 +94,7 @@ def named_sprites():
 
 def write_world_png(grid, placed):
     art_of = sprites()
-    canvas = [[DARK] * (level.WIDTH * 8) for _ in range(level.HEIGHT * 8)]
+    canvas = [[SKY if y < 232 else DARK] * (level.WIDTH * 8) for y in range(level.HEIGHT * 8)]
 
     def stamp(sprite_id, left, top, behind=None):
         for y, row in enumerate(art_of.get(sprite_id, [])):
@@ -106,7 +106,7 @@ def write_world_png(grid, placed):
 
     for ty in range(level.HEIGHT):
         for tx in range(level.WIDTH):
-            back = SKY if ty < SKY_ROWS else DARK
+            back = SKY if ty < 29 else DARK
             stamp(grid[ty][tx], tx * 8, ty * 8, back)
     marks = named_sprites()
     for name, tx, ty in placed:
@@ -121,6 +121,9 @@ def write_world_png(grid, placed):
 
 def main():
     grid, placed = level.build()
+    write_world_png(grid, placed)
+    for line in level.check(grid, placed):
+        print("reach as a", line)
     gfx = build_gfx(grid)
     data = "\n__gfx__\n%s\n__gff__\n%s\n__map__\n%s\n__sfx__\n%s\n__music__\n%s\n" % (
         "\n".join(gfx), build_gff(), "\n".join(build_map(grid)),
@@ -134,7 +137,6 @@ def main():
         print("patched", cart)
     write_level_lua(placed)
     write_png(os.path.join(HERE, "sheet.png"), gfx[:64])
-    write_world_png(grid, placed)
     print("wrote level.lua, sheet.png, world.png (%d placed)" % len(placed))
 
 

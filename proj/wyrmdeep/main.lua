@@ -200,7 +200,7 @@ function _draw()
  cam_x+=(mid(0,d.x+d.facing*16-64,896)-cam_x)*.15
  cam_y+=(mid(0,d.y-68,384)-cam_y)*.15
  camera(cam_x+rnd(shake)-shake/2,cam_y+rnd(shake)-shake/2)
- rectfill(0,0,1023,255,1)
+ rectfill(0,0,1023,231,1)
  pal(12,frame%8<4 and 7 or 12)
  map(cam_x\8,cam_y\8,cam_x\8*8,cam_y\8*8,17,17)
  pal()

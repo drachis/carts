@@ -6,5 +6,54 @@ tile_nest=43
 ]],nil,_ENV)
 
 spawn_text=[[
-sheep,444,420
-serf,300,452]]
+merlin,324,44
+brimstone,188,52
+monk,812,60
+monk,852,60
+crossbowman,668,68
+ballista,708,68
+heart,44,92
+king arthur,972,100
+crossbowman,804,108
+crossbowman,860,108
+heart,484,172
+ballista,700,196
+heart,932,196
+brimstone,988,196
+knight,540,220
+knight,668,220
+crossbowman,732,220
+sir gawain,52,228
+sheep,228,228
+sheep,380,228
+serf,412,228
+sheep,444,228
+monk,476,228
+pig,508,228
+pikeman,524,228
+crossbowman,548,228
+serf,652,228
+knight,748,228
+knight,820,228
+sir lancelot,860,228
+knight,884,228
+knight,932,228
+knight,972,228
+heart,308,324
+brimstone,804,324
+heart,860,324
+pikeman,348,348
+serf,356,356
+sir kay,596,356
+knight,804,356
+knight,860,356
+bat,420,412
+archer,356,420
+heart,828,420
+brimstone,60,428
+brimstone,700,428
+bat,804,444
+bat,860,444
+serf,308,452
+bat,588,452
+heart,572,468]]

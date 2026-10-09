@@ -67,17 +67,17 @@ function _update()
   assert(d.x>240,"the whelp did not burn its way out of the lair")
  else
   -- the soak: a new stop every 40 frames, a new age every lap
-  local step=(n-330)\40
+  local step=(n-330)\16
   local stop=stops[step%#stops+1]
-  if (n-330)%40==0 then
+  if (n-330)%16==0 then
    if step%#stops==0 and step>0 and age<#ages then grow() end
    d.x,d.y,d.vx,d.vy=stop.x,stop.y-8,0,0
   end
   d.hp=d.max_hp
   fury=100
   hold(n%3,4)
-  if n%40>30 then hold(n%2,5) end
-  if (n-330)%40==20 and stop.name=="sheep" and age==1 then dump_screen("shot") end
+  if n%16>10 then hold(n%2,5) end
+  if (n-330)%16==10 and stop.name=="sir kay" and age==1 then dump_screen("shot") end
   if step>=#stops*#ages then
    printh("ok run: "..#stops.." stops at "..#ages.." ages, "..kills.." kills")
    extcmd("shutdown")
