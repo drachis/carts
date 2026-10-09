@@ -17,15 +17,22 @@ import re
 import struct
 import subprocess
 import sys
+import threading
 import zlib
+
+import count_tokens
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PICO8 = os.environ.get("PICO8", r"C:\Program Files (x86)\PICO-8\pico8.exe")
 TEST_CARTS = [os.path.join("tests", name) for name in
               ("test_data.p8", "test_title.p8", "test_run.p8")]
-# the game leaves no room in a cart for a test harness, so two carts include
-# a generated copy of one module with functions that cart never needs
-# emptied: generated file -> (source module, functions to stub)
+WINDOWED = {os.path.join("tests", "test_run.p8")}
+MODULES = ["data.lua", "core.lua", "world.lua", "units.lua", "dragon.lua", "main.lua"]
+# the game leaves no room in a cart for a test harness, in tokens or in
+# characters. so the soak and title carts include tests/gen_<module>, copies
+# with the comments stripped, and each swaps one of those for a copy with
+# functions that cart never needs emptied as well:
+# generated file -> (source module, functions to stub)
 GENERATED = {
     # the soak has no menus, no sound (so no music to pace) and can spare
     # the inferno's edge flames
@@ -82,23 +89,39 @@ def save_screens(log):
 
 
 def run_cart(cart):
-    try:
-        result = run([PICO8, "-x", cart], timeout=TIMEOUT_SECONDS)
-    except subprocess.TimeoutExpired as hung:
-        # an over-budget or syntactically broken cart idles instead of exiting
-        print("FAIL: %s did not exit\n" % cart, hung.stdout or "", hung.stderr or "")
-        return False
-    log = result.stdout + result.stderr
+    # the soak runs in a window: headless (-x) pico-8 crashes on it about
+    # half the time (see DESIGN.md) and windowed pico-8 has not been seen to
+    mode = "-run" if cart in WINDOWED else "-x"
+    process = subprocess.Popen([PICO8, mode, cart], cwd=HERE, text=True,
+                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # a cart that is over budget or has a syntax error idles instead of
+    # exiting, and a windowed pico-8 does not close when a cart shuts down:
+    # so stop it at the time limit, or shortly after it says it is done
+    watchdog = threading.Timer(TIMEOUT_SECONDS, process.kill)
+    watchdog.start()
+    lines, finished = [], False
+    for line in process.stdout:
+        lines.append(line)
+        if line.startswith("INFO: ok ") and not finished:
+            finished = True
+            threading.Timer(3, process.kill).start()
+    watchdog.cancel()
+    process.wait()
+    log = "".join(lines)
     print(save_screens(log).strip())
-    if "INFO: ok " not in log or "error" in log.lower():
+    if not finished or "error" in log.lower():
         print("FAIL: %s did not complete cleanly (pico8 exit code %#x)"
-              % (cart, result.returncode & 0xffffffff))
+              % (cart, process.returncode & 0xffffffff))
         return False
     return True
 
 
-def stub_module(target, module, stubs):
-    """Write tests/<target>: a copy of a module with some functions emptied."""
+def stub_module(target, module, stubs, strip=True):
+    """Write tests/<target>: a copy of a module with some functions emptied.
+
+    With `strip` its comments and indentation go too: a cart may hold only
+    65535 characters of source, and the game's own are most of that.
+    """
     source = open(os.path.join(HERE, module), encoding="utf-8").read()
     for name in stubs:
         # a top-level function runs to the first `end` at the start of a line
@@ -106,12 +129,16 @@ def stub_module(target, module, stubs):
         source, count = re.subn(pattern, "\nfunction %s() end\n" % name, source, flags=re.S)
         if count != 1:
             raise RuntimeError("could not find %s in %s" % (name, module))
+    if strip:
+        source = count_tokens.strip_comment_lines(source)
     with open(os.path.join(HERE, "tests", target), "w",
               encoding="utf-8", newline="\n") as handle:
-        handle.write("-- generated from %s; do not edit\n" % module + source)
+        handle.write("-- generated from %s; do not edit\n" % module + source + "\n")
 
 
 def build_generated():
+    for module in MODULES:
+        stub_module("gen_" + module, module, [])
     for target, (module, stubs) in GENERATED.items():
         stub_module(target, module, stubs)
 

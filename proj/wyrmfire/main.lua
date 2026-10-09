@@ -266,8 +266,12 @@ function draw_title()
   print_centered("best "..points(high_score),y,10)
   y+=8
  end
- spr(71,25,y)
- print("eat sheep to grow",36,y+2,11)
+ -- "eat (sheep, pig, cow) to grow", the animals as their sprites
+ print("eat",27,y+2,11)
+ spr(71,41,y)
+ spr(82,50,y)
+ spr(81,59,y)
+ print("to grow",70,y+2,11)
  print("\142\n\151\n\142+\151\n\139\145\148\131",14,y+12,7)
  print("breathe fire\ncharge & devour\nunleash your fury\nfly",52,y+12,6)
  if frame%30<20 then

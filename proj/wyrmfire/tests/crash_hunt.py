@@ -118,7 +118,8 @@ def write_variant(name):
     assert HARNESS in source and SOAK_MAIN in source, "soak cart layout changed"
     # each variant gets its own copy of the soak's main module
     hunt_main = "hunt_main_%s.lua" % name
-    run_tests.stub_module(hunt_main, "main.lua", SOAK_STUBS + EXTRA_STUBS.get(name, []))
+    run_tests.stub_module(hunt_main, "main.lua", SOAK_STUBS + EXTRA_STUBS.get(name, []),
+                          strip=False)  # edits below match the unstripped text
     main_path = os.path.join(TESTS, hunt_main)
     text = open(main_path, encoding="utf-8").read()
     for old, new in EDITS.get(name, []):
