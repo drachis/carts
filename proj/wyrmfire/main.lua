@@ -235,8 +235,8 @@ function draw_hud()
  if boss then
   -- a bar along the bottom with the boss's name on it
   rectfill(0,121,127,127,2)
-  rectfill(0,121,127*boss.hp/boss.spec.hp,127,8)
-  print(boss.spec.name,2,122,7)
+  rectfill(0,121,127*boss.hp/boss.max_hp,127,8)
+  print(boss.name,2,122,7)
  end
  if message_timer>0 then
   print_centered(message,22)

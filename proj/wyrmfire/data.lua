@@ -8,6 +8,10 @@
 -- lines of comma separated values. the first line names the fields
 -- and the first field is the row's name. rows are stored both in
 -- order and by name; empty cells are left nil.
+--
+-- a row is also a prototype: setmetatable(o,row) makes o read any
+-- field it has not set itself from the row. units, buildings,
+-- shots and settlements are made this way (see DESIGN.md).
 function parse_table(text)
  local rows,fields={}
  for line in all(split(text,"\n")) do
@@ -16,6 +20,7 @@ function parse_table(text)
    fields=values
   elseif line!="" then
    local row={}
+   row.__index=row
    for i,field in ipairs(fields) do
     if values[i]!="" then row[field]=values[i] end
    end
@@ -214,8 +219,9 @@ flash=0
 calm=0
 ]]
 
--- ai names a function in unit_ai (units.lua). meal is the health
--- the dragon gains when the unit dies. fire_taken scales
+-- ai names a function in unit_ai (units.lua). reload is the frames
+-- between its attacks. meal is the health the dragon gains when the
+-- unit dies. fire_taken scales
 -- breath damage; at or below `fireproof` a unit never ignites.
 -- ranged units hold at range and back off inside range*keep_away.
 -- color recolors the legend sprite's gold. the brave (1) stand
@@ -225,7 +231,7 @@ calm=0
 -- anything with a color is a named boss: it gets a health bar, and
 -- a fanfare when it falls.
 unit_specs=parse_table[[
-name,sprite,hp,speed,damage,cooldown,fire_taken,score,meal,brave,ai,range,keep_away,shot,color,knock,volley
+name,sprite,max_hp,speed,damage,reload,fire_taken,score,meal,brave,ai,range,keep_away,shot,color,knock,volley
 serf,64,3,0.7,1,30,1,5,1,0,melee
 pikeman,75,8,0.9,3,35,0.8,15,2,1,melee,,,,,6
 archer,65,4,0.45,2,80,1,10,1,0,ranged,70,0.4,arrow,,,3
@@ -276,14 +282,14 @@ rock,0,5,2,50,7,0,,1
 boulder,0,5,3,70,24,0,,1
 ]]
 
--- size is in tiles. spawns is who answers the alarm, survivor who
+-- tiles is its width in tiles. spawns is who answers the alarm, survivor who
 -- runs out burning when it falls, guardian the boss that rides out
 -- when it is badly hurt. razing a goal building wins the game. a
 -- ward building keeps every `warded` settlement (camelot) safe from
 -- all harm while it stands: the town churches are the spine of a
 -- run, the villages its side roads.
 building_specs=parse_table[[
-name,sprite,size,hp,score,spawn_rate,spawns,survivor,guardian,goal,ward
+name,sprite,tiles,max_hp,score,spawn_rate,spawns,survivor,guardian,goal,ward
 hut,32,1,10,10,260,serf,serf
 house,33,1,18,25,200,serf,serf
 windmill,45,1,16,30,300,serf,serf

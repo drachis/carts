@@ -27,9 +27,7 @@ function building_at(tx,ty)
  return all_buildings[tile_state(tx,ty)-128]
 end
 
----------------------------------------------------------------
 -- fire
----------------------------------------------------------------
 
 -- a tile's fuel is its sprite flags: high nibble is how many fire
 -- visits it burns for, low nibble its chance in 16 of catching
@@ -80,15 +78,14 @@ function draw_fire()
  end
 end
 
----------------------------------------------------------------
 -- buildings
----------------------------------------------------------------
 
 -- places a building with its top-left corner on a tile. returns nil
--- if the footprint is off the map, occupied or over water.
+-- if the footprint is off the map, occupied or over water. like a
+-- unit, a building inherits from its row of building_specs.
 function place_building(kind,tx,ty,home)
  local spec=building_specs[kind]
- local last=spec.size-1
+ local last=spec.tiles-1
  for y=ty,ty+last do
   for x=tx,tx+last do
    local ground=mget(x,y)
@@ -98,22 +95,22 @@ function place_building(kind,tx,ty,home)
    end
   end
  end
- local size=spec.size*8
- local building={
-  spec=spec,
+ local size=spec.tiles*8
+ local building=setmetatable({
   x=tx*8,
   y=ty*8,
+  -- in pixels; `tiles` is its width in tiles
   size=size,
   center_x=tx*8+size/2,
   center_y=ty*8+size/2,
-  hp=spec.hp,
+  hp=spec.max_hp,
   burn=0,
   spawn_timer=rnd(spec.spawn_rate),
   home=home,
- }
+ },spec)
  home.standing+=1
  -- a ward inside the warded city would guard itself forever
- if spec.ward and home.spec.warded==0 then
+ if spec.ward and home.warded==0 then
   wards+=1
   home.wards+=1
  end
@@ -131,11 +128,11 @@ end
 -- dragon cannot enter, while its hero lives or (if it is warded)
 -- while any ward stands
 function shielded(home)
- return home.hero or home.spec.warded==1 and wards>0
+ return home.hero or home.warded==1 and wards>0
 end
 
 function dome_radius(home)
- return home.spec.radius*8+10
+ return home.radius*8+10
 end
 
 -- the settlement whose dome a point is under, if any. fire cannot
@@ -150,7 +147,6 @@ function dome_over(x,y)
 end
 
 function damage_building(building,amount)
- local spec=building.spec
  if shielded(building.home) then
   -- nor can anything under a dome burn
   building.burn=0
@@ -158,7 +154,7 @@ function damage_building(building,amount)
  end
  building.hp-=amount
  if building.hp>0 then return end
- local tx,ty,last=building.x\8,building.y\8,spec.size-1
+ local tx,ty,last=building.x\8,building.y\8,building.tiles-1
  del(buildings,building)
  for y=ty,ty+last do
   for x=tx,tx+last do
@@ -167,23 +163,23 @@ function damage_building(building,amount)
   end
  end
  local x,y,size,home=building.center_x,building.center_y,building.size,building.home
- add_score(spec.score,x,y)
+ add_score(building.score,x,y)
  burst(x,y,size*1.5,size)
  ring(x,y,size*2)
  -- it pays out, and throws fire at its neighbours
- coins(x,y,spec.score\10+2)
+ coins(x,y,building.score\10+2)
  embers(x,y,8,2.5)
  -- the bigger it was, the longer the world holds its breath
  jolt(size/2,size/4)
  sfx(snd_crash)
- if spec.survivor then
-  local survivor=spawn_unit(spec.survivor,x,y)
+ if building.survivor then
+  local survivor=spawn_unit(building.survivor,x,y)
   if survivor then survivor.burn=60 end
  end
  home.standing-=1
  if home.standing==0 then
   announce(home.name.." is ash!",120)
-  add_score(home.spec.bounty,x,y-8)
+  add_score(home.bounty,x,y-8)
   heal_dragon(25)
   flash=2
   -- jackpot: a fountain of gold and a spin of the boon reel
@@ -192,7 +188,7 @@ function damage_building(building,amount)
   -- and a rest: the realm reels before it sends anyone else
   reinforce_timer=lull_frames
  end
- if home.wards>0 and spec.ward then
+ if home.wards>0 and building.ward then
   wards-=1
   home.wards-=1
   flash=2
@@ -205,7 +201,7 @@ function damage_building(building,amount)
    roar(120,60)
   end
  end
- if spec.goal then end_game("won") end
+ if building.goal then end_game("won") end
 end
 
 -- a settlement the dragon comes near sounds the alarm, once, and
@@ -215,7 +211,7 @@ end
 function update_settlements()
  battle=false
  for home in all(settlements) do
-  local spec,x,y=home.spec,home.tx*8,home.ty*8
+  local x,y=home.tx*8,home.ty*8
   -- how near the dragon's middle can come with its head (11 pixels
   -- forward at size 1) still outside the dome
   local distance,dome=dragon_distance(x,y),dome_radius(home)+dragon.size*11
@@ -235,8 +231,8 @@ function update_settlements()
     home.alarmed=true
     announce(home.name.." sounds the alarm!")
     sfx(snd_alarm)
-    for i=1,spec.militia do
-     spawn_unit(rnd(list(spec.muster)),x+rnd(48)-24,y+rnd(48)-24)
+    for i=1,home.militia do
+     spawn_unit(rnd(list(home.muster)),x+rnd(48)-24,y+rnd(48)-24)
     end
     -- its hero comes out to meet the dragon; the dome is theirs
     if home.hero then
@@ -251,7 +247,7 @@ function update_settlements()
  -- every sheep can still grow
  if frame%150==0 then
   local home=rnd(settlements)
-  if #units<quiet and home.spec.flock>0 then
+  if #units<quiet and home.flock>0 then
    local angle,reach=rnd(),dome_radius(home)
    spawn_unit("sheep",home.tx*8+cos(angle)*reach,home.ty*8+sin(angle)*reach)
   end
@@ -260,20 +256,20 @@ end
 
 function update_buildings()
  for building in all(buildings) do
-  local spec,size=building.spec,building.size
+  local size=building.size
   local x,y=building.center_x,building.center_y
   local distance=dragon_distance(x,y)
   -- what a heavy dragon flies over is crushed beneath it
   local harm=distance<dragon.size*6+size/2 and dragon.weight*.15 or 0
   building.spawn_timer-=1
   if building.spawn_timer<=0 and distance<alarm_range then
-   building.spawn_timer=spec.spawn_rate
-   spawn_unit(rnd(list(spec.spawns)),x,y+size/2+3)
+   building.spawn_timer=building.spawn_rate
+   spawn_unit(rnd(list(building.spawns)),x,y+size/2+3)
   end
-  if spec.guardian and not building.guarded
-   and building.hp<spec.hp*guardian_at then
+  if building.guardian and not building.guarded
+   and building.hp<building.max_hp*guardian_at then
    building.guarded=true
-   spawn_boss(spec.guardian,x,y+size/2+4)
+   spawn_boss(building.guardian,x,y+size/2+4)
   end
   if building.burn>0 then
    building.burn-=1
@@ -286,7 +282,7 @@ function update_buildings()
    end
    if rnd()<.02 then
     -- embers land on a neighbouring tile
-    local reach=spec.size+2
+    local reach=building.tiles+2
     ignite(building.x\8+flr(rnd(reach))-1,building.y\8+flr(rnd(reach))-1)
    end
    harm+=.07
@@ -297,15 +293,15 @@ end
 
 function draw_buildings()
  for building in all(buildings) do
-  local x,y,size,spec=building.x,building.y,building.size,building.spec
+  local x,y,size=building.x,building.y,building.size
   if on_screen(x,y,16) then
-   spr(spec.sprite,x,y,spec.size,spec.size)
+   spr(building.sprite,x,y,building.tiles,building.tiles)
    if building.burn>0 then
     draw_flames(x,y,size,size/4)
    end
-   if building.hp<spec.hp then
+   if building.hp<building.max_hp then
     line(x,y-2,x+size-1,y-2,0)
-    line(x,y-2,x+(size-1)*building.hp/spec.hp,y-2,8)
+    line(x,y-2,x+(size-1)*building.hp/building.max_hp,y-2,8)
    end
   end
  end
@@ -316,9 +312,7 @@ function draw_buildings()
  end
 end
 
----------------------------------------------------------------
 -- world generation
----------------------------------------------------------------
 
 function lay_road(tx,ty)
  local ground=mget(tx,ty)
@@ -338,21 +332,20 @@ function connect(from,to)
 end
 
 function build_settlement(settlement)
- local spec,cx,cy=settlement.spec,settlement.tx,settlement.ty
- local radius=spec.radius
+ local cx,cy,radius=settlement.tx,settlement.ty,settlement.radius
  for y=-radius,radius do
   for x=-radius,radius do
    if length(x,y)<=radius and mget(cx+x,cy+y)==tile_tree then
-    mset(cx+x,cy+y,spec.ground)
+    mset(cx+x,cy+y,settlement.ground)
    end
   end
  end
- for entry in all(list(spec.fixed)) do
+ for entry in all(list(settlement.fixed)) do
   local kind,x,y=unpack(split(entry,":"))
   local building=place_building(kind,cx+x,cy+y,settlement)
-  if building.spec.goal then goal=building end
+  if building.goal then goal=building end
  end
- for kind in all(list(spec.buildings)) do
+ for kind in all(list(settlement.buildings)) do
   for attempt=1,30 do
    local tx=cx+flr(rnd(radius*2+1))-radius
    local ty=cy+flr(rnd(radius*2+1))-radius
@@ -360,7 +353,7 @@ function build_settlement(settlement)
   end
  end
  -- wheat fields, each with a sheep, just outside the settlement
- for field=1,spec.fields do
+ for field=1,settlement.fields do
   local angle=rnd()
   local fx=flr(cx+cos(angle)*(radius+2))
   local fy=flr(cy+sin(angle)*(radius+2))
@@ -372,7 +365,7 @@ function build_settlement(settlement)
     end
    end
   end
-  for sheep=1,spec.flock do
+  for sheep=1,settlement.flock do
    spawn_unit("sheep",fx*8+rnd(24),fy*8+rnd(16))
   end
  end
@@ -418,15 +411,15 @@ function generate_world()
  settlements={}
  for i,entry in ipairs(realm) do
   local kind,name,hero=unpack(split(entry,":"))
-  add(settlements,{
-   spec=settlement_specs[kind],
+  -- a settlement inherits from its row of settlement_specs
+  add(settlements,setmetatable({
    name=name,
    hero=hero,
    standing=0,
    wards=0,
    tx=(i-1)%3*21+9+flr(rnd(4)),
    ty=(i-1)\3*21+9+flr(rnd(4)),
-  })
+  },settlement_specs[kind]))
  end
  -- roads to the east and south neighbours, before anything is built
  for i,settlement in ipairs(settlements) do

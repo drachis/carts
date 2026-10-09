@@ -32,7 +32,7 @@ local function objective()
  local best,nearest=goal,32000
  for building in all(buildings) do
   local distance=dragon_distance(building.x,building.y)
-  if building.home.wards>0 and building.spec.ward and distance<nearest then
+  if building.home.wards>0 and building.ward and distance<nearest then
    best,nearest=building,distance
   end
  end

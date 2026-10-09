@@ -18,7 +18,7 @@ dset=sfx
 _init()
 assert(wards==3,"expected the three town churches to be the wards")
 damage_building(goal,50)
-assert(goal.hp==goal.spec.hp,"the goal was harmed through its ward")
+assert(goal.hp==goal.max_hp,"the goal was harmed through its ward")
 for n=1,60 do
  _update()
  _draw()

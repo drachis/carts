@@ -17,7 +17,7 @@ function roar(reach,frames)
  sfx(snd_roar)
  ring(dragon.x,dragon.y,reach)
  for unit in all(units) do
-  if unit.spec.brave==0 and dragon_distance(unit.x,unit.y)<reach then
+  if unit.brave==0 and dragon_distance(unit.x,unit.y)<reach then
    unit.fear=frames+rnd(frames)
   end
  end
@@ -195,7 +195,7 @@ function breathe_fire(mouth_x,mouth_y)
  sfx(snd_breath,3)
  -- shots that can burn are eaten by the flames, and feed the fury
  for shot in all(shots) do
-  if shot.spec.burns and in_breath(shot.x,shot.y,mouth_x,mouth_y,0) then
+  if shot.burns and in_breath(shot.x,shot.y,mouth_x,mouth_y,0) then
    del(shots,shot)
    ring(shot.x,shot.y,6)
    add_fury(3)
@@ -203,7 +203,7 @@ function breathe_fire(mouth_x,mouth_y)
  end
  for unit in all(units) do
   if in_breath(unit.x,unit.y,mouth_x,mouth_y,0) then
-   local fire_taken=unit.spec.fire_taken
+   local fire_taken=unit.fire_taken
    if unit.guard then
     -- a raised guard throws the fire back, and sprays it aside
     if frame%12==0 then
@@ -350,7 +350,7 @@ function update_dragon()
   -- snapped up, a mouthful at a time
   d.snap-=1
   for unit in all(units) do
-   if d.snap<=0 and unit.spec.brave==0
+   if d.snap<=0 and unit.brave==0
     and length(unit.x-head_x,unit.y-head_y)<6*d.size then
     d.snap=10
     jolt(2,1)

@@ -1,15 +1,16 @@
 -- units.lua : the realm's defenders, their behaviours and shots.
--- what a unit is comes from unit_specs; how it acts is the function
--- in unit_ai named by its spec.
+-- a unit inherits from its row of unit_specs (`unit.speed` is read
+-- from the row), as a shot does from shot_specs. how a unit acts
+-- is the function in unit_ai that its `ai` names.
 
 function spawn_unit(kind,x,y,force)
  if #units>=max_units and not force then return end
  local spec=unit_specs[kind]
- local unit={
-  spec=spec,
+ local unit=setmetatable({
   x=mid(4,x,507),
   y=mid(4,y,507),
-  hp=spec.hp,
+  hp=spec.max_hp,
+  -- frames until it can next attack; `reload` is the wait between
   cooldown=30+rnd(30),
   burn=0,
   flash=0,
@@ -23,7 +24,7 @@ function spawn_unit(kind,x,y,force)
   -- each unit aims a little off-centre so a mob surrounds the dragon
   offset_x=rnd(16)-8,
   offset_y=rnd(16)-8,
- }
+ },spec)
  add(units,unit)
  return unit
 end
@@ -40,23 +41,22 @@ function damage_unit(unit,amount,eaten)
  unit.hp-=amount
  unit.flash=3
  if unit.hp>0 then return end
- local spec=unit.spec
  del(units,unit)
  burst(unit.x,unit.y,4,4)
  if unit==boss then boss=nil end
  -- a town's hero held its dome up
  if unit.guards then unit.guards.hero=nil end
- if spec.color then
+ if unit.color then
   -- a named boss is a feast however it dies
   eaten=true
-  announce(spec.name.." has fallen",120)
+  announce(unit.name.." has fallen",120)
   jolt(8,8)
   flash=2
   ring(unit.x,unit.y,40)
   coins(unit.x,unit.y,25)
  end
  if eaten then
-  heal_dragon(spec.meal)
+  heal_dragon(unit.meal)
   sfx(snd_eat+rnd(3)) -- one of three crunches
   splat(unit.x,unit.y)
   -- eating is how the dragon grows: the meal, now meat on the
@@ -66,71 +66,66 @@ function damage_unit(unit,amount,eaten)
   add(particles,{
    x=unit.x,y=unit.y,vx=rnd(4)-2,vy=-3,
    life=600,span=600,kind="coin",
-   meal=spec.meal,sprite=74,
+   meal=unit.meal,sprite=74,
   })
- elseif spec.score>0 then
+ elseif unit.score>0 then
   sfx(snd_die+rnd(3)) -- one of three cries
  end
- if spec.score>0 then
+ if unit.score>0 then
   kills+=1
-  add_score(spec.score,unit.x,unit.y)
+  add_score(unit.score,unit.x,unit.y)
   coins(unit.x,unit.y,1)
  end
 end
 
 -- a unit with a volley looses that many shots, fanned by the
--- shot's own spread
+-- shot's own spread. each shot inherits from its row of shot_specs.
 function shoot(unit,dir_x,dir_y,kind)
- local shot=shot_specs[kind or unit.spec.shot]
- local volley=unit.spec.volley or 1
+ local spec=shot_specs[kind or unit.shot]
+ local volley=unit.volley or 1
  for i=1,volley do
-  local angle=atan2(dir_x,dir_y)+(i-(volley+1)/2)*shot.fan
-  add(shots,{
-   spec=shot,
+  local angle=atan2(dir_x,dir_y)+(i-(volley+1)/2)*spec.fan
+  add(shots,setmetatable({
    x=unit.x,
    y=unit.y,
-   vx=cos(angle)*shot.speed,
-   vy=sin(angle)*shot.speed,
+   vx=cos(angle)*spec.speed,
+   vy=sin(angle)*spec.speed,
    -- lobbed shots lead the target; the landing spot is telegraphed
    target_x=dragon.x+dragon.vx*25,
    target_y=dragon.y+dragon.vy*25,
-   damage=unit.spec.damage,
+   damage=unit.damage,
    age=0,
-  })
+  },spec))
  end
- sfx(shot.sound)
+ sfx(spec.sound)
 end
 
----------------------------------------------------------------
 -- behaviours: each takes the unit, the unit direction to the
 -- dragon and its distance, and returns this frame's movement
----------------------------------------------------------------
 
 unit_ai={}
 
 -- closes until it touches the dragon's body, and strikes from there
 function unit_ai.melee(unit,dir_x,dir_y,distance)
- local spec=unit.spec
  if distance<=4 and unit.cooldown<=0 then
-  damage_dragon(spec.damage,dir_x,dir_y,spec.knock)
-  unit.cooldown=spec.cooldown
+  damage_dragon(unit.damage,dir_x,dir_y,unit.knock)
+  unit.cooldown=unit.reload
  end
  if distance>2 then
-  return dir_x*spec.speed,dir_y*spec.speed
+  return dir_x*unit.speed,dir_y*unit.speed
  end
  return 0,0
 end
 
 function unit_ai.ranged(unit,dir_x,dir_y,distance)
- local spec=unit.spec
- local range,speed=spec.range,spec.speed
+ local range,speed=unit.range,unit.speed
  if distance<range and unit.cooldown<=0 then
-  unit.cooldown=spec.cooldown+rnd(20)
+  unit.cooldown=unit.reload+rnd(20)
   shoot(unit,dir_x,dir_y)
  end
  if distance>range*.8 then
   return dir_x*speed,dir_y*speed
- elseif distance<range*spec.keep_away then
+ elseif distance<range*unit.keep_away then
   return -dir_x*speed,-dir_y*speed
  end
  return 0,0
@@ -142,12 +137,11 @@ end
 --  gather  : flashes white, fixed on the dragon. get out of the way.
 --  strike  : a long lunge that does three times the harm
 function unit_ai.legend(unit,dir_x,dir_y,distance)
- local spec=unit.spec
  unit.clock=(unit.clock+1)%200
  local clock=unit.clock
  unit.guard=clock>110 and clock<160
  if clock<=110 then
-  if spec.shot and clock==60 then
+  if unit.shot and clock==60 then
    shoot(unit,dir_x,dir_y)
   end
   return unit_ai.melee(unit,dir_x,dir_y,distance)
@@ -159,7 +153,7 @@ function unit_ai.legend(unit,dir_x,dir_y,distance)
   return 0,0
  end
  if distance<=4 then
-  damage_dragon(spec.damage*3,dir_x,dir_y,spec.knock*2)
+  damage_dragon(unit.damage*3,dir_x,dir_y,unit.knock*2)
  end
  return unit.dash_x,unit.dash_y
 end
@@ -176,7 +170,7 @@ end
 -- the terror passes. (so a sheep flees more slowly than a soldier.)
 function unit_ai.flee(unit,dir_x,dir_y)
  unit.fear-=1
- local speed=unit.spec.speed*2
+ local speed=unit.speed*2
  return -dir_x*speed,-dir_y*speed
 end
 
@@ -197,7 +191,6 @@ end
 function update_units()
  memset(0x4300,0,0x1000)
  for unit in all(units) do
-  local spec=unit.spec
   local cell=0x4300+unit.x\8+unit.y\8*64
   if peek(cell)>0 then
    unit.push_x+=rnd(2)-1
@@ -215,10 +208,10 @@ function update_units()
   unit.flash=max(0,unit.flash-1)
 
   -- a heavy dragon is dreadful just to be near
-  if spec.brave==0 and distance<dragon.weight*12 then
+  if unit.brave==0 and distance<dragon.weight*12 then
    unit.fear=max(unit.fear,20)
   end
-  local ai=unit.burn>0 and "panic" or unit.fear>0 and "flee" or spec.ai
+  local ai=unit.burn>0 and "panic" or unit.fear>0 and "flee" or unit.ai
   local move_x,move_y=unit_ai[ai](unit,dir_x,dir_y,distance)
   unit.x=mid(4,unit.x+move_x+unit.push_x,507)
   unit.y=mid(4,unit.y+move_y+unit.push_y,507)
@@ -226,7 +219,7 @@ function update_units()
   unit.push_y*=.8
   if move_x!=0 then unit.facing_left=move_x<0 end
 
-  if burning_at(unit.x\8,unit.y\8) and spec.fire_taken>fireproof then
+  if burning_at(unit.x\8,unit.y\8) and unit.fire_taken>fireproof then
    unit.burn=max(unit.burn,40)
   end
  end
@@ -234,17 +227,16 @@ end
 
 function draw_units()
  for unit in all(units) do
-  local spec=unit.spec
   if on_screen(unit.x,unit.y,8) then
    if unit.guard then
     circ(unit.x,unit.y,7,frame%4<2 and 12 or 7)
    end
    if unit.flash>0 then
     for color=1,15 do pal(color,7) end
-   elseif spec.color then
-    pal(10,spec.color)
+   elseif unit.color then
+    pal(10,unit.color)
    end
-   spr(spec.sprite,unit.x-4,unit.y-4,1,1,unit.facing_left)
+   spr(unit.sprite,unit.x-4,unit.y-4,1,1,unit.facing_left)
    pal()
    if unit.burn>0 then
     pset(unit.x-2+rnd(4),unit.y-5+rnd(3),rnd{9,10})
@@ -255,25 +247,22 @@ function draw_units()
  end
 end
 
----------------------------------------------------------------
 -- shots
----------------------------------------------------------------
 
 function update_shots()
  for shot in all(shots) do
-  local spec=shot.spec
   shot.x+=shot.vx
   shot.y+=shot.vy
   shot.age+=1
-  local landed=shot.age>=spec.life
+  local landed=shot.age>=shot.life
   local struck
-  if spec.seek then
+  if shot.seek then
    -- a seeking shot is on a spring to the spot it was aimed at:
    -- a volley fans out, then closes in on that spot all at once
    shot.vx+=(shot.target_x-shot.x)*.003
    shot.vy+=(shot.target_y-shot.y)*.003
   end
-  if spec.lob then
+  if shot.lob then
    -- harmless in the air, a blast where it lands
    struck=landed and dragon_gap(shot.target_x,shot.target_y)<8
    if landed then
@@ -294,7 +283,7 @@ function update_shots()
    damage_dragon(shot.damage)
    -- a burst where it hit. (a lobbed shot's x,y is where it was
    -- thrown from, and it has its own blast, so it gets none.)
-   ring(shot.x,shot.y,spec.lob and 0 or 10)
+   ring(shot.x,shot.y,shot.lob and 0 or 10)
   end
   if struck or landed then del(shots,shot) end
  end
@@ -303,22 +292,22 @@ end
 -- shots are drawn over everything, the dragon included
 function draw_shots()
  for shot in all(shots) do
-  local spec,x,y=shot.spec,shot.x,shot.y
-  local progress=shot.age/spec.life
-  if spec.lob then
+  local x,y=shot.x,shot.y
+  local progress=shot.age/shot.life
+  if shot.lob then
    -- a closing ring marks where it will land, and the rock arcs
    -- over towards it
-   circ(shot.target_x,shot.target_y,12-shot.age*10\spec.life,8)
+   circ(shot.target_x,shot.target_y,12-shot.age*10\shot.life,8)
    circfill(
     x+(shot.target_x-x)*progress,
-    y+(shot.target_y-y)*progress+sin(progress/2)*30,spec.size,spec.color)
+    y+(shot.target_y-y)*progress+sin(progress/2)*30,shot.size,shot.color)
   else
    -- an orb with a dark rim, or a streak: easy to read at a glance
-   if spec.size>0 then
-    circfill(x,y,spec.size+1,0)
-    circfill(x,y,spec.size,spec.color)
+   if shot.size>0 then
+    circfill(x,y,shot.size+1,0)
+    circfill(x,y,shot.size,shot.color)
    else
-    line(x,y,x-shot.vx*3,y-shot.vy*3,spec.color)
+    line(x,y,x-shot.vx*3,y-shot.vy*3,shot.color)
    end
   end
  end
