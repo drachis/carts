@@ -1,25 +1,43 @@
 # Wyrmfire
 
 A top-down dragon burns a medieval realm: Dynasty Warriors crowds, Rampage
-destruction, an escalating response that ends with Arthur defending Camelot.
+destruction, shmup handling, and a whelp that eats its way up to something
+that fills the screen. It ends with Arthur defending Camelot.
 
 The project is also an experiment: **how much game, and how good a game, fits
-in one PICO-8 cart's 8192 tokens.** Every design choice below serves that.
+in one PICO-8 cart's 8192 tokens.** Every choice below serves that.
 
 ## Rules of the build
 
-1. **Data is strings, not tables.** A table constructor costs ~3 tokens per
-   field; a string costs 1 whatever its length. All tuning lives in `data.lua`
-   as text parsed once at boot (`parse_table`, `parse_record`). Adding a unit,
-   building, legend, settlement or wrath level should be a new line of data.
+1. **Data is strings, not tables.** A table constructor costs about 3 tokens
+   per field; a string costs 1 whatever its length. All tuning lives in
+   `data.lua` as text parsed once at boot (`parse_table`, `parse_record`).
+   A new unit, shot, building, settlement, age, boon or wrath level is a new
+   line of data and costs nothing.
 2. **Behaviour is named by data.** A unit row names its `ai`; the function is
-   `unit_ai[name]`. New behaviour is one function, reused by any number of rows.
-3. **Cart memory before Lua memory.** If state fits in map, sprite flags or
-   user memory, it goes there (see the memory map).
-4. **Readable names are free.** A token is a token whether it is `u` or
+   `unit_ai[name]`. New behaviour is one function, shared by any number of rows.
+3. **Objects inherit from their data rows.** Every row `parse_table` makes is a
+   prototype (its `__index` is itself). Units, shots, buildings and settlements
+   are made with `setmetatable(object,row)`, so `unit.speed` reads the row
+   unless the unit has set its own. The object's table holds only what differs
+   from one to the next. Columns are named so they cannot be mistaken for an
+   object's own state (`max_hp` beside `hp`, `reload` beside `cooldown`,
+   `tiles` beside `size`).
+4. **Named constants are globals.** `parse_record` fills the global table
+   (`_ENV`) with the tile ids, sound slots and tuning values, so `snd_roar`
+   costs one token where `sound.roar` cost two.
+5. **Cart memory before Lua memory.** If state fits in the map, sprite flags,
+   sfx memory or user memory, it goes there (see the memory map).
+6. **Readable names are free.** A token is a token whether it is `u` or
    `building`, so nothing is abbreviated. Savings come from structure.
-5. **PICO-8 is the only token counter.** `py count_tokens.py` asks PICO-8.
-6. Module functions and state are globals: all includes share one chunk, which
+7. **No comments in the Lua.** PICO-8 counts every character of source against
+   a second limit of 65,535, and comments were a third of it. Notes on the code
+   live in `CODE_NOTES.md`, filed by module and function; `run_tests.py` fails
+   if a comment appears in a module. (The two comment lines at the top of
+   `wyrmfire.p8` stay: PICO-8 uses them as the cart's title and author.)
+8. **PICO-8 is the only token counter.** `py count_tokens.py` asks PICO-8 and
+   reports both budgets.
+9. Module functions and state are globals: all includes share one chunk, which
    allows only 200 `local`s. Use `local` inside functions.
 
 ## Memory map
@@ -31,98 +49,94 @@ in one PICO-8 cart's 8192 tokens.** Every design choice below serves that.
 | Sprite flags | Ground fuel: high nibble = fire visits it burns for, low nibble = chance in 16 of catching from a neighbour |
 | Sprite sheet | A ground tile's burnt form is 16 ids later (one row down) |
 | Sprites 128..255 | Not available: shared with map rows 32..63 |
-| Sfx 16..18 | The music. Their speed bytes (`0x3241 + n*68`) are poked to raise the tempo with wrath |
+| Sfx memory | Rewritten in play: the hurt sound's volume per blow, the coin's pitch per coin, the roar's five pitches as the dragon gains weight |
 | `0x4300..0x52ff` | Unit grid: a byte per tile, cleared each frame, so units do not stack |
 | `0x5300..0x5dff` | Free (2.8k of user memory) |
-| `cartdata` slot 0 | High score; slots 1..63 free |
+| `cartdata` slot 0 | High score, in tens; slots 1..63 free |
 
 Fire is a cellular automaton over the state bytes: 4 rows are visited per
 frame, so each tile is visited every 16 frames. There is no fire list and no
 cap on how much of the realm burns.
 
-## The loop, and where the excitement comes from
+## The game
 
-- **Beats:** fly to a settlement (compass points at the nearest standing
-  one) -> it sounds the alarm and its militia turns out -> raze every building
-  for a bounty and a heal -> move on. Camelot is the last and hardest.
-- **Combo:** every kill and ruin goes through `add_score`. Hits within
-  `combo_frames` of each other chain; every 5 raise the multiplier, and
-  `streaks` call out milestones.
-- **Fury:** score fills a meter. Charging with fire held when it is full is an
-  inferno: a nova, then `fury_stats` laid over the dragon for a while.
-- **Wrath:** total score raises the realm's response and sends legends; the
-  music speeds up with it.
-- **Shmup handling:** flight is near-instant (`accel`, `friction`). Holding
-  breath locks the facing and slows the dragon, so fire is strafed across
-  targets. Only the heart (radius 5, shown while breathing) can be hit by
-  shots; a hit gives `mercy` frames of safety and a charge is untouchable.
-- **Polarity:** orange (wooden) shots burn up in the breath and feed fury;
-  blue (holy) shots must be dodged. Near misses graze, which also feeds fury.
-  Volleys and fans are data (`volley` on the unit, `fan` on the shot).
-- **Coins and boons:** ruins and kills pay out coins that home to the dragon
-  and keep the combo alive; razing a settlement spins the boon reel.
-- **The spine of a run:** a `shielded` settlement is under a dome: nothing in
-  it can be harmed or burn, and the dragon is pushed back out. Each town's dome
-  holds while its hero (named in `realm`) lives; the hero comes out at the
-  alarm. With the hero slain the town's church (a `ward`) can burn. Camelot's
-  dome holds while any ward stands. The last ward falling sets wrath to its
-  final level, which brings Lancelot, Merlin and the lancers; Arthur guards
-  the keep. Villages are optional side roads: sheep, gold and boons.
-- **Legends have a rhythm** (`unit_ai.legend`, also used by lancers): press
-  the attack, raise a guard that throws fire back as `rebuke` shots (charge
-  it), flash white while gathering, then lunge for triple damage (dodge it,
-  or charge through). Their damage is set by how late in a run they are met.
-- **Reading the screen:** the dragon flies over everyone; only shots are drawn
-  above it. Melee fighters stand at the edge of its body. Units never share a
-  tile (a scratch grid at `0x4300`, see `update_units`). Popups are only for
-  prizes of 100+. The HUD is one top bar of upward-filling gauges with the
-  compass as a dial in it.
-- **Two budgets:** 8192 tokens and 65535 characters of source, comments
-  included. `count_tokens.py` reports both.
+**The run**
 
-## An unexplained crash in headless PICO-8
-
-Headless PICO-8 (`-x`) sometimes dies with an access violation (exit code
-`0xC0000005`) part-way through the soak test: rarely when run alone, in most
-runs when a dozen run at once. **The cause is not known.** What is known,
-from about twenty batches of `tests/crash_hunt.py` (parallel soaks with
-parts of the game switched off or edited):
-
-- It needs the game's drawing: with `_draw` empty it never happens. Harmless
-  drawing of similar cost does not cause it, and Lua memory stays flat.
-- Removing any one of several unrelated things stops it (in one build: the
-  compass, the hit-counter text, both HUD `circ` calls, or stubbing an
-  unrelated function and adding a `printh`; in an earlier build: drawing of
-  buildings, of shots, or of particles). Removing other things of similar
-  size does not.
-- So it depends on the exact shape of the program rather than on anything
-  the game does, and the soak build cannot say whether the real cart is
-  affected: they differ by just the kind of change that flips it.
-
-Causes that were proposed and then disproved: PICO-8 start-up, `cstore`,
-frames running late, `circ` with a fractional radius, `circ` reaching off
-the screen. In normal windowed play the user reports no crashes over many
-hours and builds, so it is treated as a headless-only problem that makes the
-soak test flaky (some builds fail about half their runs). `circ` calls
-were given whole radii along the way; that is harmless but was not a fix.
-`run_tests.py` treats the crash as a failure and prints the exit code.
+- **Spine:** a shielded settlement is under a dome. Nothing in it can be
+  harmed or lit, the dragon is pushed back out, and its flames slide off. Each
+  town's dome holds while its hero (named in `realm`) lives; the hero comes out
+  at the alarm. With the hero slain the town's church, a `ward`, can burn.
+  Camelot's dome holds while any ward stands. The compass points to the nearest
+  ward, then to Camelot.
+- **Finale:** the last ward falling sets wrath to its final level, which brings
+  Lancelot, Merlin and the heaviest reinforcements. Mordred and Morgan le Fay
+  defend Camelot's minster and wizard tower; Arthur defends the keep. Razing
+  the keep wins.
+- **Side roads:** the hamlet, village, abbey and fort are optional. They are
+  where the dragon eats, and razing any settlement pays a bounty, a heal, a
+  spin of the boon reel and a rest.
 - **Peaks and rests:** being at a standing settlement is a `battle`:
-  reinforcements come `battle_rush` times faster and the music quickens.
-  Razing a settlement buys `lull_frames` of quiet.
-- **Whelp to calamity:** the dragon grows by eating. Every unit has a `meal`
-  value (sheep 10, commoners 1); at each `meals` threshold in `ages` the
-  dragon comes of age and gains that row's stats. Coins are score, combo
-  upkeep and fury only. `size` scales the whole
-  body, its reach and its jaws (`draw_dragon` scales its forward/sideways
-  vectors, so every offset follows). `weight` is heft: wingbeats shake the
-  screen, buildings beneath are crushed, blows move it less, its roar is
-  retuned lower in sfx memory, and the not-`brave` flee on sight. Top speed
-  stays the same across ages while `accel` and `turn_rate` fall and `friction`
-  rises, which is what makes the late dragon feel massive.
-- **Being a dragon:** `roar` strikes the not-`brave` with fear on big
-  moments. The jaws snap up anything not brave that passes under the head.
-- **Juice:** hit-stop and shake via `jolt`, white `flash` frames, shockwave
-  rings, score popups, bodies flung by charges, knockback, look-ahead camera.
+  reinforcements come `battle_rush` times faster and the battle track plays.
+  Open country has the roaming track. Razing a settlement buys `lull_frames`
+  with no reinforcements.
+- **Wrath:** six levels by score, each with its own pool of reinforcements,
+  some sending a legend. Score alone cannot reach the last.
+
+**The dragon**
+
+- **Growing:** it grows by eating. Every unit has a `meal` value (sheep 10, a
+  cow 18, a serf 1). The eaten thing flies to the sheep gauge as meat, and at
+  each `meals` threshold in `ages` the dragon comes of age and gains that row's
+  stats. There are ten ages, whelp to doom of kings.
+- **Size, weight, momentum:** `size` scales the whole body, its reach and its
+  jaws (`draw_dragon` scales its forward and sideways vectors, so every offset
+  follows). `weight` is heft: wingbeats shake the screen, buildings beneath are
+  crushed, its roar is retuned lower, and the not-`brave` flee on sight. Top
+  speed stays the same across ages while `accel` and `turn_rate` fall and
+  `friction` rises, which is what makes the late dragon feel massive.
+- **Handling:** flight is near-instant. Holding breath locks the facing and
+  slows the dragon, so fire is strafed across targets. The body is a chain of
+  circles (`update_body`) that is both what is drawn and what can be hit. A
+  hit gives `mercy` frames of safety. A charge coils for a moment, then bursts
+  forward, untouchable, and is the answer to a raised guard.
+- **Breath:** one long exhale, strongest on full lungs, with a kick on the
+  first gasp; then it must be released to breathe in. It burns wooden shots.
+- **Fury:** score, coins, grazes and burnt shots fill a meter. Charging with
+  fire held when it is full is an inferno: a nova, then `fury_stats` laid over
+  the dragon for a while (`rage` multiplies the breath's power at any age).
+- **Being a dragon:** `roar` strikes the not-`brave` with fear on big moments.
+  The jaws snap up anything not brave that passes under the head.
+
+**The realm's defenders**
+
+- **Polarity:** orange (wooden) shots burn up in the breath and feed fury;
+  blue, green and violet ones cannot be burned and must be dodged. A near miss
+  is a graze, which also feeds fury. Volleys, fans and seeking are data
+  (`volley` on the unit; `fan` and `seek` on the shot).
+- **Legends have a rhythm** (`unit_ai.legend`, shared by lancers and paladins):
+  press the attack, raise a guard that throws fire back (charge it), flash
+  white while gathering, then lunge for triple damage and a long knockback
+  (dodge it, or charge through). Their damage is set by how late they are met:
+  Arthur's lunge fells a whelp in one blow and a calamity in four.
+
+**Score and feel**
+
+- **Combo:** every kill and ruin goes through `add_score`. Hits within
+  `combo_frames` chain; every `combo_step` raise the multiplier, up to
+  `max_multiplier`, and `streaks` call out milestones.
+- **Coins:** ruins and kills pay out coins that fly to the dragon and keep the
+  combo alive; burning buildings and slow-burning ground drip them, so a realm
+  left alight keeps paying.
+- **Livestock:** flocks are restocked slowly while fewer than `min_livestock`
+  animals are alive, so growth is never lost for good.
+- **Reading the screen:** the dragon flies over everyone; only shots are drawn
+  above it. Melee fighters stop at the edge of its body. Units never share a
+  tile. Popups are only for prizes of 100 or more. The HUD is one top bar of
+  upward-filling gauges (heart, spark, star, sheep) with the wards left and the
+  compass as a dial; a boss has a named bar along the bottom.
+- **Juice:** shake and hit-stop via `jolt`, scaled to the blow; white `flash`
+  frames; shockwave rings; blood; a death sequence; knockback; a camera that
+  leads by half the breath's reach.
 
 ## Modules
 
@@ -130,28 +144,59 @@ were given whole radii along the way; that is harmless but was not a fix.
 |---|---|
 | `data.lua` | Parsers and every data table |
 | `core.lua` | Maths, particles, text |
-| `world.lua` | Tile state, fire, buildings, world generation |
+| `world.lua` | Tile state, fire, domes, buildings, world generation |
 | `units.lua` | Defenders, `unit_ai` behaviours, shots |
-| `dragon.lua` | The player: movement, breath, charge, drawing |
-| `main.lua` | States, wrath director, HUD, `_init/_update/_draw` |
+| `dragon.lua` | The player: growth, movement, breath, charge, drawing |
+| `main.lua` | States, score, wrath director, HUD, `_init/_update/_draw` |
+| `CODE_NOTES.md` | Every note on the code, by module and function |
 
-`gen_gfx.py` writes sprites, sprite flags and sfx into the carts.
-`run_tests.py` regenerates art, runs two headless carts and saves `shot.png`:
-`tests/test_data.p8` checks every name and stat the data refers to exists and
-prints the dragon at each age; `tests/test_run.p8` soaks whole games with a
-scripted dragon. They are separate because the game plus its tests no longer
-fit in 8192 tokens; the soak harness must shrink as the game grows.
+`gen_gfx.py` writes sprites, sprite flags, sfx and music into the carts.
 
-## Workflow
+## Tests
 
-    py run_tests.py      # must print "ok"
-    py count_tokens.py   # budget, straight from PICO-8
+    py run_tests.py      # must exit 0
+    py count_tokens.py   # both budgets, straight from PICO-8
+
+`run_tests.py` regenerates the art, saves `sheet.png`, and runs three carts.
+There are three because the game leaves no room in a cart for a harness:
+
+- `tests/test_data.p8` (headless): every name and stat the data refers to
+  exists; the dragon at each age; every boon comes up on the reel.
+- `tests/test_title.p8` (headless): the title and game-over screens, saved as
+  `title.png` and `won.png`.
+- `tests/test_run.p8` (in a window): a scripted dragon plays whole games for
+  4500 frames; one frame is saved as `shot.png`.
+
+The title and soak carts include generated copies of the modules
+(`tests/gen_*.lua`), and each swaps one for a copy with functions it never
+needs emptied, to make room. Carts print screens as text and the runner writes
+the PNGs. `tests/reset_best.p8` zeroes the saved high score.
 
 Commit after each working step, with the token count when it changed.
 
+## An unexplained crash in headless PICO-8
+
+Headless PICO-8 (`-x`) sometimes dies with an access violation (exit code
+`0xC0000005`) part-way through the soak: rarely when run alone, in most runs
+when a dozen run at once. **The cause is not known.** What is known, from
+about twenty batches of `tests/crash_hunt.py` (parallel soaks with parts of
+the game switched off or edited):
+
+- It needs the game's drawing: with `_draw` empty it never happens. Harmless
+  drawing of similar cost does not cause it, and Lua memory stays flat.
+- Removing any one of several unrelated things stops it, while removing other
+  things of similar size does not. So it depends on the exact shape of the
+  program rather than on anything the game does.
+
+Causes proposed and then disproved: PICO-8 start-up, `cstore`, frames running
+late, `circ` with a fractional radius, `circ` reaching off the screen. In
+windowed play the user reports no crashes over many hours and builds, so the
+soak now runs in a window, where it has not been seen.
+
 ## Ideas not built yet
 
-- Dragon growth and upgrades (stats are already a mutable record).
-- A many-headed Tiamat form: breath types per head.
+- A many-headed Tiamat form: a breath type per head.
 - Walls and gates around Camelot; siege camps on the roads.
-- Music; a hoard/meta-progression in the spare `cartdata` slots.
+- Meta-progression in the spare `cartdata` slots.
+- Baking the world into the cart's map data instead of generating it: about
+  500 tokens back, at the cost of the same realm every game.

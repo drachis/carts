@@ -99,7 +99,7 @@ def main(argv):
     total = pico8_count(whole + "\n" + FILLER) - filler
     print("%s  %d / %d  (%.0f%%, %d free)" % (
         os.path.basename(cart), total, LIMIT, total * 100.0 / LIMIT, LIMIT - total))
-    print("  %d / %d characters of source (comments included)" % (len(whole), CHAR_LIMIT))
+    print("  %d / %d characters of source" % (len(whole), CHAR_LIMIT))
     if len(modules) > 2:
         for label, code in modules:
             print("  %-14s %5d" % (label, pico8_count(code + "\n" + FILLER) - filler))

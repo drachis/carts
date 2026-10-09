@@ -1,8 +1,3 @@
--- units.lua : the realm's defenders, their behaviours and shots.
--- a unit inherits from its row of unit_specs (`unit.speed` is read
--- from the row), as a shot does from shot_specs. how a unit acts
--- is the function in unit_ai that its `ai` names.
-
 function spawn_unit(kind,x,y,force)
  if #units>=max_units and not force then return end
  local spec=unit_specs[kind]
@@ -10,18 +5,14 @@ function spawn_unit(kind,x,y,force)
   x=mid(4,x,507),
   y=mid(4,y,507),
   hp=spec.max_hp,
-  -- frames until it can next attack; `reload` is the wait between
   cooldown=30+rnd(30),
   burn=0,
   flash=0,
-  -- where it is in its fighting cycle (see unit_ai.legend)
   clock=flr(rnd(100)),
   fear=0,
-  -- knockback, which decays
   push_x=0,
   push_y=0,
   wander=rnd(),
-  -- each unit aims a little off-centre so a mob surrounds the dragon
   offset_x=rnd(16)-8,
   offset_y=rnd(16)-8,
  },spec)
@@ -29,14 +20,12 @@ function spawn_unit(kind,x,y,force)
  return unit
 end
 
--- a boss gets a health bar and a herald
 function spawn_boss(kind,x,y)
  boss=spawn_unit(kind,x,y,true)
  announce(kind.." rides!",120)
  sfx(snd_fanfare)
 end
 
--- `eaten` is a kill by the dragon's jaws, which makes it a meal
 function damage_unit(unit,amount,eaten)
  unit.hp-=amount
  unit.flash=3
@@ -44,10 +33,8 @@ function damage_unit(unit,amount,eaten)
  del(units,unit)
  burst(unit.x,unit.y,4,4)
  if unit==boss then boss=nil end
- -- a town's hero held its dome up
  if unit.guards then unit.guards.hero=nil end
  if unit.color then
-  -- a named boss is a feast however it dies
   eaten=true
   announce(unit.name.." has fallen",120)
   jolt(8,8)
@@ -57,19 +44,15 @@ function damage_unit(unit,amount,eaten)
  end
  if eaten then
   heal_dragon(unit.meal)
-  sfx(snd_eat+rnd(3)) -- one of three crunches
+  sfx(snd_eat+rnd(3))
   splat(unit.x,unit.y)
-  -- eating is how the dragon grows: the meal, now meat on the
-  -- bone (sprite 74), is flung up and flies to the sheep gauge,
-  -- counting when it gets there. (added directly, so that a full
-  -- particle list cannot lose a meal.)
   add(particles,{
    x=unit.x,y=unit.y,vx=rnd(4)-2,vy=-3,
    life=600,span=600,kind="coin",
    meal=unit.meal,sprite=74,
   })
  elseif unit.score>0 then
-  sfx(snd_die+rnd(3)) -- one of three cries
+  sfx(snd_die+rnd(3))
  end
  if unit.score>0 then
   kills+=1
@@ -78,8 +61,6 @@ function damage_unit(unit,amount,eaten)
  end
 end
 
--- a unit with a volley looses that many shots, fanned by the
--- shot's own spread. each shot inherits from its row of shot_specs.
 function shoot(unit,dir_x,dir_y,kind)
  local spec=shot_specs[kind or unit.shot]
  local volley=unit.volley or 1
@@ -90,7 +71,6 @@ function shoot(unit,dir_x,dir_y,kind)
    y=unit.y,
    vx=cos(angle)*spec.speed,
    vy=sin(angle)*spec.speed,
-   -- lobbed shots lead the target; the landing spot is telegraphed
    target_x=dragon.x+dragon.vx*25,
    target_y=dragon.y+dragon.vy*25,
    damage=unit.damage,
@@ -100,12 +80,8 @@ function shoot(unit,dir_x,dir_y,kind)
  sfx(spec.sound)
 end
 
--- behaviours: each takes the unit, the unit direction to the
--- dragon and its distance, and returns this frame's movement
-
 unit_ai={}
 
--- closes until it touches the dragon's body, and strikes from there
 function unit_ai.melee(unit,dir_x,dir_y,distance)
  if distance<=4 and unit.cooldown<=0 then
   damage_dragon(unit.damage,dir_x,dir_y,unit.knock)
@@ -131,11 +107,6 @@ function unit_ai.ranged(unit,dir_x,dir_y,distance)
  return 0,0
 end
 
--- a legend (or a lancer) fights in a cycle the dragon can learn:
---  press   : close in and trade blows, loosing its shot if it has one
---  guard   : stands behind a shield no fire can pass. charge it.
---  gather  : flashes white, fixed on the dragon. get out of the way.
---  strike  : a long lunge that does three times the harm
 function unit_ai.legend(unit,dir_x,dir_y,distance)
  unit.clock=(unit.clock+1)%200
  local clock=unit.clock
@@ -166,15 +137,12 @@ function unit_ai.sheep(unit,dir_x,dir_y,distance)
  return cos(unit.wander)*.15,sin(unit.wander)*.15
 end
 
--- dragonfear: run from the dragon, at twice its usual pace, until
--- the terror passes. (so a sheep flees more slowly than a soldier.)
 function unit_ai.flee(unit,dir_x,dir_y)
  unit.fear-=1
  local speed=unit.speed*2
  return -dir_x*speed,-dir_y*speed
 end
 
--- anyone on fire runs about, spreading it
 function unit_ai.panic(unit)
  unit.burn-=1
  if frame%6==0 then unit.wander=rnd() end
@@ -184,10 +152,6 @@ function unit_ai.panic(unit)
  return cos(unit.wander)*1.2,sin(unit.wander)*1.2
 end
 
--- units do not stack. each claims the tile it stands on in a
--- scratch grid in user memory (0x4300, a byte per tile); one that
--- finds its tile taken is jostled off it. one peek per unit, with
--- no pair checks and no pathing, however big the mob.
 function update_units()
  memset(0x4300,0,0x1000)
  for unit in all(units) do
@@ -201,13 +165,10 @@ function update_units()
   local dy=dragon.y+unit.offset_y-unit.y
   local distance=max(length(dx,dy),1)
   local dir_x,dir_y=dx/distance,dy/distance
-  -- units head for the dragon's middle, but how far away they are
-  -- is measured to its skin, whichever part of it is nearest
   distance=dragon_gap(unit.x,unit.y)
   unit.cooldown-=1
   unit.flash=max(0,unit.flash-1)
 
-  -- a heavy dragon is dreadful just to be near
   if unit.brave==0 and distance<dragon.weight*12 then
    unit.fear=max(unit.fear,20)
   end
@@ -247,8 +208,6 @@ function draw_units()
  end
 end
 
--- shots
-
 function update_shots()
  for shot in all(shots) do
   shot.x+=shot.vx
@@ -257,21 +216,15 @@ function update_shots()
   local landed=shot.age>=shot.life
   local struck
   if shot.seek then
-   -- a seeking shot is on a spring to the spot it was aimed at:
-   -- a volley fans out, then closes in on that spot all at once
    shot.vx+=(shot.target_x-shot.x)*.003
    shot.vy+=(shot.target_y-shot.y)*.003
   end
   if shot.lob then
-   -- harmless in the air, a blast where it lands
    struck=landed and dragon_gap(shot.target_x,shot.target_y)<8
    if landed then
     burst(shot.target_x,shot.target_y,8,6)
    end
   else
-   -- a shot hits whatever part of the body it touches (not the
-   -- wings). a near miss is a graze, which feeds the fury once per
-   -- shot.
    local distance=dragon_gap(shot.x,shot.y)
    struck=distance<=0
    if distance<10 and not shot.grazed then
@@ -281,28 +234,22 @@ function update_shots()
   end
   if struck then
    damage_dragon(shot.damage)
-   -- a burst where it hit. (a lobbed shot's x,y is where it was
-   -- thrown from, and it has its own blast, so it gets none.)
    ring(shot.x,shot.y,shot.lob and 0 or 10)
   end
   if struck or landed then del(shots,shot) end
  end
 end
 
--- shots are drawn over everything, the dragon included
 function draw_shots()
  for shot in all(shots) do
   local x,y=shot.x,shot.y
   local progress=shot.age/shot.life
   if shot.lob then
-   -- a closing ring marks where it will land, and the rock arcs
-   -- over towards it
    circ(shot.target_x,shot.target_y,12-shot.age*10\shot.life,8)
    circfill(
     x+(shot.target_x-x)*progress,
     y+(shot.target_y-y)*progress+sin(progress/2)*30,shot.size,shot.color)
   else
-   -- an orb with a dark rim, or a streak: easy to read at a glance
    if shot.size>0 then
     circfill(x,y,shot.size+1,0)
     circfill(x,y,shot.size,shot.color)

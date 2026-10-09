@@ -1,17 +1,3 @@
--- data.lua : everything the game is tuned by.
---
--- a table constructor costs about three tokens per field; a string
--- costs one however long it is. so all data lives in strings that
--- are parsed once at boot, and adding a unit, building, legend or
--- wrath level is a new line here rather than new code.
-
--- lines of comma separated values. the first line names the fields
--- and the first field is the row's name. rows are stored both in
--- order and by name; empty cells are left nil.
---
--- a row is also a prototype: setmetatable(o,row) makes o read any
--- field it has not set itself from the row. units, buildings,
--- shots and settlements are made this way (see DESIGN.md).
 function parse_table(text)
  local rows,fields={}
  for line in all(split(text,"\n")) do
@@ -31,9 +17,6 @@ function parse_table(text)
  return rows
 end
 
--- lines of key=value (or one line, with another separator). a line
--- with no "=" is skipped, so it can serve as a heading. the pairs
--- go into a new table, or into `into` if one is given.
 function parse_record(text,separator,into)
  local record=into or {}
  for line in all(split(text,separator or "\n")) do
@@ -43,17 +26,11 @@ function parse_record(text,separator,into)
  return record
 end
 
--- a cell may hold a list: "a/b/c". an empty cell is an empty list.
 function list(cell)
  return cell and split(cell,"/") or {}
 end
 
--- named constants. these are parsed straight into the global table
--- (_ENV), so each is an ordinary global in the code: `tile_tree`
--- costs one token where a field of a table, `tile.tree`, costs two.
 parse_record([[
-ground tile sprites. the burnt form of a tile is 16 ids later and
-its fuel is in its sprite flags (see gen_gfx.py, world.lua):
 tile_grass=1
 tile_flowers=2
 tile_tree=3
@@ -63,8 +40,6 @@ tile_water=6
 tile_bridge=7
 tile_rubble=21
 
-sound effects, by their slot (see gen_gfx.py). die and eat are
-the first of three, one of which is picked at random:
 snd_breath=0
 snd_roar=1
 snd_crash=2
@@ -76,7 +51,6 @@ snd_alarm=9
 snd_coin=10
 snd_wings=11
 
-tuning:
 max_units=80
 max_particles=320
 alarm_range=110
@@ -91,22 +65,9 @@ coin_value=2
 reel_frames=45
 battle_rush=4
 lull_frames=450
-quiet=45
+min_livestock=24
 ]],nil,_ENV)
 
--- the dragon's ages, from the whelp it starts as (dragon_stats) to
--- a calamity. it grows by eating: every unit has a `meal` value,
--- and sheep are by far the best. it comes of age when it has eaten
--- that many meals' worth since the last age, and gains the stats
--- listed, added to its own.
---  size scales its whole body, its reach and its jaws.
---  weight is heft: it shakes the ground with each wingbeat,
---   crushes what it flies over, shrugs off blows, deepens its
---   roar and makes the fearful flee at the sight of it.
---  less accel and turn_rate with more friction is momentum: the
---   same top speed, but slow to gather and slow to shed.
--- the three ages past calamity are for fun, for those who keep
--- eating: bigger and deadlier still, but no heavier.
 ages=parse_table[[
 name,meals,stats
 whelp,0
@@ -121,8 +82,6 @@ sun-eater,900,size=0.4/max_hp=90/hp=90/max_fire=20/accel=-0.03/breath_accel=-0.0
 doom of kings,1100,size=0.4/max_hp=90/hp=90/max_fire=20/accel=-0.03/breath_accel=-0.02/friction=0.01/turn_rate=-0.006/breath_speed=0.2/breath_flames=1/breath_damage=1/charge_damage=25/bite_damage=10/kick=0.3
 ]]
 
--- razing a settlement spins the reel and lands on one of these.
--- each stat is added to the dragon's, for the rest of the game.
 boons=parse_table[[
 name,stats
 long flame,breath_range=10/breath_speed=0.5
@@ -139,7 +98,6 @@ spitfire,breath_flames=1/breath_damage=0.4
 restless,charge_recover=-8/charge_speed=0.5
 ]]
 
--- called out when a combo reaches this many hits
 streaks=parse_record[[
 10=rampage!
 25=carnage!
@@ -150,13 +108,8 @@ streaks=parse_record[[
 220=the end of all things!
 ]]
 
--- the dragon's body before scaling: pairs of how far along the
--- spine a circle sits and its radius, from haunches to snout
 body_shape=split"-4,4,0,5,6,3,10,3,13,2"
 
--- laid over the dragon's stats while an inferno lasts. rage
--- multiplies the breath's power (its reach, speed and damage), so
--- an inferno is half as strong again whatever the dragon's age.
 fury_stats=[[
 body=10
 wing=9
@@ -166,10 +119,6 @@ breath_cost=0
 charge_recover=20
 ]]
 
--- the dragon starts each game as a copy of this: a whelp. anything
--- here can be changed in play (ages, boons, fury) without new code.
--- flight is shmup-tight: top speed is accel/(1-friction), reached
--- in a few frames. mercy is the frames of safety after a hit.
 dragon_stats=[[
 x=84
 y=84
@@ -219,17 +168,6 @@ flash=0
 calm=0
 ]]
 
--- ai names a function in unit_ai (units.lua). reload is the frames
--- between its attacks. meal is the health the dragon gains when the
--- unit dies. fire_taken scales
--- breath damage; at or below `fireproof` a unit never ignites.
--- ranged units hold at range and back off inside range*keep_away.
--- color recolors the legend sprite's gold. the brave (1) stand
--- against the dragon's roar and are too much to swallow in passing;
--- the rest (0) flee from it and can be snapped up. a melee unit with a
--- knock throws the dragon back that hard when it lands a blow.
--- anything with a color is a named boss: it gets a health bar, and
--- a fanfare when it falls.
 unit_specs=parse_table[[
 name,sprite,max_hp,speed,damage,reload,fire_taken,score,meal,brave,ai,range,keep_away,shot,color,knock,volley
 serf,64,3,0.7,1,30,1,5,1,0,melee
@@ -262,11 +200,6 @@ merlin,73,220,0.6,10,70,0.3,800,40,1,ranged,90,0.6,arcane,12,,10
 king arthur,92,160,1.4,30,40,0.3,500,30,1,legend,,,excalibur,10,60,8
 ]]
 
--- size 0 draws a streak, otherwise a ball of that radius. a lobbed
--- shot ignores speed and lands on its target after `life` frames.
--- fan is the angle between the shots of a volley. shots are slow
--- enough to dodge, and come in two kinds: wooden ones (orange)
--- burn up in the dragon's breath, holy ones (blue) do not.
 shot_specs=parse_table[[
 name,speed,color,size,life,sound,fan,burns,lob,seek
 arrow,1.5,9,0,90,5,0.04,1
@@ -282,12 +215,6 @@ rock,0,5,2,50,7,0,,1
 boulder,0,5,3,70,24,0,,1
 ]]
 
--- tiles is its width in tiles. spawns is who answers the alarm, survivor who
--- runs out burning when it falls, guardian the boss that rides out
--- when it is badly hurt. razing a goal building wins the game. a
--- ward building keeps every `warded` settlement (camelot) safe from
--- all harm while it stands: the town churches are the spine of a
--- run, the villages its side roads.
 building_specs=parse_table[[
 name,sprite,tiles,max_hp,score,spawn_rate,spawns,survivor,guardian,goal,ward
 hut,32,1,10,10,260,serf,serf
@@ -305,12 +232,6 @@ minster,96,2,160,300,300,monk/champion/paladin,,mordred
 keep,38,2,700,1000,150,knight/paladin/longbowman/ballista/catapult,,king arthur,1
 ]]
 
--- fixed buildings are kind:x:y offsets from the centre; the rest
--- are scattered inside the radius. trees are cleared to `ground`.
--- when the dragon first comes near, `militia` units drawn from
--- `muster` turn out; razing every building pays the bounty. each
--- wheat field has a `flock` of sheep. a warded (1) settlement
--- cannot be harmed while any ward stands elsewhere.
 settlement_specs=parse_table[[
 name,radius,ground,fields,flock,militia,bounty,warded,muster,fixed,buildings
 lair,3,19,0,0,0,0,0
@@ -322,18 +243,8 @@ town,5,1,3,2,10,300,0,serf/pikeman/archer/crossbowman/knight/lancer,,church/towe
 camelot,6,1,0,0,14,1000,1,knight/knight/lancer/paladin/longbowman/champion,keep:-1:-1/tower:-4:-4/tower:3:-4/tower:-4:3/tower:3:3/wizard tower:0:-4/minster:-1:3,stable/barracks/workshop/tower/tower/house/house/house/house
 ]]
 
--- the realm is a 3x3 grid of kind:name:hero settlements, read left
--- to right, top to bottom. a settlement with a hero is under a dome
--- until that hero, who comes out at the alarm, is slain. a legend's
--- damage is set by how late it is met: its lunge does three times
--- it, so arthur's 90 fells a whelp in one, a wyrm in two and a
--- calamity in four.
 realm=split"lair:the lair,hamlet:ashford,abbey:st aldhelm's,village:millbrook,town:oakhampton:sir gawain,town:harrowgate:sir percival,fort:blackmoor:sir kay,town:wexcombe:sir galahad,camelot:camelot"
 
--- wrath rises with score (kept in tens, so 200 here is 2000 on
--- screen). each level has its own reinforcements and may send a
--- legend. the last level is out of reach of score alone: it comes
--- when the final ward breaks, and brings merlin.
 wrath_levels=parse_table[[
 name,score,legend,pool
 wary,0,,serf/serf/serf/archer

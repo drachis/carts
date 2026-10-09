@@ -174,7 +174,31 @@ def build_generated():
         stub_module(target, module, stubs)
 
 
+def comments_in_modules():
+    """Where the game's Lua has a comment, as "module:line".
+
+    The modules carry none: PICO-8 counts them against its character limit,
+    so notes on the code are kept in CODE_NOTES.md instead.
+    """
+    found = []
+    for module in MODULES:
+        in_string = False
+        with open(os.path.join(HERE, module), encoding="utf-8") as handle:
+            for number, line in enumerate(handle, 1):
+                if not in_string and "--" in line.split("[[")[0]:
+                    found.append("%s:%d" % (module, number))
+                if "[[" in line:
+                    in_string = True
+                if "]]" in line:
+                    in_string = False
+    return found
+
+
 def main():
+    commented = comments_in_modules()
+    if commented:
+        print("FAIL: comments in the Lua; they belong in CODE_NOTES.md: " + ", ".join(commented))
+        return 1
     build_generated()
     gen = run([sys.executable, "gen_gfx.py"])
     print(gen.stdout.strip())
