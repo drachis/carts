@@ -114,7 +114,10 @@ function unit_ai.legend(unit,dir_x,dir_y,distance)
  unit.clock=(unit.clock+1)%200
  local clock=unit.clock
  unit.guard=clock>110 and clock<160
- if clock<=110 then
+ unit.reeling=clock<40
+ if unit.reeling then
+  return 0,0
+ elseif clock<=110 then
   if unit.shot and clock==60 then
    shoot(unit,dir_x,dir_y)
   end
@@ -209,7 +212,9 @@ function draw_units()
    end
    spr(unit.sprite,unit.x-4,unit.y-4,1,1,unit.facing_left)
    pal()
-   if unit.burn>0 then
+   if unit.reeling then
+    print("\146",unit.x-3,unit.y-11+frame%8\4,10)
+   elseif unit.burn>0 then
     pset(unit.x-2+rnd(4),unit.y-5+rnd(3),rnd{9,10})
    elseif unit.fear>0 then
     print("!",unit.x-1,unit.y-11,8)

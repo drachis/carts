@@ -77,8 +77,8 @@ the level places at every age. Screens are saved as `fire.png` and `shot.png`.
 access violation described in `../wyrmfire/DESIGN.md`. The cause is as
 unknown here as there; it passed three runs of three in a window.
 
-The level check trusts a jump of 2 tiles and 2 more per flap; the cart
-measures about 2.6. If `jump` or `gravity` change, compare the two.
+The level check trusts a jump of 2 tiles and 2 more per flap; the cart now
+measures about 3.7, so a ledge must be 5 tiles up to need wings.
 
 ## Not built yet
 

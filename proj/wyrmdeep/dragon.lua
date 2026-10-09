@@ -166,7 +166,7 @@ function breathe_fire(mouth_x,mouth_y)
     end
    else
     if fire_taken>fireproof then unit.burn=60 end
-    damage_unit(unit,d.breath_damage*fire_taken*power)
+    damage_unit(unit,d.breath_damage*fire_taken*power*(unit.reeling and 3 or 1))
    end
   end
  end
@@ -261,17 +261,27 @@ function update_dragon()
    d.vy=(d.vy+input_y*accel)*d.friction
    if frame%32==0 then sfx(snd_wings) end
   else
-   if d.grounded then d.flaps_left=d.flaps end
-   d.vy=min(d.vy+gravity,fall_speed)
-   if up and not d.was_up and (d.grounded or d.flaps_left>0) then
-    if not d.grounded then
+   if d.grounded then
+    d.flaps_left=d.flaps
+    if d.coyote<4 then
+     burst(d.x,d.y+3,2,4)
+     jolt(d.size*3-2.4)
+    end
+    d.coyote=6
+   end
+   d.coyote-=1
+   d.vy=min(d.vy+gravity*(up and abs(d.vy)<1 and .5 or 1),fall_speed)
+   d.hop=up and not d.was_up and 5 or d.hop-1
+   if d.hop>0 and (d.coyote>0 or d.flaps_left>0) then
+    if d.coyote<=0 then
      d.flaps_left-=1
      burst(d.x,d.y+4,3,6)
     end
     d.vy=-d.jump
+    d.hop,d.coyote=0,0
     sfx(snd_wings)
    end
-   if not up and d.vy<0 then d.vy*=.7 end
+   if not up and d.vy<0 then d.vy*=.5 end
    d.gliding=up and d.vy>d.glide
    if d.gliding then d.vy=d.glide end
   end
