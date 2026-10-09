@@ -99,11 +99,13 @@ function update_particles()
   if p.kind=="fire" then
    p.vx*=.92
    p.vy*=.92
-   -- the dragon's flames are thrown back off a dome (checked
-   -- every few frames, which is plenty and much cheaper)
-   if p.ember and frame%4==0 and dome_over(p.x,p.y) then
-    p.vx*=-2
-    p.vy*=-2
+   -- the dragon's flames are turned aside by a dome: slowed, and
+   -- pushed out from its centre, so they slide off round it.
+   -- (checked every few frames, which is plenty and much cheaper)
+   local home=p.ember and frame%4==0 and dome_over(p.x,p.y)
+   if home then
+    p.vx=p.vx*.3+(p.x-home.tx*8)/40
+    p.vy=p.vy*.3+(p.y-home.ty*8)/40
    end
   elseif p.kind=="coin" then
    p.vx*=.9
@@ -154,8 +156,7 @@ function draw_particles()
    local tumbling=life%6<3
    spr(p.sprite,p.x-4,p.y-4,1,1,tumbling,tumbling)
   elseif p.kind=="coin" then
-   circfill(p.x,p.y,1,life%6<3 and 10 or 9)
-   pset(p.x,p.y-1,7)
+   circfill(p.x,p.y,1,10)
   elseif p.kind=="text" then
    print(p.text,p.x-#p.text*2,p.y,life%4<2 and 7 or 10)
   else

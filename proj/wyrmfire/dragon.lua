@@ -205,9 +205,10 @@ function breathe_fire(mouth_x,mouth_y)
   if in_breath(unit.x,unit.y,mouth_x,mouth_y,0) then
    local fire_taken=unit.spec.fire_taken
    if unit.guard then
-    -- a raised guard throws the fire back
+    -- a raised guard throws the fire back, and sprays it aside
     if frame%12==0 then
      shoot(unit,-cos(d.angle),-sin(d.angle),"rebuke")
+     embers(unit.x,unit.y,6,2)
     end
    else
     if fire_taken>config.fireproof then unit.burn=60 end
@@ -296,10 +297,9 @@ function update_dragon()
  local forward_x,forward_y=cos(d.angle),sin(d.angle)
  local reach=11*d.size
  local head_x,head_y=d.x+forward_x*reach,d.y+forward_y*reach
- -- each wingbeat of a heavy dragon shakes the ground
+ -- wingbeats
  if frame%32==0 then
   sfx(sound.wings)
-  jolt(d.weight*.5)
  end
  -- button 4 (z) breathes, button 5 (x) charges
  if not btn(4) then d.winded=false end

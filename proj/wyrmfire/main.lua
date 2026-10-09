@@ -196,10 +196,6 @@ function draw_hud()
    local text=combo.." hits"
    print(text,126-#text*4,12,blink and 10 or 9)
   end
-  -- a red frame beats then
-  if low and frame%20<10 then
-   rect(0,10,127,127,8)
-  end
   if fury>=100 and blink then
    print_centered("\142+\151 unleash your fury",112,10)
   end

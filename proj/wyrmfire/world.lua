@@ -138,12 +138,13 @@ function dome_radius(home)
  return home.spec.radius*8+10
 end
 
--- is a point under a dome? fire cannot reach in: breath does no
--- harm there, nothing there can be lit, and flames bounce off
+-- the settlement whose dome a point is under, if any. fire cannot
+-- reach in: breath does no harm there, nothing there can be lit,
+-- and flames are turned aside
 function dome_over(x,y)
  for home in all(settlements) do
   if shielded(home) and length(x-home.tx*8,y-home.ty*8)<dome_radius(home) then
-   return true
+   return home
   end
  end
 end
@@ -215,17 +216,17 @@ function update_settlements()
  battle=false
  for home in all(settlements) do
   local spec,x,y=home.spec,home.tx*8,home.ty*8
-  local distance,dome=dragon_distance(x,y),dome_radius(home)
+  -- how near the dragon's middle can come with its head (11 pixels
+  -- forward at size 1) still outside the dome
+  local distance,dome=dragon_distance(x,y),dome_radius(home)+dragon.size*11
   if shielded(home) and distance<dome then
-   -- the dome throws the dragon back out to its edge, ringing
-   -- and sparking where it is struck
+   -- the dome throws the dragon back out, sparking where it is
+   -- struck
    dragon.x=x+(dragon.x-x)*dome/distance
    dragon.y=y+(dragon.y-y)*dome/distance
-   dragon.charge=0
    if frame%4==0 then
     ring(dragon.x,dragon.y,14)
     jolt(2)
-    sfx(sound.coin)
    end
   end
   if home.standing>0 and distance<dome+30 then
