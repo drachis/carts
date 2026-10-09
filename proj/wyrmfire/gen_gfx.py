@@ -68,6 +68,19 @@ SPRITES[79] = ["40000000","04000550","00404550","00044000","00444000","04444440"
 SPRITES[80] = ["00020000","00222000","02222200","00fff0e0","00222020","02222220","02222220","02000220"]  # morgan le fay
 SPRITES[81] = ["00000000","07747700","77447770","57777770","05777470","00777700","00505000","00000000"]  # cow
 SPRITES[82] = ["00000000","00000000","00eeee00","0eeeeee0","2eeeeee0","0eeeeee0","00e00e00","00000000"]  # pig
+# each legend's own look, in true colors (data.lua's `color` only recolors
+# gold, color a, which these mostly avoid)
+SPRITES[84] = ["00666000","00fff050","04999955","449999f0","44999900","04999900","00909000","00404000"]  # sir kay
+SPRITES[85] = ["00b3b007","00fff007","03bbbb07","33b33bbf","33bbbb00","03bbbb00","00b0b000","00303000"]  # sir gawain
+SPRITES[86] = ["00e7e000","00fff090","07eeee09","77e77eef","77eeee00","07eeee00","00e0e000","00202000"]  # sir percival
+SPRITES[87] = ["09999007","00fff007","07777707","c77c777f","c7777700","c7777700","00707000","00606000"]  # sir galahad
+SPRITES[88] = ["00585000","00555008","05555508","25555558","25555500","05555500","00505000","00101000"]  # the black knight
+SPRITES[89] = ["00848000","00fff007","02888807","22888c8f","22888800","02888800","00808000","00202000"]  # sir tristan
+SPRITES[90] = ["00c6c007","00fff007","01cccc07","11c66ccf","11cccc00","01cccc00","00c0c000","00101000"]  # sir lancelot
+SPRITES[91] = ["00202008","00fff008","05222208","5528822f","55222200","05222200","00202000","00101000"]  # mordred
+SPRITES[92] = ["09a9a00c","00fff00c","08aaaa0c","88a99aaf","88aaaa00","88aaaa00","00a0a000","00909000"]  # king arthur
+SPRITES[93] = ["00b30040","0bffb004","00fb0704","0bbbb704","fbbb0704","00bb0004","00bb0040","00b0b000"]  # longbowman
+SPRITES[94] = ["00000000","000d0000","00ddd000","00fff0e0","00ddd040","0ddddd40","0ddddd40","0d000d00"]  # apprentice
 # more 1x1 buildings, in the free slots of the buildings row
 SPRITES[40] = ["33333333","34444443","48888884","48877884","48877884","48888884","34444443","33333333"]  # barn
 SPRITES[41] = ["33333333","34444443","44f4f4f4","4f4f4f44","44444444","45555554","34444443","33333333"]  # stable
@@ -135,6 +148,79 @@ def keep():
     return art
 
 
+MINSTER, BARRACKS, WIZARD_TOWER = 96, 98, 100  # 2x2, in rows 6 and 7
+
+
+def minster():
+    """A great cross of a church with twin west towers and a gold cross."""
+    roof = [["3"] * 16 for _ in range(16)]
+    for y in range(16):
+        for x in range(16):
+            if 4 <= x <= 11 or 3 <= y <= 10:
+                roof[y][x] = "d"
+    art = [row[:] for row in roof]
+    for y in range(16):
+        for x in range(16):
+            if roof[y][x] != "d":
+                continue
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = x + dx, y + dy
+                if not (0 <= nx < 16 and 0 <= ny < 16) or roof[ny][nx] == "3":
+                    art[y][x] = "7"
+                    break
+    for y in range(1, 15):
+        art[y][7] = art[y][8] = "5"
+    for x in range(1, 15):
+        art[6][x] = art[7][x] = "5"
+    for cx in (4, 9):  # the towers
+        for y in range(12, 15):
+            for x in range(cx, cx + 3):
+                art[y][x] = "6"
+        art[13][cx + 1] = "1"
+    for y in range(4, 10):
+        art[y][7] = art[y][8] = "a"
+    for x in range(5, 11):
+        art[6][x] = art[7][x] = "a"
+    return art
+
+
+def barracks():
+    """A long slate hall with blue banners and a wooden door."""
+    art = [["3"] * 16 for _ in range(16)]
+    for y in range(2, 14):
+        for x in range(1, 15):
+            art[y][x] = "5"
+    for y in range(3, 13):
+        for x in range(2, 14):
+            art[y][x] = "6"
+    for x in range(2, 14):
+        art[7][x] = art[8][x] = "d"
+    for bx, by in ((3, 4), (11, 4), (3, 10), (11, 10)):
+        art[by][bx] = art[by][bx + 1] = art[by + 1][bx] = "c"
+    for x in range(7, 9):
+        art[12][x] = art[13][x] = "4"
+    return art
+
+
+def wizard_tower():
+    """A round blue tower seen from above, with a glowing eye of a roof."""
+    art = [["3"] * 16 for _ in range(16)]
+    for y in range(16):
+        for x in range(16):
+            reach = (x - 7.5) ** 2 + (y - 7.5) ** 2
+            if reach < 7.5 ** 2:
+                art[y][x] = "1"
+            if reach < 6 ** 2:
+                art[y][x] = "c"
+            if reach < 4 ** 2:
+                art[y][x] = "2"
+            if reach < 2 ** 2:
+                art[y][x] = "e"
+    for x, y in ((7, 2), (8, 13), (2, 8), (13, 7)):  # stars on the roof
+        art[y][x] = "a"
+    return art
+
+
 def build_gfx():
     sheet = [["0"] * 128 for _ in range(64)]
 
@@ -149,6 +235,9 @@ def build_gfx():
         blit(sprite_id, art)
     blit(CHURCH, church())
     blit(KEEP, keep())
+    blit(MINSTER, minster())
+    blit(BARRACKS, barracks())
+    blit(WIZARD_TOWER, wizard_tower())
     return "\n".join("".join(row) for row in sheet)
 
 
@@ -180,27 +269,51 @@ SFX = [
     # which main.lua pokes to make each coin ring higher than the last
     "00040000" + "30055",
     "00060000" + "046200662004610",                           # 11 wingbeat
+    # 12 on: the voices of the shots, named by number in data.lua's shot table
+    "00020000" + "286201c610",                                # 12 quarrel: a dry snap
+    "00040000" + "341403b135",                                # 13 holy: a high chime
+    "00080000" + "185301f53024535",                           # 14 smite: a rising organ chord
+    "00040000" + "207301a73020725",                           # 15 hex: a phaser warble
 ]
+# sfx 16..21 and 26..28 are the music (below); these sit between and after
+MORE_SFX = {
+    22: "00030000" + "2c740307402c735",                       # arcane: a bright zap
+    23: "00030000" + "30340373403c335",                       # excalibur: a ringing blade
+    24: "00080000" + "086400664004635",                       # boulder: a low groan of timber
+    25: "00020000" + "3035024345",                            # rebuke: a clang
+    # three of each, one picked at random (units.lua): data.lua names the first
+    29: "00030000" + "241301c13018125",                       # die: a falling cry
+    30: "00030000" + "1c1301813014125",                       #      a lower one
+    31: "00030000" + "18130241301c125",                       #      a yelp
+    32: "00030000" + "0c530085300c53008525",                  # eat: a crunch
+    33: "00030000" + "0a530065300a53006525",                  #      a deeper one
+    34: "00040000" + "0e5300a5300e525",                       #      a gulp
+}
 
-# --- music, in d minor: the same two bass lines played two ways ---
-# roaming (music 0): a soft triangle bass on every other step over a sparse
-#   drum loop, for the open country between settlements.
-# battle (music 2): a driving saw bass on every step over a full drum loop.
-# main.lua switches between them and pokes the speed byte of these sfx to
-# raise the tempo, gently, with wrath.
-MUSIC_FIRST_SFX = 16
+# --- music, in d minor ---
+# roaming (music 0..3): four soft triangle bass lines on every other step,
+#   by turns over a sparse drum loop and under a slow melody, for the open
+#   country.
+# battle (music 4..7): the same four as driving saw lines over a full drum
+#   loop.
+# main.lua switches between the two by their first pattern, 0 and 4.
 BASS_A = [14, 14, 26, 14, 14, 26, 14, 14,  14, 14, 26, 14, 14, 26, 24, 21,
           10, 10, 22, 10, 10, 22, 10, 10,  12, 12, 24, 12, 12, 24, 21, 19]
 BASS_B = [14, 14, 26, 14, 17, 17, 29, 17,  19, 19, 31, 19, 21, 21, 33, 21,
           10, 10, 22, 10, 12, 12, 24, 12,  14, 26, 14, 26, 14, 26, 21, 24]
+BASS_C = [17, 17, 29, 17, 17, 29, 17, 17,  12, 12, 24, 12, 12, 24, 12, 12,
+          14, 14, 26, 14, 14, 26, 14, 14,  21, 21, 33, 21, 21, 33, 19, 21]
+BASS_D = [10, 10, 22, 10, 10, 22, 10, 10,  12, 12, 24, 12, 12, 24, 12, 12,
+          14, 14, 26, 14, 17, 17, 29, 17,  21, 21, 33, 21, 21, 33, 21, 21]
+# a note every fourth step: d f g a g f d c d
+MELODY = {0: 38, 4: 41, 8: 43, 12: 45, 14: 43, 16: 41, 20: 38, 24: 36, 28: 38}
+# and its answer: a g f d c d f d
+MELODY_2 = {0: 45, 4: 43, 8: 41, 12: 38, 16: 36, 20: 38, 24: 41, 28: 38}
 REST = "00000"
 KICK, SNARE, HAT = "04655", "1e645", "30615"
 SPARSE_DRUMS = [KICK, REST, REST, REST, HAT, REST, REST, REST] * 4
 FULL_DRUMS = [KICK, HAT, SNARE, HAT, KICK, KICK, SNARE, HAT] * 4
 MUSIC_HEADER = "010e0000"
-# flags (1 = loop start, 2 = loop end) then one sfx per channel; 0x41+ is silent
-MUSIC = ["01 10124344", "02 11124344",   # roaming: sfx 16, 17 over 18
-         "01 13154344", "02 14154344"]   # battle:  sfx 19, 20 over 21
 
 
 def soft_bass(pitches):
@@ -214,11 +327,29 @@ def driving_bass(pitches):
     return MUSIC_HEADER + "".join("%02x130" % pitch for pitch in pitches)
 
 
+def melody(notes):
+    """Organ, quiet and fading, on the steps given."""
+    return MUSIC_HEADER + "".join(
+        "%02x525" % notes[step] if step in notes else REST for step in range(32))
+
+
+MUSIC_SFX = {
+    16: soft_bass(BASS_A), 17: soft_bass(BASS_B), 18: MUSIC_HEADER + "".join(SPARSE_DRUMS),
+    19: driving_bass(BASS_A), 20: driving_bass(BASS_B), 21: MUSIC_HEADER + "".join(FULL_DRUMS),
+    26: driving_bass(BASS_C), 27: driving_bass(BASS_D), 28: melody(MELODY),
+    35: soft_bass(BASS_C), 36: soft_bass(BASS_D), 37: melody(MELODY_2),
+}
+# flags (1 = loop start, 2 = loop end) then one sfx (in hex) per channel;
+# 0x41 and up is a silent channel
+MUSIC = ["01 10124344", "00 111c4344", "00 23124344", "02 24254344",    # roaming
+         "01 13154344", "00 14154344", "00 1a154344", "02 1b154344"]    # battle
+
+
 def build_sfx():
-    slots = SFX + [""] * (MUSIC_FIRST_SFX - len(SFX))
-    slots += [soft_bass(BASS_A), soft_bass(BASS_B), MUSIC_HEADER + "".join(SPARSE_DRUMS),
-              driving_bass(BASS_A), driving_bass(BASS_B), MUSIC_HEADER + "".join(FULL_DRUMS)]
-    return "\n".join((notes + "0" * 168)[:168] for notes in slots)
+    slots = dict(enumerate(SFX))
+    slots.update(MORE_SFX)
+    slots.update(MUSIC_SFX)
+    return "\n".join((slots.get(i, "") + "0" * 168)[:168] for i in range(max(slots) + 1))
 
 
 def main():

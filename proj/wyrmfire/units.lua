@@ -57,7 +57,7 @@ function damage_unit(unit,amount,eaten)
  end
  if eaten then
   heal_dragon(spec.meal)
-  sfx(sound.eat)
+  sfx(sound.eat+rnd(3)) -- one of three crunches
   splat(unit.x,unit.y)
   -- eating is how the dragon grows: the meal, now meat on the
   -- bone (sprite 74), is flung up and flies to the sheep gauge,
@@ -69,7 +69,7 @@ function damage_unit(unit,amount,eaten)
    meal=spec.meal,sprite=74,
   })
  elseif spec.score>0 then
-  sfx(sound.die)
+  sfx(sound.die+rnd(3)) -- one of three cries
  end
  if spec.score>0 then
   kills+=1

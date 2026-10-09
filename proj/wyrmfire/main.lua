@@ -32,7 +32,7 @@ end
 function update_music()
  if battle then battle_time=8 end
  battle_time-=1
- local track=battle_time>0 and 2 or 0
+ local track=battle_time>0 and 4 or 0
  if track!=playing then
   playing=track
   music(track,300,3)

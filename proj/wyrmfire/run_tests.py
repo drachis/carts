@@ -36,7 +36,8 @@ MODULES = ["data.lua", "core.lua", "world.lua", "units.lua", "dragon.lua", "main
 GENERATED = {
     # the soak has no menus, no sound (so no music to pace) and can spare
     # the inferno's edge flames
-    "soak_main.lua": ("main.lua", ["draw_title", "draw_game_over", "update_music", "draw_blaze"]),
+    "soak_main.lua": ("main.lua", ["draw_title", "draw_game_over", "update_music", "draw_blaze",
+                                   "update_reel"]),
     "title_dragon.lua": ("dragon.lua", ["breathe_fire", "charge_impacts", "inferno"]),
 }
 TIMEOUT_SECONDS = 180
@@ -92,6 +93,13 @@ def run_cart(cart):
     # the soak runs in a window: headless (-x) pico-8 crashes on it about
     # half the time (see DESIGN.md) and windowed pico-8 has not been seen to
     mode = "-run" if cart in WINDOWED else "-x"
+    if cart in WINDOWED:
+        # a windowed pico-8 reports a cart it cannot load in its own window,
+        # where this script cannot read it; a headless one prints it
+        refusal = load_error(cart)
+        if refusal:
+            print("FAIL: pico-8 will not load %s: %s" % (cart, refusal))
+            return False
     process = subprocess.Popen([PICO8, mode, cart], cwd=HERE, text=True,
                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     # a cart that is over budget or has a syntax error idles instead of
@@ -114,6 +122,29 @@ def run_cart(cart):
               % (cart, process.returncode & 0xffffffff))
         return False
     return True
+
+
+def load_error(cart):
+    """What headless pico-8 says if it refuses to load a cart, else None.
+
+    A cart that loads starts running, so this gives it a few seconds to
+    complain and then stops it.
+    """
+    process = subprocess.Popen([PICO8, "-x", cart], cwd=HERE, text=True,
+                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    timer = threading.Timer(6, process.kill)
+    timer.start()
+    complaint = None
+    for line in process.stdout:
+        if line.startswith("INFO:"):
+            break  # the cart is running
+        if "too large" in line or "too long" in line or "error" in line.lower():
+            complaint = " ".join(part.strip() for part in [line] + process.stdout.readlines()[:2])
+            break
+    timer.cancel()
+    process.kill()
+    process.wait()
+    return complaint
 
 
 def stub_module(target, module, stubs, strip=True):
@@ -150,10 +181,19 @@ def main():
     if gen.returncode != 0:
         print(gen.stderr)
         return 1
+    save_sprite_sheet()
     for cart in TEST_CARTS:
         if not run_cart(cart):
             return 1
     return 0
+
+
+def save_sprite_sheet():
+    """Write sheet.png: the art half of the cart's sprite sheet, to look over."""
+    cart = open(os.path.join(HERE, "wyrmfire.p8"), encoding="utf-8").read()
+    rows = cart.split("__gfx__\n", 1)[1].splitlines()[:64]
+    write_png(os.path.join(HERE, "sheet.png"), rows)
+    print("wrote sheet.png")
 
 
 if __name__ == "__main__":
