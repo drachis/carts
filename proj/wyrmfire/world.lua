@@ -35,7 +35,7 @@ end
 -- visits it burns for, low nibble its chance in 16 of catching
 -- from a neighbour. with `by_chance` the tile has to roll for it.
 function ignite(tx,ty,by_chance)
- if tx<0 or ty<0 or tx>63 or ty>63 then return end
+ if tx<0 or ty<0 or tx>63 or ty>63 or dome_over(tx*8,ty*8) then return end
  local fuel=fget(mget(tx,ty))
  if by_chance and rnd(16)>=fuel%16 then return end
  local building=building_at(tx,ty)
@@ -138,6 +138,16 @@ function dome_radius(home)
  return home.spec.radius*8+10
 end
 
+-- is a point under a dome? fire cannot reach in: breath does no
+-- harm there, nothing there can be lit, and flames bounce off
+function dome_over(x,y)
+ for home in all(settlements) do
+  if shielded(home) and length(x-home.tx*8,y-home.ty*8)<dome_radius(home) then
+   return true
+  end
+ end
+end
+
 function damage_building(building,amount)
  local spec=building.spec
  if shielded(building.home) then
@@ -235,14 +245,12 @@ function update_settlements()
    end
   end
  end
- -- the flocks are slowly restocked at the farming settlements, so
- -- a dragon that has burnt or eaten every sheep can still grow
+ -- the flocks are slowly restocked at the farming settlements
+ -- whenever the realm is quiet, so a dragon that has burnt or eaten
+ -- every sheep can still grow
  if frame%150==0 then
-  local sheep,home=0,rnd(settlements)
-  for unit in all(units) do
-   if unit.spec.ai=="sheep" then sheep+=1 end
-  end
-  if sheep<config.min_sheep and home.spec.flock>0 then
+  local home=rnd(settlements)
+  if #units<config.quiet and home.spec.flock>0 then
    local angle,reach=rnd(),dome_radius(home)
    spawn_unit("sheep",home.tx*8+cos(angle)*reach,home.ty*8+sin(angle)*reach)
   end

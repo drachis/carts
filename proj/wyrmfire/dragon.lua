@@ -9,17 +9,6 @@ function new_dragon()
   add(tail,{x=dragon.x-i*4,y=dragon.y})
  end
  update_tail()
- tune_voice()
-end
-
--- the roar is five saw-wave notes in sfx memory (two bytes a note,
--- the low byte being pitch plus the saw's 0x80). rewriting their
--- pitch lower for each point of weight takes the dragon's voice
--- from a whelp's yelp to something that shakes the hills.
-function tune_voice()
- for note=0,4 do
-  poke(0x3200+sound.roar*68+note*2,0x98-dragon.weight*4-note*2)
- end
 end
 
 -- a roar is heard `reach` pixels away. everyone there who is not
@@ -65,7 +54,6 @@ function grow()
  age+=1
  belly=0
  grant(ages[age].stats)
- tune_voice()
  announce("you are now a "..ages[age].name.."!",150)
  roar(120,60)
  jolt(8,10)
@@ -101,7 +89,6 @@ function damage_dragon(amount,dir_x,dir_y,knock)
  -- each blow. a really heavy one has a crash under it too.
  poke(0x3201+sound.hurt*68,0x50+mid(2,amount\3+1,7)*2)
  sfx(sound.hurt)
- if amount>=20 then sfx(sound.crash) end
  if dragon.hp<=0 then
   -- it dies in a storm of its own fire, with a last roar, and
   -- then (see _update) spins away to nothing
@@ -166,7 +153,7 @@ end
 function in_breath(x,y,mouth_x,mouth_y,radius)
  local dx,dy=x-mouth_x,y-mouth_y
  local distance=length(dx,dy)
- if distance>dragon.breath_range*dragon.power+radius then return false end
+ if distance>dragon.breath_range*dragon.power+radius or dome_over(x,y) then return false end
  if distance<6+radius then return true end
  return abs(angle_diff(atan2(dx,dy),dragon.angle))<dragon.breath_arc
 end
@@ -345,7 +332,6 @@ function update_dragon()
  elseif d.charge>0 then
   d.charge-=1
   charge_impacts(head_x,head_y)
-  add_particle(tail[3].x,tail[3].y,0,0,8,"fire")
  else
   if target then
    local accel=breathing and d.breath_accel or d.accel

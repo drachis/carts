@@ -83,7 +83,7 @@ coin_value=2
 reel_frames=45
 battle_rush=4
 lull_frames=450
-min_sheep=24
+quiet=45
 ]]
 
 -- the dragon's ages, from the whelp it starts as (dragon_stats) to
@@ -98,8 +98,7 @@ min_sheep=24
 --  less accel and turn_rate with more friction is momentum: the
 --   same top speed, but slow to gather and slow to shed.
 -- the three ages past calamity are for fun, for those who keep
--- eating: bigger and deadlier still, but no heavier, because the
--- roar's pitch (tune_voice) has no lower to go past weight 4.
+-- eating: bigger and deadlier still, but no heavier.
 ages=parse_table[[
 name,meals,stats
 whelp,0

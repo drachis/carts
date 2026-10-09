@@ -99,6 +99,12 @@ function update_particles()
   if p.kind=="fire" then
    p.vx*=.92
    p.vy*=.92
+   -- the dragon's flames are thrown back off a dome (checked
+   -- every few frames, which is plenty and much cheaper)
+   if p.ember and frame%4==0 and dome_over(p.x,p.y) then
+    p.vx*=-2
+    p.vy*=-2
+   end
   elseif p.kind=="coin" then
    p.vx*=.9
    p.vy*=.9
