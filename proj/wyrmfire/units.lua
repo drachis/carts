@@ -227,15 +227,13 @@ function update_shots()
   else
    local distance=dragon_gap(shot.x,shot.y)
    struck=distance<=0
+   if struck then splat(shot.x,shot.y,shot.color) end
    if distance<10 and not shot.grazed then
     shot.grazed=true
     add_fury(2)
    end
   end
-  if struck then
-   damage_dragon(shot.damage)
-   ring(shot.x,shot.y,shot.lob and 0 or 10)
-  end
+  if struck then damage_dragon(shot.damage) end
   if struck or landed then del(shots,shot) end
  end
 end

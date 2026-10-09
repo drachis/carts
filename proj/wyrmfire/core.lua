@@ -46,10 +46,10 @@ function ring(x,y,size)
  add_particle(x,y,0,0,10,"ring").size=size
 end
 
-function splat(x,y)
+function splat(x,y,color)
  ring(x,y,8)
  for i=1,6 do
-  add_particle(x,y,rnd(4)-2,rnd(4)-2,12,"debris").color=8
+  add_particle(x,y,rnd(4)-2,rnd(4)-2,12,"debris").color=color or 8
  end
 end
 

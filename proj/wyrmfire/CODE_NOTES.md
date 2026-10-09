@@ -132,9 +132,9 @@ kind is "fire", "smoke", "debris", "ring", "coin" or "text". embers ignite where
 
 an expanding shockwave
 
-### `splat(x,y)`
+### `splat(x,y,color)`
 
-a pop and a spatter of blood: something was eaten, or the dragon was struck
+a pop and a spatter: a ring, and six blobs of `color`. with no color it is blood (something was eaten, or the dragon was struck); a shot that strikes pops in its own color.
 
 ### `coins(x,y,count)`
 
@@ -310,7 +310,7 @@ units do not stack. each claims the tile it stands on in a scratch grid in user 
 - at `shot.vx+=(shot.target_x-shot.x)*.003`: a seeking shot is on a spring to the spot it was aimed at: a volley fans out, then closes in on that spot all at once
 - at `struck=landed and dragon_gap(shot.target_x,shot.target_y)<8`: harmless in the air, a blast where it lands
 - at `local distance=dragon_gap(shot.x,shot.y)`: a shot hits whatever part of the body it touches (not the wings). a near miss is a graze, which feeds the fury once per shot.
-- at `ring(shot.x,shot.y,shot.lob and 0 or 10)`: a burst where it hit. (a lobbed shot's x,y is where it was thrown from, and it has its own blast, so it gets none.)
+- at `if struck then splat(shot.x,shot.y,shot.color) end`: a shot that strikes pops where it hit, in its own color. (a lobbed shot has its own blast where it lands, so it is not in this branch.)
 
 ### `draw_shots()`
 
