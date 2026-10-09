@@ -8,14 +8,17 @@ end
 
 function slide(body,dx,dy)
  local steps=ceil(max(abs(dx),abs(dy)))
+ local reach=body.reach or 0
  local hit_x,hit_y
  for i=1,steps do
-  if blocked(body.x+dx/steps,body.y) then
+  local x=body.x+dx/steps
+  if blocked(x-reach,body.y) or blocked(x+reach,body.y) then
    hit_x,dx=true,0
   else
    body.x+=dx/steps
   end
-  if blocked(body.x,body.y+dy/steps) then
+  local y=body.y+dy/steps
+  if blocked(body.x-reach,y) or blocked(body.x+reach,y) then
    hit_y,dy=true,0
   else
    body.y+=dy/steps
@@ -91,8 +94,8 @@ function populate()
    if not taken[row] then
     add(relics,setmetatable({x=x,y=y,key=row},relic_specs[name]))
    end
-  elseif unit_specs[name] and not slain[name] then
-   spawn_unit(name,x,y)
+  elseif unit_specs[name] and not slain[row] then
+   spawn_unit(name,x,y).key=row
   end
  end
 end

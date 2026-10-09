@@ -1,8 +1,9 @@
 function new_game()
  reload()
  slain,taken,visited,fires,particles={},{},{},{},{}
+ locked=nil
  kills,deaths,seconds,relic_count=0,0,0,0
- fury,fury_time,combo,combo_timer,muster=0,0,0,0,90
+ fury,fury_time,combo,combo_timer=0,0,0,0
  shake,freeze,flash=0,0,0
  message,message_timer="",0
  new_dragon()
@@ -25,6 +26,7 @@ function respawn()
  d.x,d.y,d.vx,d.vy=nest_x,nest_y,0,0
  d.hp,d.fire,d.flash=d.max_hp,d.max_fire,60
  deaths+=1
+ lock_arena()
  populate()
  state="play"
 end
@@ -104,9 +106,10 @@ function draw_hud()
  else
   draw_gauge(146,20,fury/100,fury<100 and 10 or blink and 7 or 12,5)
  end
- print(ages[age].name,32,2,7)
- spr(95,82,1)
- print(relic_count.."/"..relic_total,91,2,7)
+ draw_gauge(32,30,d.belly/belly_size,11,3)
+ spr(71,30,1)
+ print(ages[age].name,42,2,7)
+ print(relic_count.."/"..relic_total,94,2,14)
 
  local here=d.x\128+d.y\128*8
  visited[here]=true
@@ -135,8 +138,8 @@ function draw_title()
  if best_time>0 then
   print_centered("best "..clock_text(best_time),35,10)
  end
- print("\142\n\151\n\142+\151\n\139\145\n\148",14,42,7)
- print("breathe fire\ncharge & devour\nunleash your fury\nwalk\njump, glide, fly",52,42,6)
+ print("\142\n\151\n\142+\151\n\139\145\148\131",14,42,7)
+ print("breathe fire\ncharge & devour\nunleash your fury\nfly",52,42,6)
  if frame%30<20 then
   print_centered("press \151 to play",118,7)
  end
@@ -174,7 +177,6 @@ function _update()
   update_units()
   update_shots()
   update_relics()
-  update_horde()
   combo_timer-=1
   if combo_timer<=0 then combo=0 end
   if frame%30==0 then

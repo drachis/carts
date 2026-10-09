@@ -15,6 +15,7 @@ import re
 import sys
 
 import art
+import bosses
 import level
 import tiles
 from png import write_png
@@ -27,6 +28,7 @@ SKY, DARK = "1", "0"
 
 def sprites():
     merged = dict(art.SPRITES)
+    merged.update(bosses.sprites())
     for sprite_id, rows in tiles.SPRITES.items():
         assert sprite_id not in merged, "sprite %d is defined twice" % sprite_id
         merged[sprite_id] = rows
@@ -75,7 +77,7 @@ def write_level_lua(placed):
         else:
             rows.append("%s,%d,%d" % (name, x, y))
     constants = ["start_x=%d" % start[0], "start_y=%d" % start[1]]
-    constants += ["tile_%s=%d" % (name, tiles.NAMES[name]) for name in ("fire", "nest")]
+    constants += ["tile_%s=%d" % (name, tiles.NAMES[name]) for name in ("fire", "nest", "gate")]
     lua = "parse_record([[\n%s\n]],nil,_ENV)\n\nspawn_text=[[\n%s]]\n" % (
         "\n".join(constants), "\n".join(rows))
     with open(os.path.join(HERE, "level.lua"), "w", encoding="utf-8", newline="\n") as handle:

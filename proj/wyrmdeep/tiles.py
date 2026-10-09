@@ -100,6 +100,9 @@ tile("bones", 48, 0,
      [EMPTY] * 6 + ["07600670", "06777760"])
 tile("banner", 49, 0,
      ["08888800", "08a8a800", "088a8800", "08a8a800", "08888800", "08808800", "08000800", EMPTY])
+# an arena's door: open until its legend wakes, then the sprite one id later
+tile("gate", 52, 0, ["06000060"] + [EMPTY] * 6 + ["06000060"])
+tile("gate shut", 53, SOLID, ["0d6006d0"] * 8)
 tile("rock deep", 50, SOLID,
      ["11111111", "11511111", "11111111", "11111151", "11111111", "15111111", "11111511", "11111111"])
 # an unseen lid on the sky, so nothing leaves the top of the world

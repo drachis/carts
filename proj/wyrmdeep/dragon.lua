@@ -43,11 +43,22 @@ function heal_dragon(amount)
  dragon.hp=min(dragon.max_hp,dragon.hp+amount)
 end
 
+function feed(meal)
+ heal_dragon(meal)
+ dragon.belly+=meal
+ if dragon.belly>=belly_size then
+  dragon.belly-=belly_size
+  grant(growth)
+  announce("the dragon grows")
+  sfx(snd_fanfare)
+  ring(dragon.x,dragon.y,24)
+ end
+end
+
 function rest()
  nest_x,nest_y=dragon.x,dragon.y
  dragon.hp=dragon.max_hp
  populate()
- muster=rest_frames
  announce("the dragon rests")
  sfx(snd_coin)
  ring(nest_x,nest_y,20)
@@ -58,7 +69,7 @@ function damage_dragon(amount,dir_x,knock)
  if state!="play" or d.charge>0 or d.flash>0 then return end
  if knock then
   d.vx+=dir_x*knock
-  if d.flight==0 then d.vy=-2 end
+  d.vy-=2
  end
  splat(d.x,d.y)
  d.hp-=amount
@@ -114,9 +125,9 @@ function dragon_gap(x,y)
  return gap
 end
 
-function in_breath(x,y,mouth_x,mouth_y)
+function in_breath(x,y,mouth_x,mouth_y,reach)
  local dx,dy=x-mouth_x,y-mouth_y
- local distance=length(dx,dy)
+ local distance=length(dx,dy)-(reach or 0)
  if distance>dragon.breath_range*dragon.power then return false end
  return (distance<6 or abs(angle_diff(atan2(dx,dy),dragon.angle))<dragon.breath_arc)
   and sight(dragon.x,dragon.y,x,y)
@@ -158,7 +169,11 @@ function breathe_fire(mouth_x,mouth_y)
   end
  end
  for unit in all(units) do
-  if in_breath(unit.x,unit.y,mouth_x,mouth_y) then
+  local stormed=d.storm>0 and dragon_distance(unit.x,unit.cy)<storm_range and sight(d.x,d.y,unit.x,unit.cy)
+  if stormed and frame%8==0 then
+   ring(unit.x,unit.cy,6)
+  end
+  if stormed or in_breath(unit.x,unit.cy,mouth_x,mouth_y,unit.reach) then
    local fire_taken=unit.fire_taken
    if unit.guard then
     if frame%12==0 then
@@ -205,7 +220,7 @@ function charge_impacts(head_x,head_y)
   ram(d.x+d.charge_x*7-d.charge_y*offset,d.y+d.charge_y*7+d.charge_x*offset)
  end
  for unit in all(units) do
-  if unit.charge_id!=d.charge_id and length(unit.x-head_x,unit.y-head_y)<12*d.size then
+  if unit.charge_id!=d.charge_id and length(unit.x-head_x,unit.cy-head_y)<12*d.size+unit.reach then
    unit.charge_id=d.charge_id
    unit.push_x=d.vx
    jolt(3)
@@ -218,8 +233,6 @@ function update_dragon()
  local d=dragon
  local input_x=tonum(btn(1))-tonum(btn(0))
  local input_y=tonum(btn(3))-tonum(btn(2))
- local up=btn(2)
- local flying=d.flight>0
  d.grounded=blocked(d.x,d.y+1)
  if not btn(4) then d.winded=false end
  local breathing=btn(4) and not d.winded and d.charge<=0 and d.windup<=0
@@ -231,8 +244,8 @@ function update_dragon()
 
  if d.charge<=0 and d.windup<=0 and not breathing then
   if input_x!=0 then d.facing=input_x end
-  local aim_x,aim_y=input_x,input_y
-  if not flying and aim_x!=0 then aim_y=max(aim_y) end
+  local aim_x=input_x
+  local aim_y=d.grounded and min(input_y) or input_y
   if aim_x==0 and aim_y==0 then aim_x=d.facing end
   d.angle=(d.angle+mid(-d.turn_rate,angle_diff(atan2(aim_x,aim_y),d.angle),d.turn_rate))%1
  end
@@ -257,41 +270,26 @@ function update_dragon()
   add_particle(tail[3].x,tail[3].y,0,0,8,"fire")
  else
   local accel=breathing and d.breath_accel or d.accel
-  d.vx=(d.vx+input_x*accel)*d.friction
-  if flying then
-   d.vy=(d.vy+input_y*accel)*d.friction
-   if frame%32==0 then sfx(snd_wings) end
-  else
-   if d.grounded then
-    d.flaps_left=d.flaps
-    if d.coyote<4 then
-     burst(d.x,d.y+3,2,4)
-     jolt(d.size*3-2.4)
-    end
-    d.coyote=6
+  if d.grounded and input_y>=0 then
+   accel*=d.run
+   if not d.landed then
+    burst(d.x,d.y+3,2,4)
+    jolt(d.size*3-2.4)
    end
-   d.coyote-=1
-   d.vy=min(d.vy+gravity*(up and abs(d.vy)<1 and .5 or 1),fall_speed)
-   d.hop=up and not d.was_up and 5 or d.hop-1
-   if d.hop>0 and (d.coyote>0 or d.flaps_left>0) then
-    if d.coyote<=0 then
-     d.flaps_left-=1
-     burst(d.x,d.y+4,3,6)
-    end
-    d.vy=-d.jump
-    d.hop,d.coyote=0,0
-    sfx(snd_wings)
+   if input_x!=0 and frame%4==0 then
+    add_particle(d.x,d.y+3,0,-.3,6,"smoke")
    end
-   if not up and d.vy<0 then d.vy*=.5 end
-   d.gliding=up and d.vy>d.glide
-   if d.gliding then d.vy=d.glide end
+  elseif frame%24==0 then
+   sfx(snd_wings)
   end
+  d.landed=d.grounded
+  d.guarding=d.guard>0 and d.grounded and input_x==0 and input_y>=0 and not breathing
+  d.vx=(d.vx+input_x*accel)*d.friction
+  d.vy=(d.vy+input_y*d.accel+d.sink)*d.friction
   if btnp(5) then
    if btn(4) and fury>=100 then inferno() end
    if d.charge_speed>0 and d.charge_cooldown<=0 then
-    d.charge_x,d.charge_y=d.facing,0
-    if flying then d.charge_x,d.charge_y=forward_x,forward_y end
-    d.angle=atan2(d.charge_x,d.charge_y)
+    d.charge_x,d.charge_y=forward_x,forward_y
     d.windup=d.charge_windup
     d.charge_cooldown=d.charge_recover
    end
@@ -306,7 +304,6 @@ function update_dragon()
    end
   end
  end
- d.was_up=up
  d.charge_cooldown-=1
  d.flash=max(0,d.flash-1)
 
@@ -376,7 +373,10 @@ function draw_dragon()
   end
  end
 
- local flap=d.charge>0 and -1 or d.grounded and -.8 or d.gliding and .7 or sin(frame/8)
+ local flap=d.charge>0 and -1 or d.grounded and -.8 or sin(frame/8)
+ if d.guarding then
+  circ(x,y,10*size,frame%4<2 and 11 or 7)
+ end
  local span,sweep=7+flap*5,4-flap*2
  local tip_x,tip_y=x+ux*span-fx*sweep,y+uy*span-fy*sweep
  local edge_x,edge_y=x-fx*8-tip_x,y-fy*8-tip_y
