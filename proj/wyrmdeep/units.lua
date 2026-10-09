@@ -132,7 +132,7 @@ function unit_ai.legend(unit,dir_x,dir_y,distance)
  local clock=unit.clock
  unit.guard=clock>110 and clock<160
  unit.reeling=clock<40
- unit.windup=clock>=160
+ unit.windup=clock>=135
  if unit.reeling then
   return 0,0
  elseif clock<=110 then
@@ -143,8 +143,8 @@ function unit_ai.legend(unit,dir_x,dir_y,distance)
   return unit_ai.melee(unit,dir_x,dir_y,distance)
  elseif clock<185 then
   if clock>=160 then
-   unit.flash=2
    unit.dash=sgn(dir_x)*4
+   unit.facing_left=dir_x<0
   end
   return 0,0
  end

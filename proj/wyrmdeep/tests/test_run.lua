@@ -65,8 +65,11 @@ function _update()
   advance=nil
   hold(n%4,4)
   if n%16>10 then hold(n%2,5) end
+  -- gawain is held in his wind-up, to photograph it
+  if stop.name=="sir gawain" and age==1 and boss then boss.clock=150 end
   if (n-300)%16==12 and age==1 then
    if stop.name=="sir kay" then dump_screen("shot") end
+   if stop.name=="sir gawain" then dump_screen("windup") end
    if stop.name=="merlin" then dump_screen("aura") end
   end
   if step>=#stops*#ages then

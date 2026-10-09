@@ -226,11 +226,14 @@ function _draw()
  end
  cls(1)
  camera(cam_x+rnd(shake)-shake/2,cam_y+rnd(shake)-shake/2)
+ for i=1,3 do
+  local x,rise=i*23%32+8,min(hoard/i/8,13-i*2)
+  circfill(x,cam_y+104,rise,9)
+  circfill(x-1,cam_y+103,rise-2,10)
+  pset(x-rise/2,cam_y+104-rise/2,7)
+ end
  map(cam_x\8,stage*16,cam_x\8*8,cam_y,17,16)
  draw_fire()
- for i=0,min(hoard\3,60) do
-  circfill(9+i*7%28,cam_y+102-i\8*2,1.5,i%3==0 and 10 or 9)
- end
  draw_relics()
  draw_units()
  if state!="dead" then draw_dragon() end

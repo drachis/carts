@@ -83,6 +83,10 @@ function update_particles()
    p.vx*=.92
    p.vy=p.vy*.92-.07
    if p.ember then
+    if boss and boss.guard and length(p.x-boss.x,p.y-boss.cy)<boss.size then
+     p.vx=p.vx*.3+(p.x-boss.x)/6
+     p.vy=p.vy*.3+(p.y-boss.cy)/6-1
+    end
     ignite(p.x\8,p.y\8)
     if solid(p.x,p.y) then p.life=0 end
    end
