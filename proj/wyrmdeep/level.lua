@@ -24,7 +24,11 @@ knight,540,220
 knight,668,220
 crossbowman,732,220
 sir gawain,52,228
+serf,164,228
 sheep,228,228
+serf,252,228
+serf,260,228
+archer,372,228
 sheep,380,228
 serf,412,228
 sheep,444,228
@@ -43,7 +47,9 @@ heart,308,324
 brimstone,804,324
 heart,860,324
 pikeman,348,348
+serf,348,356
 serf,356,356
+serf,372,356
 sir kay,596,356
 knight,804,356
 knight,860,356
@@ -54,6 +60,7 @@ brimstone,60,428
 brimstone,700,428
 bat,804,444
 bat,860,444
+serf,276,452
 serf,308,452
 bat,588,452
 heart,572,468]]

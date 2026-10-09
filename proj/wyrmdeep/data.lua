@@ -41,7 +41,10 @@ max_particles=300
 gravity=0.23
 fall_speed=3.5
 fireproof=0.35
-sight_range=76
+sight_range=110
+combo_frames=90
+horde_size=6
+muster_frames=45
 fury_frames=240
 nova_range=48
 burn_frames=40
@@ -54,6 +57,22 @@ whelp
 drake,press x to charge,accel=-0.25/breath_accel=-0.2/friction=0.06/charge_speed=4.5/size=0.2/max_hp=20/hp=20/dread=24/breath_range=4/breath_damage=0.3/bite_damage=4
 wyrm,flap twice in the air,accel=-0.3/breath_accel=-0.2/friction=0.08/flaps=2/size=0.2/max_hp=20/hp=20/dread=12/breath_range=4/breath_damage=0.3/bite_damage=4/max_fire=15
 great wyrm,the sky is yours,accel=-0.25/breath_accel=-0.15/friction=0.08/flight=1/size=0.25/max_hp=25/hp=25/dread=12/breath_range=6/breath_damage=0.4/bite_damage=4/max_fire=15
+]]
+
+hordes=parse_table[[
+name,pool
+heights,knight/crossbowman/monk/pikeman/serf
+surface,serf/serf/serf/archer/pikeman/sheep
+under,serf/serf/serf/pikeman/archer
+deep,serf/serf/serf/bat
+]]
+
+streaks=parse_record[[
+8=rampage!
+20=carnage!
+40=massacre!
+70=apocalypse!
+110=ragnarok!
 ]]
 
 body_shape=split"-5,3,-1,4,4,3,8,3,11,2"
@@ -84,8 +103,8 @@ rage=1
 size=0.8
 dread=0
 snap=0
-accel=1.2
-breath_accel=0.8
+accel=1.5
+breath_accel=1
 recoil=0.06
 kick=0.8
 friction=0.6
@@ -123,8 +142,8 @@ calm=0
 
 unit_specs=parse_table[[
 name,sprite,max_hp,speed,damage,reload,fire_taken,meal,brave,ai,range,keep_away,shot,color,knock,volley,flies,ward,grants,crown
-serf,64,3,0.5,2,30,1,2,0,melee,,,,,2
-pikeman,75,8,0.6,4,35,0.8,3,1,melee,,,,,3
+serf,64,2,0.8,2,30,1,2,0,melee,,,,,2
+pikeman,75,5,0.9,4,35,0.8,3,1,melee,,,,,3
 archer,65,4,0.3,3,80,1,2,0,ranged,70,0.4,arrow
 crossbowman,76,5,0.3,5,110,1,2,0,ranged,90,0.4,quarrel
 knight,66,14,0.8,6,30,0.5,4,1,melee,,,,,4

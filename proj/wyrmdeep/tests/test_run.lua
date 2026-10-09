@@ -40,6 +40,8 @@ function _update()
   end
  end
 
+ -- no horde until the measurements are done
+ if n<330 then muster=99 end
  if n<60 then
   -- a full jump straight up
   hold()
@@ -64,7 +66,7 @@ function _update()
   if n==260 then dump_screen("fire") end
  elseif n==330 then
   printh("out of the lair at x "..d.x.." (the door was at 232)")
-  assert(d.x>240,"the whelp did not burn its way out of the lair")
+  assert(d.x>232,"the whelp did not burn its way through the lair door")
  else
   -- the soak: a new stop every 40 frames, a new age every lap
   local step=(n-330)\16

@@ -47,6 +47,9 @@ seal tiles are cleared. `reload()` restores it for a new game.
 - **Gates:** flammable tiles burn and spread fire to their neighbours;
   brittle tiles need the charge; ledges need wings; Camelot's gate is three
   seals, each a `ward` tile named by its legend's row.
+- **The horde:** reinforcements keep arriving from the screen edges, by region
+  and by age (`update_horde`); kill streaks are called out. The game is about
+  burning through crowds at speed more than about careful jumps.
 - **Nests** heal, respawn everything but the fallen legends, and are where
   the dragon wakes after dying. Relics raise health or fire for good.
 - **Units** move under gravity through the same `slide` as the dragon.

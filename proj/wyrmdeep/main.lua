@@ -2,7 +2,7 @@ function new_game()
  reload()
  slain,taken,visited,fires,particles={},{},{},{},{}
  kills,deaths,seconds,relic_count=0,0,0,0
- fury,fury_time=0,0
+ fury,fury_time,combo,combo_timer,muster=0,0,0,0,90
  shake,freeze,flash=0,0,0
  message,message_timer="",0
  new_dragon()
@@ -87,6 +87,10 @@ function draw_hud()
   if low and frame%20<10 then
    rect(0,10,127,127,8)
   end
+  if combo>1 then
+   local text=combo.." burnt"
+   print(text,126-#text*4,12,blink and 10 or 9)
+  end
   if fury>=100 and blink then
    print_centered("\142+\151 unleash your fury",112,10)
   end
@@ -170,6 +174,9 @@ function _update()
   update_units()
   update_shots()
   update_relics()
+  update_horde()
+  combo_timer-=1
+  if combo_timer<=0 then combo=0 end
   if frame%30==0 then
    seconds+=1
    update_music()
@@ -197,7 +204,7 @@ function _draw()
  end
  cls()
  local d=dragon
- cam_x+=(mid(0,d.x+d.facing*16-64,896)-cam_x)*.15
+ cam_x+=(mid(0,d.x+d.facing*24-64,896)-cam_x)*.2
  cam_y+=(mid(0,d.y-68,384)-cam_y)*.15
  camera(cam_x+rnd(shake)-shake/2,cam_y+rnd(shake)-shake/2)
  rectfill(0,0,1023,231,1)

@@ -44,7 +44,30 @@ function damage_unit(unit,amount,eaten)
   sfx(snd_die+rnd(3))
  end
  kills+=1
+ combo+=1
+ combo_timer=combo_frames
  add_fury(unit.max_hp/2)
+ if streaks[combo] then
+  announce(streaks[combo])
+  roar(70,30)
+ end
+end
+
+function update_horde()
+ muster-=1
+ if muster>0 or crowd>=horde_size+age*4 then return end
+ muster=muster_frames
+ local side=rnd{-1,1}
+ local x=cam_x+64+side*74
+ local pool=split(hordes[dragon.y\128+1].pool,"/")
+ for y=dragon.y\8*8-28,dragon.y+44,8 do
+  if not solid(x,y) and solid(x,y+8) then
+   for i=1,1+age do
+    spawn_unit(rnd(pool),x+rnd(8)-4,y).heading=-side
+   end
+   return
+  end
+ end
 end
 
 function shoot(unit,dir_x,dir_y,kind)
@@ -158,8 +181,10 @@ end
 
 function update_units()
  boss=nil
+ crowd=0
  for unit in all(units) do
   if on_screen(unit.x,unit.y,40) then
+   crowd+=1
    local dx=dragon.x+unit.offset_x-unit.x
    local dy=dragon.y-unit.y
    local distance=max(length(dx,dy),1)
