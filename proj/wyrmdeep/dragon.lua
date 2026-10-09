@@ -173,14 +173,14 @@ function breathe_fire(mouth_x,mouth_y)
   end
   if stormed or in_breath(unit.x,unit.cy,mouth_x,mouth_y,unit.reach) then
    local fire_taken=unit.fire_taken
-   if unit.guard then
+   if unit.shields>0 then
     if frame%12==0 then
      shoot(unit,-cos(d.angle),-sin(d.angle),"rebuke")
      embers(unit.x,unit.y,6,2)
     end
    else
     if fire_taken>fireproof then unit.burn=60 end
-    damage_unit(unit,d.breath_damage*fire_taken*power*(unit.reeling and 3 or 1))
+    damage_unit(unit,d.breath_damage*fire_taken*power*(unit.stun>0 and 3 or 1))
    end
   end
  end
@@ -215,14 +215,26 @@ end
 function charge_impacts(head_x,head_y)
  local d=dragon
  for offset=-6*d.size,6*d.size,4 do
-  ram(d.x+d.charge_x*7-d.charge_y*offset,d.y+d.charge_y*7+d.charge_x*offset)
+  for along=7,9*d.size+5,6 do
+   ram(d.x+d.charge_x*along-d.charge_y*offset,d.y+d.charge_y*along+d.charge_x*offset)
+  end
  end
  for unit in all(units) do
   if unit.charge_id!=d.charge_id and length(unit.x-head_x,unit.cy-head_y)<12*d.size+unit.reach then
    unit.charge_id=d.charge_id
    unit.push_x=d.vx
    jolt(3)
-   damage_unit(unit,d.bite_damage,true)
+   if unit.shields>0 then
+    unit.shields-=1
+    ring(unit.x,unit.cy,14)
+    sfx(snd_crash)
+    if unit.shields==0 then
+     unit.stun=stagger_frames
+     jolt(5,4)
+    end
+   else
+    damage_unit(unit,d.bite_damage,true)
+   end
   end
  end
 end
@@ -305,6 +317,10 @@ function update_dragon()
  d.charge_cooldown-=1
  d.flash=max(0,d.flash-1)
 
+ if not solid(head_x,head_y) then
+  if solid(head_x+d.vx,head_y) then d.vx,d.charge=0,0 end
+  if solid(head_x,head_y+d.vy) then d.vy,d.charge=0,0 end
+ end
  local hit_x,hit_y=slide(d,d.vx,d.vy)
  if hit_x then d.vx=0 end
  if hit_y then d.vy=0 end

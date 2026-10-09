@@ -58,8 +58,10 @@ or a new game starts.
 - **Eating:** a charge or the jaws send meat to the belly gauge; it heals,
   and each full belly grows the dragon (`growth`).
 - **Legends** hold the last screen of each stage: Kay, Gawain and Arthur on
-  warhorses, Merlin a small figure in a large glow. They reel after a lunge
-  (triple fire), guard, wind up visibly, rage at half health, and from Gawain
+  warhorses, Merlin a small figure in a large glow. Each has bubbles (one to
+  four) that turn fire aside: charge to pop them, and the last one popped
+  staggers the legend so it burns. They wind up visibly, lunge,
+  rage at half health, and from Gawain
   on call for help. Devouring one gives an age: the ram, a standing guard,
   seeking fire.
 - **Gold** is the score: it rains at the end of a stage and is heaped in the

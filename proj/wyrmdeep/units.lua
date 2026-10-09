@@ -11,6 +11,8 @@ function spawn_unit(kind,x,y)
   burn=0,
   flash=0,
   clock=0,
+  stun=0,
+  shields=spec.shield or 0,
   fear=0,
   push_x=0,
   heading=rnd{-1,1},
@@ -109,6 +111,16 @@ function unit_ai.melee(unit,dir_x,dir_y,distance)
  return 0,0
 end
 
+function unit_ai.stunned(unit)
+ unit.stun-=1
+ unit.windup=false
+ if unit.stun<=0 and unit.color then
+  unit.shields=unit.shield
+  ring(unit.x,unit.cy,16)
+ end
+ return 0,0
+end
+
 function unit_ai.ranged(unit,dir_x,dir_y,distance)
  local range,speed=unit.range,unit.speed
  if not unit.sees then return 0,0 end
@@ -130,12 +142,8 @@ function unit_ai.legend(unit,dir_x,dir_y,distance)
  if not unit.sees and unit.clock<=110 then return patrol(unit) end
  unit.clock=(unit.clock+(enraged(unit) and 2 or 1))%200
  local clock=unit.clock
- unit.guard=clock>110 and clock<160
- unit.reeling=clock<40
  unit.windup=clock>=135
- if unit.reeling then
-  return 0,0
- elseif clock<=110 then
+ if clock<=110 then
   if unit.shot and clock\2==30 and not unit.shot_done then
    shoot(unit,dir_x,dir_y)
   end
@@ -222,7 +230,7 @@ function update_units()
     end
    end
 
-   local ai=unit.burn>0 and "panic" or unit.fear>0 and "flee" or unit.ai
+   local ai=unit.stun>0 and "stunned" or unit.burn>0 and "panic" or unit.fear>0 and "flee" or unit.ai
    local move_x,move_y=unit_ai[ai](unit,dir_x,dir_y,distance)
    local grounded=blocked(unit.x,unit.y+1)
    if unit.flies then
@@ -257,8 +265,8 @@ function draw_units()
     circfill(unit.x,unit.cy,unit.aura+sin(frame/30)*1.5,unit.windup and 7 or unit.color)
     fillp()
    end
-   if unit.guard then
-    circ(unit.x,unit.cy,size,frame%4<2 and 12 or 7)
+   for i=1,unit.shields do
+    circ(unit.x,unit.cy,size*.75+i*2,(frame/4+i)%2<1 and 12 or 7)
    end
    if unit.flash>0 then
     for color=1,15 do pal(color,7) end
@@ -266,7 +274,7 @@ function draw_units()
    sspr(sprite%16*8,sprite\16*8,size>8 and 16 or 8,size>8 and 16 or 8,
     unit.x-size/2,unit.y+4-size,size,size,unit.facing_left)
    pal()
-   if unit.reeling then
+   if unit.stun>0 then
     print("\146",unit.x-3,unit.y-4-size+frame%8\4,10)
    elseif unit.burn>0 then
     pset(unit.x-2+rnd(4),unit.y-5+rnd(3),rnd{9,10})

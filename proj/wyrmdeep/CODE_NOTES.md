@@ -44,9 +44,13 @@ pixels; a row belongs to the stage `y\128`.
 - `update_units`: only units near the screen are updated. `cy` is the middle
   of what is drawn and `reach` half its width beyond a person's, so breath,
   charge and contact all measure to the edge of a big unit.
-- `unit_ai.legend`: for the first 40 frames of each cycle it is `reeling`
-  (still, a star overhead, triple fire). `windup` shows the second sprite
-  (id + 8). Below half health its clock runs double.
+- Shields: `shield` in the data is how many bubbles a unit has. Fire slides
+  off a shielded unit and is thrown back. A stunned unit (`unit_ai.stunned`)
+  stands under a star and takes triple fire; a legend's bubbles return when
+  the stun ends, anyone else's are gone for good.
+- `unit_ai.legend`: presses, winds up, lunges, on a 200-frame clock.
+  `windup` shows the second sprite (id + 8). Below half health the clock
+  runs double.
 - `unit_ai.spawner`: spawns while fewer than `horde_size` + 3 per age units
   are near the screen.
 - `draw_units`: a `size` over 8 is drawn from a 16x16 sprite.
@@ -59,7 +63,12 @@ pixels; a row belongs to the stage `y\128`.
   mode: `run` times the acceleration, and the aim is kept level. After
   moving, it is held to the right of the screen's left edge; anything it is
   pushed into there is rammed, and if the screen is creeping it is hurt.
-- `charge_impacts`: rams a strip as tall as the dragon's body.
+- `charge_impacts`: rams a strip as tall as the dragon's body and as far ahead
+  as its head. A unit with `shields` loses one to a charge and takes no bite;
+  losing the last stuns it for `stagger_frames`.
+- The head is part of the body for walls: a move that would put the head in a
+  solid tile is refused (unless the head is already in one, so it can never
+  be trapped by turning).
 - `draw_dragon`: on the ground the trunk is lifted to stand a leg's length
   over the floor line while the tail rests on it. Limbs are two lines with a
   knee: grounded they step and carry the body, in flight the leg trails and
