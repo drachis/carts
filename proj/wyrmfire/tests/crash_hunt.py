@@ -20,10 +20,44 @@ import sys
 import tempfile
 
 TESTS = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(TESTS))
+import run_tests  # noqa: E402  (for its module-stubbing helper)
+
 PICO8 = os.environ.get("PICO8", r"C:\Program Files (x86)\PICO-8\pico8.exe")
 SOAK_CART = os.path.join(TESTS, "test_run.p8")
 HARNESS = "#include test_run.lua"
+SOAK_MAIN = "#include soak_main.lua"
+SOAK_STUBS = run_tests.GENERATED["soak_main.lua"][1]
 TIMEOUT_SECONDS = 240
+
+# a variant can also edit the text of main.lua before it is built: a list
+# of (old, new) replacements. this costs no tokens, which matters because
+# the soak cart has none to spare for the Lua variants below; those may now
+# be refused by pico-8 as too large, which shows up as "other".
+EDITS = {
+    # the two outline circles the hud draws
+    "no_meal_ring": [("  circ(34,4,14-belly_pop,10)\n", "")],
+    "no_ward_rings": [("  circ(86+ward*7,4,2,12)\n", "")],
+    # the hud's outline circles kept, but neither reaching off the screen
+    "small_meal_ring": [("circ(34,4,14-belly_pop,10)", "circ(34,4,3,10)")],
+    # everything in the hud but its outline circles
+    "no_hud_circ": [("  circ(34,4,14-belly_pop,10)\n", ""), ("  circ(86+ward*7,4,2,12)\n", "")],
+    # the hud's outline circles drawn filled instead
+    "hud_circfill": [("  circ(34,4,14-belly_pop,10)\n", "  circfill(34,4,14-belly_pop,10)\n"),
+                     ("  circ(86+ward*7,4,2,12)\n", "  circfill(86+ward*7,4,2,12)\n")],
+    # the game unchanged, but printing lua's memory use (kb of 2048) and
+    # counts of live objects every 100 frames, to see what a run looks
+    # like just before it dies. (update_reel is stubbed to make room.)
+    "memory_trace": [(" shake*=.8\n",
+                      " shake*=.8\n if frame%100==0 then printh('mem '..frame..' '"
+                      "..stat(0)..' '..#particles..' '..#units..' '..#shots) end\n")],
+    # other hud suspects, with its circles left in
+    "no_hits_text": [('   print(text,126-#(combo.." hits")*width,12,blink and 10 or 9)\n', "")],
+    "no_compass": [("\n draw_compass()\n", "\n")],
+}
+
+# functions a variant stubs in main.lua, beyond the soak's own, for room
+EXTRA_STUBS = {"memory_trace": ["update_reel"]}
 
 VARIANTS = {
     "baseline": "",
@@ -49,6 +83,20 @@ VARIANTS = {
                           "function circ(x,y,r,c) real_circ(x,y,flr(r),c) end"),
     "whole_everything_circ": ("local real_circ=circ\n"
                               "function circ(x,y,r,c) real_circ(flr(x),flr(y),flr(r),c) end"),
+    # circ untouched, but every odd argument reported (once per kind)
+    "report_circ": ("local real_circ,seen=circ,{}\n"
+                    "function circ(x,y,r,c)\n"
+                    " local note=(r==nil and 'nil radius') or (r<0 and 'negative radius')\n"
+                    "  or (r!=flr(r) and 'fractional radius') or (r>100 and 'huge radius')\n"
+                    "  or (c==nil and 'nil color') or (c!=flr(c) and 'fractional color')\n"
+                    " if note and not seen[note] then\n"
+                    "  seen[note]=true printh('circ: '..note..' r='..tostr(r)..' c='..tostr(c))\n"
+                    " end\n"
+                    " real_circ(x,y,r,c)\n"
+                    "end"),
+    # circ replaced by a lua function that passes everything through unchanged
+    "passthrough_circ": ("local real_circ=circ\n"
+                         "function circ(x,y,r,c) real_circ(x,y,r,c) end"),
     # one part of the drawing switched off at a time
     "no_dragon_drawn": "function draw_dragon() end",
     "no_particles_drawn": "function draw_particles() end",
@@ -67,10 +115,21 @@ VARIANTS = {
 def write_variant(name):
     """A copy of the soak cart with the variant's Lua ahead of the harness."""
     source = open(SOAK_CART, encoding="utf-8").read()
-    assert HARNESS in source, "soak cart layout changed"
+    assert HARNESS in source and SOAK_MAIN in source, "soak cart layout changed"
+    # each variant gets its own copy of the soak's main module
+    hunt_main = "hunt_main_%s.lua" % name
+    run_tests.stub_module(hunt_main, "main.lua", SOAK_STUBS + EXTRA_STUBS.get(name, []))
+    main_path = os.path.join(TESTS, hunt_main)
+    text = open(main_path, encoding="utf-8").read()
+    for old, new in EDITS.get(name, []):
+        assert old in text, "%s: could not find %r in main.lua" % (name, old)
+        text = text.replace(old, new)
+    with open(main_path, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(text)
+    source = source.replace(SOAK_MAIN, "#include " + hunt_main)
     path = os.path.join(TESTS, "hunt_%s.p8" % name)
     with open(path, "w", encoding="utf-8", newline="\n") as handle:
-        handle.write(source.replace(HARNESS, VARIANTS[name] + "\n" + HARNESS))
+        handle.write(source.replace(HARNESS, VARIANTS.get(name, "") + "\n" + HARNESS))
     return path
 
 
@@ -82,16 +141,22 @@ def hunt(name, runs):
                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for home in homes]
     crashed, finished, other = 0, 0, 0
+    notes = set()  # anything a variant reports about itself, e.g. report_circ
     for process in processes:
         try:
             output, _ = process.communicate(timeout=TIMEOUT_SECONDS)
         except subprocess.TimeoutExpired:
             process.kill()
             output, _ = process.communicate()
+        notes.update(line for line in output.splitlines() if line.startswith("INFO: circ:"))
         if "INFO: ok soak" in output:
             finished += 1
         elif process.returncode not in (0, None) and process.returncode & 0xffffffff == 0xC0000005:
             crashed += 1
+            # the last things a crashed run said
+            said = [line for line in output.splitlines()
+                    if line.startswith("INFO:") and not line.startswith("INFO: shot")]
+            print("  crashed after: " + " | ".join(said[-3:]))
         else:
             other += 1
             tail = [line for line in output.splitlines() if not line.startswith("INFO: shot")]
@@ -100,6 +165,8 @@ def hunt(name, runs):
         shutil.rmtree(home, ignore_errors=True)
     os.remove(cart)
     print("%-14s %2d ran clean, %2d crashed, %d other" % (name, finished, crashed, other))
+    for note in sorted(notes):
+        print("  " + note)
 
 
 def main(argv):

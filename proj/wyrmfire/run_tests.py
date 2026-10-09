@@ -97,19 +97,23 @@ def run_cart(cart):
     return True
 
 
+def stub_module(target, module, stubs):
+    """Write tests/<target>: a copy of a module with some functions emptied."""
+    source = open(os.path.join(HERE, module), encoding="utf-8").read()
+    for name in stubs:
+        # a top-level function runs to the first `end` at the start of a line
+        pattern = r"\nfunction %s\([^)]*\).*?\nend\n" % name
+        source, count = re.subn(pattern, "\nfunction %s() end\n" % name, source, flags=re.S)
+        if count != 1:
+            raise RuntimeError("could not find %s in %s" % (name, module))
+    with open(os.path.join(HERE, "tests", target), "w",
+              encoding="utf-8", newline="\n") as handle:
+        handle.write("-- generated from %s; do not edit\n" % module + source)
+
+
 def build_generated():
-    """Write each tests/<generated>.lua: a module with some functions emptied."""
     for target, (module, stubs) in GENERATED.items():
-        source = open(os.path.join(HERE, module), encoding="utf-8").read()
-        for name in stubs:
-            # a top-level function runs to the first `end` at the start of a line
-            pattern = r"\nfunction %s\([^)]*\).*?\nend\n" % name
-            source, count = re.subn(pattern, "\nfunction %s() end\n" % name, source, flags=re.S)
-            if count != 1:
-                raise RuntimeError("could not find %s in %s" % (name, module))
-        with open(os.path.join(HERE, "tests", target), "w",
-                  encoding="utf-8", newline="\n") as handle:
-            handle.write("-- generated from %s by run_tests.py; do not edit\n" % module + source)
+        stub_module(target, module, stubs)
 
 
 def main():

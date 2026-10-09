@@ -80,16 +80,30 @@ cap on how much of the realm burns.
 - **Two budgets:** 8192 tokens and 65535 characters of source, comments
   included. `count_tokens.py` reports both.
 
-## A PICO-8 trap: `circ` and fractional radii
+## An unexplained crash in headless PICO-8
 
-**Never give `circ` a fractional radius.** PICO-8 (0.2.x, here) can crash
-outright with an access violation when it does; `circfill` is not affected.
-This took the game down about one soak run in eight, and nearly every run
-when a dozen ran at once. It was found with `tests/crash_hunt.py`, which
-runs many soaks in parallel with parts of the game switched off: the crash
-needed drawing, vanished with any of domes, landing rings or shockwave rings
-removed, and vanished with every `circ` radius floored. Every `circ` call in
-the game now passes a whole number.
+Headless PICO-8 (`-x`) sometimes dies with an access violation (exit code
+`0xC0000005`) part-way through the soak test: rarely when run alone, in most
+runs when a dozen run at once. **The cause is not known.** What is known,
+from about twenty batches of `tests/crash_hunt.py` (parallel soaks with
+parts of the game switched off or edited):
+
+- It needs the game's drawing: with `_draw` empty it never happens. Harmless
+  drawing of similar cost does not cause it, and Lua memory stays flat.
+- Removing any one of several unrelated things stops it (in one build: the
+  compass, the hit-counter text, both HUD `circ` calls, or stubbing an
+  unrelated function and adding a `printh`; in an earlier build: drawing of
+  buildings, of shots, or of particles). Removing other things of similar
+  size does not.
+- So it depends on the exact shape of the program rather than on anything
+  the game does, and the soak build cannot say whether the real cart is
+  affected: they differ by just the kind of change that flips it.
+
+Causes that were proposed and then disproved: PICO-8 start-up, `cstore`,
+frames running late, `circ` with a fractional radius, `circ` reaching off
+the screen. It has not been reported in normal windowed play. `circ` calls
+were given whole radii along the way; that is harmless but was not a fix.
+`run_tests.py` treats the crash as a failure and prints the exit code.
 - **Peaks and rests:** being at a standing settlement is a `battle`:
   reinforcements come `battle_rush` times faster and the music quickens.
   Razing a settlement buys `lull_frames` of quiet.

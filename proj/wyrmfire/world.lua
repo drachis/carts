@@ -302,7 +302,6 @@ function draw_buildings()
  end
  for home in all(settlements) do
   if shielded(home) then
-   -- (circ must only ever be given a whole radius: see DESIGN.md)
    circ(home.tx*8,home.ty*8,dome_radius(home)+frame\4%2,frame%4<2 and 12 or 7)
   end
  end

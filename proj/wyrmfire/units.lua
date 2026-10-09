@@ -306,7 +306,6 @@ function draw_shots(overhead)
      y+(shot.target_y-y)*progress+arc,spec.size,spec.color)
    else
     -- a closing ring marks where it will land
-    -- (a whole radius: a fractional one can crash pico-8's circ)
     circ(shot.target_x,shot.target_y,12-shot.age*10\spec.life,8)
    end
   elseif not overhead then

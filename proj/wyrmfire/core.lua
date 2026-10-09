@@ -134,7 +134,6 @@ function draw_particles()
   elseif p.kind=="smoke" then
    circfill(p.x,p.y,1,life>10 and 5 or 6)
   elseif p.kind=="ring" then
-   -- (a whole radius: a fractional one can crash pico-8's circ)
    circ(p.x,p.y,p.size*(p.span-life)\p.span,life>4 and 7 or 9)
   elseif p.meal then
    local tumbling=life%6<3

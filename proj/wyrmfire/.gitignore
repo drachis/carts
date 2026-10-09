@@ -5,3 +5,4 @@ tests/title_dragon.lua
 tests/hunt_*.p8
 *.png
 run.log
+tests/hunt_main_*.lua
