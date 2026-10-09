@@ -45,6 +45,7 @@ sight_range=110
 combo_frames=90
 horde_size=6
 muster_frames=45
+rest_frames=300
 fury_frames=240
 nova_range=48
 burn_frames=40

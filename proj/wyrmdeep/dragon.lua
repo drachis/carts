@@ -47,6 +47,7 @@ function rest()
  nest_x,nest_y=dragon.x,dragon.y
  dragon.hp=dragon.max_hp
  populate()
+ muster=rest_frames
  announce("the dragon rests")
  sfx(snd_coin)
  ring(nest_x,nest_y,20)
@@ -322,8 +323,15 @@ function update_dragon()
   damage_dragon(8)
  end
  local nested=mget(d.x\8,d.y\8)==tile_nest
- if nested and not d.nested then rest() end
- d.nested=nested
+ if nested and not d.rested then
+  if crowd==0 then
+   d.rested=true
+   rest()
+  else
+   announce("slay them all to rest",2)
+  end
+ end
+ d.rested=d.rested and nested
 
  if breathing then
   breathe_fire(head_x,head_y)
