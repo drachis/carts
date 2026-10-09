@@ -1,0 +1,3 @@
+*.png
+run.log
+__pycache__/
