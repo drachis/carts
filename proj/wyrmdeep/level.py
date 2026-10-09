@@ -1,65 +1,37 @@
-"""level.py - the world, drawn as text, and a check that it can be finished.
+"""level.py - turns the stages' text into the map, and checks they can be finished.
 
-The world is 8 rooms wide and 4 tall; a room is 16 lines of 16 characters.
-ROOMS is keyed by (column, row); a room that is not listed is solid rock.
-build() turns the text into a 128x64 grid of sprite ids plus a list of
-everything that is placed rather than drawn (the dragon, units, relics).
-check() walks the grid with each age's abilities in turn.
-
-Rows, top to bottom: 0 the heights, 1 the surface, 2 the under, 3 the deep.
+stages.py lays each stage out as text. build() turns that into a 128x64 grid
+of sprite ids (four stages of 16 rows) plus a list of everything that is
+placed rather than drawn (units, spawn points, relics). check() floods each
+stage from its start.
 """
-import random
 from collections import deque
 
+import stages
 import tiles
-from rooms import INTERIOR, ROOMS
 
-ROOM, COLUMNS, ROWS = 16, 8, 4
-WIDTH, HEIGHT = ROOM * COLUMNS, ROOM * ROWS
+WIDTH, HEIGHT, STAGE_ROWS = 128, 64, 16
+START = (3, 11)  # where the dragon enters a stage, in tiles (data.lua agrees)
 
 # one character -> a tile name in tiles.py
 TERRAIN = {
-    " ": None, ".": None, "#": "rock", "d": "dirt", "B": "brick", ",": "brick back",
+    " ": None, "#": "rock", "d": "dirt", "=": "paving", "B": "brick", ",": "brick back",
     "w": "wood", "-": "bridge", "t": "thorns", "c": "crate",
-    "x": "cracked rock", "X": "cracked brick", "v": "vine", "h": "hay",
-    "T": "tree", "g": "grass", "1": "ward kay", "2": "ward gawain",
-    "3": "ward merlin", "^": "spikes", "~": "lava", "N": "nest",
-    "i": "torch", "o": "window", "u": "mushroom", "n": "bones", "f": "banner",
-    "|": "gate",
+    "X": "cracked brick", "v": "vine", "h": "hay",
+    "T": "tree", "g": "grass", "i": "torch", "f": "banner",
 }
 # one character -> something placed by name (data.lua's unit and relic tables)
 PLACED = {
-    "D": "dragon",
     "s": "serf", "p": "pikeman", "a": "archer", "r": "crossbowman",
     "k": "knight", "m": "monk", "b": "bat", "l": "ballista",
     "S": "sheep", "P": "pig", "C": "cow",
-    "K": "sir kay", "G": "sir gawain", "M": "merlin",
-    "O": "mine mouth", "H": "hovel", "Q": "barracks", "V": "roost",
-    "A": "king arthur",
+    "K": "sir kay", "G": "sir gawain", "M": "merlin", "A": "king arthur",
+    "H": "hovel", "Q": "barracks", "V": "roost",
     "+": "heart", "*": "brimstone",
 }
+LEGENDS = ["sir kay", "sir gawain", "merlin", "king arthur"]
 # what a solid tile becomes with open air above it
-TOPS = {"rock": "rock top", "dirt": "turf", "brick": "brick top", "lava": "lava top"}
-def text_grid():
-    """The whole world as HEIGHT strings of WIDTH characters."""
-    lines = []
-    for row in range(ROWS):
-        for line in range(ROOM):
-            parts = []
-            for column in range(COLUMNS):
-                room = ROOMS.get((column, row))
-                if room is None:
-                    parts.append("#" * ROOM)
-                    continue
-                assert len(room) == ROOM, "room %s has %d lines" % ((column, row), len(room))
-                assert len(room[line]) == ROOM, "room %s line %d is %d wide" % (
-                    (column, row), line, len(room[line]))
-                text = room[line]
-                if (column, row) in INTERIOR:
-                    text = text.replace(" ", ",")
-                parts.append(text)
-            lines.append("".join(parts))
-    return lines
+TOPS = {"dirt": "turf", "brick": "brick top"}
 
 
 def flags_of(sprite_id):
@@ -68,8 +40,8 @@ def flags_of(sprite_id):
 
 def build():
     """(grid of sprite ids, [(name, tx, ty)] of what is placed)."""
-    text = text_grid()
-    rng = random.Random(7)
+    text = stages.lines()
+    assert len(text) == HEIGHT and all(len(line) == WIDTH for line in text)
     names = [[None] * WIDTH for _ in range(HEIGHT)]
     placed = []
     for ty, line in enumerate(text):
@@ -82,18 +54,15 @@ def build():
             else:
                 assert char in TERRAIN, "unknown character %r at %d,%d" % (char, tx, ty)
                 names[ty][tx] = TERRAIN[char]
-    for tx in range(WIDTH):
-        if names[0][tx] is None:
-            names[0][tx] = "cap"
+    # an unseen lid over each stage, and walls at both ends
+    for ty in range(HEIGHT):
+        for tx in range(WIDTH):
+            if names[ty][tx] is None and (ty % STAGE_ROWS == 0 or tx in (0, WIDTH - 1)):
+                names[ty][tx] = "cap"
 
     def is_open(tx, ty):
-        if not (0 <= tx < WIDTH and 0 <= ty < HEIGHT):
-            return False
         name = names[ty][tx]
         return name is None or not tiles.FLAGS[tiles.NAMES[name]] & tiles.SOLID
-
-    def buried(tx, ty):
-        return not any(is_open(tx + dx, ty + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1))
 
     grid = [[0] * WIDTH for _ in range(HEIGHT)]
     for ty in range(HEIGHT):
@@ -101,49 +70,27 @@ def build():
             name = names[ty][tx]
             if name is None:
                 continue
-            if name in TOPS and is_open(tx, ty - 1):
+            if name in TOPS and ty and is_open(tx, ty - 1):
                 name = TOPS[name]
-            elif name == "rock" and buried(tx, ty):
-                name = "rock deep"
-            elif name == "rock" and rng.random() < 0.3:
-                name = "rock alt"
+            elif name == "paving" and not is_open(tx, ty - 1):
+                name = "paving deep"
             grid[ty][tx] = tiles.NAMES[name]
-    for tx in range(WIDTH):
-        assert not is_open(tx, 0) and not is_open(tx, HEIGHT - 1), "open border at column %d" % tx
-    for ty in range(HEIGHT):
-        assert not is_open(0, ty) and not is_open(WIDTH - 1, ty), "open border at row %d" % ty
-    assert [name for name, _, _ in placed].count("dragon") == 1, "the dragon starts in one place"
     return grid, placed
 
 
-# --- can it be finished? ---
-#
-# The dragon flies, so this is a flood through whatever it can pass at each
-# age: open tiles, anything that burns, cracked tiles once it can charge, and
-# the seals of the legends already fallen.
-STAGES = [
-    ("sir kay", {"charge": True, "ward": "ward kay"}),
-    ("sir gawain", {"ward": "ward gawain"}),
-    ("merlin", {"ward": "ward merlin"}),
-    ("king arthur", {}),
-]
-AGE_NAMES = ["whelp", "drake", "wyrm", "great wyrm"]
+def reachable(grid, start, top, charge):
+    """Every tile of the stage whose first row is `top` that the dragon can be in.
 
-
-def reachable(grid, start, charge=False, wards=()):
-    """Every tile the dragon can be in, starting from `start`."""
-    fallen = {tiles.NAMES[name] for name in wards}
-
+    It flies, so this is a flood through open tiles, anything that burns,
+    and cracked tiles once it can charge.
+    """
     def passable(tx, ty):
-        if not (0 <= tx < WIDTH and 0 <= ty < HEIGHT):
+        if not (0 <= tx < WIDTH and top <= ty < top + STAGE_ROWS):
             return False
-        sprite_id = grid[ty][tx]
-        bits = flags_of(sprite_id)
-        if bits & tiles.HAZARD:
-            return False
-        if not bits & tiles.SOLID or bits & tiles.FLAMMABLE or sprite_id in fallen:
+        bits = flags_of(grid[ty][tx])
+        if not bits & tiles.SOLID or bits & (tiles.FLAMMABLE | tiles.BRITTLE):
             return True
-        return bool(charge and bits & tiles.BRITTLE)
+        return bool(charge and bits & tiles.STONE)
 
     cells, queue = {start}, deque([start])
     while queue:
@@ -156,25 +103,20 @@ def reachable(grid, start, charge=False, wards=()):
 
 
 def check(grid, placed):
-    """Raise unless the legends can be reached in order; report what each age reaches."""
-    start = next((tx, ty) for name, tx, ty in placed if name == "dragon")
-    relics = [(name, tx, ty) for name, tx, ty in placed if name in ("heart", "brimstone")]
-    legends = [name for name, _ in STAGES]
-    where = {name: (tx, ty) for name, tx, ty in placed}
-    abilities = {"wards": []}
+    """Raise unless everything in each stage can be reached; report each stage.
+
+    The charge comes from the first legend, so the first stage must be
+    finished without it.
+    """
     report = []
-    for stage, (legend, gained) in enumerate(STAGES):
-        cells = reachable(grid, start, **abilities)
-        assert where[legend] in cells, "a %s cannot reach %s" % (AGE_NAMES[stage], legend)
-        for later in legends[stage + 1:]:
-            assert where[later] not in cells, "a %s can already reach %s" % (AGE_NAMES[stage], later)
-        found = sum((tx, ty) in cells for _, tx, ty in relics)
-        report.append("%s: %d tiles, %d/%d relics" % (AGE_NAMES[stage], len(cells), found, len(relics)))
-        if stage == len(STAGES) - 1:
-            lost = [(name, tx, ty) for name, tx, ty in placed if (tx, ty) not in cells]
-            assert not lost, "nothing can reach %s" % lost
-        gained = dict(gained)
-        if "ward" in gained:
-            abilities["wards"] = abilities["wards"] + [gained.pop("ward")]
-        abilities.update(gained)
+    for stage, (name, _, _) in enumerate(stages.STAGES):
+        top = stage * STAGE_ROWS
+        cells = reachable(grid, (START[0], top + START[1]), top, charge=stage > 0)
+        here = [(what, tx, ty) for what, tx, ty in placed if top <= ty < top + STAGE_ROWS]
+        lost = [thing for thing in here if (thing[1], thing[2]) not in cells]
+        assert not lost, "%s: nothing can reach %s" % (name, lost)
+        legends = [what for what, _, _ in here if what in LEGENDS]
+        assert legends == [LEGENDS[stage]], "%s should end with %s alone, not %s" % (
+            name, LEGENDS[stage], legends)
+        report.append("%s: %d placed, all reachable" % (name, len(here)))
     return report

@@ -1,14 +1,12 @@
 function new_game()
  reload()
- slain,taken,visited,fires,particles={},{},{},{},{}
- locked=nil
- kills,deaths,seconds,relic_count=0,0,0,0
+ taken,particles={},{}
+ kills,deaths,seconds,relic_count,hoard=0,0,0,0,0
  fury,fury_time,combo,combo_timer=0,0,0,0
  shake,freeze,flash=0,0,0
  message,message_timer="",0
  new_dragon()
- populate()
- cam_x,cam_y=dragon.x-64,dragon.y-64
+ enter_stage(0)
  state="title"
  update_music()
 end
@@ -23,11 +21,10 @@ end
 
 function respawn()
  local d=dragon
- d.x,d.y,d.vx,d.vy=nest_x,nest_y,0,0
+ reload()
  d.hp,d.fire,d.flash=d.max_hp,d.max_fire,60
  deaths+=1
- lock_arena()
- populate()
+ enter_stage(stage)
  state="play"
 end
 
@@ -51,12 +48,35 @@ end
 
 function collect_coin()
  add_fury(.5)
+ hoard+=1
  sfx(snd_coin)
 end
 
 function clock_text(time)
  local second=time%60
  return time\60 ..":"..(second<10 and "0" or "")..second
+end
+
+function update_camera()
+ local ahead=min(dragon.x-44,896)
+ if ahead>cam_x then
+  cam_x+=min(ahead-cam_x,4)
+  linger=0
+ else
+  linger+=1
+  if linger>linger_frames and cam_x<896 then
+   cam_x+=creep
+  end
+ end
+ if advance then
+  advance-=1
+  coins(cam_x+rnd(128),cam_y+12,1)
+  if advance%30==0 then
+   embers(cam_x+rnd(128),cam_y+30+rnd(40),16,3)
+   sfx(snd_fanfare)
+  end
+  if advance==0 then enter_stage(stage+1) end
+ end
 end
 
 function draw_gauge(glyph,x,fraction,color,back)
@@ -96,6 +116,9 @@ function draw_hud()
   if fury>=100 and blink then
    print_centered("\142+\151 unleash your fury",112,10)
   end
+  if linger>linger_frames and cam_x<896 and blink then
+   print("\145",120,60,7)
+  end
  end
 
  rectfill(0,0,127,9,0)
@@ -108,22 +131,18 @@ function draw_hud()
  end
  draw_gauge(32,30,d.belly/belly_size,11,3)
  spr(71,30,1)
- print(ages[age].name,42,2,7)
- print(relic_count.."/"..relic_total,94,2,14)
-
- local here=d.x\128+d.y\128*8
- visited[here]=true
- for room=0,31 do
-  if visited[room] then
-   local x,y=111+room%8*2,room\8*2
-   rectfill(x,y,x+1,y+1,room==here and blink and 7 or 13)
-  end
- end
+ print("\143"..hoard,42,2,10)
+ line(88,4,126,4,5)
+ circfill(88+cam_x/896*38,4,1,10)
 
  if boss then
   rectfill(0,121,127,127,2)
   rectfill(0,121,127*boss.hp/boss.max_hp,127,8)
   print(boss.name,2,122,7)
+ end
+ if advance then
+  print_centered(split(stage_names)[stage+1].." burns!",40)
+  print_centered("\143"..hoard,50,10)
  end
  if message_timer>0 then
   print_centered(message,22)
@@ -133,13 +152,12 @@ end
 function draw_title()
  rectfill(0,0,127,72,0)
  print("\^w\^twyrmdeep",33,4,8)
- print_centered("devour the round table.",19,9)
- print_centered("take the throne.",26,9)
+ print_centered("burn the shire. devour the king.",19,9)
  if best_time>0 then
-  print_centered("best "..clock_text(best_time),35,10)
+  print_centered("best "..clock_text(best_time),28,10)
  end
- print("\142\n\151\n\142+\151\n\139\145\148\131",14,42,7)
- print("breathe fire\ncharge & devour\nunleash your fury\nfly",52,42,6)
+ print("\142\n\151\n\142+\151\n\139\145\148\131",14,40,7)
+ print("breathe fire\ncharge & devour\nunleash your fury\nfly",52,40,6)
  if frame%30<20 then
   print_centered("press \151 to play",118,7)
  end
@@ -151,9 +169,10 @@ function draw_game_over()
  print_centered(won and "the crown is devoured" or "the dragon is slain",50,won and 10 or 8)
  if won then
   print_centered("time "..clock_text(seconds).."  best "..clock_text(best_time),60,7)
-  print_centered(relic_count.."/"..relic_total.." relics  "..deaths.." deaths",68,6)
+  print_centered(hoard.." gold  "..relic_count.."/"..relic_total.." relics  "..deaths.." deaths",68,6)
  else
-  print_centered("it wakes again in its nest",60,6)
+  print_centered("it rises again at the edge of",60,6)
+  print_centered(split(stage_names)[stage+1],68,6)
  end
  print_centered("press \151",78,5)
 end
@@ -174,6 +193,7 @@ function _update()
  local pressed=btnp(4) or btnp(5)
  if state=="play" then
   update_dragon()
+  update_camera()
   update_units()
   update_shots()
   update_relics()
@@ -204,16 +224,13 @@ function _draw()
   cls(7)
   return
  end
- cls()
- local d=dragon
- cam_x+=(mid(0,d.x+d.facing*24-64,896)-cam_x)*.2
- cam_y+=(mid(0,d.y-68,384)-cam_y)*.15
+ cls(1)
  camera(cam_x+rnd(shake)-shake/2,cam_y+rnd(shake)-shake/2)
- rectfill(0,0,1023,231,1)
- pal(12,frame%8<4 and 7 or 12)
- map(cam_x\8,cam_y\8,cam_x\8*8,cam_y\8*8,17,17)
- pal()
+ map(cam_x\8,stage*16,cam_x\8*8,cam_y,17,16)
  draw_fire()
+ for i=0,min(hoard\3,60) do
+  circfill(9+i*7%28,cam_y+102-i\8*2,1.5,i%3==0 and 10 or 9)
+ end
  draw_relics()
  draw_units()
  if state!="dead" then draw_dragon() end

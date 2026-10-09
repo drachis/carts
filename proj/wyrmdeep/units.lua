@@ -19,17 +19,6 @@ function spawn_unit(kind,x,y)
  },spec))
 end
 
-function lock_arena(shut)
- if locked!=shut then
-  locked=shut
-  local from=shut and tile_gate or tile_gate+1
-  for i=0,8191 do
-   if mget(i%128,i\128)==from then
-    mset(i%128,i\128,from+(shut and 1 or -1))
-   end
-  end
- end
-end
 
 function damage_unit(unit,amount,eaten)
  unit.hp-=amount
@@ -38,26 +27,29 @@ function damage_unit(unit,amount,eaten)
  del(units,unit)
  burst(unit.x,unit.cy,4,4)
  coins(unit.x,unit.cy,1)
- if unit.color or unit.pool then slain[unit.key]=true end
- if unit.pool then
+ if unit.ai=="spawner" then
   embers(unit.x,unit.y,12,2)
   sfx(snd_crash)
   jolt(4,3)
  end
  if unit.color then
   eaten=true
-  lock_arena()
   announce(unit.name.." is devoured",120)
   jolt(8,8)
   flash=2
   ring(unit.x,unit.cy,40)
   coins(unit.x,unit.cy,25)
-  if unit.ward then break_ward(unit.ward) end
-  if unit.grants then grow() end
+  if unit.grants then
+   grow()
+   advance=210
+  end
   if unit.crown then end_game("won") end
  end
  if eaten then
-  feed(unit.meal)
+  add(particles,{
+   x=unit.x,y=unit.cy,vx=rnd(4)-2,vy=-3,
+   life=600,span=600,kind="coin",meal=unit.meal,
+  })
   sfx(snd_eat+rnd(3))
   splat(unit.x,unit.cy)
  else
@@ -197,10 +189,10 @@ function update_units()
  crowd=0
  for unit in all(units) do
   if on_screen(unit.x,unit.y,40) then
-   if not unit.pool then crowd+=1 end
+   if unit.ai!="spawner" then crowd+=1 end
    local size=unit.size or 8
    unit.cy=unit.y+4-size/2
-   unit.reach=size/2-4
+   unit.reach=unit.aura or size/2-4
    local dx=dragon.x+unit.offset_x-unit.x
    local dy=dragon.y-unit.cy
    local distance=max(length(dx,dy),1)
@@ -212,12 +204,14 @@ function update_units()
    if unit.sees then
     if unit.color then
      boss=unit
-     if distance<lock_range and not locked then
-      lock_arena(true)
-      while blocked(dragon.x,dragon.y) do
-       dragon.x-=sgn(dx)
-       dragon.y-=sgn(dy)
+     if unit.pool and frame%summon_frames==0 then
+      for i=1,2 do
+       spawn_unit(rnd(split(unit.pool,"/")),unit.x,unit.y)
       end
+      ring(unit.x,unit.cy,20)
+     end
+     if not unit.met then
+      unit.met=true
       announce(unit.name,120)
       sfx(snd_fanfare)
       jolt(4,6)
@@ -258,6 +252,11 @@ function draw_units()
    local size=unit.size or 8
    local sprite=unit.sprite
    if size>8 and unit.windup then sprite+=8 end
+   if unit.aura then
+    fillp(0xa5a5.8)
+    circfill(unit.x,unit.cy,unit.aura+sin(frame/30)*1.5,unit.windup and 7 or unit.color)
+    fillp()
+   end
    if unit.guard then
     circ(unit.x,unit.cy,size,frame%4<2 and 12 or 7)
    end

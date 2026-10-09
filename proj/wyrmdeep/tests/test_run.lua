@@ -1,8 +1,9 @@
 -- test_run.lua : included by test_run.p8 after the game's modules.
 --
--- part one flies the whelp to the lair door and burns through it.
+-- part one flies the whelp right through the shire, breathing and charging,
+-- and checks that the screen follows and never lets it back.
 -- part two is a soak: the dragon is moved to everything the level places,
--- at every age, breathing and charging, to shake out errors.
+-- stage by stage and at every age, to shake out errors.
 --
 -- it runs inside pico-8's own loop by wrapping the game's _update.
 
@@ -16,6 +17,7 @@ dset=sfx
 local n=0
 local game_update,game_draw=_update,_draw
 local stops={}
+local furthest=0
 
 function _draw() end
 
@@ -35,27 +37,38 @@ function _update()
   end
  end
 
- if n<160 then
-  hold(1)
-  if n>40 then hold(1,4) end
-  if n==70 then dump_screen("fire") end
- elseif n==160 then
-  printh("out of the lair at x "..d.x.." (the door was at 104)")
-  assert(d.x>112,"the whelp did not burn its way through the lair door")
+ if n<300 then
+  hold(1,4)
+  if n%40>30 then hold(1,5) end
+  -- now and then it tries to turn back
+  if n%100>85 then hold(0) end
+  d.hp=d.max_hp
+  assert(cam_x>=furthest,"the screen went back")
+  assert(d.x>=cam_x,"the dragon got behind the screen")
+  furthest=cam_x
+  if n==150 then dump_screen("fire") end
+ elseif n==300 then
+  printh("the screen followed the whelp "..cam_x.." px into the shire")
+  assert(cam_x>200,"the whelp did not get far")
  else
   -- the soak: a new stop every 16 frames, a new age every lap
-  local step=(n-160)\16
+  local step=(n-300)\16
   local stop=stops[step%#stops+1]
-  if (n-160)%16==0 then
+  if (n-300)%16==0 then
    if step%#stops==0 and step>0 and age<#ages then grow() end
-   lock_arena()
-   d.x,d.y,d.vx,d.vy=stop.x,stop.y-8,0,0
+   if stop.y\128!=stage then enter_stage(stop.y\128) end
+   d.x,d.y,d.vx,d.vy=stop.x-12,stop.y-8,0,0
+   cam_x=mid(0,d.x-44,896)
   end
   d.hp=d.max_hp
   fury=100
+  advance=nil
   hold(n%4,4)
   if n%16>10 then hold(n%2,5) end
-  if (n-160)%16==10 and stop.name=="sir kay" and age==1 then dump_screen("shot") end
+  if (n-300)%16==12 and age==1 then
+   if stop.name=="sir kay" then dump_screen("shot") end
+   if stop.name=="merlin" then dump_screen("aura") end
+  end
   if step>=#stops*#ages then
    printh("ok run: "..#stops.." stops at "..#ages.." ages, "..kills.." kills")
    extcmd("shutdown")

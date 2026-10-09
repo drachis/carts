@@ -45,7 +45,10 @@ sight_range=110
 combo_frames=90
 horde_size=5
 belly_size=40
-lock_range=72
+linger_frames=150
+creep=0.4
+crush=4
+summon_frames=210
 storm_range=56
 fury_frames=240
 nova_range=48
@@ -56,9 +59,9 @@ spread_at=28
 ages=parse_table[[
 name,tip,stats
 whelp
-drake,press x to charge,accel=-0.25/breath_accel=-0.2/friction=0.06/sink=0.1/charge_speed=4.5/size=0.25/max_hp=20/hp=20/dread=24/breath_range=4/breath_damage=0.3/bite_damage=4
-wyrm,stand still to guard,accel=-0.3/breath_accel=-0.2/friction=0.08/sink=0.15/guard=1/size=0.25/max_hp=20/hp=20/dread=12/breath_range=4/breath_damage=0.3/bite_damage=4/max_fire=15
-great wyrm,your fire seeks them out,accel=-0.25/breath_accel=-0.15/friction=0.08/sink=0.2/storm=1/size=0.3/max_hp=25/hp=25/dread=12/breath_range=6/breath_damage=0.4/bite_damage=4/max_fire=15
+drake,your charge breaks stone,accel=-0.15/breath_accel=-0.1/friction=0.06/sink=0.03/ram=1/size=0.25/max_hp=20/hp=20/dread=24/breath_range=4/breath_damage=0.3/bite_damage=4
+wyrm,stand still to guard,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.04/guard=1/size=0.25/max_hp=20/hp=20/dread=12/breath_range=4/breath_damage=0.3/bite_damage=4/max_fire=15
+great wyrm,your fire seeks them out,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.05/storm=1/size=0.3/max_hp=25/hp=25/dread=12/breath_range=6/breath_damage=0.4/bite_damage=4/max_fire=15
 ]]
 
 
@@ -97,13 +100,13 @@ fire_regen=0.3
 inhale=0.06
 power=1
 rage=1
-size=0.8
+size=1
 dread=0
 snap=0
 accel=1.5
 breath_accel=1
-recoil=0.06
-kick=0.8
+recoil=0.02
+kick=0.4
 friction=0.6
 turn_rate=0.14
 run=1.5
@@ -122,7 +125,8 @@ breath_damage=1.2
 breath_speed=2
 breath_flames=2
 charge_windup=7
-charge_speed=0
+charge_speed=4.5
+ram=0
 charge_frames=12
 charge_recover=40
 bite_damage=8
@@ -136,7 +140,7 @@ calm=0
 ]]
 
 unit_specs=parse_table[[
-name,sprite,max_hp,speed,damage,reload,fire_taken,meal,brave,ai,range,keep_away,shot,color,knock,volley,flies,ward,grants,crown,size,pool
+name,sprite,max_hp,speed,damage,reload,fire_taken,meal,brave,ai,range,keep_away,shot,color,knock,volley,flies,ward,grants,crown,size,pool,aura
 serf,64,2,0.8,2,30,1,2,0,melee,,,,,2
 pikeman,75,5,0.9,4,35,0.8,3,1,melee,,,,,3
 archer,65,4,0.3,3,80,1,2,0,ranged,70,0.4,arrow
@@ -148,11 +152,10 @@ ballista,69,15,0,10,120,0.7,0,1,ranged,100,0,bolt
 sheep,71,1,0.3,0,0,1,10,0,sheep
 pig,82,1,0.4,0,0,1,8,0,sheep
 cow,81,2,0.25,0,0,1,16,0,sheep
-sir kay,96,40,1,6,40,0.5,30,1,legend,,,,9,5,,,12,1,,24
-sir gawain,98,60,1.1,8,40,0.5,30,1,legend,,,rebuke,11,6,5,,13,1,,24
-merlin,100,70,0.6,7,70,0.5,40,1,ranged,90,0.6,arcane,12,,5,1,14,1,,24
-king arthur,102,120,1.3,12,40,0.5,30,1,legend,,,excalibur,10,8,7,,,,1,24
-mine mouth,54,8,0,0,90,0.3,0,1,spawner,,,,,,,1,,,,,serf/serf/pikeman
+sir kay,96,140,1.2,6,40,0.5,30,1,legend,,,,9,5,,,,1,,16
+sir gawain,98,280,1.3,8,40,0.5,30,1,legend,,,rebuke,11,6,5,,,1,,16,serf/pikeman/archer
+merlin,73,420,0.6,7,70,0.5,40,1,ranged,90,0.6,arcane,12,,5,1,,1,,,bat/bat/monk,12
+king arthur,102,600,1.4,12,40,0.5,30,1,legend,,,excalibur,10,8,7,,,,1,16,knight/monk/crossbowman,14
 hovel,55,6,0,0,100,0.3,0,1,spawner,,,,,,,1,,,,,serf/serf/archer
 barracks,56,14,0,0,110,0.3,0,1,spawner,,,,,,,1,,,,,knight/pikeman/crossbowman
 roost,57,5,0,0,120,0.3,0,1,spawner,,,,,,,1,,,,,bat

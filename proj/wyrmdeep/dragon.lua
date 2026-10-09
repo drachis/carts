@@ -1,13 +1,20 @@
 function new_dragon()
  dragon=parse_record(dragon_stats)
- dragon.x,dragon.y=start_x,start_y
- nest_x,nest_y=start_x,start_y
  age=1
  tail={}
  for i=1,6 do
-  add(tail,{x=dragon.x-i*2,y=dragon.y})
+  add(tail,{x=0,y=0})
  end
+end
+
+function enter_stage(number)
+ stage=number
+ cam_x,cam_y,linger,advance=0,stage*128,0
+ dragon.x,dragon.y,dragon.vx,dragon.vy=start_x,cam_y+start_y,0,0
+ fires={}
+ populate()
  update_tail()
+ announce(split(stage_names)[stage+1],120)
 end
 
 function roar(reach,frames)
@@ -53,15 +60,6 @@ function feed(meal)
   sfx(snd_fanfare)
   ring(dragon.x,dragon.y,24)
  end
-end
-
-function rest()
- nest_x,nest_y=dragon.x,dragon.y
- dragon.hp=dragon.max_hp
- populate()
- announce("the dragon rests")
- sfx(snd_coin)
- ring(nest_x,nest_y,20)
 end
 
 function damage_dragon(amount,dir_x,knock)
@@ -216,7 +214,7 @@ end
 
 function charge_impacts(head_x,head_y)
  local d=dragon
- for offset=-3,3,3 do
+ for offset=-6*d.size,6*d.size,4 do
   ram(d.x+d.charge_x*7-d.charge_y*offset,d.y+d.charge_y*7+d.charge_x*offset)
  end
  for unit in all(units) do
@@ -315,20 +313,13 @@ function update_dragon()
   jolt(3)
  end
 
- if fget(mget(d.x\8,(d.y+2)\8),3) then
-  d.vy=-3
-  damage_dragon(8)
- end
- local nested=mget(d.x\8,d.y\8)==tile_nest
- if nested and not d.rested then
-  if crowd==0 then
-   d.rested=true
-   rest()
-  else
-   announce("slay them all to rest",2)
+ if d.x<cam_x+4 then
+  d.x=cam_x+4
+  for offset=-3,3,3 do
+   ram(d.x+4,d.y+offset)
   end
+  if linger>linger_frames then damage_dragon(crush) end
  end
- d.rested=d.rested and nested
 
  if breathing then
   breathe_fire(head_x,head_y)
@@ -363,14 +354,30 @@ function draw_dragon()
  pal(8,hurt and 7 or d.body)
  pal(2,hurt and 7 or d.wing)
 
- for i=#body,6,-1 do
-  circfill(body[i].x,body[i].y,body[i].r,i%2==0 and 8 or 2)
- end
+ local floor_y,belly=32000,32000
  if d.grounded then
-  for i=1,2 do
-   local part=body[i]
-   line(part.x,part.y,part.x+sin(frame/12+i/2)*abs(d.vx),part.y+part.r+1,2)
+  floor_y=y+3
+  belly=floor_y-2.5*size
+  y=min(y,belly-4*size)
+ end
+ for i=#body,6,-1 do
+  local part=body[i]
+  circfill(part.x,min(part.y,floor_y-part.r),part.r,i%2==0 and 8 or 2)
+ end
+ for i=1,2 do
+  local part=body[i]
+  local hip_y=min(part.y,belly-part.r)+part.r/2
+  local foot_x=part.x+d.facing*(i*5-8)*size
+  local foot_y=hip_y+4*size
+  if d.grounded then
+   foot_x,foot_y=part.x+sin(frame/12+i/2)*abs(d.vx)*size,floor_y
   end
+  local knee_x,knee_y=(part.x+foot_x)/2-d.facing*1.5*size,(hip_y+foot_y)/2
+  for thick=0,size do
+   line(part.x+thick,hip_y,knee_x+thick,knee_y,2)
+   line(foot_x+thick,foot_y)
+  end
+  line(foot_x,foot_y,foot_x+d.facing*2*size,foot_y,10)
  end
 
  local flap=d.charge>0 and -1 or d.grounded and -.8 or sin(frame/8)
@@ -386,7 +393,8 @@ function draw_dragon()
  line(x,y,tip_x,tip_y,8)
 
  for i=1,5 do
-  circfill(body[i].x,body[i].y,body[i].r,8)
+  local part=body[i]
+  circfill(part.x,min(part.y,belly-part.r),part.r,8)
  end
  line(x+fx*7+ux*3,y+fy*7+uy*3,x+fx*4+ux*5,y+fy*4+uy*5,6)
  pset(x+fx*8+ux*1.5,y+fy*8+uy*1.5,10)

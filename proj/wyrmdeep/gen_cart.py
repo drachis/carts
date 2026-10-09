@@ -17,6 +17,7 @@ import sys
 import art
 import bosses
 import level
+import stages
 import tiles
 from png import write_png
 
@@ -67,17 +68,11 @@ def build_gff():
 
 
 def write_level_lua(placed):
-    """level.lua: where the dragon starts and everything else that is placed."""
-    rows = []
-    start = None
-    for name, tx, ty in placed:
-        x, y = tx * 8 + 4, ty * 8 + 4
-        if name == "dragon":
-            start = (x, y)
-        else:
-            rows.append("%s,%d,%d" % (name, x, y))
-    constants = ["start_x=%d" % start[0], "start_y=%d" % start[1]]
-    constants += ["tile_%s=%d" % (name, tiles.NAMES[name]) for name in ("fire", "nest", "gate")]
+    """level.lua: everything that is placed, the stages' names, and tile ids."""
+    rows = ["%s,%d,%d" % (name, tx * 8 + 4, ty * 8 + 4) for name, tx, ty in placed]
+    constants = ["start_x=%d" % (level.START[0] * 8 + 4), "start_y=%d" % (level.START[1] * 8 + 4),
+                 "stage_names=%s" % ",".join(name for name, _, _ in stages.STAGES),
+                 "tile_fire=%d" % tiles.NAMES["fire"]]
     lua = "parse_record([[\n%s\n]],nil,_ENV)\n\nspawn_text=[[\n%s]]\n" % (
         "\n".join(constants), "\n".join(rows))
     with open(os.path.join(HERE, "level.lua"), "w", encoding="utf-8", newline="\n") as handle:
@@ -96,7 +91,7 @@ def named_sprites():
 
 def write_world_png(grid, placed):
     art_of = sprites()
-    canvas = [[SKY if y < 232 else DARK] * (level.WIDTH * 8) for y in range(level.HEIGHT * 8)]
+    canvas = [[SKY] * (level.WIDTH * 8) for _ in range(level.HEIGHT * 8)]
 
     def stamp(sprite_id, left, top, behind=None):
         for y, row in enumerate(art_of.get(sprite_id, [])):
@@ -108,7 +103,7 @@ def write_world_png(grid, placed):
 
     for ty in range(level.HEIGHT):
         for tx in range(level.WIDTH):
-            back = SKY if ty < 29 else DARK
+            back = SKY
             stamp(grid[ty][tx], tx * 8, ty * 8, back)
     marks = named_sprites()
     for name, tx, ty in placed:
@@ -125,7 +120,7 @@ def main():
     grid, placed = level.build()
     write_world_png(grid, placed)
     for line in level.check(grid, placed):
-        print("reach as a", line)
+        print(line)
     gfx = build_gfx(grid)
     data = "\n__gfx__\n%s\n__gff__\n%s\n__map__\n%s\n__sfx__\n%s\n__music__\n%s\n" % (
         "\n".join(gfx), build_gff(), "\n".join(build_map(grid)),

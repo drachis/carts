@@ -81,7 +81,7 @@ function update_particles()
   p.life-=1
   if p.kind=="fire" then
    p.vx*=.92
-   p.vy=p.vy*.92-.03
+   p.vy=p.vy*.92-.07
    if p.ember then
     ignite(p.x\8,p.y\8)
     if solid(p.x,p.y) then p.life=0 end
@@ -91,12 +91,19 @@ function update_particles()
    p.vy*=.9
    if p.span-p.life>12 then
     local dx,dy=dragon.x-p.x,dragon.y-p.y
+    if p.meal then
+     dx,dy=cam_x+34-p.x,cam_y+4-p.y
+    end
     local distance=max(length(dx,dy),1)
     p.vx+=dx/distance*.8
     p.vy+=dy/distance*.8
     if distance<8 then
      p.life=0
-     collect_coin()
+     if p.meal then
+      feed(p.meal)
+     else
+      collect_coin()
+     end
     end
    end
   elseif p.kind=="debris" then
@@ -117,6 +124,8 @@ function draw_particles()
    circfill(p.x,p.y,1,life>10 and 5 or 6)
   elseif p.kind=="ring" then
    circ(p.x,p.y,p.size*(p.span-life)\p.span,life>4 and 7 or 9)
+  elseif p.meal then
+   spr(74,p.x-4,p.y-4,1,1,life%6<3,life%6<3)
   elseif p.kind=="coin" then
    circfill(p.x,p.y,1,life%6<3 and 10 or 9)
    pset(p.x,p.y-1,7)

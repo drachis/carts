@@ -45,9 +45,10 @@ end
 function ram(x,y)
  local tx,ty=x\8,y\8
  local tile=mget(tx,ty)
- if fget(tile,2) then
+ if fget(tile,2) or dragon.ram>0 and fget(tile,4) then
   mset(tx,ty,tile+16)
   burst(tx*8+4,ty*8+4,6,8)
+  coins(tx*8+4,ty*8+4,1)
   sfx(snd_crash)
   jolt(4,2)
  end
@@ -75,15 +76,6 @@ function draw_fire()
  end
 end
 
-function break_ward(tile)
- for i=0,8191 do
-  if mget(i%128,i\128)==tile then
-   mset(i%128,i\128,0)
-  end
- end
- announce("a seal is broken",150)
-end
-
 function populate()
  units,shots,relics={},{},{}
  relic_total=0
@@ -94,8 +86,8 @@ function populate()
    if not taken[row] then
     add(relics,setmetatable({x=x,y=y,key=row},relic_specs[name]))
    end
-  elseif unit_specs[name] and not slain[row] then
-   spawn_unit(name,x,y).key=row
+  elseif unit_specs[name] and y\128==stage then
+   spawn_unit(name,x,y)
   end
  end
 end
