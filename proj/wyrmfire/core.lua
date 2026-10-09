@@ -59,6 +59,15 @@ function ring(x,y,size)
  add_particle(x,y,0,0,10,"ring").size=size
 end
 
+-- a pop and a spatter of blood: something was eaten, or the dragon
+-- was struck
+function splat(x,y)
+ ring(x,y,8)
+ for i=1,6 do
+  add_particle(x,y,rnd(4)-2,rnd(4)-2,12,"debris").color=8
+ end
+end
+
 -- gold that scatters, then flies to the dragon (see update_particles)
 function coins(x,y,count)
  for i=1,count do

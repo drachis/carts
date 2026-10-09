@@ -6,14 +6,14 @@ function new_game()
  new_dragon()
  score,kills,wrath,heralded=0,0,1,0
  combo,combo_timer,fury,fury_time=0,0,0,0
- shown_score,combo_pop,coin_run,reel_time=0,0,0,0
+ shown_score,coin_run,reel_time=0,0,0
  belly,belly_pop,battle_time=0,0,0
  shake,freeze,flash=0,0,0
  message,message_timer,reinforce_timer="",0,300
  cam_x,cam_y=dragon.x-64,dragon.y-64
  boss=nil
  state="title"
- set_tempo()
+ update_music()
 end
 
 function end_game(outcome)
@@ -25,14 +25,11 @@ function end_game(outcome)
 end
 
 -- there are two tracks (see gen_gfx.py), both kept to channels 0
--- and 1 so two are left for effects. the music's speed lives in
--- sfx memory (byte 65 of each 68-byte sfx), so poking it there
--- makes the band play a little faster as the realm's wrath grows.
--- sfx 16..21 are the music's patterns.
-function set_tempo()
- -- the battle track plays while the dragon is fighting at a
- -- settlement and for a few seconds after (this runs once a
- -- second); the roaming track the rest of the time
+-- and 1 so two are left for effects. the battle track plays while
+-- the dragon is fighting at a settlement and for a few seconds
+-- after (this runs once a second); the roaming track the rest of
+-- the time.
+function update_music()
  if battle then battle_time=8 end
  battle_time-=1
  local track=battle_time>0 and 2 or 0
@@ -40,13 +37,11 @@ function set_tempo()
   playing=track
   music(track,300,3)
  end
- for pattern=16,21 do
-  poke(0x3241+pattern*68,max(10,16-wrath))
- end
 end
 
+-- one more for every combo_step hits in a row
 function multiplier()
- return min(1+combo\5,config.max_multiplier)
+ return min(1+combo\config.combo_step,config.max_multiplier)
 end
 
 -- pico-8 numbers stop at 32767, so score is kept in tens and shown
@@ -72,7 +67,6 @@ end
 -- build a combo that multiplies the score and feeds the fury meter.
 function add_score(worth,x,y)
  combo+=1
- combo_pop=3
  combo_timer=config.combo_frames
  local gained=worth*multiplier()
  score+=gained/10
@@ -124,7 +118,7 @@ function update_wrath()
   announce("the realm is "..next_level.name)
   sfx(sound.fanfare)
  end
- if frame%30==0 then set_tempo() end
+ if frame%30==0 then update_music() end
 
  -- newcomers arrive from just off screen
  local angle=rnd()
@@ -145,13 +139,6 @@ function update_wrath()
    spawn_unit(rnd(list(wrath_levels[wrath].pool)),x+rnd(16)-8,y+rnd(16)-8)
   end
  end
-end
-
--- every gauge is a bar with its name written on it
-function draw_bar(label,x,y,width,fraction,color,back)
- rectfill(x,y,x+width,y+6,back)
- rectfill(x,y,x+width*mid(0,fraction,1),y+6,color)
- print(label,x+2,y+1,7)
 end
 
 -- a gauge in the top bar: a column that fills from the bottom,
@@ -201,18 +188,16 @@ end
 -- its own along the bottom.
 function draw_hud()
  local blink=frame%8<4
+ -- under a third of its health the dragon is close to death
+ local low=dragon.hp<dragon.max_hp/3
  if state=="play" then
   if fury_time>0 then draw_blaze() end
   if combo>1 then
-   -- the hit counter swells for a moment with each new hit
-   local text,width=combo.." hits",4
-   if combo_pop>0 then
-    text,width="\^w\^t"..text,8
-   end
-   print(text,126-#(combo.." hits")*width,12,blink and 10 or 9)
+   local text=combo.." hits"
+   print(text,126-#text*4,12,blink and 10 or 9)
   end
-  -- a red frame beats when the dragon is close to death
-  if dragon.hp<dragon.max_hp/3 and frame%20<10 then
+  -- a red frame beats then
+  if low and frame%20<10 then
    rect(0,10,127,127,8)
   end
   if fury>=100 and blink then
@@ -221,12 +206,14 @@ function draw_hud()
  end
 
  rectfill(0,0,127,9,0)
- draw_gauge(135,0,dragon.hp/dragon.max_hp,8,2)
+ -- the heart flashes white when health is low
+ draw_gauge(135,0,dragon.hp/dragon.max_hp,low and blink and 7 or 8,2)
  draw_gauge(133,10,dragon.fire/dragon.max_fire,9,4)
  if fury_time>0 then
   draw_gauge(146,20,fury_time/config.fury_frames,12,1)
  else
-  draw_gauge(146,20,fury/100,fury>=100 and blink and 7 or 10,5)
+  -- a full fury gauge flashes blue and white, the inferno's colors
+  draw_gauge(146,20,fury/100,fury<100 and 10 or blink and 7 or 12,5)
  end
  -- eat to fill the column behind the sheep, and grow. it flashes
  -- and sparkles as each meal lands.
@@ -250,7 +237,10 @@ function draw_hud()
  draw_compass()
 
  if boss then
-  draw_bar(boss.spec.name,0,121,127,boss.hp/boss.spec.hp,8,2)
+  -- a bar along the bottom with the boss's name on it
+  rectfill(0,121,127,127,2)
+  rectfill(0,121,127*boss.hp/boss.spec.hp,127,8)
+  print(boss.spec.name,2,122,7)
  end
  if message_timer>0 then
   print_centered(message,22)
@@ -292,9 +282,7 @@ function draw_game_over()
  print_centered(won and "camelot is ash" or "the dragon is slain",50,won and 10 or 8)
  print_centered("score "..points(score).."  best "..points(high_score),60,7)
  print_centered(kills.." slain  "..razed.."% razed",68,6)
- if frame-end_frame>45 then
-  print_centered("press \151",78,5)
- end
+ print_centered("press \151",78,5)
 end
 
 function _init()
@@ -331,13 +319,20 @@ function _update()
   dragon.angle=atan2(sin(turn)*30,-cos(turn)*14)
   update_tail()
   if pressed then state="play" end
- elseif pressed and frame-end_frame>45 then
+ elseif frame-end_frame<60 then
+  -- for two seconds the ending is left to play out: a dragon
+  -- that has died spins away to nothing
+  if state=="dead" then
+   dragon.size*=.95
+   dragon.angle+=.04
+   update_tail()
+  end
+ elseif pressed then
   new_game()
  end
  update_fire()
  update_particles()
  shown_score+=ceil((flr(score)-shown_score)/6)
- combo_pop-=1
  shake*=.8
  message_timer-=1
 end
@@ -370,13 +365,12 @@ function _draw()
  draw_dragon()
  draw_particles()
  draw_shots()
- draw_shots(true)
 
  camera()
  if state=="title" then
   draw_title()
  else
   draw_hud()
-  if state!="play" then draw_game_over() end
+  if state!="play" and frame-end_frame>=60 then draw_game_over() end
  end
 end

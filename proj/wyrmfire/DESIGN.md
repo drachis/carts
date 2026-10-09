@@ -101,7 +101,9 @@ parts of the game switched off or edited):
 
 Causes that were proposed and then disproved: PICO-8 start-up, `cstore`,
 frames running late, `circ` with a fractional radius, `circ` reaching off
-the screen. It has not been reported in normal windowed play. `circ` calls
+the screen. In normal windowed play the user reports no crashes over many
+hours and builds, so it is treated as a headless-only problem that makes the
+soak test flaky (some builds fail about half their runs). `circ` calls
 were given whole radii along the way; that is harmless but was not a fix.
 `run_tests.py` treats the crash as a failure and prints the exit code.
 - **Peaks and rests:** being at a standing settlement is a `battle`:

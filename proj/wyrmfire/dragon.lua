@@ -76,36 +76,41 @@ function heal_dragon(amount)
  dragon.hp=min(dragon.max_hp,dragon.hp+amount)
 end
 
--- a heavy blow also has a direction and a `knock` that throws the
--- dragon back along it
+-- a heavy blow also has a direction and a `knock`, the distance it
+-- throws the dragon back along it
 function damage_dragon(amount,dir_x,dir_y,knock)
  -- nothing touches a charging dragon, or one still reeling from
  -- the last blow (flash doubles as its moment of invulnerability)
  if state!="play" or dragon.charge>0 or dragon.flash>0 then return end
  if knock then
-  -- the heavier the dragon, the less it is moved
-  knock/=1+dragon.weight
+  -- knock is how many pixels the dragon is thrown: sliding to a
+  -- stop under friction f covers its starting speed over 1-f
+  knock*=1-dragon.friction
   dragon.vx+=dir_x*knock
   dragon.vy+=dir_y*knock
-  jolt(5,2)
  end
+ splat(dragon.x,dragon.y)
  dragon.hp-=amount
  dragon.flash=dragon.mercy
  dragon.calm=240
  -- the harder the blow, the harder the screen is shaken and the
  -- longer the game holds on it: a pinprick passes, a lunge lands
  jolt(2+amount/8,amount\12)
- -- and the louder it sounds: the hurt sfx is three notes whose
- -- second byte is their volume (doubled), rewritten for each blow.
- -- a really heavy one has a crash under it too.
- for note=0,2 do
-  poke(0x3201+sound.hurt*68+note*2,mid(2,amount\3+1,7)*2)
- end
+ -- and the louder it sounds: the hurt sfx is one fading note
+ -- whose second byte is 0x50 plus twice its volume, rewritten for
+ -- each blow. a really heavy one has a crash under it too.
+ poke(0x3201+sound.hurt*68,0x50+mid(2,amount\3+1,7)*2)
  sfx(sound.hurt)
  if amount>=20 then sfx(sound.crash) end
  if dragon.hp<=0 then
+  -- it dies in a storm of its own fire, with a last roar, and
+  -- then (see _update) spins away to nothing
   dragon.hp=0
   end_game("dead")
+  embers(dragon.x,dragon.y,40,5)
+  roar(120,90)
+  jolt(14,20)
+  flash=4
  end
 end
 
@@ -297,11 +302,9 @@ end
 
 function update_dragon()
  local d=dragon
- local input_x,input_y=0,0
- if btn(0) then input_x-=1 end
- if btn(1) then input_x+=1 end
- if btn(2) then input_y-=1 end
- if btn(3) then input_y+=1 end
+ -- buttons 0..3 are left, right, up, down; tonum makes each 1 or 0
+ local input_x=tonum(btn(1))-tonum(btn(0))
+ local input_y=tonum(btn(3))-tonum(btn(2))
 
  local forward_x,forward_y=cos(d.angle),sin(d.angle)
  local reach=11*d.size
@@ -393,6 +396,10 @@ function update_dragon()
 
  d.calm-=1
  if d.calm<=0 then heal_dragon(d.regen) end
+ -- close to death it trails smoke
+ if d.hp<d.max_hp/3 and frame%3==0 then
+  add_particle(d.x,d.y,0,-.5,14,"smoke")
+ end
  update_tail()
 end
 

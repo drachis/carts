@@ -58,18 +58,15 @@ function damage_unit(unit,amount,eaten)
  if eaten then
   heal_dragon(spec.meal)
   sfx(sound.eat)
-  -- a pop, and a spatter of blood
-  ring(unit.x,unit.y,8)
-  for i=1,6 do
-   add_particle(unit.x,unit.y,rnd(4)-2,rnd(4)-2,12,"debris").color=8
-  end
-  -- eating is how the dragon grows: the meal is flung up and
-  -- flies to the sheep gauge, counting when it gets there. (added
-  -- directly, so that a full particle list cannot lose a meal.)
+  splat(unit.x,unit.y)
+  -- eating is how the dragon grows: the meal, now meat on the
+  -- bone (sprite 74), is flung up and flies to the sheep gauge,
+  -- counting when it gets there. (added directly, so that a full
+  -- particle list cannot lose a meal.)
   add(particles,{
    x=unit.x,y=unit.y,vx=rnd(4)-2,vy=-3,
    life=600,span=600,kind="coin",
-   meal=spec.meal,sprite=spec.sprite,
+   meal=spec.meal,sprite=74,
   })
  elseif spec.score>0 then
   sfx(sound.die)
@@ -162,7 +159,7 @@ function unit_ai.legend(unit,dir_x,dir_y,distance)
   return 0,0
  end
  if distance<=4 then
-  damage_dragon(spec.damage*3,dir_x,dir_y,spec.knock*3)
+  damage_dragon(spec.damage*3,dir_x,dir_y,spec.knock*2)
  end
  return unit.dash_x,unit.dash_y
 end
@@ -270,6 +267,12 @@ function update_shots()
   shot.age+=1
   local landed=shot.age>=spec.life
   local struck
+  if spec.seek then
+   -- a seeking shot is on a spring to the spot it was aimed at:
+   -- a volley fans out, then closes in on that spot all at once
+   shot.vx+=(shot.target_x-shot.x)*.003
+   shot.vy+=(shot.target_y-shot.y)*.003
+  end
   if spec.lob then
    -- harmless in the air, a blast where it lands
    struck=landed and dragon_gap(shot.target_x,shot.target_y)<8
@@ -293,22 +296,19 @@ function update_shots()
  end
 end
 
--- drawn in two passes: `overhead` is above the dragon and the fire
-function draw_shots(overhead)
+-- shots are drawn over everything, the dragon included
+function draw_shots()
  for shot in all(shots) do
   local spec,x,y=shot.spec,shot.x,shot.y
   local progress=shot.age/spec.life
   if spec.lob then
-   if overhead then
-    local arc=sin(progress/2)*30
-    circfill(
-     x+(shot.target_x-x)*progress,
-     y+(shot.target_y-y)*progress+arc,spec.size,spec.color)
-   else
-    -- a closing ring marks where it will land
-    circ(shot.target_x,shot.target_y,12-shot.age*10\spec.life,8)
-   end
-  elseif not overhead then
+   -- a closing ring marks where it will land, and the rock arcs
+   -- over towards it
+   circ(shot.target_x,shot.target_y,12-shot.age*10\spec.life,8)
+   circfill(
+    x+(shot.target_x-x)*progress,
+    y+(shot.target_y-y)*progress+sin(progress/2)*30,spec.size,spec.color)
+  else
    -- dark rim, bright body, white tip: easy to read at a glance
    if spec.size>0 then
     circfill(x,y,spec.size+1,0)

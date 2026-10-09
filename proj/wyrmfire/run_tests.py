@@ -29,7 +29,7 @@ TEST_CARTS = [os.path.join("tests", name) for name in
 GENERATED = {
     # the soak has no menus, no sound (so no music to pace) and can spare
     # the inferno's edge flames
-    "soak_main.lua": ("main.lua", ["draw_title", "draw_game_over", "set_tempo", "draw_blaze"]),
+    "soak_main.lua": ("main.lua", ["draw_title", "draw_game_over", "update_music", "draw_blaze"]),
     "title_dragon.lua": ("dragon.lua", ["breathe_fire", "charge_impacts", "inferno"]),
 }
 TIMEOUT_SECONDS = 180

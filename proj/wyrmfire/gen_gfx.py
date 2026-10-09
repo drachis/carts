@@ -60,6 +60,8 @@ SPRITES[70] = ["00000550","00004550","00040000","00400000","44444440","45444540"
 SPRITES[71] = ["00000000","00777700","07777770","55777770","05777770","00777700","00505000","00000000"]  # sheep
 SPRITES[72] = ["00660007","00660070","0c667700","04444440","f4444444","04444440","04000040","04000040"]  # lancer (mounted)
 SPRITES[73] = ["000c0000","00ccc000","0ccccc00","00fff0a0","00777040","0ccccc40","0ccccc40","0c000c40"]  # merlin
+# what anything eaten becomes on its way to the growth gauge (units.lua)
+SPRITES[74] = ["00000000","00888000","08e88800","08888800","08888200","00222670","00006777","00000770"]  # meat on the bone
 
 
 def church():
@@ -149,9 +151,9 @@ SFX = [
     "00030000" + "1c6301a640186401663014620",                 # 0 breath
     "00050000" + "0c2500e2500c2500a24008233",                 # 1 roar
     "00040000" + "0c6700a670086600766006650056400463003625",  # 2 crash
-    # 3 hurt: three square-wave notes with no effect, so the second byte of
-    # each is just its volume, which dragon.lua pokes to match the blow
-    "00030000" + "183501435010350",
+    # 3 hurt: one low square-wave note that fades out (effect 5). its second
+    # byte is 0x50 + 2 * volume, which dragon.lua pokes to match the blow
+    "000c0000" + "0c355",
     "00030000" + "241301c13018125",                           # 4 die
     "00020000" + "306202c615",                                # 5 arrow
     "00070000" + "183501c3501f350243502435024345",            # 6 fanfare

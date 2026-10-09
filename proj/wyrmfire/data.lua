@@ -75,7 +75,8 @@ alarm_range=110
 fireproof=0.35
 guardian_at=0.6
 combo_frames=100
-max_multiplier=5
+max_multiplier=9
+combo_step=8
 fury_frames=240
 nova_range=56
 coin_value=2
@@ -215,18 +216,18 @@ unit_specs=parse_table[[
 name,sprite,hp,speed,damage,cooldown,fire_taken,score,meal,brave,ai,range,keep_away,shot,color,knock,volley
 serf,64,3,0.7,1,30,1,5,1,0,melee
 archer,65,4,0.45,2,80,1,10,1,0,ranged,70,0.4,arrow,,,3
-knight,66,12,1.3,6,30,0.5,25,3,1,melee,,,,,7
+knight,66,12,1.3,6,30,0.5,25,3,1,melee,,,,,12
 champion,67,20,0.5,6,90,0.3,50,3,1,ranged,80,0.4,holy,,,3
 ballista,69,15,0.2,12,120,0.7,40,0,1,ranged,100,0,bolt
 catapult,70,15,0.2,18,150,0.7,40,0,1,ranged,110,0,rock
 sheep,71,1,0.3,0,0,1,0,10,0,sheep
-lancer,72,18,1.7,7,40,0.5,60,4,1,legend,,,,,9
+lancer,72,18,1.7,7,40,0.5,60,4,1,legend,,,,,16
 merlin,73,220,0.6,10,70,0.3,800,40,1,ranged,90,0.6,arcane,12,,10
-sir gawain,68,60,1.3,9,40,0.3,500,30,1,legend,,,,11,10
-sir percival,68,80,1.3,13,40,0.3,500,30,1,legend,,,,14,10
-sir galahad,68,100,1.3,18,40,0.3,500,30,1,legend,,,,7,10
-sir lancelot,68,120,1.3,23,40,0.3,500,30,1,legend,,,,13,10
-king arthur,68,160,1.4,30,40,0.3,500,30,1,legend,,,excalibur,10,12,8
+sir gawain,68,60,1.3,9,40,0.3,500,30,1,legend,,,,11,32
+sir percival,68,80,1.3,13,40,0.3,500,30,1,legend,,,,14,38
+sir galahad,68,100,1.3,18,40,0.3,500,30,1,legend,,,,7,44
+sir lancelot,68,120,1.3,23,40,0.3,500,30,1,legend,,,,13,50
+king arthur,68,160,1.4,30,40,0.3,500,30,1,legend,,,excalibur,10,60,8
 ]]
 
 -- size 0 draws a streak, otherwise a ball of that radius. a lobbed
@@ -235,12 +236,12 @@ king arthur,68,160,1.4,30,40,0.3,500,30,1,legend,,,excalibur,10,12,8
 -- enough to dodge, and come in two kinds: wooden ones (orange)
 -- burn up in the dragon's breath, holy ones (blue) do not.
 shot_specs=parse_table[[
-name,speed,color,size,life,sound,fan,burns,lob
+name,speed,color,size,life,sound,fan,burns,lob,seek
 arrow,1.5,9,0,90,5,0.04,1
 holy,1.1,12,2,120,5,0.07
 bolt,3,9,0,60,5,0,1
 excalibur,1.6,12,2,90,5,0.125
-arcane,1.2,14,2,110,5,0.1
+arcane,1.2,14,2,110,5,0.1,,,1
 rebuke,2.2,10,1,50,5,0
 rock,0,5,2,50,7,0,,1
 ]]
@@ -270,7 +271,7 @@ settlement_specs=parse_table[[
 name,radius,ground,fields,flock,militia,bounty,warded,muster,fixed,buildings
 lair,3,19,0,0,0,0,0
 village,4,1,3,2,6,100,0,serf/serf/serf/archer,,house/hut/hut/hut/house/hut
-town,5,1,3,2,10,300,0,serf/serf/archer/archer/knight,,church/tower/tower/house/house/house/house/house/house/hut/hut
+town,5,1,3,2,10,300,0,serf/serf/archer/archer/knight/lancer,,church/tower/tower/house/house/house/house/house/house/hut/hut
 camelot,6,1,0,0,14,1000,1,knight/knight/lancer/archer/champion,keep:-1:-1/tower:-4:-4/tower:3:-4/tower:-4:3/tower:3:3,church/tower/tower/house/house/house/house/house
 ]]
 
@@ -289,8 +290,8 @@ realm=split"lair:the lair,village:ashford,village:millbrook,village:thornby,town
 wrath_levels=parse_table[[
 name,score,legend,pool
 wary,0,,serf/serf/archer
-alarmed,200,,serf/archer/knight
-mustering,700,,archer/knight/knight/champion
+alarmed,200,,serf/archer/knight/lancer
+mustering,700,,archer/knight/lancer/lancer/champion
 crusading,1600,,knight/lancer/champion/ballista/catapult
 desperate,3000,sir lancelot,knight/lancer/champion/champion/ballista/catapult
 doomed,30000,merlin,lancer/lancer/knight/champion/champion/ballista/catapult

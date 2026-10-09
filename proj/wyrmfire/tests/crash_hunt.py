@@ -52,7 +52,7 @@ EDITS = {
                       " shake*=.8\n if frame%100==0 then printh('mem '..frame..' '"
                       "..stat(0)..' '..#particles..' '..#units..' '..#shots) end\n")],
     # other hud suspects, with its circles left in
-    "no_hits_text": [('   print(text,126-#(combo.." hits")*width,12,blink and 10 or 9)\n', "")],
+    "no_hits_text": [("   print(text,126-#text*4,12,blink and 10 or 9)\n", "")],
     "no_compass": [("\n draw_compass()\n", "\n")],
 }
 

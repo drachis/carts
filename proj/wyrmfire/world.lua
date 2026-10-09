@@ -384,11 +384,13 @@ function generate_world()
 
  -- forests: ragged blobs of trees
  for forest=1,18 do
-  local cx,cy=flr(rnd(64)),flr(rnd(64))
+  -- (kept clear of the map edge, so a blob cannot spill into the
+  -- state bytes in the other half of the map)
+  local cx,cy=7+flr(rnd(50)),flr(rnd(64))
   local radius=2+flr(rnd(5))
   for y=cy-radius,cy+radius do
    for x=cx-radius,cx+radius do
-    if x>=0 and x<64 and length(x-cx,y-cy)<radius*(.5+rnd(.6)) then
+    if length(x-cx,y-cy)<radius*(.5+rnd(.6)) then
      mset(x,y,tile.tree)
     end
    end
