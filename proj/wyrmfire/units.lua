@@ -58,6 +58,11 @@ function damage_unit(unit,amount,eaten)
  if eaten then
   heal_dragon(spec.meal)
   sfx(sound.eat)
+  -- a pop, and a spatter of blood
+  ring(unit.x,unit.y,8)
+  for i=1,6 do
+   add_particle(unit.x,unit.y,rnd(4)-2,rnd(4)-2,12,"debris").color=8
+  end
   -- eating is how the dragon grows: the meal is flung up and
   -- flies to the sheep gauge, counting when it gets there. (added
   -- directly, so that a full particle list cannot lose a meal.)
@@ -170,10 +175,12 @@ function unit_ai.sheep(unit,dir_x,dir_y,distance)
  return cos(unit.wander)*.15,sin(unit.wander)*.15
 end
 
--- dragonfear: run from the dragon until the terror passes
+-- dragonfear: run from the dragon, at twice its usual pace, until
+-- the terror passes. (so a sheep flees more slowly than a soldier.)
 function unit_ai.flee(unit,dir_x,dir_y)
  unit.fear-=1
- return -dir_x*1.2,-dir_y*1.2
+ local speed=unit.spec.speed*2
+ return -dir_x*speed,-dir_y*speed
 end
 
 -- anyone on fire runs about, spreading it
@@ -299,7 +306,8 @@ function draw_shots(overhead)
      y+(shot.target_y-y)*progress+arc,spec.size,spec.color)
    else
     -- a closing ring marks where it will land
-    circ(shot.target_x,shot.target_y,12-progress*10,8)
+    -- (a whole radius: a fractional one can crash pico-8's circ)
+    circ(shot.target_x,shot.target_y,12-shot.age*10\spec.life,8)
    end
   elseif not overhead then
    -- dark rim, bright body, white tip: easy to read at a glance

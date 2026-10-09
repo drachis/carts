@@ -95,7 +95,14 @@ function damage_dragon(amount,dir_x,dir_y,knock)
  -- the harder the blow, the harder the screen is shaken and the
  -- longer the game holds on it: a pinprick passes, a lunge lands
  jolt(2+amount/8,amount\12)
+ -- and the louder it sounds: the hurt sfx is three notes whose
+ -- second byte is their volume (doubled), rewritten for each blow.
+ -- a really heavy one has a crash under it too.
+ for note=0,2 do
+  poke(0x3201+sound.hurt*68+note*2,mid(2,amount\3+1,7)*2)
+ end
  sfx(sound.hurt)
+ if amount>=20 then sfx(sound.crash) end
  if dragon.hp<=0 then
   dragon.hp=0
   end_game("dead")

@@ -23,8 +23,15 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PICO8 = os.environ.get("PICO8", r"C:\Program Files (x86)\PICO-8\pico8.exe")
 TEST_CARTS = [os.path.join("tests", name) for name in
               ("test_data.p8", "test_title.p8", "test_run.p8")]
-# functions the soak cart does without, to make room for its harness
-SOAK_STUBS = ["draw_title", "draw_game_over"]
+# the game leaves no room in a cart for a test harness, so two carts include
+# a generated copy of one module with functions that cart never needs
+# emptied: generated file -> (source module, functions to stub)
+GENERATED = {
+    # the soak has no menus, no sound (so no music to pace) and can spare
+    # the inferno's edge flames
+    "soak_main.lua": ("main.lua", ["draw_title", "draw_game_over", "set_tempo", "draw_blaze"]),
+    "title_dragon.lua": ("dragon.lua", ["breathe_fire", "charge_impacts", "inferno"]),
+}
 TIMEOUT_SECONDS = 180
 SCREEN_ROW = re.compile(r"^INFO: (\w+) ([0-9a-f]{128})$")
 PNG_SCALE = 4
@@ -90,22 +97,23 @@ def run_cart(cart):
     return True
 
 
-def build_soak_main():
-    """Write tests/soak_main.lua: main.lua with the SOAK_STUBS emptied."""
-    source = open(os.path.join(HERE, "main.lua"), encoding="utf-8").read()
-    for name in SOAK_STUBS:
-        # a top-level function runs to the first `end` at the start of a line
-        pattern = r"\nfunction %s\(\).*?\nend\n" % name
-        source, count = re.subn(pattern, "\nfunction %s() end\n" % name, source, flags=re.S)
-        if count != 1:
-            raise RuntimeError("could not find %s in main.lua" % name)
-    with open(os.path.join(HERE, "tests", "soak_main.lua"), "w",
-              encoding="utf-8", newline="\n") as handle:
-        handle.write("-- generated from main.lua by run_tests.py; do not edit\n" + source)
+def build_generated():
+    """Write each tests/<generated>.lua: a module with some functions emptied."""
+    for target, (module, stubs) in GENERATED.items():
+        source = open(os.path.join(HERE, module), encoding="utf-8").read()
+        for name in stubs:
+            # a top-level function runs to the first `end` at the start of a line
+            pattern = r"\nfunction %s\([^)]*\).*?\nend\n" % name
+            source, count = re.subn(pattern, "\nfunction %s() end\n" % name, source, flags=re.S)
+            if count != 1:
+                raise RuntimeError("could not find %s in %s" % (name, module))
+        with open(os.path.join(HERE, "tests", target), "w",
+                  encoding="utf-8", newline="\n") as handle:
+            handle.write("-- generated from %s by run_tests.py; do not edit\n" % module + source)
 
 
 def main():
-    build_soak_main()
+    build_generated()
     gen = run([sys.executable, "gen_gfx.py"])
     print(gen.stdout.strip())
     if gen.returncode != 0:

@@ -7,7 +7,7 @@ function new_game()
  score,kills,wrath,heralded=0,0,1,0
  combo,combo_timer,fury,fury_time=0,0,0,0
  shown_score,combo_pop,coin_run,reel_time=0,0,0,0
- belly,belly_pop=0,0
+ belly,belly_pop,battle_time=0,0,0
  shake,freeze,flash=0,0,0
  message,message_timer,reinforce_timer="",0,300
  cam_x,cam_y=dragon.x-64,dragon.y-64
@@ -24,13 +24,24 @@ function end_game(outcome)
  end
 end
 
--- the music's speed lives in sfx memory (byte 65 of each 68-byte
--- sfx), so poking it there makes the band play faster as the
--- realm's wrath grows, and faster again in the thick of a battle.
--- sfx 16..18 are the music's patterns.
+-- there are two tracks (see gen_gfx.py), both kept to channels 0
+-- and 1 so two are left for effects. the music's speed lives in
+-- sfx memory (byte 65 of each 68-byte sfx), so poking it there
+-- makes the band play a little faster as the realm's wrath grows.
+-- sfx 16..21 are the music's patterns.
 function set_tempo()
- for pattern=16,18 do
-  poke(0x3241+pattern*68,max(5,17-wrath*2-(battle and 3 or 0)))
+ -- the battle track plays while the dragon is fighting at a
+ -- settlement and for a few seconds after (this runs once a
+ -- second); the roaming track the rest of the time
+ if battle then battle_time=8 end
+ battle_time-=1
+ local track=battle_time>0 and 2 or 0
+ if track!=playing then
+  playing=track
+  music(track,300,3)
+ end
+ for pattern=16,21 do
+  poke(0x3241+pattern*68,max(10,16-wrath))
  end
 end
 
@@ -291,8 +302,6 @@ function _init()
  high_score=dget(0)
  frame=0
  new_game()
- -- music keeps to channels 0 and 1, leaving two for effects
- music(0,0,3)
 end
 
 function _update()

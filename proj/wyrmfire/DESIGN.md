@@ -79,6 +79,17 @@ cap on how much of the realm burns.
   compass as a dial in it.
 - **Two budgets:** 8192 tokens and 65535 characters of source, comments
   included. `count_tokens.py` reports both.
+
+## A PICO-8 trap: `circ` and fractional radii
+
+**Never give `circ` a fractional radius.** PICO-8 (0.2.x, here) can crash
+outright with an access violation when it does; `circfill` is not affected.
+This took the game down about one soak run in eight, and nearly every run
+when a dozen ran at once. It was found with `tests/crash_hunt.py`, which
+runs many soaks in parallel with parts of the game switched off: the crash
+needed drawing, vanished with any of domes, landing rings or shockwave rings
+removed, and vanished with every `circ` radius floored. Every `circ` call in
+the game now passes a whole number.
 - **Peaks and rests:** being at a standing settlement is a `battle`:
   reinforcements come `battle_rush` times faster and the music quickens.
   Razing a settlement buys `lull_frames` of quiet.

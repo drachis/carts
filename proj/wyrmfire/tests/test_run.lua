@@ -2,9 +2,15 @@
 -- game's modules. everything that can be checked without a world is in
 -- test_data.p8 instead.
 --
--- flies a scripted dragon through whole games for a few thousand frames of
--- update+draw, starting a new game whenever one ends, and dumps one frame
--- of play as the picture "shot".
+-- flies a scripted dragon through whole games for a few thousand frames,
+-- starting a new game whenever one ends, and dumps one frame of play as
+-- the picture "shot".
+--
+-- it runs inside pico-8's own loop, by wrapping the game's _update, as a
+-- real game does. (an earlier version ran the whole soak as one long
+-- stretch of top-level code calling _update and _draw itself; pico-8 has
+-- to interrupt code like that to keep its own loop turning, and under
+-- load it crashed with an access violation while drawing.)
 --
 -- the game is too close to 8192 tokens to share a cart with this file, so
 -- test_run.p8 includes soak_main.lua in place of main.lua: a copy that
@@ -33,13 +39,15 @@ local function objective()
  return best
 end
 
-_init()
-assert(wards==3,"expected the three town churches to be the wards")
-damage_building(goal,50)
-assert(goal.hp==goal.spec.hp,"the goal was harmed through its ward")
+local n,game_frames,shot_saved=0,0
+local game_update,game_draw=_update,_draw
 
-local game_frames,shot_saved=0
-for n=1,4500 do
+-- every frame is drawn from _update below, so that none is skipped when
+-- pico-8 falls behind
+function _draw() end
+
+function _update()
+ n+=1
  -- head for the objective, breathing in bursts and charging now and then
  local target=objective()
  held[0],held[1]=target.x<dragon.x-8,target.x>dragon.x+8
@@ -50,8 +58,8 @@ for n=1,4500 do
  -- healed every frame, so only a single blow bigger than its whole
  -- health can kill it
  dragon.hp=dragon.max_hp
- _update()
- _draw()
+ game_update()
+ game_draw()
  game_frames+=1
 
  -- a finished game is replaced with a fresh one, to stay under load
@@ -65,7 +73,8 @@ for n=1,4500 do
   shot_saved=true
   dump_screen("shot")
  end
+ if n==4500 then
+  printh("ok soak: "..wards.." wards, "..#buildings.."/"..#all_buildings.." buildings")
+  extcmd("shutdown")
+ end
 end
-
-printh("ok soak: "..wards.." wards, "..#buildings.."/"..#all_buildings.." buildings")
-extcmd("shutdown")

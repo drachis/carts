@@ -149,7 +149,9 @@ SFX = [
     "00030000" + "1c6301a640186401663014620",                 # 0 breath
     "00050000" + "0c2500e2500c2500a24008233",                 # 1 roar
     "00040000" + "0c6700a670086600766006650056400463003625",  # 2 crash
-    "00030000" + "183501435010345",                           # 3 hurt
+    # 3 hurt: three square-wave notes with no effect, so the second byte of
+    # each is just its volume, which dragon.lua pokes to match the blow
+    "00030000" + "183501435010350",
     "00030000" + "241301c13018125",                           # 4 die
     "00020000" + "306202c615",                                # 5 arrow
     "00070000" + "183501c3501f350243502435024345",            # 6 fanfare
@@ -162,27 +164,42 @@ SFX = [
     "00060000" + "046200662004610",                           # 11 wingbeat
 ]
 
-# --- music: two bass patterns over one drum loop, in d minor ---
-# main.lua pokes the speed byte of these sfx to raise the tempo with wrath.
+# --- music, in d minor: the same two bass lines played two ways ---
+# roaming (music 0): a soft triangle bass on every other step over a sparse
+#   drum loop, for the open country between settlements.
+# battle (music 2): a driving saw bass on every step over a full drum loop.
+# main.lua switches between them and pokes the speed byte of these sfx to
+# raise the tempo, gently, with wrath.
 MUSIC_FIRST_SFX = 16
 BASS_A = [14, 14, 26, 14, 14, 26, 14, 14,  14, 14, 26, 14, 14, 26, 24, 21,
           10, 10, 22, 10, 10, 22, 10, 10,  12, 12, 24, 12, 12, 24, 21, 19]
 BASS_B = [14, 14, 26, 14, 17, 17, 29, 17,  19, 19, 31, 19, 21, 21, 33, 21,
           10, 10, 22, 10, 12, 12, 24, 12,  14, 26, 14, 26, 14, 26, 21, 24]
+REST = "00000"
 KICK, SNARE, HAT = "04655", "1e645", "30615"
-DRUMS = [KICK, HAT, SNARE, HAT, KICK, KICK, SNARE, HAT] * 4
+SPARSE_DRUMS = [KICK, REST, REST, REST, HAT, REST, REST, REST] * 4
+FULL_DRUMS = [KICK, HAT, SNARE, HAT, KICK, KICK, SNARE, HAT] * 4
 MUSIC_HEADER = "010e0000"
 # flags (1 = loop start, 2 = loop end) then one sfx per channel; 0x41+ is silent
-MUSIC = ["01 10124344", "02 11124344"]
+MUSIC = ["01 10124344", "02 11124344",   # roaming: sfx 16, 17 over 18
+         "01 13154344", "02 14154344"]   # battle:  sfx 19, 20 over 21
 
 
-def bass(pitches):
+def soft_bass(pitches):
+    """Triangle wave, quiet, with a rest on every other step."""
+    return MUSIC_HEADER + "".join(
+        "%02x025" % pitch if step % 2 == 0 else REST for step, pitch in enumerate(pitches))
+
+
+def driving_bass(pitches):
+    """Saw wave on every step."""
     return MUSIC_HEADER + "".join("%02x130" % pitch for pitch in pitches)
 
 
 def build_sfx():
     slots = SFX + [""] * (MUSIC_FIRST_SFX - len(SFX))
-    slots += [bass(BASS_A), bass(BASS_B), MUSIC_HEADER + "".join(DRUMS)]
+    slots += [soft_bass(BASS_A), soft_bass(BASS_B), MUSIC_HEADER + "".join(SPARSE_DRUMS),
+              driving_bass(BASS_A), driving_bass(BASS_B), MUSIC_HEADER + "".join(FULL_DRUMS)]
     return "\n".join((notes + "0" * 168)[:168] for notes in slots)
 
 

@@ -207,10 +207,16 @@ function update_settlements()
   local spec,x,y=home.spec,home.tx*8,home.ty*8
   local distance,dome=dragon_distance(x,y),dome_radius(home)
   if shielded(home) and distance<dome then
-   -- the dome throws the dragon back out to its edge
+   -- the dome throws the dragon back out to its edge, ringing
+   -- and sparking where it is struck
    dragon.x=x+(dragon.x-x)*dome/distance
    dragon.y=y+(dragon.y-y)*dome/distance
    dragon.charge=0
+   if frame%4==0 then
+    ring(dragon.x,dragon.y,14)
+    jolt(2)
+    sfx(sound.coin)
+   end
   end
   if home.standing>0 and distance<dome+30 then
    battle=true
@@ -227,6 +233,18 @@ function update_settlements()
      boss.guards=home
     end
    end
+  end
+ end
+ -- the flocks are slowly restocked at the farming settlements, so
+ -- a dragon that has burnt or eaten every sheep can still grow
+ if frame%150==0 then
+  local sheep,home=0,rnd(settlements)
+  for unit in all(units) do
+   if unit.spec.ai=="sheep" then sheep+=1 end
+  end
+  if sheep<config.min_sheep and home.spec.flock>0 then
+   local angle,reach=rnd(),dome_radius(home)
+   spawn_unit("sheep",home.tx*8+cos(angle)*reach,home.ty*8+sin(angle)*reach)
   end
  end
 end
@@ -284,7 +302,8 @@ function draw_buildings()
  end
  for home in all(settlements) do
   if shielded(home) then
-   circ(home.tx*8,home.ty*8,dome_radius(home)+frame%8/4,frame%4<2 and 12 or 7)
+   -- (circ must only ever be given a whole radius: see DESIGN.md)
+   circ(home.tx*8,home.ty*8,dome_radius(home)+frame\4%2,frame%4<2 and 12 or 7)
   end
  end
 end

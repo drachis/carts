@@ -82,6 +82,7 @@ coin_value=2
 reel_frames=45
 battle_rush=4
 lull_frames=450
+min_sheep=24
 ]]
 
 -- the dragon's ages, from the whelp it starts as (dragon_stats) to
@@ -95,6 +96,9 @@ lull_frames=450
 --   roar and makes the fearful flee at the sight of it.
 --  less accel and turn_rate with more friction is momentum: the
 --   same top speed, but slow to gather and slow to shed.
+-- the three ages past calamity are for fun, for those who keep
+-- eating: bigger and deadlier still, but no heavier, because the
+-- roar's pitch (tune_voice) has no lower to go past weight 4.
 ages=parse_table[[
 name,meals,stats
 whelp,0
@@ -102,6 +106,9 @@ drake,40,size=0.4/weight=1/max_hp=60/hp=60/max_fire=20/accel=-0.075/breath_accel
 wyrm,110,size=0.4/weight=1/max_hp=60/hp=60/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5/kick=0.5
 great wyrm,200,size=0.4/weight=1/max_hp=60/hp=60/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5/kick=0.5
 calamity,320,size=0.4/weight=1/max_hp=70/hp=70/max_fire=20/accel=-0.075/breath_accel=-0.04/friction=0.025/turn_rate=-0.022/breath_range=14/breath_speed=0.75/breath_arc=0.015/breath_flames=1.5/breath_damage=0.95/charge_damage=20/bite_damage=10/charge_speed=0.5/kick=0.5
+cataclysm,420,size=0.4/max_hp=80/hp=80/max_fire=20/accel=-0.03/breath_accel=-0.02/friction=0.01/turn_rate=-0.008/breath_range=6/breath_speed=0.35/breath_flames=1/breath_damage=1/charge_damage=25/bite_damage=10/kick=0.3
+world eater,560,size=0.4/max_hp=80/hp=80/max_fire=20/accel=-0.03/breath_accel=-0.02/friction=0.01/turn_rate=-0.008/breath_range=6/breath_speed=0.35/breath_flames=1/breath_damage=1/charge_damage=25/bite_damage=10/kick=0.3
+god-wyrm,720,size=0.4/max_hp=80/hp=80/max_fire=20/accel=-0.03/breath_accel=-0.02/friction=0.01/turn_rate=-0.008/breath_range=6/breath_speed=0.35/breath_flames=1/breath_damage=1/charge_damage=25/bite_damage=10/kick=0.3
 ]]
 
 -- razing a settlement spins the reel and lands on one of these.

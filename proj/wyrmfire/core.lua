@@ -134,7 +134,8 @@ function draw_particles()
   elseif p.kind=="smoke" then
    circfill(p.x,p.y,1,life>10 and 5 or 6)
   elseif p.kind=="ring" then
-   circ(p.x,p.y,p.size*(1-life/p.span),life>4 and 7 or 9)
+   -- (a whole radius: a fractional one can crash pico-8's circ)
+   circ(p.x,p.y,p.size*(p.span-life)\p.span,life>4 and 7 or 9)
   elseif p.meal then
    local tumbling=life%6<3
    spr(p.sprite,p.x-4,p.y-4,1,1,tumbling,tumbling)
@@ -144,7 +145,8 @@ function draw_particles()
   elseif p.kind=="text" then
    print(p.text,p.x-#p.text*2,p.y,life%4<2 and 7 or 10)
   else
-   pset(p.x,p.y,life>8 and 6 or 4)
+   -- debris is a speck of rubble, or given a color (blood) a blob
+   circfill(p.x,p.y,p.color and 1 or 0,p.color or life>8 and 6 or 4)
   end
  end
 end
