@@ -325,7 +325,7 @@ function update_dragon()
    d.charge=d.charge_frames
    d.charge_id+=1
    d.vx,d.vy=forward_x*d.charge_speed,forward_y*d.charge_speed
-   jolt(4,1)
+   jolt(4)
    ring(d.x,d.y,16)
    sfx(sound.roar)
   end

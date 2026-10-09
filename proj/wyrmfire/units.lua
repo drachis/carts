@@ -278,7 +278,6 @@ function update_shots()
    struck=landed and dragon_gap(shot.target_x,shot.target_y)<8
    if landed then
     burst(shot.target_x,shot.target_y,8,6)
-    jolt(2)
    end
   else
    -- a shot hits whatever part of the body it touches (not the
@@ -291,7 +290,12 @@ function update_shots()
     add_fury(2)
    end
   end
-  if struck then damage_dragon(shot.damage) end
+  if struck then
+   damage_dragon(shot.damage)
+   -- a burst where it hit. (a lobbed shot's x,y is where it was
+   -- thrown from, and it has its own blast, so it gets none.)
+   ring(shot.x,shot.y,spec.lob and 0 or 10)
+  end
   if struck or landed then del(shots,shot) end
  end
 end
@@ -309,14 +313,13 @@ function draw_shots()
     x+(shot.target_x-x)*progress,
     y+(shot.target_y-y)*progress+sin(progress/2)*30,spec.size,spec.color)
   else
-   -- dark rim, bright body, white tip: easy to read at a glance
+   -- an orb with a dark rim, or a streak: easy to read at a glance
    if spec.size>0 then
     circfill(x,y,spec.size+1,0)
     circfill(x,y,spec.size,spec.color)
    else
     line(x,y,x-shot.vx*3,y-shot.vy*3,spec.color)
    end
-   pset(x,y,7)
   end
  end
 end
