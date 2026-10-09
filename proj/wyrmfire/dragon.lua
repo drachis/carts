@@ -14,7 +14,7 @@ end
 -- a roar is heard `reach` pixels away. everyone there who is not
 -- brave is struck with dragonfear and flees for a while.
 function roar(reach,frames)
- sfx(sound.roar)
+ sfx(snd_roar)
  ring(dragon.x,dragon.y,reach)
  for unit in all(units) do
   if unit.spec.brave==0 and dragon_distance(unit.x,unit.y)<reach then
@@ -45,7 +45,7 @@ end
 function feed(meal)
  belly+=meal
  belly_pop=8
- sfx(sound.coin)
+ sfx(snd_coin)
  if belly_fill()>=1 then grow() end
 end
 
@@ -87,8 +87,8 @@ function damage_dragon(amount,dir_x,dir_y,knock)
  -- and the louder it sounds: the hurt sfx is one fading note
  -- whose second byte is 0x50 plus twice its volume, rewritten for
  -- each blow. a really heavy one has a crash under it too.
- poke(0x3201+sound.hurt*68,0x50+mid(2,amount\3+1,7)*2)
- sfx(sound.hurt)
+ poke(0x3201+snd_hurt*68,0x50+mid(2,amount\3+1,7)*2)
+ sfx(snd_hurt)
  if dragon.hp<=0 then
   -- it dies in a storm of its own fire, with a last roar, and
   -- then (see _update) spins away to nothing
@@ -177,7 +177,7 @@ function breathe_fire(mouth_x,mouth_y)
   d.vx-=cos(d.angle)*d.kick*power
   d.vy-=sin(d.angle)*d.kick*power
   jolt(2+d.kick)
-  sfx(sound.roar)
+  sfx(snd_roar)
  end
  -- it pushes the dragon back
  d.vx-=cos(d.angle)*d.recoil*power
@@ -192,7 +192,7 @@ function breathe_fire(mouth_x,mouth_y)
  end
  -- the flames are for show; damage is a cone test every few frames
  if frame%4!=0 then return end
- sfx(sound.breath,3)
+ sfx(snd_breath,3)
  -- shots that can burn are eaten by the flames, and feed the fury
  for shot in all(shots) do
   if shot.spec.burns and in_breath(shot.x,shot.y,mouth_x,mouth_y,0) then
@@ -211,7 +211,7 @@ function breathe_fire(mouth_x,mouth_y)
      embers(unit.x,unit.y,6,2)
     end
    else
-    if fire_taken>config.fireproof then unit.burn=60 end
+    if fire_taken>fireproof then unit.burn=60 end
     damage_unit(unit,d.breath_damage*fire_taken*power)
    end
   end
@@ -240,16 +240,16 @@ end
 function inferno()
  local x,y=dragon.x,dragon.y
  fury=0
- fury_time=config.fury_frames
+ fury_time=fury_frames
  calm_stats=boost_dragon(parse_record(fury_stats))
  for unit in all(units) do
-  if dragon_distance(unit.x,unit.y)<config.nova_range then
+  if dragon_distance(unit.x,unit.y)<nova_range then
    unit.burn=90
    damage_unit(unit,10)
   end
  end
  for building in all(buildings) do
-  if dragon_distance(building.center_x,building.center_y)<config.nova_range then
+  if dragon_distance(building.center_x,building.center_y)<nova_range then
    building.burn=300
   end
  end
@@ -282,7 +282,7 @@ function charge_impacts(head_x,head_y)
    d.charge=min(d.charge,3)
    jolt(6)
    burst(x,y,8,building.size)
-   sfx(sound.crash)
+   sfx(snd_crash)
    damage_building(building,d.charge_damage)
   end
  end
@@ -299,7 +299,7 @@ function update_dragon()
  local head_x,head_y=d.x+forward_x*reach,d.y+forward_y*reach
  -- wingbeats
  if frame%32==0 then
-  sfx(sound.wings)
+  sfx(snd_wings)
  end
  -- button 4 (z) breathes, button 5 (x) charges
  if not btn(4) then d.winded=false end
@@ -327,7 +327,7 @@ function update_dragon()
    d.vx,d.vy=forward_x*d.charge_speed,forward_y*d.charge_speed
    jolt(4)
    ring(d.x,d.y,16)
-   sfx(sound.roar)
+   sfx(snd_roar)
   end
  elseif d.charge>0 then
   d.charge-=1

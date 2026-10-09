@@ -48,7 +48,7 @@ fire_ramp=split"5,8,9,10,7"
 -- caller can add what its kind needs (size, text, sprite).
 function add_particle(x,y,vx,vy,life,kind,ember)
  local p={x=x,y=y,vx=vx,vy=vy,life=life,span=life,kind=kind,ember=ember}
- if #particles<config.max_particles then
+ if #particles<max_particles then
   add(particles,p)
  end
  return p

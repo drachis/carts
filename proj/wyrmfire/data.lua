@@ -26,9 +26,11 @@ function parse_table(text)
  return rows
 end
 
--- lines of key=value (or one line, with another separator)
-function parse_record(text,separator)
- local record={}
+-- lines of key=value (or one line, with another separator). a line
+-- with no "=" is skipped, so it can serve as a heading. the pairs
+-- go into a new table, or into `into` if one is given.
+function parse_record(text,separator,into)
+ local record=into or {}
  for line in all(split(text,separator or "\n")) do
   local pair=split(line,"=")
   if pair[2] then record[pair[1]]=pair[2] end
@@ -41,34 +43,35 @@ function list(cell)
  return cell and split(cell,"/") or {}
 end
 
--- ground tile sprites. the burnt form of a tile is 16 ids later and
--- its fuel is in its sprite flags (see gen_gfx.py, world.lua).
-tile=parse_record[[
-grass=1
-flowers=2
-tree=3
-wheat=4
-road=5
-water=6
-bridge=7
-stump=19
-rubble=21
-]]
+-- named constants. these are parsed straight into the global table
+-- (_ENV), so each is an ordinary global in the code: `tile_tree`
+-- costs one token where a field of a table, `tile.tree`, costs two.
+parse_record([[
+ground tile sprites. the burnt form of a tile is 16 ids later and
+its fuel is in its sprite flags (see gen_gfx.py, world.lua):
+tile_grass=1
+tile_flowers=2
+tile_tree=3
+tile_wheat=4
+tile_road=5
+tile_water=6
+tile_bridge=7
+tile_rubble=21
 
-sound=parse_record[[
-breath=0
-roar=1
-crash=2
-hurt=3
-die=29
-fanfare=6
-eat=32
-alarm=9
-coin=10
-wings=11
-]]
+sound effects, by their slot (see gen_gfx.py). die and eat are
+the first of three, one of which is picked at random:
+snd_breath=0
+snd_roar=1
+snd_crash=2
+snd_hurt=3
+snd_die=29
+snd_fanfare=6
+snd_eat=32
+snd_alarm=9
+snd_coin=10
+snd_wings=11
 
-config=parse_record[[
+tuning:
 max_units=80
 max_particles=320
 alarm_range=110
@@ -84,7 +87,7 @@ reel_frames=45
 battle_rush=4
 lull_frames=450
 quiet=45
-]]
+]],nil,_ENV)
 
 -- the dragon's ages, from the whelp it starts as (dragon_stats) to
 -- a calamity. it grows by eating: every unit has a `meal` value,
@@ -213,7 +216,7 @@ calm=0
 
 -- ai names a function in unit_ai (units.lua). meal is the health
 -- the dragon gains when the unit dies. fire_taken scales
--- breath damage; at or below config.fireproof a unit never ignites.
+-- breath damage; at or below `fireproof` a unit never ignites.
 -- ranged units hold at range and back off inside range*keep_away.
 -- color recolors the legend sprite's gold. the brave (1) stand
 -- against the dragon's roar and are too much to swallow in passing;

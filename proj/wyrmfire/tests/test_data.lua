@@ -79,7 +79,7 @@ assert(dragon.accel>0 and dragon.turn_rate>0 and dragon.friction<1,
 -- spin the boon reel until every boon has landed at least once
 local landed={}
 for spin=1,80 do
- reel_time=config.reel_frames
+ reel_time=reel_frames
  while reel_time>0 do update_reel() end
  landed[reel.name]=true
 end

@@ -41,7 +41,7 @@ end
 
 -- one more for every combo_step hits in a row
 function multiplier()
- return min(1+combo\config.combo_step,config.max_multiplier)
+ return min(1+combo\combo_step,max_multiplier)
 end
 
 -- pico-8 numbers stop at 32767, so score is kept in tens and shown
@@ -58,7 +58,7 @@ function add_fury(amount)
   if fury==100 then
    -- make sure the moment it fills is not missed
    announce("fury is full! \142+\151",120)
-   sfx(sound.fanfare)
+   sfx(snd_fanfare)
   end
  end
 end
@@ -67,7 +67,7 @@ end
 -- build a combo that multiplies the score and feeds the fury meter.
 function add_score(worth,x,y)
  combo+=1
- combo_timer=config.combo_frames
+ combo_timer=combo_frames
  local gained=worth*multiplier()
  score+=gained/10
  add_fury(worth/6)
@@ -87,11 +87,11 @@ end
 -- byte is its pitch, poked just before it plays.
 function collect_coin()
  coin_run+=1
- score+=config.coin_value*multiplier()/10
- combo_timer=config.combo_frames
+ score+=coin_value*multiplier()/10
+ combo_timer=combo_frames
  add_fury(.3)
- poke(0x3200+sound.coin*68,24+coin_run%32)
- sfx(sound.coin)
+ poke(0x3200+snd_coin*68,24+coin_run%32)
+ sfx(snd_coin)
 end
 
 -- the boon reel: flicker through the boons, then land on one
@@ -101,12 +101,12 @@ function update_reel()
  if reel_time%3==0 then
   reel=rnd(boons)
   announce(reel.name,20)
-  sfx(sound.coin)
+  sfx(snd_coin)
  end
  if reel_time==0 then
   grant(reel.stats)
   announce("boon: "..reel.name,120)
-  sfx(sound.fanfare)
+  sfx(snd_fanfare)
  end
 end
 
@@ -116,7 +116,7 @@ function update_wrath()
  if next_level and score>=next_level.score then
   wrath+=1
   announce("the realm is "..next_level.name)
-  sfx(sound.fanfare)
+  sfx(snd_fanfare)
  end
  if frame%30==0 then update_music() end
 
@@ -132,7 +132,7 @@ function update_wrath()
  end
 
  -- reinforcements pour in during a battle and thin out between
- reinforce_timer-=battle and config.battle_rush or 1
+ reinforce_timer-=battle and battle_rush or 1
  if reinforce_timer<=0 then
   reinforce_timer=700-wrath*100
   for i=1,1+wrath\2 do
@@ -206,7 +206,7 @@ function draw_hud()
  draw_gauge(135,0,dragon.hp/dragon.max_hp,low and blink and 7 or 8,2)
  draw_gauge(133,10,dragon.fire/dragon.max_fire,9,4)
  if fury_time>0 then
-  draw_gauge(146,20,fury_time/config.fury_frames,12,1)
+  draw_gauge(146,20,fury_time/fury_frames,12,1)
  else
   -- a full fury gauge flashes blue and white, the inferno's colors
   draw_gauge(146,20,fury/100,fury<100 and 10 or blink and 7 or 12,5)
@@ -224,7 +224,7 @@ function draw_hud()
  if combo>1 then
   -- the multiplier and how long is left to keep the combo going
   print("x"..multiplier(),76,2,blink and 10 or 9)
-  line(76,8,76+combo_timer/config.combo_frames*8,8,10)
+  line(76,8,76+combo_timer/combo_frames*8,8,10)
  end
  -- a dome for each ward still standing
  for ward=1,wards do

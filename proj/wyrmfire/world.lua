@@ -93,7 +93,7 @@ function place_building(kind,tx,ty,home)
   for x=tx,tx+last do
    local ground=mget(x,y)
    if x<0 or y<0 or x>63 or y>63 or tile_state(x,y)>0
-    or ground==tile.water or ground==tile.bridge then
+    or ground==tile_water or ground==tile_bridge then
     return
    end
   end
@@ -162,7 +162,7 @@ function damage_building(building,amount)
  del(buildings,building)
  for y=ty,ty+last do
   for x=tx,tx+last do
-   mset(x,y,tile.rubble)
+   mset(x,y,tile_rubble)
    set_tile_state(x,y,0)
   end
  end
@@ -175,7 +175,7 @@ function damage_building(building,amount)
  embers(x,y,8,2.5)
  -- the bigger it was, the longer the world holds its breath
  jolt(size/2,size/4)
- sfx(sound.crash)
+ sfx(snd_crash)
  if spec.survivor then
   local survivor=spawn_unit(spec.survivor,x,y)
   if survivor then survivor.burn=60 end
@@ -188,9 +188,9 @@ function damage_building(building,amount)
   flash=2
   -- jackpot: a fountain of gold and a spin of the boon reel
   coins(x,y,30)
-  reel_time=config.reel_frames
+  reel_time=reel_frames
   -- and a rest: the realm reels before it sends anyone else
-  reinforce_timer=config.lull_frames
+  reinforce_timer=lull_frames
  end
  if home.wards>0 and spec.ward then
   wards-=1
@@ -234,7 +234,7 @@ function update_settlements()
    if not home.alarmed then
     home.alarmed=true
     announce(home.name.." sounds the alarm!")
-    sfx(sound.alarm)
+    sfx(snd_alarm)
     for i=1,spec.militia do
      spawn_unit(rnd(list(spec.muster)),x+rnd(48)-24,y+rnd(48)-24)
     end
@@ -251,7 +251,7 @@ function update_settlements()
  -- every sheep can still grow
  if frame%150==0 then
   local home=rnd(settlements)
-  if #units<config.quiet and home.spec.flock>0 then
+  if #units<quiet and home.spec.flock>0 then
    local angle,reach=rnd(),dome_radius(home)
    spawn_unit("sheep",home.tx*8+cos(angle)*reach,home.ty*8+sin(angle)*reach)
   end
@@ -266,12 +266,12 @@ function update_buildings()
   -- what a heavy dragon flies over is crushed beneath it
   local harm=distance<dragon.size*6+size/2 and dragon.weight*.15 or 0
   building.spawn_timer-=1
-  if building.spawn_timer<=0 and distance<config.alarm_range then
+  if building.spawn_timer<=0 and distance<alarm_range then
    building.spawn_timer=spec.spawn_rate
    spawn_unit(rnd(list(spec.spawns)),x,y+size/2+3)
   end
   if spec.guardian and not building.guarded
-   and building.hp<spec.hp*config.guardian_at then
+   and building.hp<spec.hp*guardian_at then
    building.guarded=true
    spawn_boss(spec.guardian,x,y+size/2+4)
   end
@@ -322,8 +322,8 @@ end
 
 function lay_road(tx,ty)
  local ground=mget(tx,ty)
- local wet=ground==tile.water or ground==tile.bridge
- mset(tx,ty,wet and tile.bridge or tile.road)
+ local wet=ground==tile_water or ground==tile_bridge
+ mset(tx,ty,wet and tile_bridge or tile_road)
 end
 
 -- an l-shaped road: along x first, then along y
@@ -342,7 +342,7 @@ function build_settlement(settlement)
  local radius=spec.radius
  for y=-radius,radius do
   for x=-radius,radius do
-   if length(x,y)<=radius and mget(cx+x,cy+y)==tile.tree then
+   if length(x,y)<=radius and mget(cx+x,cy+y)==tile_tree then
     mset(cx+x,cy+y,spec.ground)
    end
   end
@@ -368,7 +368,7 @@ function build_settlement(settlement)
    for x=fx,fx+2+rnd(2) do
     -- anything that burns can be ploughed under
     if fget(mget(x,y))>0 and tile_state(x,y)==0 then
-     mset(x,y,tile.wheat)
+     mset(x,y,tile_wheat)
     end
    end
   end
@@ -387,7 +387,7 @@ function generate_world()
  memset(0x1000,0,0x2000)
  for y=0,63 do
   for x=0,63 do
-   mset(x,y,rnd()<.1 and tile.flowers or tile.grass)
+   mset(x,y,rnd()<.1 and tile_flowers or tile_grass)
   end
  end
 
@@ -400,7 +400,7 @@ function generate_world()
   for y=cy-radius,cy+radius do
    for x=cx-radius,cx+radius do
     if length(x-cx,y-cy)<radius*(.5+rnd(.6)) then
-     mset(x,y,tile.tree)
+     mset(x,y,tile_tree)
     end
    end
   end
@@ -411,8 +411,8 @@ function generate_world()
  local river_x=river_base
  for y=0,63 do
   river_x=mid(river_base-1,river_x+flr(rnd(3))-1,river_base+1)
-  mset(river_x,y,tile.water)
-  mset(river_x+1,y,tile.water)
+  mset(river_x,y,tile_water)
+  mset(river_x+1,y,tile_water)
  end
 
  settlements={}

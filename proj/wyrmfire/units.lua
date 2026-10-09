@@ -3,7 +3,7 @@
 -- in unit_ai named by its spec.
 
 function spawn_unit(kind,x,y,force)
- if #units>=config.max_units and not force then return end
+ if #units>=max_units and not force then return end
  local spec=unit_specs[kind]
  local unit={
   spec=spec,
@@ -32,7 +32,7 @@ end
 function spawn_boss(kind,x,y)
  boss=spawn_unit(kind,x,y,true)
  announce(kind.." rides!",120)
- sfx(sound.fanfare)
+ sfx(snd_fanfare)
 end
 
 -- `eaten` is a kill by the dragon's jaws, which makes it a meal
@@ -57,7 +57,7 @@ function damage_unit(unit,amount,eaten)
  end
  if eaten then
   heal_dragon(spec.meal)
-  sfx(sound.eat+rnd(3)) -- one of three crunches
+  sfx(snd_eat+rnd(3)) -- one of three crunches
   splat(unit.x,unit.y)
   -- eating is how the dragon grows: the meal, now meat on the
   -- bone (sprite 74), is flung up and flies to the sheep gauge,
@@ -69,7 +69,7 @@ function damage_unit(unit,amount,eaten)
    meal=spec.meal,sprite=74,
   })
  elseif spec.score>0 then
-  sfx(sound.die+rnd(3)) -- one of three cries
+  sfx(snd_die+rnd(3)) -- one of three cries
  end
  if spec.score>0 then
   kills+=1
@@ -226,7 +226,7 @@ function update_units()
   unit.push_y*=.8
   if move_x!=0 then unit.facing_left=move_x<0 end
 
-  if burning_at(unit.x\8,unit.y\8) and spec.fire_taken>config.fireproof then
+  if burning_at(unit.x\8,unit.y\8) and spec.fire_taken>fireproof then
    unit.burn=max(unit.burn,40)
   end
  end
