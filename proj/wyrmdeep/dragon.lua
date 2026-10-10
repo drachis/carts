@@ -208,7 +208,7 @@ function inferno()
  for unit in all(units) do
   if dragon_distance(unit.x,unit.y)<nova_range then
    unit.burn=90
-   damage_unit(unit,10)
+   damage_unit(unit,2.5)
   end
  end
  embers(dragon.x,dragon.y,34,4)

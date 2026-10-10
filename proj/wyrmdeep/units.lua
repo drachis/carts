@@ -60,7 +60,7 @@ function damage_unit(unit,amount,eaten)
  kills+=1
  combo+=1
  combo_timer=combo_frames
- add_fury(unit.max_hp/2)
+ add_fury(unit.max_hp*2)
  if streaks[combo] then
   announce(streaks[combo])
   roar(70,30)
@@ -188,7 +188,7 @@ function unit_ai.panic(unit)
  if frame%6==0 then unit.wander=rnd{-1,1} end
  if rnd()<.05 then ignite(unit.x\8,unit.y\8) end
  if rnd()<.4 then add_particle(unit.x,unit.y-3,0,-.5,8,"fire") end
- damage_unit(unit,.05)
+ damage_unit(unit,.0125)
  return unit.wander*1.2,0
 end
 
@@ -250,7 +250,6 @@ function update_units()
    if tile==tile_fire and unit.fire_taken>fireproof then
     unit.burn=max(unit.burn,40)
    end
-   if fget(tile,3) then damage_unit(unit,1) end
   end
  end
 end

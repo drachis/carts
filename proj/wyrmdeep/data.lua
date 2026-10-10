@@ -63,9 +63,9 @@ spread_at=28
 ages=parse_table[[
 name,tip,stats
 whelp
-drake,your charge breaks stone,accel=-0.15/breath_accel=-0.1/friction=0.06/sink=0.03/ram=1/max_stamina=30/size=0.25/max_hp=20/hp=20/dread=24/breath_range=4/breath_damage=0.3/bite_damage=4
-wyrm,stand your ground: nothing can hurt you,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.04/guard=1/max_stamina=30/size=0.25/max_hp=20/hp=20/dread=12/breath_range=4/breath_damage=0.3/bite_damage=4/max_fire=15
-great wyrm,your fire seeks them out,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.05/storm=1/max_stamina=30/size=0.3/max_hp=25/hp=25/dread=12/breath_range=6/breath_damage=0.4/bite_damage=4/max_fire=15
+drake,your charge breaks stone,accel=-0.15/breath_accel=-0.1/friction=0.06/sink=0.03/ram=1/max_stamina=30/size=0.25/max_hp=20/hp=20/dread=24/breath_range=4/breath_damage=0.08/bite_damage=1
+wyrm,stand your ground: nothing can hurt you,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.04/guard=1/max_stamina=30/size=0.25/max_hp=20/hp=20/dread=12/breath_range=4/breath_damage=0.08/bite_damage=1/max_fire=15
+great wyrm,your fire seeks them out,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.05/storm=1/max_stamina=30/size=0.3/max_hp=25/hp=25/dread=12/breath_range=6/breath_damage=0.1/bite_damage=1/max_fire=15
 ]]
 
 
@@ -77,7 +77,7 @@ streaks=parse_record[[
 110=ragnarok!
 ]]
 
-growth="max_stamina=8/size=0.06/max_hp=6/hp=6/breath_damage=0.08/max_fire=4/bite_damage=1"
+growth="max_stamina=8/size=0.06/max_hp=6/hp=6/breath_damage=0.02/max_fire=4/bite_damage=0.25"
 
 body_shape=split"-5,3,-1,4,4,3,8,3,11,2"
 
@@ -127,7 +127,7 @@ flame=5,8,9,10,7
 breath_range=28
 breath_arc=0.08
 breath_cost=2
-breath_damage=1.2
+breath_damage=0.31
 breath_speed=2
 breath_flames=2
 charge_windup=7
@@ -135,7 +135,7 @@ charge_speed=4.5
 ram=0
 charge_frames=12
 charge_recover=40
-bite_damage=8
+bite_damage=2
 windup=0
 charge=0
 charge_cooldown=0
@@ -147,24 +147,24 @@ calm=0
 
 unit_specs=parse_table[[
 name,sprite,max_hp,speed,damage,reload,fire_taken,meal,brave,ai,range,keep_away,shot,color,knock,volley,flies,ward,grants,crown,size,pool,aura,shield
-serf,64,2,0.8,1,30,1,2,0,melee,,,,,2
-pikeman,75,5,0.9,4,35,0.8,3,1,melee,,,,,3
-archer,65,4,0.3,3,80,1,2,0,ranged,70,0.4,arrow
-crossbowman,76,5,0.3,5,110,1,2,0,ranged,90,0.4,quarrel
-knight,66,14,0.8,6,30,0.5,4,1,melee,,,,,4,,,,,,,,,1
-monk,77,10,0.3,6,130,0.3,3,1,ranged,90,0.5,smite
-bat,83,2,0.8,2,40,1,1,1,melee,,,,,1,,1
-ballista,69,15,0,10,120,0.7,0,1,ranged,100,0,bolt
-sheep,71,1,0.3,0,0,1,10,0,sheep
-pig,82,1,0.4,0,0,1,8,0,sheep
-cow,81,2,0.25,0,0,1,16,0,sheep
-sir kay,96,140,1.2,4,40,0.5,30,1,legend,,,,9,5,,,,1,,16,,,1
-sir gawain,98,280,1.3,8,40,0.5,30,1,legend,,,rebuke,11,6,5,,,1,,16,serf/pikeman/archer,,2
-merlin,73,300,0.6,7,70,0.5,40,1,ranged,90,0.6,arcane,12,,5,1,,1,,,bat/bat/monk,12,3
-king arthur,102,500,1.4,12,40,0.5,30,1,legend,,,excalibur,10,8,7,,,,1,16,knight/monk/crossbowman,14,4
-hovel,55,6,0,0,140,0.3,0,1,spawner,,,,,,,1,,,,,serf/serf/archer
-barracks,56,14,0,0,110,0.3,0,1,spawner,,,,,,,1,,,,,knight/pikeman/crossbowman
-roost,57,5,0,0,120,0.3,0,1,spawner,,,,,,,1,,,,,bat
+serf,64,0.5,0.8,1,30,1,2,0,melee,,,,,2
+pikeman,75,1.25,0.9,4,35,0.8,3,1,melee,,,,,3
+archer,65,1,0.3,3,80,1,2,0,ranged,70,0.4,arrow
+crossbowman,76,1.25,0.3,5,110,1,2,0,ranged,90,0.4,quarrel
+knight,66,3.5,0.8,6,30,0.5,4,1,melee,,,,,4,,,,,,,,,1
+monk,77,2.5,0.3,6,130,0.3,3,1,ranged,90,0.5,smite
+bat,83,0.5,0.8,2,40,1,1,1,melee,,,,,1,,1
+ballista,69,4,0,10,120,0.7,0,1,ranged,100,0,bolt
+sheep,71,0.25,0.3,0,0,1,10,0,sheep
+pig,82,0.25,0.4,0,0,1,8,0,sheep
+cow,81,0.5,0.25,0,0,1,16,0,sheep
+sir kay,96,36,1.2,4,40,0.5,30,1,legend,,,,9,5,,,,1,,16,,,1
+sir gawain,98,72,1.3,8,40,0.5,30,1,legend,,,rebuke,11,6,5,,,1,,16,serf/pikeman/archer,,2
+merlin,73,76,0.6,7,70,0.5,40,1,ranged,90,0.6,arcane,12,,5,1,,1,,,bat/bat/monk,12,3
+king arthur,102,128,1.4,12,40,0.5,30,1,legend,,,excalibur,10,8,7,,,,1,16,knight/monk/crossbowman,14,4
+hovel,55,1.5,0,0,140,0.3,0,1,spawner,,,,,,,1,,,,,serf/serf/archer
+barracks,56,3.5,0,0,110,0.3,0,1,spawner,,,,,,,1,,,,,knight/pikeman/crossbowman
+roost,57,1.25,0,0,120,0.3,0,1,spawner,,,,,,,1,,,,,bat
 ]]
 
 shot_specs=parse_table[[

@@ -11,6 +11,8 @@ function. Anything not noted works as it does in Wyrmfire, whose
   `sink` and takes a little `accel`; the two must never meet, or the dragon
   cannot lift off (it happened once).
 - `growth`: what one full belly adds.
+- Scale: enemy health and the dragon's damage are sized so that King Arthur
+  has 128 health. Keep any health times 127 under 32767, or a bar overflows.
 - `unit_specs`: `color` marks a legend. `grants` moves the dragon to its next
   age and ends the stage; `crown` wins the game. `size` is the size drawn, in
   pixels (16 is a 2x2 sprite). `aura` is the radius of a glow that is drawn

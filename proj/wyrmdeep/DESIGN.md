@@ -91,7 +91,7 @@ access violation described in `../wyrmfire/DESIGN.md`; the cause is unknown.
 
 ## Not built yet, or not checked
 
-- Boss fight lengths are set by guesswork (health 140, 280, 420, 600); nobody
+- Boss fight lengths are set by guesswork (health 36, 72, 76, 128); nobody
   has timed them.
 - Sound and music are Wyrmfire's, unchanged.
 - No saving between sessions.
