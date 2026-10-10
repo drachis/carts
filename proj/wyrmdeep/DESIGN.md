@@ -78,12 +78,16 @@ or a new game starts.
     py count_tokens.py
     py feel_map.py       # the pacing map; not a pass or fail
 
-`run_tests.py` runs `gen_cart.py`, then four carts. The game leaves a cart
-only a few hundred tokens, so they include `tests/lean_main.lua`, a
+`run_tests.py` runs `gen_cart.py`, then five carts. The game leaves a cart
+only a few hundred tokens, so all but `test_boot` include `tests/lean_main.lua`, a
 generated copy of `main.lua` with the title, endings, HUD and music emptied.
 
 - `test_data` (headless): every name the data uses exists; every stamp is
   well formed.
+- `test_boot`: the real cart, nothing emptied, from the title screen through
+  ten seconds of play and both endings. The only cart that draws the title,
+  the HUD and the endings; a missing value there once crashed the game on
+  its first frame while every other test passed.
 - `test_powers`: one thing at a time, with what happened printed: flying
   through timber, charging through stone nose-first, a tower collapsing,
   burning a staggered legend.

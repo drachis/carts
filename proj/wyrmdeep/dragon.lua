@@ -25,7 +25,7 @@ function enter_stage(number)
  cam_x,cam_y,razed,muster,advance=0,stage*128,0,60
  dragon.x,dragon.y,dragon.vx,dragon.vy=start_x,cam_y+start_y,0,0
  units,shots,relics,fires,falls,summoned={},{},{},{},{}
- block,block_to=0,0
+ block,block_to,heat=0,0,0
  next_block()
  update_tail()
  announce(split(stage_names)[stage+1],120)
