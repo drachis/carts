@@ -53,7 +53,7 @@ function _update()
     if burning_at(tx,ty) then burning+=1 end
    end
   end
-  printh("feel "..n\30 ..","..seen..","..kills..","..burning..","..#shots..","..flr(dragon.hp)..","..flr(dragon.x)..","..flr(dragon.y))
+  printh("feel "..n\30 ..","..seen..","..kills..","..burning..","..#shots..","..flr(dragon.hp)..","..flr(dragon.x)..","..flr(dragon.y)..",0")
  end
  if state!="play" or n==900 then
   printh("ok feel")

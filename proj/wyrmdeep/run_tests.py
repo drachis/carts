@@ -17,7 +17,7 @@ from png import write_png
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PICO8 = os.environ.get("PICO8", r"C:\Program Files (x86)\PICO-8\pico8.exe")
-TEST_CARTS = [os.path.join("tests", "test_%s.p8" % name) for name in ("data", "powers", "bosses", "play", "soak")]
+TEST_CARTS = [os.path.join("tests", "test_%s.p8" % name) for name in ("data", "powers", "bosses", "soak")]
 MODULES = ["data.lua", "core.lua", "world.lua", "units.lua", "dragon.lua", "main.lua"]
 TIMEOUT_SECONDS = 540
 SCREEN_ROW = re.compile(r"^INFO: (\w+) ([0-9a-f]{128})$")

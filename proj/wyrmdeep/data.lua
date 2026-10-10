@@ -41,17 +41,15 @@ max_particles=300
 gravity=0.23
 fall_speed=3.5
 fireproof=0.35
-sight_range=110
+sight_range=128
 combo_frames=90
-horde_size=5
+horde_size=14
+raze_goal=0.6
+muster_frames=40
+legends=sir kay,sir gawain,merlin,king arthur
 belly_size=40
-linger_frames=90
-creep=0.7
-crush=4
 stagger_frames=90
 buoyancy=0.12
-stamina_fast=4
-stamina_slow=1.5
 summon_frames=210
 storm_range=56
 fury_frames=240
@@ -63,11 +61,69 @@ spread_at=28
 ages=parse_table[[
 name,tip,stats
 whelp
-drake,your charge breaks stone,accel=-0.15/breath_accel=-0.1/friction=0.06/sink=0.03/ram=1/max_stamina=30/size=0.25/max_hp=20/hp=20/dread=24/breath_range=4/breath_damage=0.08/bite_damage=1
-wyrm,stand your ground: nothing can hurt you,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.04/guard=1/max_stamina=30/size=0.25/max_hp=20/hp=20/dread=12/breath_range=4/breath_damage=0.08/bite_damage=1/max_fire=15
-great wyrm,your fire seeks them out,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.05/storm=1/max_stamina=30/size=0.3/max_hp=25/hp=25/dread=12/breath_range=6/breath_damage=0.1/bite_damage=1/max_fire=15
+drake,your charge carries further,accel=-0.15/breath_accel=-0.1/friction=0.06/sink=0.03/charge_frames=8/size=0.25/max_hp=20/hp=20/dread=24/breath_range=4/breath_damage=0.08/bite_damage=1
+wyrm,stand your ground: nothing can hurt you,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.04/guard=1/size=0.25/max_hp=20/hp=20/dread=12/breath_range=4/breath_damage=0.08/bite_damage=1/max_fire=15
+great wyrm,your fire seeks them out,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.05/storm=1/size=0.3/max_hp=25/hp=25/dread=12/breath_range=6/breath_damage=0.1/bite_damage=1/max_fire=15
 ]]
 
+
+tiles=parse_record[[
+w=1
+h=8
+X=6
+B=37
+.=39
+T=9
+g=10
+]]
+
+placed=parse_record[[
+H=hovel
+Q=barracks
+S=sheep
+P=pig
+C=cow
+s=serf
+a=archer
+k=knight
+m=monk
+l=ballista
++=heart
+*=brimstone
+]]
+
+stamps=parse_table[[
+name,rows
+pasture,gSgTgSg
+grove,TgTgT
+hay,h:h
+hut, hhh :hhhhh:w   w:  H w
+barn,hhhhhhh:w     w:w C P w
+shed,wwww:w+ w:w  w
+store,wwww:w* w:w  w
+tower, a  :XXX :XXX :XXX :XXX :XXX :XXXQ
+church,  B  :  B  : BBB :BB.BB:B...B:B.m.X
+hall,XXXXXXX:X.....X:X.....X:X.k.k.X
+keep, a   a :XXXXXXX:X.....X:XXXXXXX:X.....X:X.....X:X.k.m.X
+wall,BBB:BBB:BBB:BBB:BBB:BBB:BBB:BBB:BBB:XXX:XXX:XXX:XXX
+]]
+
+blocks=parse_table[[
+name,stamps
+hamlet,pasture+hut+hut+hay+grove+barn+shed
+town,hut+hut+barn+tower+church+store+pasture+hut
+castle,wall+tower+tower+hall+church+hut+store
+keep,wall+tower+keep+hall+tower+shed
+citadel,wall+keep+keep+tower+hall+wall+store
+]]
+
+hordes=parse_table[[
+name,pool
+the shire,serf/serf/serf/archer/archer/pikeman
+the town,serf/pikeman/archer/archer/archer/crossbowman/knight
+the castle,pikeman/pikeman/archer/crossbowman/crossbowman/knight/monk
+camelot,pikeman/knight/knight/crossbowman/crossbowman/monk/monk/ballista
+]]
 
 streaks=parse_record[[
 8=rampage!
@@ -77,7 +133,7 @@ streaks=parse_record[[
 110=ragnarok!
 ]]
 
-growth="max_stamina=8/size=0.06/max_hp=6/hp=6/breath_damage=0.02/max_fire=4/bite_damage=0.25"
+growth="size=0.06/max_hp=6/hp=6/breath_damage=0.02/max_fire=4/bite_damage=0.25"
 
 body_shape=split"-5,3,-1,4,4,3,8,3,11,2"
 
@@ -118,8 +174,6 @@ sink=0.2
 guard=0
 storm=0
 belly=0
-stamina=200
-max_stamina=200
 mercy=30
 body=8
 wing=2
@@ -132,7 +186,6 @@ breath_speed=2
 breath_flames=2
 charge_windup=7
 charge_speed=4.5
-ram=0
 charge_frames=12
 charge_recover=24
 bite_damage=2
@@ -149,8 +202,8 @@ unit_specs=parse_table[[
 name,sprite,max_hp,speed,damage,reload,fire_taken,meal,brave,ai,range,keep_away,shot,color,knock,volley,flies,ward,grants,crown,size,pool,aura,shield
 serf,64,1,0.8,1,30,1,2,0,melee,,,,,2
 pikeman,75,2,0.9,4,35,0.8,3,1,melee,,,,,3
-archer,65,1,0.3,3,80,1,2,0,ranged,70,0.4,arrow
-crossbowman,76,2,0.3,5,110,1,2,0,ranged,90,0.4,quarrel
+archer,65,1,0.3,3,50,1,2,0,ranged,70,0.4,arrow
+crossbowman,76,2,0.3,5,70,1,2,0,ranged,90,0.4,quarrel
 knight,66,4,0.8,6,30,0.5,4,1,melee,,,,,4,,,,,,,,,1
 monk,77,3,0.3,6,130,0.3,3,1,ranged,90,0.5,smite
 bat,83,1,0.8,2,40,1,1,1,melee,,,,,1,,1

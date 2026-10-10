@@ -13,7 +13,7 @@ function step()
   for unit in all(units) do
    if on_screen(unit.x,unit.y,0) then seen+=1 end
   end
-  printh("feel "..n\30 ..","..seen..","..kills..","..#fires..","..#shots..","..flr(d.hp)..","..flr(d.x+stage*1024)..","..flr(d.y-cam_y))
+  printh("feel "..n\30 ..","..seen..","..kills..","..#fires..","..#shots..","..flr(d.hp)..","..flr(d.x+stage*1024)..","..flr(d.y-cam_y)..","..stage*3+block)
  end
  if state!="play" or n==900 then
   printh("ok feel")

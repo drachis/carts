@@ -1,6 +1,6 @@
 function new_game()
  reload()
- taken,particles={},{}
+ particles={}
  kills,deaths,seconds,relic_count,hoard=0,0,0,0,0
  fury,fury_time,combo,combo_timer=0,0,0,0
  shake,freeze,flash=0,0,0
@@ -58,14 +58,28 @@ function clock_text(time)
 end
 
 function update_camera()
- local ahead=min(dragon.x-44,896)
- if ahead>cam_x then
-  cam_x+=min(ahead-cam_x,4)
-  linger=0
- else
-  linger+=1
-  if linger>linger_frames and cam_x<896 and not boss then
-   cam_x+=creep
+ cam_x+=(mid(0,dragon.x+dragon.facing*20-64,896)-cam_x)*.2
+ heat=min(razed/max(built,1)/raze_goal,1)
+ if heat>=1 then
+  if block_to<128 then
+   for ty=0,12 do
+    mset(block_to,stage*16+ty,0)
+   end
+   announce("the way is open",120)
+   roar(120,60)
+   jolt(6,6)
+   next_block()
+  elseif not summoned then
+   summoned=spawn_unit(split(legends)[stage+1],cam_x+124,cam_y+100)
+   sfx(snd_fanfare)
+  end
+ end
+ muster-=1+heat*2
+ local x=cam_x+rnd{-12,140}
+ if muster<=0 and not advance and crowd<horde_size+stage*4+heat*12 and not solid(x,cam_y+100) then
+  muster=muster_frames
+  for i=1,2+stage+heat*3 do
+   spawn_unit(rnd(split(hordes[stage+1].pool,"/")),mid(8,x,1016),cam_y+100).heading=sgn(dragon.x-x)
   end
  end
  if advance then
@@ -116,26 +130,22 @@ function draw_hud()
   if fury>=100 and blink then
    print_centered("\142+\151 unleash your fury",112,10)
   end
-  if linger>linger_frames and cam_x<896 and blink then
-   print("\145",120,60,7)
-  end
  end
 
  rectfill(0,0,127,9,0)
  draw_gauge(135,0,d.hp/d.max_hp,low and blink and 7 or 8,2)
  draw_gauge(133,10,d.fire/d.max_fire,9,4)
- draw_gauge(148,20,d.stamina/d.max_stamina,d.spent and blink and 8 or 12,1)
- draw_gauge(151,30,1-d.charge_cooldown/d.charge_recover,6,5)
+ draw_gauge(151,20,1-d.charge_cooldown/d.charge_recover,6,5)
  if fury_time>0 then
-  draw_gauge(146,40,fury_time/fury_frames,12,1)
+  draw_gauge(146,30,fury_time/fury_frames,12,1)
  else
-  draw_gauge(146,40,fury/100,fury<100 and 10 or blink and 7 or 12,5)
+  draw_gauge(146,30,fury/100,fury<100 and 10 or blink and 7 or 12,5)
  end
- print("\143"..hoard,51,2,10)
- draw_gauge(32,76,d.belly/belly_size,11,3)
- spr(71,76,1)
- line(88,4,126,4,5)
- circfill(88+cam_x/896*38,4,1,10)
+ print("\143"..hoard,41,2,10)
+ draw_gauge(32,66,d.belly/belly_size,11,3)
+ spr(71,66,1)
+ rectfill(78,3,126,5,5)
+ rectfill(78,3,78+heat*48,5,heat<1 and 9 or 7)
 
  if boss then
   rectfill(0,121,127,127,2)
@@ -171,7 +181,7 @@ function draw_game_over()
  print_centered(won and "the crown is devoured" or "the dragon is slain",50,won and 10 or 8)
  if won then
   print_centered("time "..clock_text(seconds).."  best "..clock_text(best_time),60,7)
-  print_centered(hoard.." gold  "..relic_count.."/"..relic_total.." relics  "..deaths.." deaths",68,6)
+  print_centered(hoard.." gold  "..relic_count.." relics  "..deaths.." deaths",68,6)
  else
   print_centered("it rises again at the edge of",60,6)
   print_centered(split(stage_names)[stage+1],68,6)

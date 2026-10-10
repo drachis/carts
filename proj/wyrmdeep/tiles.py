@@ -53,6 +53,10 @@ tile("tree", 9, FLAMMABLE,
 tile("grass", 10, FLAMMABLE,
      [EMPTY] * 5 + ["0b000b00", "b30b03b0", "3b3b3b3b"],
      [EMPTY] * 7 + ["50505050"])
+# the barrier at the end of a block: nothing breaks it; it falls when enough of
+# the block has (main.lua)
+tile("ward", 12, SOLID,
+     ["c0c0c0c0", "0c0c0c0c", "c0c77c0c", "0c7cc7c0", "c07cc7c0", "0c077c0c", "c0c0c0c0", "0c0c0c0c"])
 tile("fire", 15, 0,
      [EMPTY] * 5 + ["00500050", "05050505", "50505050"])
 

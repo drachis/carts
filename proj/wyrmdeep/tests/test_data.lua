@@ -10,6 +10,12 @@ local function check_stats(owner,text)
  end
 end
 
+local function check_pool(owner,pool)
+ for name in all(split(pool,"/")) do
+  assert(unit_specs[name],owner.." calls for an unknown unit: "..name)
+ end
+end
+
 for unit in all(unit_specs) do
  assert(unit_ai[unit.ai],unit.name.." has an unknown ai: "..tostr(unit.ai))
  if unit.shot then
@@ -21,6 +27,7 @@ for unit in all(unit_specs) do
  if unit.ai=="legend" or unit.ai=="melee" then
   assert(unit.knock,unit.name.." strikes but has no knock")
  end
+ if unit.pool then check_pool(unit.name,unit.pool) end
 end
 assert(shot_specs.rebuke,"a guard throws back a shot named rebuke")
 
@@ -28,6 +35,7 @@ for i=2,#ages do
  assert(ages[i].tip,ages[i].name.." has no tip")
  check_stats(ages[i].name,ages[i].stats)
 end
+check_stats("growth",growth)
 for relic in all(relic_specs) do
  check_stats(relic.name,relic.stats)
 end
@@ -35,17 +43,34 @@ for key in pairs(parse_record(fury_stats)) do
  assert(stats[key],"fury changes an unknown stat: "..key)
 end
 
-local placed,grants,crowns=0,0,0
-for row in all(split(spawn_text,"\n")) do
- local name=split(row)[1]
- if name!="" then
-  placed+=1
-  local unit=unit_specs[name]
-  assert(unit or relic_specs[name],"the level places something unknown: "..name)
-  if unit and unit.grants then grants+=1 end
-  if unit and unit.crown then crowns+=1 end
+-- a stamp is rows of one width, of characters that are a tile, something
+-- placed, or a space
+for stamp in all(stamps) do
+ local rows=split(stamp.rows,":",false)
+ assert(#rows<=13,stamp.name.." is taller than the sky")
+ for row in all(rows) do
+  assert(#row==#rows[1],stamp.name.." has rows of different widths")
+  for c=1,#row do
+   local char=row[c]
+   local name=placed[char]
+   assert(char==" " or tiles[char] or unit_specs[name] or relic_specs[name],
+    stamp.name.." uses an unknown character: "..char)
+  end
  end
 end
-printh(placed.." placed, "..grants.." legends that grant an age, "..crowns.." crowned")
+for kind in all(blocks) do
+ for name in all(split(kind.stamps,"+")) do
+  assert(stamps[name],kind.name.." is built of an unknown stamp: "..name)
+ end
+end
+assert(#hordes==#split(stage_names),"every stage needs a horde")
+for horde in all(hordes) do
+ check_pool(horde.name,horde.pool)
+end
+for name in all(split(legends)) do
+ assert(unit_specs[name] and unit_specs[name].color,"unknown legend: "..name)
+end
+assert(#split(legends)==#split(stage_names),"every stage needs a legend")
+printh(#stamps.." stamps, "..#blocks.." kinds of block, "..#hordes.." hordes")
 printh("ok data")
 extcmd("shutdown")

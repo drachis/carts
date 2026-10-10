@@ -21,12 +21,9 @@ local function begin()
  end
  state="play"
  enter_stage(index-1)
- for unit in all(units) do
-  if unit.name==names[index] then legend=unit end
- end
- assert(legend,names[index].." is not in its stage")
- units={legend}
  cam_x=896
+ units={}
+ legend=spawn_unit(names[index],1000,cam_y+100)
  t,phase,wound_up,popped,age_before=0,"watch",false,0,age
 end
 
@@ -39,13 +36,14 @@ function step()
  t+=1
  d.hp,d.stamina,d.fire=d.max_hp,d.max_stamina,d.max_fire
  advance=nil
+ muster=99
  hold()
  if phase!="kill" then
   assert(on_screen(b.x,b.y,0),name.." left the screen during "..phase)
  end
 
  if phase=="watch" then
-  d.x,d.y,d.vx,d.vy=cam_x+16,cam_y+20,0,0
+  d.x,d.y,d.vx,d.vy=944,cam_y+20,0,0
   wound_up=wound_up or b.windup
   if t==40 then
    assert(boss==b,name.." has no health bar")
@@ -79,7 +77,7 @@ function step()
    phase="wait"
   end
  elseif phase=="wait" then
-  d.x,d.y,d.vx,d.vy=cam_x+16,cam_y+20,0,0
+  d.x,d.y,d.vx,d.vy=944,cam_y+20,0,0
   assert(t<400,name.." never came out of its stagger")
   if b.stun<=0 then
    assert(b.shields==b.shield,name.."'s bubbles did not come back")

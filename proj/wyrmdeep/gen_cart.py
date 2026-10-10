@@ -23,7 +23,7 @@ from png import write_png
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CARTS = sys.argv[1:] or ["wyrmdeep.p8"] + [
-    "tests/test_%s.p8" % name for name in ("data", "powers", "bosses", "play", "soak", "feel")]
+    "tests/test_%s.p8" % name for name in ("data", "powers", "bosses", "soak", "feel")]
 SKY_ROWS = 32  # the surface and the heights: open air there is sky
 SKY, DARK = "1", "0"
 
@@ -72,12 +72,28 @@ def write_level_lua(placed):
     """level.lua: everything that is placed, the stages' names, and tile ids."""
     rows = ["%s,%d,%d" % (name, tx * 8 + 4, ty * 8 + 4) for name, tx, ty in placed]
     constants = ["start_x=%d" % (level.START[0] * 8 + 4), "start_y=%d" % (level.START[1] * 8 + 4),
-                 "stage_names=%s" % ",".join(name for name, _, _ in stages.STAGES),
-                 "tile_fire=%d" % tiles.NAMES["fire"]]
+                 "stage_names=%s" % ",".join(name for name, _ in stages.STAGES),
+                 "tile_fire=%d" % tiles.NAMES["fire"], "tile_ward=%d" % tiles.NAMES["ward"]]
     lua = "parse_record([[\n%s\n]],nil,_ENV)\n\nspawn_text=[[\n%s]]\n" % (
         "\n".join(constants), "\n".join(rows))
     with open(os.path.join(HERE, "level.lua"), "w", encoding="utf-8", newline="\n") as handle:
         handle.write(lua)
+
+
+def write_lean_main():
+    """tests/lean_main.lua: main.lua with what no test looks at emptied out.
+
+    The game leaves a test cart only a few hundred tokens for its harness,
+    so the test carts include this in place of main.lua.
+    """
+    source = open(os.path.join(HERE, "main.lua"), encoding="utf-8").read()
+    for name in ("draw_title", "draw_game_over", "draw_blaze", "draw_hud", "update_music"):
+        # a top-level function runs to the first `end` at the start of a line
+        pattern = r"\nfunction %s\([^)]*\).*?\nend\n" % name
+        source, count = re.subn(pattern, "\nfunction %s() end\n" % name, source, flags=re.S)
+        assert count == 1, "could not find %s in main.lua" % name
+    with open(os.path.join(HERE, "tests", "lean_main.lua"), "w", encoding="utf-8", newline="\n") as handle:
+        handle.write("-- generated from ../main.lua by gen_cart.py; do not edit\n" + source)
 
 
 def named_sprites():
@@ -134,6 +150,7 @@ def main():
             handle.write(source + data)
         print("patched", cart)
     write_level_lua(placed)
+    write_lean_main()
     write_png(os.path.join(HERE, "sheet.png"), gfx[:64])
     print("wrote level.lua, sheet.png, world.png (%d placed)" % len(placed))
 

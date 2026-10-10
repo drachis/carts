@@ -19,7 +19,7 @@ import threading
 HERE = os.path.dirname(os.path.abspath(__file__))
 PICO8 = os.environ.get("PICO8", r"C:\Program Files (x86)\PICO-8\pico8.exe")
 GAMES = {"wyrmfire": os.path.join(HERE, "..", "wyrmfire"), "wyrmdeep": HERE}
-COLUMNS = ["second", "enemies", "kills", "burning", "shots", "health", "x", "y"]
+COLUMNS = ["second", "enemies", "kills", "burning", "shots", "health", "x", "y", "block"]
 BLOCKS = " .:-=+*#%@"
 STEP = 1  # seconds per character in a strip
 

@@ -7,12 +7,26 @@ function new_dragon()
  end
 end
 
+function next_block()
+ block+=1
+ block_from=block_to
+ block_to=block<3 and block*44 or 128
+ build_block()
+ built,razed=0,0
+ for tx=block_from,block_to-1 do
+  for ty=1,12 do
+   if standing(mget(tx,stage*16+ty)) then built+=1 end
+  end
+ end
+end
+
 function enter_stage(number)
  stage=number
- cam_x,cam_y,linger,advance=0,stage*128,0
+ cam_x,cam_y,razed,muster,advance=0,stage*128,0,60
  dragon.x,dragon.y,dragon.vx,dragon.vy=start_x,cam_y+start_y,0,0
- fires={}
- populate()
+ units,shots,relics,fires,falls,summoned={},{},{},{},{}
+ block,block_to=0,0
+ next_block()
  update_tail()
  announce(split(stage_names)[stage+1],120)
 end
@@ -222,7 +236,7 @@ function charge_impacts(head_x,head_y)
  local d=dragon
  for offset=-6*d.size,6*d.size,4 do
   for along=7,9*d.size+13,6 do
-   ram(d.x+d.charge_x*along-d.charge_y*offset,d.y+d.charge_y*along+d.charge_x*offset)
+   ram(d.x+d.charge_x*along-d.charge_y*offset,d.y+d.charge_y*along+d.charge_x*offset,true)
   end
  end
  for unit in all(units) do
@@ -304,14 +318,6 @@ function update_dragon()
   d.landed=d.grounded
   d.guarding=d.guard>0 and d.grounded and input_x==0 and input_y>=0 and not breathing
   d.vx=(d.vx+input_x*accel)*d.friction
-  if d.grounded then
-   d.stamina=min(d.max_stamina,d.stamina+(d.spent and stamina_slow or stamina_fast))
-   d.spent=d.spent and d.stamina<d.max_stamina
-  else
-   d.stamina-=1
-   d.spent=d.spent or d.stamina<=0
-  end
-  if d.spent then input_y=1 end
   d.vy=(d.vy+input_y*d.accel+d.sink)*d.friction
   if btnp(5) then
    if btn(4) and fury>=100 then inferno() end
@@ -334,6 +340,12 @@ function update_dragon()
  d.charge_cooldown-=1
  d.flash=max(0,d.flash-1)
 
+ ram(head_x+d.vx,head_y+d.vy)
+ for across=-3,3,3 do
+  for down=-3,3,3 do
+   ram(d.x+d.vx+across,d.y+d.vy+down)
+  end
+ end
  if d.charge<=0 and not solid(head_x,head_y) then
   if solid(head_x+d.vx,head_y) then d.vx,d.charge=0,0 end
   if solid(head_x,head_y+d.vy) then d.vy,d.charge=0,0 end
@@ -346,17 +358,6 @@ function update_dragon()
   jolt(3)
  end
 
- if d.x<cam_x+4 then
-  for offset=-3,3,3 do
-   ram(cam_x+8,d.y+offset)
-  end
-  if blocked(cam_x+4,d.y) then
-   cam_x=d.x-4
-  else
-   d.x=cam_x+4
-  end
-  if linger>linger_frames and cam_x<896 and not boss then damage_dragon(crush) end
- end
 
  if breathing then
   breathe_fire(head_x,head_y)

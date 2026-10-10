@@ -34,27 +34,57 @@ function sight(from_x,from_y,to_x,to_y)
  return true
 end
 
+function standing(tile)
+ return fget(tile,0) and fget(tile)&22>0
+end
+
+function unseat(tx,ty,tile)
+ if fget(tile,0) then
+  razed+=1
+  add(falls,{tx=tx,ty=ty-1,wait=4})
+  add(falls,{tx=tx-1,ty=ty,wait=7})
+  add(falls,{tx=tx+1,ty=ty,wait=7})
+ end
+end
+
 function ignite(tx,ty)
  local tile=mget(tx,ty)
  if fget(tile,1) then
   mset(tx,ty,tile_fire)
   add(fires,{tx=tx,ty=ty,life=burn_frames+flr(rnd(16)),remains=tile+16})
+  unseat(tx,ty,tile)
  end
 end
 
-function ram(x,y)
+function raze(tx,ty,tile)
+ mset(tx,ty,tile+16)
+ burst(tx*8+4,ty*8+4,5,8)
+ if rnd()<.4 then coins(tx*8+4,ty*8+4,1) end
+ sfx(snd_crash)
+ unseat(tx,ty,tile)
+end
+
+function ram(x,y,charging)
  local tx,ty=x\8,y\8
  local tile=mget(tx,ty)
- if fget(tile,2) or dragon.ram>0 and fget(tile,4) then
-  mset(tx,ty,tile+16)
-  burst(tx*8+4,ty*8+4,6,8)
-  coins(tx*8+4,ty*8+4,1)
-  sfx(snd_crash)
-  jolt(4,2)
+ if fget(tile,2) or charging and fget(tile,4) then
+  raze(tx,ty,tile)
+  jolt(charging and 4 or 1.5)
  end
 end
 
 function update_fire()
+ for fall in all(falls) do
+  fall.wait-=1
+  if fall.wait<=0 then
+   del(falls,fall)
+   local tile=mget(fall.tx,fall.ty)
+   if standing(tile) and not fget(mget(fall.tx,fall.ty+1),0) then
+    raze(fall.tx,fall.ty,tile)
+    jolt(1)
+   end
+  end
+ end
  for fire in all(fires) do
   local tx,ty=fire.tx,fire.ty
   fire.life-=1
@@ -79,18 +109,30 @@ function draw_fire()
  end
 end
 
-function populate()
- units,shots,relics={},{},{}
- relic_total=0
- for row in all(split(spawn_text,"\n")) do
-  local name,x,y=unpack(split(row))
-  if relic_specs[name] then
-   relic_total+=1
-   if not taken[row] then
-    add(relics,setmetatable({x=x,y=y,key=row},relic_specs[name]))
+function build_block()
+ local kind=blocks[min(stage+block,#blocks)]
+ local tx=block_from+8
+ while tx<block_to-8 do
+  local rows=split(stamps[rnd(split(kind.stamps,"+"))].rows,":",false)
+  for r,row in ipairs(rows) do
+   for c=1,#row do
+    local char=row[c]
+    local x,y=tx+c-1,stage*16+12-#rows+r
+    local name=placed[char]
+    if tiles[char] then
+     mset(x,y,tiles[char])
+    elseif relic_specs[name] then
+     add(relics,setmetatable({x=x*8+4,y=y*8+4},relic_specs[name]))
+    elseif name then
+     spawn_unit(name,x*8+4,y*8+4)
+    end
    end
-  elseif unit_specs[name] and y\128==stage then
-   spawn_unit(name,x,y)
+  end
+  tx+=#rows[1]+1+flr(rnd(2+(1-dragon.hp/dragon.max_hp)*8))
+ end
+ if block_to<128 then
+  for ty=0,12 do
+   mset(block_to,stage*16+ty,tile_ward)
   end
  end
 end
@@ -99,7 +141,6 @@ function update_relics()
  for relic in all(relics) do
   if dragon_distance(relic.x,relic.y)<9 then
    del(relics,relic)
-   taken[relic.key]=true
    relic_count+=1
    grant(relic.stats)
    announce(relic.text,120)
