@@ -75,11 +75,13 @@ or a new game starts.
     py count_tokens.py
 
 `run_tests.py` runs `gen_cart.py` (the stage check, `world.png`,
-`sheet.png`), then four carts, because the game leaves no room for one big
+`sheet.png`), then five carts, because the game leaves no room for one big
 harness: `test_data` (headless) checks every name the data uses;
 `test_powers` tries one ability at a time and prints what happened (a charge
 through a wall from nose-to-wall, burning a staggered legend, flying until
-spent); `test_play` has a bot play the shire with no cheats and reports
+spent); `test_bosses` puts each legend alone through its whole fight (bar,
+bubbles, wind-up, staying on screen, stagger, burning, bubbles returning,
+what its fall gives); `test_play` has a bot play the shire with no cheats and reports
 times and health; `test_soak` moves the dragon to everything placed in every
 stage at every age. A cart that is too large fails silently in a window:
 check `py count_tokens.py tests/test_play.p8` if one prints nothing.

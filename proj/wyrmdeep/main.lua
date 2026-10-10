@@ -139,7 +139,7 @@ function draw_hud()
 
  if boss then
   rectfill(0,121,127,127,2)
-  rectfill(0,121,127*boss.hp/boss.max_hp,127,8)
+  rectfill(0,121,127*(boss.hp/boss.max_hp),127,8)
   print(boss.name,2,122,7)
  end
  if advance then

@@ -64,7 +64,7 @@ ages=parse_table[[
 name,tip,stats
 whelp
 drake,your charge breaks stone,accel=-0.15/breath_accel=-0.1/friction=0.06/sink=0.03/ram=1/max_stamina=30/size=0.25/max_hp=20/hp=20/dread=24/breath_range=4/breath_damage=0.3/bite_damage=4
-wyrm,stand still to guard,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.04/guard=1/max_stamina=30/size=0.25/max_hp=20/hp=20/dread=12/breath_range=4/breath_damage=0.3/bite_damage=4/max_fire=15
+wyrm,stand your ground: nothing can hurt you,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.04/guard=1/max_stamina=30/size=0.25/max_hp=20/hp=20/dread=12/breath_range=4/breath_damage=0.3/bite_damage=4/max_fire=15
 great wyrm,your fire seeks them out,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.05/storm=1/max_stamina=30/size=0.3/max_hp=25/hp=25/dread=12/breath_range=6/breath_damage=0.4/bite_damage=4/max_fire=15
 ]]
 

@@ -65,6 +65,12 @@ end
 function damage_dragon(amount,dir_x,knock)
  local d=dragon
  if state!="play" or d.charge>0 or d.flash>0 then return end
+ if d.guarding then
+  ring(d.x,d.y,12*d.size)
+  add_fury(3)
+  d.flash=8
+  return
+ end
  if knock then
   d.vx+=dir_x*knock
   d.vy-=2
@@ -418,7 +424,7 @@ function draw_dragon()
 
  local flap=d.charge>0 and -1 or d.grounded and -.8 or sin(frame/8)
  if d.guarding then
-  circ(x,y,10*size,frame%4<2 and 11 or 7)
+  circ(x,y,12*size,frame%4<2 and 12 or 7)
  end
  local span=9+flap*6
  local wrist_x,wrist_y=x+ux*span/2+fx*2,y+uy*span/2+fy*2

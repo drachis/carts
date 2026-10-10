@@ -300,11 +300,7 @@ function update_shots()
   local struck=distance<=0
   if struck then
    splat(shot.x,shot.y,shot.color)
-   if dragon.guarding then
-    add_fury(5)
-   else
-    damage_dragon(shot.damage,sgn(shot.vx),2)
-   end
+   damage_dragon(shot.damage,sgn(shot.vx),2)
   elseif distance<10 and not shot.grazed then
    shot.grazed=true
    add_fury(2)
