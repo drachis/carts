@@ -79,7 +79,9 @@ function update_camera()
  if muster<=0 and not advance and crowd<horde_size+stage*4+heat*12 and not solid(x,cam_y+100) then
   muster=muster_frames
   for i=1,2+stage+heat*3 do
-   spawn_unit(rnd(split(hordes[stage+1].pool,"/")),mid(8,x,1016),cam_y+100).heading=sgn(dragon.x-x)
+   local unit=spawn_unit(rnd(split(hordes[stage+1].pool,"/")),mid(8,x,1016),cam_y+100)
+   unit.heading=sgn(dragon.x-x)
+   if unit.flies then unit.y-=20+rnd(60) end
   end
  end
  if advance then
@@ -142,11 +144,14 @@ function draw_hud()
   draw_gauge(146,30,fury/100,fury<100 and 10 or blink and 7 or 12,5)
  end
  print("\143"..hoard,41,2,10)
- draw_gauge(32,66,d.belly/belly_size,11,3)
+ draw_gauge(32,66,d.belly/d.belly_goal,11,3)
  spr(71,66,1)
  rectfill(78,3,126,5,5)
  rectfill(78,3,78+heat*48,5,heat<1 and 9 or 7)
 
+ if summoned and summoned.hp>0 and not on_screen(summoned.x,summoned.y,0) and blink then
+  print(summoned.x<cam_x and "\139" or "\145",summoned.x<cam_x and 1 or 120,60,8)
+ end
  if boss then
   rectfill(0,121,127,127,2)
   rectfill(0,121,127*(boss.hp/boss.max_hp),127,8)

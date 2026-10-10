@@ -67,9 +67,11 @@ end
 function feed(meal)
  heal_dragon(meal)
  dragon.belly+=meal
- if dragon.belly>=belly_size then
-  dragon.belly-=belly_size
+ if dragon.belly>=dragon.belly_goal then
+  dragon.belly-=dragon.belly_goal
+  dragon.belly_goal*=growth_rate
   grant(growth)
+  dragon.size=min(dragon.size,max_size)
   announce("the dragon grows")
   sfx(snd_fanfare)
   ring(dragon.x,dragon.y,24)
@@ -130,6 +132,9 @@ function update_tail()
  for i,segment in ipairs(tail) do
   segment.r=(3-i*.4)*size
   add(body,segment)
+ end
+ for part in all(body) do
+  part.y=min(part.y,cam_y+104-part.r)
  end
 end
 
@@ -341,8 +346,8 @@ function update_dragon()
  d.flash=max(0,d.flash-1)
 
  ram(head_x+d.vx,head_y+d.vy)
- for across=-3,3,3 do
-  for down=-3,3,3 do
+ for across=-4*d.size,4*d.size,4 do
+  for down=-4*d.size,4*d.size,4 do
    ram(d.x+d.vx+across,d.y+d.vy+down)
   end
  end
@@ -408,9 +413,9 @@ function draw_dragon()
   segment(body[i],floor_y,i%2==0 and 8 or 2)
  end
  for i=1,2 do
-  local part=body[i]
+  local part=body[i*4-2]
   local hip_y=min(part.y,belly-part.r)+part.r/2
-  local foot_x=part.x+d.facing*(i*5-8)*size
+  local foot_x=part.x+d.facing*(7-i*5)*size
   local foot_y=hip_y+4*size
   if d.grounded then
    foot_x,foot_y=part.x+sin(frame/12+i/2)*abs(d.vx)*size,floor_y

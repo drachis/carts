@@ -8,10 +8,12 @@ world.lua), from the stamps in data.lua.
 WIDTH, ROWS, GROUND = 128, 16, 13  # the ground is rows 13..15
 
 # the lair each stage starts in, its hoard heaped inside (main.lua draws that)
-LAIR = ["#####",
-        "#    ",
-        "#    ",
-        "#    "]
+LAIR = ["########",
+        "#       ",
+        "#       ",
+        "#       ",
+        "#       ",
+        "#       "]
 
 # (name, ground character)
 STAGES = [("the shire", "d"), ("the town", "d"), ("the castle", "="), ("camelot", "=")]

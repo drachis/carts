@@ -9,7 +9,8 @@ function. Anything not noted works as it does in Wyrmfire, whose
 - `ages`: a row's `stats` are added to the dragon by `grant`. Each age adds a
   little `sink` and takes a little `accel`; the two must never meet, or the
   dragon cannot lift off (it happened once).
-- `growth`: what one full belly adds.
+- `growth`: what one full belly adds. Each growth costs `growth_rate` times
+  the meat of the last (`belly_goal`), and `max_size` caps the dragon.
 - Scale: enemy health and the dragon's damage are sized so that King Arthur
   has 128 health, and 1 health means "dies to any hit". Keep any health
   times 127 under 32767, or divide first: a bar once overflowed.
@@ -67,8 +68,7 @@ starts, the stages' names, tile ids.
 
 - `update_units`: only units near the screen are updated. `cy` is the middle
   of what is drawn and `reach` half its width beyond a person's, so breath,
-  charge and contact all measure to the edge of a big unit. A legend is held
-  inside the screen.
+  charge and contact all measure to the edge of a big unit.
 - `damage_unit`: a unit whose `max_hp` is 1 dies to any damage.
 - Shields: fire slides off a shielded unit and is thrown back. A stunned
   unit (`unit_ai.stunned`) stands under a star and takes triple fire; a
@@ -102,6 +102,8 @@ starts, the stages' names, tile ids.
   floor line while the tail rests on it. Limbs are two lines with a knee.
   The wing is a bat's: an arm to a wrist, four finger bones, and a scalloped
   membrane between each pair. `segment` draws one body circle with a spine.
+- `update_tail`: no part of the body, for drawing or for being hit, goes
+  below the ground line.
 - `feed`: called when meat reaches the gauge.
 
 ## main.lua

@@ -88,15 +88,17 @@ generated copy of `main.lua` with the title, endings, HUD and music emptied.
   ten seconds of play and both endings. The only cart that draws the title,
   the HUD and the endings; a missing value there once crashed the game on
   its first frame while every other test passed.
-- `test_powers`: one thing at a time, with what happened printed: flying
-  through timber, charging through stone nose-first, a tower collapsing,
+- `test_powers`: one thing at a time, each in a wiped, empty arena, with what
+  happened printed: flying
+  through timber, charging through stone nose-first at three sizes, a tower
+  collapsing,
   burning a staggered legend.
 - `test_bosses`: each legend alone through its whole fight.
 - `test_soak`: every stage, all three blocks built, at every age.
 
-All but the first run in a window, because headless PICO-8 died on one once
-with the access violation described in `../wyrmfire/DESIGN.md`. A cart that
-is too large fails silently in a window: check it with `count_tokens.py`.
+They run headless. Headless PICO-8 now and then dies with its own access
+violation (see `../wyrmfire/DESIGN.md`); a run that ends that way is run again. A cart that
+is too large says so and fails.
 
 ## Not built yet, or not checked
 

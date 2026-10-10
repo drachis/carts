@@ -111,7 +111,7 @@ end
 
 function build_block()
  local kind=blocks[min(stage+block,#blocks)]
- local tx=block_from+8
+ local tx=block_from+10
  while tx<block_to-8 do
   local rows=split(stamps[rnd(split(kind.stamps,"+"))].rows,":",false)
   for r,row in ipairs(rows) do

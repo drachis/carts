@@ -47,7 +47,8 @@ horde_size=14
 raze_goal=0.6
 muster_frames=40
 legends=sir kay,sir gawain,merlin,king arthur
-belly_size=40
+growth_rate=1.4
+max_size=1.5
 stagger_frames=90
 buoyancy=0.12
 summon_frames=210
@@ -61,9 +62,9 @@ spread_at=28
 ages=parse_table[[
 name,tip,stats
 whelp
-drake,your charge carries further,accel=-0.15/breath_accel=-0.1/friction=0.06/sink=0.03/charge_frames=8/size=0.25/max_hp=20/hp=20/dread=24/breath_range=4/breath_damage=0.08/bite_damage=1
-wyrm,stand your ground: nothing can hurt you,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.04/guard=1/size=0.25/max_hp=20/hp=20/dread=12/breath_range=4/breath_damage=0.08/bite_damage=1/max_fire=15
-great wyrm,your fire seeks them out,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.05/storm=1/size=0.3/max_hp=25/hp=25/dread=12/breath_range=6/breath_damage=0.1/bite_damage=1/max_fire=15
+drake,your charge carries further,accel=-0.15/breath_accel=-0.1/friction=0.06/sink=0.03/charge_frames=8/size=0.15/max_hp=20/hp=20/dread=24/breath_range=4/breath_damage=0.08/bite_damage=1
+wyrm,stand your ground: nothing can hurt you,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.04/guard=1/size=0.15/max_hp=20/hp=20/dread=12/breath_range=4/breath_damage=0.08/bite_damage=1/max_fire=15
+great wyrm,your fire seeks them out,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.05/storm=1/size=0.15/max_hp=25/hp=25/dread=12/breath_range=6/breath_damage=0.1/bite_damage=1/max_fire=15
 ]]
 
 
@@ -119,10 +120,10 @@ citadel,wall+keep+keep+tower+hall+wall+store
 
 hordes=parse_table[[
 name,pool
-the shire,serf/serf/serf/archer/archer/pikeman
-the town,serf/pikeman/archer/archer/archer/crossbowman/knight
-the castle,pikeman/pikeman/archer/crossbowman/crossbowman/knight/monk
-camelot,pikeman/knight/knight/crossbowman/crossbowman/monk/monk/ballista
+the shire,serf/serf/serf/archer/archer/pikeman/bat
+the town,serf/pikeman/archer/archer/archer/crossbowman/knight/bat/bat
+the castle,pikeman/pikeman/archer/crossbowman/crossbowman/knight/monk/bat/bat
+camelot,pikeman/knight/knight/crossbowman/crossbowman/monk/monk/ballista/bat/bat
 ]]
 
 streaks=parse_record[[
@@ -133,7 +134,7 @@ streaks=parse_record[[
 110=ragnarok!
 ]]
 
-growth="size=0.06/max_hp=6/hp=6/breath_damage=0.02/max_fire=4/bite_damage=0.25"
+growth="size=0.04/max_hp=6/hp=6/breath_damage=0.02/max_fire=4/bite_damage=0.25"
 
 body_shape=split"-5,3,-1,4,4,3,8,3,11,2"
 
@@ -160,7 +161,7 @@ fire_regen=0.3
 inhale=0.06
 power=1
 rage=1
-size=1
+size=0.6
 dread=0
 snap=0
 accel=1.5
@@ -174,6 +175,7 @@ sink=0.2
 guard=0
 storm=0
 belly=0
+belly_goal=30
 mercy=30
 body=8
 wing=2

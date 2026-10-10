@@ -1,7 +1,7 @@
 -- test_bosses.lua : each legend in turn, alone on its screen, put through
 -- the whole fight by a script and checked at every step:
 --   watch  its bar is full, its bubbles are all there, it winds up at least
---          once, and it never leaves the screen
+--          once, and it never leaves the stage
 --   pop    charges take its bubbles one at a time, and the last staggers it
 --   burn   staggered, it takes fire
 --   wait   its bubbles come back when the stagger ends
@@ -39,7 +39,7 @@ function step()
  muster=99
  hold()
  if phase!="kill" then
-  assert(on_screen(b.x,b.y,0),name.." left the screen during "..phase)
+  assert(b.x>=4 and b.x<=1020 and b.y>cam_y and b.y<cam_y+104,name.." left the stage during "..phase)
  end
 
  if phase=="watch" then

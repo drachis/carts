@@ -41,11 +41,27 @@ def save_screens(log):
     return "\n".join(rest)
 
 
+CRASHED = 0xC0000005  # headless pico-8's own access violation
+ATTEMPTS = 4
+
+
 def run_cart(cart):
-    # all but the data cart run in a window: headless pico-8 sometimes dies with an
-    # access violation, as it did on wyrmfire (see ../wyrmfire/DESIGN.md)
-    mode = "-x" if cart.endswith("test_data.p8") else "-run"
-    process = subprocess.Popen([PICO8, mode, cart], cwd=HERE, text=True,
+    """Run a cart headless; True if it printed its "ok" line and no error.
+
+    Headless pico-8 now and then dies with an access violation that is its
+    own, not the cart's (see ../wyrmfire/DESIGN.md). A run that ends that
+    way is run again, so that no window need open over a game being played.
+    """
+    for attempt in range(ATTEMPTS):
+        passed, code = run_once(cart)
+        if passed or code != CRASHED:
+            return passed
+        print("pico-8 crashed on %s (attempt %d); running it again" % (cart, attempt + 1))
+    return False
+
+
+def run_once(cart):
+    process = subprocess.Popen([PICO8, "-x", cart], cwd=HERE, text=True,
                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     # a cart that is over budget or has a syntax error idles instead of
     # exiting, so stop it at the time limit
@@ -64,12 +80,12 @@ def run_cart(cart):
     watchdog.cancel()
     process.wait()
     log = "".join(lines)
+    code = process.returncode & 0xffffffff
     print(save_screens(log).strip())
     if not finished or "error" in log.lower():
-        print("FAIL: %s did not complete cleanly (pico8 exit code %#x)"
-              % (cart, process.returncode & 0xffffffff))
-        return False
-    return True
+        print("FAIL: %s did not complete cleanly (pico8 exit code %#x)" % (cart, code))
+        return False, code
+    return True, code
 
 
 def comments_in_modules():

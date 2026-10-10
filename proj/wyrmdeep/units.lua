@@ -242,7 +242,6 @@ function update_units()
    local hit_x,hit_y=slide(unit,move_x+unit.push_x,unit.vy)
    if hit_y then unit.vy=0 end
    unit.hit_x=hit_x
-   if unit.color then unit.x=mid(cam_x+8,unit.x,cam_x+120) end
    unit.push_x*=.8
    if move_x!=0 then unit.facing_left=move_x<0 end
 
