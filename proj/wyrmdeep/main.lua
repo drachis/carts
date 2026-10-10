@@ -48,7 +48,7 @@ end
 
 function collect_coin()
  add_fury(.5)
- hoard+=1
+ hoard+=1+combo\8
  sfx(snd_coin)
 end
 
@@ -72,6 +72,14 @@ function update_camera()
   elseif not summoned then
    summoned=spawn_unit(split(legends)[stage+1],cam_x+124,cam_y+100)
    sfx(snd_fanfare)
+  end
+ end
+ if heat>=rally_at and not rallied then
+  rallied=true
+  announce("the garrison rallies!",120)
+  sfx(snd_fanfare)
+  for i=1,3+stage do
+   spawn_unit("knight",mid(8,dragon.x+rnd{-80,80}+i*4,1016),cam_y+100)
   end
  end
  muster-=1+heat*2

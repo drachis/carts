@@ -134,7 +134,7 @@ function draw_particles()
  for p in all(particles) do
   local life=p.life
   if p.kind=="fire" then
-   circfill(p.x,p.y,life/(p.ramp and 5/dragon.size or 6),(p.ramp or fire_ramp)[min(life\4+1,5)])
+   circfill(p.x,p.y,life/(p.ramp and 4-dragon.size or 6),(p.ramp or fire_ramp)[min(life\4+1,5)])
   elseif p.kind=="smoke" then
    circfill(p.x,p.y,1,life>10 and 5 or 6)
   elseif p.kind=="ring" then

@@ -12,7 +12,7 @@ function next_block()
  block_from=block_to
  block_to=block<3 and block*44 or 128
  build_block()
- built,razed=0,0
+ built,razed,rallied=0,0
  for tx=block_from,block_to-1 do
   for ty=1,12 do
    if standing(mget(tx,stage*16+ty)) then built+=1 end
@@ -158,15 +158,19 @@ end
 
 function breathe_fire(mouth_x,mouth_y)
  local d=dragon
- local power=(.4+d.fire/d.max_fire)*d.rage
+ local power=d.rage*1.2
  local flames=d.breath_flames
  d.power=power
  d.fire-=d.breath_cost
  d.fire_delay=8
- if d.fire<=0 then d.winded=true end
+ if d.fire<=0 then
+  d.winded=true
+  burst(mouth_x,mouth_y,6,6)
+ end
+ shake=max(shake,1.5)
  if not d.exhaling then
   d.exhaling=true
-  flames*=5
+  flames*=6
   d.vx-=cos(d.angle)*d.kick*power
   d.vy-=sin(d.angle)*d.kick*power
   jolt(1+d.kick)
@@ -459,6 +463,9 @@ function draw_dragon()
  end
  circfill(body[5].x,min(body[5].y,belly-body[5].r),body[5].r,8)
  line(x+fx*7+ux*3,y+fy*7+uy*3,x+fx*4+ux*5,y+fy*4+uy*5,6)
+ if d.exhaling then
+  circfill(x+fx*12,y+fy*12,2+size+rnd(2),rnd{10,7})
+ end
  local head=body[4]
  circfill(head.x+ux,min(head.y,belly-head.r)+uy,size/2,10)
  pal()

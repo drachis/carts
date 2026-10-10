@@ -93,6 +93,7 @@ function step()
   d.x,d.y,d.vx,d.vy=merlin.x-30,merlin.cy,0,0
   d.fire=d.max_fire
   merlin.shields,merlin.stun=0,50
+  if t==20 then dump_screen("breath") end
   hold(4)
   if t==90 then
    printh("merlin, staggered and burnt for 3 seconds: "..flr(merlin.hp).." of "..merlin.max_hp.." health left")

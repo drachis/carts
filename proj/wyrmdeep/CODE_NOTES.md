@@ -104,14 +104,19 @@ starts, the stages' names, tile ids.
   membrane between each pair. `segment` draws one body circle with a spine.
 - `update_tail`: no part of the body, for drawing or for being hit, goes
   below the ground line.
-- `feed`: called when meat reaches the gauge.
+- `breathe_fire`: power is constant for the whole exhale and the breath ends
+  at once with a cough of smoke; it shakes the screen while it lasts and has
+  a bright core at the mouth. A flame's size barely depends on the dragon's.
+- `feed`: called when meat reaches the gauge. Soldiers are worth almost
+  nothing to the belly; livestock is what grows the dragon.
 
 ## main.lua
 
 - `update_camera`: follows the dragon, and is also the director. `heat` is
   how far the block is toward `raze_goal`. At full heat the barrier at
   `block_to` is cleared and the next block built, or, in the last block, the
-  stage's legend is spawned once. `muster` counts down faster with heat;
+  stage's legend is spawned once. At `rally_at` a band of knights arrives
+  once per block. `muster` counts down faster with heat;
   when it runs out and the crowd is under its limit, a band appears just off
   one edge of the screen and walks in. `advance` counts down the celebration
   after a legend falls, then starts the next stage.
