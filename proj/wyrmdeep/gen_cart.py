@@ -22,7 +22,8 @@ import tiles
 from png import write_png
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-CARTS = sys.argv[1:] or ["wyrmdeep.p8", "tests/test_data.p8", "tests/test_run.p8"]
+CARTS = sys.argv[1:] or ["wyrmdeep.p8"] + [
+    "tests/test_%s.p8" % name for name in ("data", "powers", "play", "soak")]
 SKY_ROWS = 32  # the surface and the heights: open air there is sky
 SKY, DARK = "1", "0"
 

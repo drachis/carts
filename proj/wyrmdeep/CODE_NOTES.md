@@ -79,6 +79,9 @@ pixels; a row belongs to the stage `y\128`.
 - The wing is a bat's: an arm to a wrist, four finger bones, and a scalloped
   membrane filled between each pair. `segment` draws one body circle with a
   spine on its back.
+- Stamina: drains a point a frame in the air and refills on the ground,
+  `stamina_fast` normally and `stamina_slow` once it has hit zero (`spent`),
+  which also holds the dragon down until the gauge is full again.
 - `feed`: called when meat reaches the gauge.
 
 ## main.lua

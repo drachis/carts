@@ -75,13 +75,16 @@ or a new game starts.
     py count_tokens.py
 
 `run_tests.py` runs `gen_cart.py` (the stage check, `world.png`,
-`sheet.png`), then two carts: `test_data` (headless) checks every name the
-data uses; `test_run` (in a window) flies a scripted whelp into the shire,
-asserting the screen never goes back, then moves the dragon to everything
-placed in every stage at every age. Screens are saved as `fire.png`,
-`shot.png` and `aura.png`.
+`sheet.png`), then four carts, because the game leaves no room for one big
+harness: `test_data` (headless) checks every name the data uses;
+`test_powers` tries one ability at a time and prints what happened (a charge
+through a wall from nose-to-wall, burning a staggered legend, flying until
+spent); `test_play` has a bot play the shire with no cheats and reports
+times and health; `test_soak` moves the dragon to everything placed in every
+stage at every age. A cart that is too large fails silently in a window:
+check `py count_tokens.py tests/test_play.p8` if one prints nothing.
 
-`test_run` runs in a window because headless PICO-8 died on it once with the
+They run in a window because headless PICO-8 died on one once with the
 access violation described in `../wyrmfire/DESIGN.md`; the cause is unknown.
 
 ## Not built yet, or not checked

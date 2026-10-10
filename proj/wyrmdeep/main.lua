@@ -64,7 +64,7 @@ function update_camera()
   linger=0
  else
   linger+=1
-  if linger>linger_frames and cam_x<896 then
+  if linger>linger_frames and cam_x<896 and not boss then
    cam_x+=creep
   end
  end
@@ -124,14 +124,16 @@ function draw_hud()
  rectfill(0,0,127,9,0)
  draw_gauge(135,0,d.hp/d.max_hp,low and blink and 7 or 8,2)
  draw_gauge(133,10,d.fire/d.max_fire,9,4)
+ draw_gauge(148,20,d.stamina/d.max_stamina,d.spent and blink and 8 or 12,1)
+ draw_gauge(151,30,1-d.charge_cooldown/d.charge_recover,6,5)
  if fury_time>0 then
-  draw_gauge(146,20,fury_time/fury_frames,12,1)
+  draw_gauge(146,40,fury_time/fury_frames,12,1)
  else
-  draw_gauge(146,20,fury/100,fury<100 and 10 or blink and 7 or 12,5)
+  draw_gauge(146,40,fury/100,fury<100 and 10 or blink and 7 or 12,5)
  end
- draw_gauge(32,30,d.belly/belly_size,11,3)
- spr(71,30,1)
- print("\143"..hoard,42,2,10)
+ print("\143"..hoard,51,2,10)
+ draw_gauge(32,76,d.belly/belly_size,11,3)
+ spr(71,76,1)
  line(88,4,126,4,5)
  circfill(88+cam_x/896*38,4,1,10)
 

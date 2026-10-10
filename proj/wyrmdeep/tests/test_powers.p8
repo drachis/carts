@@ -1,7 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
--- test_run.p8 : a scripted dragon. run it with: py run_tests.py
+-- test_powers.p8 : run it with: py run_tests.py
 #include ../data.lua
 #include ../level.lua
 #include ../core.lua
@@ -10,7 +10,8 @@ __lua__
 #include ../dragon.lua
 #include ../main.lua
 #include dump.lua
-#include test_run.lua
+#include harness.lua
+#include test_powers.lua
 __gfx__
 0000000044f444f4f4f4f4f403000b304444444400000000ddd5d0dd00030000a9aaa9aa003bb300000000000000000000000000000000000000000000000000
 0000000044f444f4444444443b3030034f4444f400000000ddd50ddd000b00009aaa9aaa03bbabb0000000000000000000000000000000000000000000000000

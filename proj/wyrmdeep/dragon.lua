@@ -215,7 +215,7 @@ end
 function charge_impacts(head_x,head_y)
  local d=dragon
  for offset=-6*d.size,6*d.size,4 do
-  for along=7,9*d.size+5,6 do
+  for along=7,9*d.size+13,6 do
    ram(d.x+d.charge_x*along-d.charge_y*offset,d.y+d.charge_y*along+d.charge_x*offset)
   end
  end
@@ -298,6 +298,14 @@ function update_dragon()
   d.landed=d.grounded
   d.guarding=d.guard>0 and d.grounded and input_x==0 and input_y>=0 and not breathing
   d.vx=(d.vx+input_x*accel)*d.friction
+  if d.grounded then
+   d.stamina=min(d.max_stamina,d.stamina+(d.spent and stamina_slow or stamina_fast))
+   d.spent=d.spent and d.stamina<d.max_stamina
+  else
+   d.stamina-=1
+   d.spent=d.spent or d.stamina<=0
+  end
+  if d.spent then input_y=1 end
   d.vy=(d.vy+input_y*d.accel+d.sink)*d.friction
   if btnp(5) then
    if btn(4) and fury>=100 then inferno() end
@@ -320,7 +328,7 @@ function update_dragon()
  d.charge_cooldown-=1
  d.flash=max(0,d.flash-1)
 
- if not solid(head_x,head_y) then
+ if d.charge<=0 and not solid(head_x,head_y) then
   if solid(head_x+d.vx,head_y) then d.vx,d.charge=0,0 end
   if solid(head_x,head_y+d.vy) then d.vy,d.charge=0,0 end
  end
@@ -341,7 +349,7 @@ function update_dragon()
   else
    d.x=cam_x+4
   end
-  if linger>linger_frames then damage_dragon(crush) end
+  if linger>linger_frames and cam_x<896 and not boss then damage_dragon(crush) end
  end
 
  if breathing then
@@ -439,6 +447,7 @@ function draw_dragon()
  end
  circfill(body[5].x,min(body[5].y,belly-body[5].r),body[5].r,8)
  line(x+fx*7+ux*3,y+fy*7+uy*3,x+fx*4+ux*5,y+fy*4+uy*5,6)
- pset(x+fx*8+ux*1.5,y+fy*8+uy*1.5,10)
+ local head=body[4]
+ circfill(head.x+ux,min(head.y,belly-head.r)+uy,size/2,10)
  pal()
 end

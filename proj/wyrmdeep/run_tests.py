@@ -17,7 +17,7 @@ from png import write_png
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PICO8 = os.environ.get("PICO8", r"C:\Program Files (x86)\PICO-8\pico8.exe")
-TEST_CARTS = [os.path.join("tests", name) for name in ("test_data.p8", "test_run.p8")]
+TEST_CARTS = [os.path.join("tests", "test_%s.p8" % name) for name in ("data", "powers", "play", "soak")]
 MODULES = ["data.lua", "core.lua", "world.lua", "units.lua", "dragon.lua", "main.lua"]
 TIMEOUT_SECONDS = 540
 SCREEN_ROW = re.compile(r"^INFO: (\w+) ([0-9a-f]{128})$")
@@ -42,9 +42,9 @@ def save_screens(log):
 
 
 def run_cart(cart):
-    # the soak runs in a window: headless pico-8 sometimes dies on it with an
+    # all but the data cart run in a window: headless pico-8 sometimes dies with an
     # access violation, as it did on wyrmfire (see ../wyrmfire/DESIGN.md)
-    mode = "-run" if cart.endswith("test_run.p8") else "-x"
+    mode = "-x" if cart.endswith("test_data.p8") else "-run"
     process = subprocess.Popen([PICO8, mode, cart], cwd=HERE, text=True,
                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     # a cart that is over budget or has a syntax error idles instead of

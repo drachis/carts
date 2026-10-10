@@ -50,6 +50,8 @@ creep=0.4
 crush=4
 stagger_frames=90
 buoyancy=0.12
+stamina_fast=1.5
+stamina_slow=0.5
 summon_frames=210
 storm_range=56
 fury_frames=240
@@ -61,9 +63,9 @@ spread_at=28
 ages=parse_table[[
 name,tip,stats
 whelp
-drake,your charge breaks stone,accel=-0.15/breath_accel=-0.1/friction=0.06/sink=0.03/ram=1/size=0.25/max_hp=20/hp=20/dread=24/breath_range=4/breath_damage=0.3/bite_damage=4
-wyrm,stand still to guard,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.04/guard=1/size=0.25/max_hp=20/hp=20/dread=12/breath_range=4/breath_damage=0.3/bite_damage=4/max_fire=15
-great wyrm,your fire seeks them out,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.05/storm=1/size=0.3/max_hp=25/hp=25/dread=12/breath_range=6/breath_damage=0.4/bite_damage=4/max_fire=15
+drake,your charge breaks stone,accel=-0.15/breath_accel=-0.1/friction=0.06/sink=0.03/ram=1/max_stamina=30/size=0.25/max_hp=20/hp=20/dread=24/breath_range=4/breath_damage=0.3/bite_damage=4
+wyrm,stand still to guard,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.04/guard=1/max_stamina=30/size=0.25/max_hp=20/hp=20/dread=12/breath_range=4/breath_damage=0.3/bite_damage=4/max_fire=15
+great wyrm,your fire seeks them out,accel=-0.15/breath_accel=-0.1/friction=0.08/sink=0.05/storm=1/max_stamina=30/size=0.3/max_hp=25/hp=25/dread=12/breath_range=6/breath_damage=0.4/bite_damage=4/max_fire=15
 ]]
 
 
@@ -75,7 +77,7 @@ streaks=parse_record[[
 110=ragnarok!
 ]]
 
-growth="size=0.06/max_hp=6/hp=6/breath_damage=0.08/max_fire=4/bite_damage=1"
+growth="max_stamina=8/size=0.06/max_hp=6/hp=6/breath_damage=0.08/max_fire=4/bite_damage=1"
 
 body_shape=split"-5,3,-1,4,4,3,8,3,11,2"
 
@@ -116,6 +118,8 @@ sink=0.2
 guard=0
 storm=0
 belly=0
+stamina=120
+max_stamina=120
 mercy=30
 body=8
 wing=2
@@ -156,7 +160,7 @@ pig,82,1,0.4,0,0,1,8,0,sheep
 cow,81,2,0.25,0,0,1,16,0,sheep
 sir kay,96,140,1.2,4,40,0.5,30,1,legend,,,,9,5,,,,1,,16,,,1
 sir gawain,98,280,1.3,8,40,0.5,30,1,legend,,,rebuke,11,6,5,,,1,,16,serf/pikeman/archer,,2
-merlin,73,420,0.6,7,70,0.5,40,1,ranged,90,0.6,arcane,12,,5,1,,1,,,bat/bat/monk,12,3
+merlin,73,300,0.6,7,70,0.5,40,1,ranged,90,0.6,arcane,12,,5,1,,1,,,bat/bat/monk,12,3
 king arthur,102,500,1.4,12,40,0.5,30,1,legend,,,excalibur,10,8,7,,,,1,16,knight/monk/crossbowman,14,4
 hovel,55,6,0,0,140,0.3,0,1,spawner,,,,,,,1,,,,,serf/serf/archer
 barracks,56,14,0,0,110,0.3,0,1,spawner,,,,,,,1,,,,,knight/pikeman/crossbowman
