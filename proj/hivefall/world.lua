@@ -26,6 +26,22 @@ function draw_sky()
  end
 end
 
+-- the next corner of a grid line. a shockwave pushes the corners it is
+-- passing outward, so the grid ripples.
+function grid_point(x,z,colour)
+ local sx,sy=project(x,z,0)
+ for wave in all(rings) do
+  if wave.warp then
+   local dx,dy=sx-wave.x,sy-wave.y
+   local distance=abs(dx)+abs(dy)+1
+   local push=max(8-abs(distance*0.7-wave.radius))*wave.warp/distance
+   sx+=dx*push
+   sy+=dy*push
+  end
+ end
+ line(sx,sy,colour)
+end
+
 -- the city and the hill are drawn over anything still behind the crest
 function draw_hill()
  for i,height in ipairs(skyline) do
@@ -42,34 +58,31 @@ function draw_hill()
  local colour=grid_flash>0 and 13 or 1
  for z in all(grid_depths) do
   line()
-  for x=-100,100,25 do
-   local sx,sy=project(x,z,0)
-   line(sx,sy,colour)
-  end
+  for x=-100,100,20 do grid_point(x,z,colour) end
  end
  for x=-100,100,20 do
-  local x1,y1=project(x,far_z,0)
-  local x2,y2=project(x,1,0)
-  line(x1,y1,x2,y2,colour)
+  line()
+  for z in all(grid_depths) do grid_point(x,z,colour) end
  end
 end
 
--- sparks and rings live in screen space
-function burst(x,y,count,colour,speed)
+-- sparks, rings and popups live in screen space. `fall` is gravity.
+function burst(x,y,count,colour,speed,fall)
  for i=1,count do
-  if #sparks<220 then
+  if #sparks<240 then
    local angle,velocity=rnd(),speed*(0.2+rnd())
    add(sparks,{
     x=x,y=y,
     vx=cos(angle)*velocity,vy=sin(angle)*velocity,
-    life=15+rnd(25),colour=colour
+    life=15+rnd(25),colour=colour,fall=fall or 0
    })
   end
  end
 end
 
-function ring(x,y,size,colour)
- add(rings,{x=x,y=y,radius=1,size=size,colour=colour})
+-- `warp` is how hard the ring pushes the grid, if it does
+function ring(x,y,size,colour,warp)
+ add(rings,{x=x,y=y,radius=1,size=size,colour=colour,warp=warp})
 end
 
 function update_effects()
@@ -77,13 +90,18 @@ function update_effects()
   spark.x+=spark.vx
   spark.y+=spark.vy
   spark.vx*=0.93
-  spark.vy*=0.93
+  spark.vy=spark.vy*0.93+spark.fall
   spark.life-=1
   if spark.life<0 then del(sparks,spark) end
  end
  for wave in all(rings) do
-  wave.radius+=(wave.size-wave.radius)*0.2+0.3
+  wave.radius+=(wave.size-wave.radius)*0.12+0.4
   if wave.radius>=wave.size then del(rings,wave) end
+ end
+ for popup in all(popups) do
+  popup.y-=0.4
+  popup.life-=1
+  if popup.life<0 then del(popups,popup) end
  end
  shake*=0.88
  if shake<0.3 then shake=0 end
@@ -98,5 +116,8 @@ function draw_effects()
  for spark in all(sparks) do
   line(spark.x,spark.y,spark.x-spark.vx*2,spark.y-spark.vy*2,
    spark.life<6 and 5 or spark.colour)
+ end
+ for popup in all(popups) do
+  print(popup.text,popup.x-#popup.text*2,popup.y,popup.life%6<3 and 7 or 10)
  end
 end

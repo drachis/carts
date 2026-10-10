@@ -31,61 +31,97 @@ function parse_record(text,separator,into)
 end
 
 -- depth runs from 1 (the mech's line) to far_z (the crest of the hill).
--- cone_base and cone_slope shape the auto-aim cone above the mech.
+-- cone_base is the auto-aim cone's half width at the guns; how fast it
+-- opens is the mech's own `cone`, which an upgrade widens.
 parse_record([[
 far_z=6
 crest_y=46
 crest_hop=47
 cone_base=7
-cone_slope=0.3
 max_heat=100
-cool_rate=0.3
-restart_heat=30
+restart_heat=50
 mech_accel=0.06
 mech_speed=0.9
+alpha_cost=60
+mercy_ends=15
+alpha_frames=180
+combo_frames=150
 snd_pop=6
 snd_boom=7
 snd_hurt=8
 snd_switch=9
 snd_wave=10
 snd_overheat=11
+snd_alpha=12
+snd_upgrade=13
+snd_step=14
+snd_roar=15
 ]],nil,_ENV)
 
+-- what a new run starts from; reset() parses these
+player_start="x=0,vx=0,armor=100,max_armor=100,heat=0,weapon=1,hurt_flash=0,muzzle=0,recoil=0,gun_side=1,alpha=0,cooling=0.35,power=1,haste=1,agility=1,cone=0.3"
+run_start="score=0,shake=0,freeze=0,white=0,grid_flash=0,combo=0,combo_wait=0,charge=0,dying=0,bark_wait=0,over_wait=0"
+
 -- cooldown is in frames (60 a second); speed is depth per frame;
--- spread is sideways scatter; splash is a blast radius; wave is when
--- the weapon is issued.
+-- spread is sideways scatter; splash is a blast radius; range is how
+-- deep it locks and reaches; wave is when the weapon is issued.
 weapon_specs=parse_table[[
-name,wave,cooldown,damage,speed,count,spread,splash,heat,colour,homing,pierce,sound
-pulse,1,9,1,0.2,1,0,0,4,12,1,0,0
-flak,2,42,2,0.14,7,1,0,24,9,0,0,2
-minigun,3,3,0.5,0.25,1,0,0,2,10,1,0,1
-shock,4,34,5,0.6,1,0,0,20,14,1,1,3
-rocket,5,60,10,0.07,1,0,16,28,8,1,0,4
-redeemer,7,300,60,0.04,1,0,60,90,11,1,0,5
+name,wave,range,cooldown,damage,speed,count,spread,splash,heat,colour,homing,pierce,sound
+pulse,1,4.5,7,1,0.2,1,0,0,4,12,1,0,0
+flak,2,3,42,2,0.14,7,1,0,24,9,0,0,1
+minigun,3,4,3,0.6,0.25,1,0,0,2,10,1,0,2
+shock,4,6.2,34,5,0.6,1,0,0,20,14,1,1,3
+rocket,5,6.2,60,10,0.07,1,0,16,28,8,1,0,4
+redeemer,7,6.2,300,60,0.04,1,0,60,90,11,1,0,5
+]]
+
+-- between waves the pilot picks one of three; stat is the field of
+-- `player` that amount is added to.
+upgrade_specs=parse_table[[
+name,stat,amount,blurb
+armor,max_armor,30,+30 max
+heatsink,cooling,0.1,+cooling
+overload,power,0.25,+25% dmg
+loader,haste,-0.15,+fire rate
+servos,agility,0.3,+speed
+optics,cone,0.1,+lock arc
 ]]
 
 -- cell is the first of two sprite frames; tail is the cell the followers
 -- of a chain use. size scales the 16px sprite. fly is height off the
 -- ground; sway is how far it weaves; bite is damage on reaching the mech.
+-- track 1 closes on the mech over the last stretch; 0 lands where the
+-- mech stood when it was launched. brood is what it drops, every
+-- brood_every frames. halt is a depth it stops at. parts are more sprites drawn around the body, as
+-- cell:across:down in sprite pixels; ones to the right are flipped.
 enemy_specs=parse_table[[
-name,cell,tail,size,hp,speed,fly,sway,bite,points,chain,brood
-skitter,0,0,0.7,2,0.011,0,10,6,1,0,
-wing,2,2,0.8,3,0.014,45,22,8,2,0,
-brute,4,4,1.8,40,0.006,0,4,25,10,0,
-wyrm,6,8,1.1,8,0.009,0,26,10,3,1,
-ship,10,10,2.4,90,0.004,60,8,30,25,0,skitter
+name,cell,tail,size,hp,speed,fly,sway,bite,points,chain,track,brood,brood_every,halt,boss,parts
+skitter,0,0,0.7,2,0.011,0,10,6,1,0,1,,,,,
+wing,2,2,0.8,3,0.014,45,22,8,2,0,1,,,,,
+brute,4,4,1.6,40,0.006,0,4,25,10,0,1,spit,260,,,16:-10:1/16:10:1
+wyrm,6,8,1.1,6,0.009,0,26,10,3,1,1,,,,,
+ship,10,10,2.4,70,0.004,60,8,30,25,0,1,skitter,220,2.4,,
+spit,14,14,0.6,1,0.028,14,0,9,0,0,0,,,,,
+tyrant,18,18,3,800,0.0024,0,6,60,100,0,1,spit,110,1.8,1,20:0:-7/16:-12:-3/16:12:-3/16:-10:4/16:10:4
 ]]
 
+for spec in all(enemy_specs) do
+ spec.part_list={}
+ for part in all(split(spec.parts or "","/")) do
+  if part!="" then add(spec.part_list,split(part,":")) end
+ end
+end
+
 -- one wave a line; each group is name*count, sent a few seconds apart.
-wave_specs=split([[skitter*5,skitter*6
-skitter*6,wing*4,skitter*8
-wing*5,wyrm*6,skitter*8
-brute*1,skitter*8,wing*6
-wyrm*8,skitter*10,brute*1,wing*6
-wyrm*8,wing*8,brute*2,skitter*12
-ship*1,skitter*10,wing*8,brute*2
-ship*2,wyrm*10,brute*2,wing*10,skitter*12]],"\n")
+wave_specs=split([[skitter*6,skitter*8,skitter*8
+skitter*8,wing*5,skitter*10,wing*5
+wing*6,wyrm*6,skitter*10,wing*6,wyrm*7
+brute*1,skitter*10,wing*6,skitter*12,brute*1,wyrm*8
+wyrm*8,skitter*12,brute*2,wing*8,wyrm*8,skitter*14
+ship*1,wing*8,wyrm*8,skitter*14,brute*2,wing*10
+ship*1,brute*2,skitter*14,wing*10,wyrm*10,ship*1,brute*2,skitter*14
+tyrant*1,skitter*12,wing*8,wyrm*8,brute*1,skitter*14,wing*10,brute*2,skitter*14,wing*10]],"\n")
 
 skyline=split"7,12,9,16,7,13,20,8,11,15,6,18,10,14,7,12,9,17,8,11,14,9"
-grid_depths=split"1.15,1.4,1.8,2.5,3.6,5"
+grid_depths=split"6,5,3.6,2.5,1.8,1.4,1.15,1"
 stars=split"9,5,30,11,52,3,71,9,96,6,118,12,84,16,40,17,14,15,107,2"

@@ -1,5 +1,5 @@
 -- test_weapons.lua : every weapon against a foe standing in the cone, near,
--- far, flying and big. the mech stands still and holds fire, and is kept
+-- far, flying and big, wherever the weapon's range covers where it starts. the mech stands still and holds fire, and is kept
 -- cool, so this measures whether shots land and how long a kill takes; it
 -- says nothing about heat or about aiming by moving.
 -- then a staged scene with every kind of foe, for a screenshot.
@@ -11,7 +11,7 @@ function sfx() end
 music=sfx
 function update_waves() end
 
-local setups={"skitter,2","skitter,5.8","wing,4","brute,4.5","ship,5"}
+local setups={"skitter,2","wing,2.5","skitter,5.8","wing,4","brute,4.5","ship,5"}
 local n,weapon_index,setup_index=0,1,0
 local victim,started
 local staged
@@ -26,13 +26,14 @@ function next_case()
   weapon_index+=1
  end
  if weapon_index>#weapon_specs then return false end
+ local parts=split(setups[setup_index])
+ if parts[2]>weapon_specs[weapon_index].range then return next_case() end
  foes,shots={},{}
  player.x,player.vx,player.armor,player.weapon=0,0,100,weapon_index
  for weapon in all(weapon_specs) do weapon.wait=0 end
- local parts=split(setups[setup_index])
  victim=spawn_foe(enemy_specs[parts[1]],0,parts[2],0)
  victim.sway=0
- victim.brood=false
+ victim.brood,victim.halt=false
  started=n
  return true
 end
@@ -45,7 +46,8 @@ function stage_scene()
  spawn_group("skitter",8)
  spawn_group("wing",5)
  spawn_group("wyrm",7)
- spawn_foe(enemy_specs.brute,30,2.2,0)
+ spawn_foe(enemy_specs.brute,-45,2.2,0).age=250
+ spawn_foe(enemy_specs.tyrant,28,3.2,0)
  spawn_foe(enemy_specs.ship,-10,4,0)
  spawn_foe(enemy_specs.skitter,-22,1.6,0)
  for i,foe in ipairs(foes) do
@@ -66,6 +68,10 @@ function _update60()
 
  if staged then
   held[1]=true
+  if n==staged+70 then
+   charge=alpha_cost
+   held[5]=true
+  end
  elseif victim.hp<=0 then
   printh(weapon_specs[weapon_index].name.." kills "
    ..setups[setup_index].." in "..(n-started).." frames")
