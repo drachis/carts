@@ -3,11 +3,11 @@
 usage: py feel_map.py
 
 Each game has a cart, tests/test_feel.p8, in which a scripted dragon plays
-for two minutes at a player's speed (healed, so the map covers the whole
-time) and prints one line a second: enemies on screen, kills so far, tiles
-burning, shots in the air, health lost that second, position. This runs
+for thirty seconds at a player's speed (unhealed; the run ends if it dies,
+so a short strip is a death) and prints one line a second: enemies on screen, kills so far, tiles
+burning, shots in the air, its health, position. This runs
 both in a window, writes feel.csv, and prints the two side by side: the
-averages, and a strip per measure with one character for each five seconds.
+averages, and a strip per measure with one character a second.
 
 It is not a measure of fun. It is a measure of how much is happening, and
 of whether it rises and falls.
@@ -19,9 +19,9 @@ import threading
 HERE = os.path.dirname(os.path.abspath(__file__))
 PICO8 = os.environ.get("PICO8", r"C:\Program Files (x86)\PICO-8\pico8.exe")
 GAMES = {"wyrmfire": os.path.join(HERE, "..", "wyrmfire"), "wyrmdeep": HERE}
-COLUMNS = ["second", "enemies", "kills", "burning", "shots", "hurt", "x", "y"]
+COLUMNS = ["second", "enemies", "kills", "burning", "shots", "health", "x", "y"]
 BLOCKS = " .:-=+*#%@"
-STEP = 5  # seconds per character in a strip
+STEP = 1  # seconds per character in a strip
 
 
 def record(folder):
@@ -69,7 +69,7 @@ def main():
         for name, rows in runs.items():
             for row in rows:
                 handle.write(name + "," + ",".join("%g" % row[column] for column in COLUMNS) + "\n")
-    for column in ("enemies", "kills", "burning", "shots", "hurt"):
+    for column in ("enemies", "kills", "burning", "shots", "health"):
         series = {name: per_second(rows, column) for name, rows in runs.items()}
         top = max(max(values, default=0) for values in series.values())
         print("\n%s (a character is %d seconds; ' ' is none, '@' is %g)" % (column, STEP, top))

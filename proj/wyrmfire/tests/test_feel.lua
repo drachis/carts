@@ -3,9 +3,9 @@
 --
 -- the scripted dragon of the soak (it heads for a boss, else the nearest
 -- ward, then the goal, breathing in bursts and charging now and then) plays
--- for two minutes, healed so that the map covers the whole time. once a
+-- for thirty seconds, unhealed, or until it dies. once a
 -- second it prints: enemies on screen, kills so far, tiles burning on
--- screen, shots in the air, health lost that second, and where it is.
+-- screen, shots in the air, its health, and where it is.
 
 local held={}
 function btn(i) return held[i] end
@@ -26,7 +26,7 @@ local function objective()
  return best
 end
 
-local n,hurt=0,0
+local n=0
 local game_update,game_draw=_update,_draw
 
 function _draw() end
@@ -39,11 +39,9 @@ function _update()
  held[4]=n%90<60
  held[5]=n%50==0
  state="play"
- hurt+=dragon.max_hp-dragon.hp
- dragon.hp=dragon.max_hp
  game_update()
  game_draw()
- if state!="play" then new_game() end
+
 
  if n%30==0 then
   local seen,burning=0,0
@@ -55,10 +53,9 @@ function _update()
     if burning_at(tx,ty) then burning+=1 end
    end
   end
-  printh("feel "..n\30 ..","..seen..","..kills..","..burning..","..#shots..","..flr(hurt)..","..flr(dragon.x)..","..flr(dragon.y))
-  hurt=0
+  printh("feel "..n\30 ..","..seen..","..kills..","..burning..","..#shots..","..flr(dragon.hp)..","..flr(dragon.x)..","..flr(dragon.y))
  end
- if n==3600 then
+ if state!="play" or n==900 then
   printh("ok feel")
   extcmd("shutdown")
  end
