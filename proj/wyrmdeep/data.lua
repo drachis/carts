@@ -45,13 +45,13 @@ sight_range=110
 combo_frames=90
 horde_size=5
 belly_size=40
-linger_frames=150
-creep=0.4
+linger_frames=90
+creep=0.7
 crush=4
 stagger_frames=90
 buoyancy=0.12
-stamina_fast=1.5
-stamina_slow=0.5
+stamina_fast=4
+stamina_slow=1.5
 summon_frames=210
 storm_range=56
 fury_frames=240
@@ -118,8 +118,8 @@ sink=0.2
 guard=0
 storm=0
 belly=0
-stamina=120
-max_stamina=120
+stamina=200
+max_stamina=200
 mercy=30
 body=8
 wing=2
@@ -134,7 +134,7 @@ charge_windup=7
 charge_speed=4.5
 ram=0
 charge_frames=12
-charge_recover=40
+charge_recover=24
 bite_damage=2
 windup=0
 charge=0
@@ -162,9 +162,9 @@ sir kay,96,36,1.2,4,40,0.5,30,1,legend,,,,9,5,,,,1,,16,,,1
 sir gawain,98,72,1.3,8,40,0.5,30,1,legend,,,rebuke,11,6,5,,,1,,16,serf/pikeman/archer,,2
 merlin,73,76,0.6,7,70,0.5,40,1,ranged,90,0.6,arcane,12,,5,1,,1,,,bat/bat/monk,12,3
 king arthur,102,128,1.4,12,40,0.5,30,1,legend,,,excalibur,10,8,7,,,,1,16,knight/monk/crossbowman,14,4
-hovel,55,2,0,0,140,0.3,0,1,spawner,,,,,,,1,,,,,serf/serf/archer
-barracks,56,4,0,0,110,0.3,0,1,spawner,,,,,,,1,,,,,knight/pikeman/crossbowman
-roost,57,2,0,0,120,0.3,0,1,spawner,,,,,,,1,,,,,bat
+hovel,55,1,0,0,140,0.3,0,1,spawner,,,,,,,1,,,,,serf/serf/archer
+barracks,56,1,0,0,110,0.3,0,1,spawner,,,,,,,1,,,,,knight/pikeman/crossbowman
+roost,57,1,0,0,120,0.3,0,1,spawner,,,,,,,1,,,,,bat
 ]]
 
 shot_specs=parse_table[[
