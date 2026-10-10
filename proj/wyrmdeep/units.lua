@@ -25,7 +25,7 @@ end
 function damage_unit(unit,amount,eaten)
  unit.hp-=amount
  unit.flash=3
- if unit.hp>0 then return end
+ if unit.hp>0 and unit.max_hp>1 then return end
  del(units,unit)
  burst(unit.x,unit.cy,4,4)
  coins(unit.x,unit.cy,1)
@@ -188,7 +188,7 @@ function unit_ai.panic(unit)
  if frame%6==0 then unit.wander=rnd{-1,1} end
  if rnd()<.05 then ignite(unit.x\8,unit.y\8) end
  if rnd()<.4 then add_particle(unit.x,unit.y-3,0,-.5,8,"fire") end
- damage_unit(unit,.0125)
+ if unit.burn<=0 then damage_unit(unit,.5) end
  return unit.wander*1.2,0
 end
 
