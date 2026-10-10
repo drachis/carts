@@ -81,14 +81,25 @@ function update_particles()
   p.life-=1
   if p.kind=="fire" then
    p.vx*=.92
-   p.vy=p.vy*.92-.07
+   p.vy=p.vy*.92-(1-p.life/p.span)*buoyancy
    if p.ember then
     if boss and boss.shields>0 and length(p.x-boss.x,p.y-boss.cy)<(boss.size or 8)+4 then
      p.vx=p.vx*.3+(p.x-boss.x)/6
      p.vy=p.vy*.3+(p.y-boss.cy)/6-1
     end
     ignite(p.x\8,p.y\8)
-    if solid(p.x,p.y) then p.life=0 end
+    if solid(p.x,p.y) then
+     p.x-=p.vx
+     p.y-=p.vy
+     if solid(p.x+p.vx,p.y) then
+      p.vx*=-.3
+      p.vy-=.7
+     else
+      p.vy*=-.2
+      p.vx*=1.25
+     end
+     p.life-=2
+    end
    end
   elseif p.kind=="coin" then
    p.vx*=.9

@@ -226,6 +226,9 @@ function charge_impacts(head_x,head_y)
    jolt(3)
    if unit.shields>0 then
     unit.shields-=1
+    for color in all{12,1,7} do
+     splat(unit.x,unit.cy,color)
+    end
     ring(unit.x,unit.cy,14)
     sfx(snd_crash)
     if unit.shields==0 then
@@ -330,9 +333,13 @@ function update_dragon()
  end
 
  if d.x<cam_x+4 then
-  d.x=cam_x+4
   for offset=-3,3,3 do
-   ram(d.x+4,d.y+offset)
+   ram(cam_x+8,d.y+offset)
+  end
+  if blocked(cam_x+4,d.y) then
+   cam_x=d.x-4
+  else
+   d.x=cam_x+4
   end
   if linger>linger_frames then damage_dragon(crush) end
  end
@@ -376,9 +383,14 @@ function draw_dragon()
   belly=floor_y-2.5*size
   y=min(y,belly-4*size)
  end
+ local function segment(part,rest_y,color)
+  local px,py,reach=part.x,min(part.y,rest_y-part.r),part.r/size
+  local base_x,base_y=px+ux*reach,py+uy*reach
+  line(base_x,base_y,base_x+ux*2-fx,base_y+uy*2-fy,6)
+  circfill(px,py,part.r,color)
+ end
  for i=#body,6,-1 do
-  local part=body[i]
-  circfill(part.x,min(part.y,floor_y-part.r),part.r,i%2==0 and 8 or 2)
+  segment(body[i],floor_y,i%2==0 and 8 or 2)
  end
  for i=1,2 do
   local part=body[i]
@@ -400,18 +412,32 @@ function draw_dragon()
  if d.guarding then
   circ(x,y,10*size,frame%4<2 and 11 or 7)
  end
- local span,sweep=7+flap*5,4-flap*2
- local tip_x,tip_y=x+ux*span-fx*sweep,y+uy*span-fy*sweep
- local edge_x,edge_y=x-fx*8-tip_x,y-fy*8-tip_y
- for i=0,1,.1/size do
-  line(x,y,tip_x+edge_x*i,tip_y+edge_y*i,2)
+ local span=9+flap*6
+ local wrist_x,wrist_y=x+ux*span/2+fx*2,y+uy*span/2+fy*2
+ local tips={}
+ for finger=0,3 do
+  local back,rise=finger*5-3,span*(1.1-finger*.33)
+  add(tips,{x-fx*back+ux*rise,y-fy*back+uy*rise})
  end
- line(x,y,tip_x,tip_y,8)
+ for finger=1,3 do
+  local from_x,from_y=unpack(tips[finger])
+  local to_x,to_y=unpack(tips[finger+1])
+  for along=0,1,.12/size do
+   local scallop=1+sin(along/2)*.3
+   line(wrist_x,wrist_y,
+    wrist_x+(from_x+(to_x-from_x)*along-wrist_x)*scallop,
+    wrist_y+(from_y+(to_y-from_y)*along-wrist_y)*scallop,2)
+  end
+ end
+ line(x,y,wrist_x,wrist_y,8)
+ for tip in all(tips) do
+  line(wrist_x,wrist_y,tip[1],tip[2],8)
+ end
 
- for i=1,5 do
-  local part=body[i]
-  circfill(part.x,min(part.y,belly-part.r),part.r,8)
+ for i=1,4 do
+  segment(body[i],belly,8)
  end
+ circfill(body[5].x,min(body[5].y,belly-body[5].r),body[5].r,8)
  line(x+fx*7+ux*3,y+fy*7+uy*3,x+fx*4+ux*5,y+fy*4+uy*5,6)
  pset(x+fx*8+ux*1.5,y+fy*8+uy*1.5,10)
  pal()

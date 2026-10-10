@@ -49,6 +49,7 @@ linger_frames=150
 creep=0.4
 crush=4
 stagger_frames=90
+buoyancy=0.12
 summon_frames=210
 storm_range=56
 fury_frames=240
@@ -142,7 +143,7 @@ calm=0
 
 unit_specs=parse_table[[
 name,sprite,max_hp,speed,damage,reload,fire_taken,meal,brave,ai,range,keep_away,shot,color,knock,volley,flies,ward,grants,crown,size,pool,aura,shield
-serf,64,2,0.8,2,30,1,2,0,melee,,,,,2
+serf,64,2,0.8,1,30,1,2,0,melee,,,,,2
 pikeman,75,5,0.9,4,35,0.8,3,1,melee,,,,,3
 archer,65,4,0.3,3,80,1,2,0,ranged,70,0.4,arrow
 crossbowman,76,5,0.3,5,110,1,2,0,ranged,90,0.4,quarrel
@@ -153,11 +154,11 @@ ballista,69,15,0,10,120,0.7,0,1,ranged,100,0,bolt
 sheep,71,1,0.3,0,0,1,10,0,sheep
 pig,82,1,0.4,0,0,1,8,0,sheep
 cow,81,2,0.25,0,0,1,16,0,sheep
-sir kay,96,140,1.2,6,40,0.5,30,1,legend,,,,9,5,,,,1,,16,,,1
+sir kay,96,140,1.2,4,40,0.5,30,1,legend,,,,9,5,,,,1,,16,,,1
 sir gawain,98,280,1.3,8,40,0.5,30,1,legend,,,rebuke,11,6,5,,,1,,16,serf/pikeman/archer,,2
 merlin,73,420,0.6,7,70,0.5,40,1,ranged,90,0.6,arcane,12,,5,1,,1,,,bat/bat/monk,12,3
 king arthur,102,500,1.4,12,40,0.5,30,1,legend,,,excalibur,10,8,7,,,,1,16,knight/monk/crossbowman,14,4
-hovel,55,6,0,0,100,0.3,0,1,spawner,,,,,,,1,,,,,serf/serf/archer
+hovel,55,6,0,0,140,0.3,0,1,spawner,,,,,,,1,,,,,serf/serf/archer
 barracks,56,14,0,0,110,0.3,0,1,spawner,,,,,,,1,,,,,knight/pikeman/crossbowman
 roost,57,5,0,0,120,0.3,0,1,spawner,,,,,,,1,,,,,bat
 ]]

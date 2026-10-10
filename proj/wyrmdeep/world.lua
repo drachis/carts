@@ -58,6 +58,9 @@ function update_fire()
  for fire in all(fires) do
   local tx,ty=fire.tx,fire.ty
   fire.life-=1
+  if rnd()<.25 then
+   add_particle(tx*8+rnd(8),ty*8+2,rnd()-.5,-.4,12+rnd(8),"fire")
+  end
   if fire.life==spread_at then
    ignite(tx-1,ty)
    ignite(tx+1,ty)

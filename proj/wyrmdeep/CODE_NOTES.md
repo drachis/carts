@@ -24,8 +24,11 @@ pixels; a row belongs to the stage `y\128`.
 
 ## core.lua
 
-- `update_particles`: an ember lights whatever flammable tile it is in, then
-  dies if the tile is still solid. A coin with `meal` set is meat: it flies
+- `update_particles`: fire rises harder the older it gets (`buoyancy`), so a
+  jet goes out flat and billows up at the end. An ember lights whatever
+  flammable tile it is in; against anything still solid it steps back and
+  either licks up a wall or spreads along a floor, losing a little life.
+  A coin with `meal` set is meat: it flies
   to the belly gauge, not the dragon, and feeds it on arrival.
 
 ## world.lua
@@ -73,6 +76,9 @@ pixels; a row belongs to the stage `y\128`.
   over the floor line while the tail rests on it. Limbs are two lines with a
   knee: grounded they step and carry the body, in flight the leg trails and
   the arm reaches forward.
+- The wing is a bat's: an arm to a wrist, four finger bones, and a scalloped
+  membrane filled between each pair. `segment` draws one body circle with a
+  spine on its back.
 - `feed`: called when meat reaches the gauge.
 
 ## main.lua

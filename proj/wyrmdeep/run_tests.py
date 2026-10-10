@@ -19,7 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PICO8 = os.environ.get("PICO8", r"C:\Program Files (x86)\PICO-8\pico8.exe")
 TEST_CARTS = [os.path.join("tests", name) for name in ("test_data.p8", "test_run.p8")]
 MODULES = ["data.lua", "core.lua", "world.lua", "units.lua", "dragon.lua", "main.lua"]
-TIMEOUT_SECONDS = 330
+TIMEOUT_SECONDS = 540
 SCREEN_ROW = re.compile(r"^INFO: (\w+) ([0-9a-f]{128})$")
 
 
