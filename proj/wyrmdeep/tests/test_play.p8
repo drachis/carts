@@ -11,6 +11,7 @@ __lua__
 #include ../main.lua
 #include dump.lua
 #include harness.lua
+#include bot.lua
 #include test_play.lua
 __gfx__
 0000000044f444f4f4f4f4f403000b304444444400000000ddd5d0dd00030000a9aaa9aa003bb300000000000000000000000000000000000000000000000000
