@@ -52,14 +52,22 @@ streets, houses far to near, foes far to near, drops, aim, shots, mech,
 fireballs and sparks, HUD.
 
 **The city is the ground.** The grid is ten cells across and eight deep.
-Streets run along every second grid line, so the cube houses stand in
-blocks of four; each house is a roof and a front wall, with a lit window
-and something on the roof when it is near. `travel` slides the rows toward
-the viewer while there is anything on the hill, faster under boost, and
-eases to a stop when the hill is clear. There is no city health bar:
-`city` runs from 100 to 0 and that share of the houses (chosen by a fixed
-hash of column and row) are drawn as burnt-out, burning wrecks, and the
-near rows flash when something gets in.
+Streets run along every second grid line, so the towers stand in blocks
+of four. `draw_tower` draws each as a roof and a front wall; a fixed hash
+of its column and row (`seed`) gives it a height, one of four wall and
+roof colours, one of three window colours, a grid of windows when it is
+near, and a mast with a blinking light or a box on the roof. `travel`
+slides the rows toward the viewer while there is anything on the hill,
+faster under boost, and eases to a stop when the hill is clear.
+
+There is no city health bar: the towers show it. `city` runs from 100 to
+0. Each tower has its turn, by `seed`: shortly before it falls it is
+*damaged* (windows dark, some alight, a bite out of its top), then it is a
+*ruin* (a black shell a third the height with a fire in it). At 70 a
+third of the city is one or the other; at 10 it is a field of burning
+shells. The near rows also flash when something gets in.
+
+The mech is drawn with a black edge so it stands off the rooftops.
 
 Sprites are 16x16 cells drawn with `sspr` at `size*scale`. A foe may have
 `parts`: more cells drawn around its body, bobbing, mirrored on the right
@@ -151,6 +159,9 @@ group whose members all weave along the same path, one behind the other
   far, flying, big) wherever the weapon's range covers it, with the mech
   kept cool and loaded; prints frames to kill. Then a staged scene with
   every foe (`scene.png`) and the CPU it costs.
+- `test_city`: the empty city drawn at 100, 70, 40 and 10 health
+  (`city_*.png`) with the CPU each costs. Look at the pictures: it cannot
+  tell whether the damage reads.
 - `test_feel`: a crude bot plays three whole runs unhealed and prints a
   line per wave. It never boosts or vents. It measures how much is
   happening and whether a plain strategy survives. It does not measure fun.
@@ -160,9 +171,11 @@ retries. It is PICO-8's, not the cart's.
 
 ## Not built yet, or not checked
 
-- Every number in `data.lua` is tuned only against the bot, which now wins
-  three runs in three: it is probably too easy for a person who has
+- Every number in `data.lua` is tuned only against the bot, which wins two
+  or three runs in three: it is probably too easy for a person who has
   learned it.
+- CPU is about 50% with an empty hill and 70% with 24 foes and an alpha
+  strike; the most the bot has seen is 34 foes, which is not measured.
 - The sound effects and the two-channel music loop were written as numbers.
 - Boost has no reward beyond time; nothing yet pays for pushing forward.
 - No high score is saved.

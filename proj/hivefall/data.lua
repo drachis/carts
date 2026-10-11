@@ -135,4 +135,7 @@ tyrant*1,skitter*12,wing*8,wyrm*8,brute*1,skitter*14,wing*10,brute*2,skitter*14,
 
 skyline=split"7,12,9,16,7,13,20,8,11,15,6,18,10,14,7,12,9,17,8,11,14,9"
 blast_colours=split"7,10,9,8,2"
+-- a tower takes one of four wall,roof pairs and one of three window colours
+tower_tints=split"5,6,13,5,3,5,1,13"
+window_tints=split"10,12,7"
 stars=split"9,5,30,11,52,3,71,9,96,6,118,12,84,16,40,17,14,15,107,2"

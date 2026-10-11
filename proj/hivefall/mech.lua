@@ -239,6 +239,14 @@ end
 
 function draw_player()
  local sx,sy=project(player.x,1,hover+sin(tick/45)*1.5)
+ -- a black edge first, so it stands off the rooftops
+ local top=sy-23+player.recoil
+ for colour=1,15 do pal(colour,0) end
+ for nudge=-1,1,2 do
+  sspr(0,64,24,24,sx-12+nudge,top)
+  sspr(0,64,24,24,sx-12,top+nudge)
+ end
+ pal()
  if player.hurt_flash>0 and tick%4<2 then
   for colour=1,15 do pal(colour,8) end
  elseif player.alpha>0 and tick%4<2 then
@@ -249,7 +257,7 @@ function draw_player()
   pal(6,9)
   pal(13,8)
  end
- sspr(0,64,24,24,sx-12,sy-23+player.recoil)
+ sspr(0,64,24,24,sx-12,top)
  pal()
  -- jump jets under the feet, longer under boost
  for jet=-7,7,14 do

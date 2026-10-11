@@ -60,12 +60,12 @@ function draw_hill()
  local depths={far_z}
  for k=8,0,-1 do
   local z=1+(k-slide)*0.625
-  if (k+turn)%2==0 and z>0.9 then add(depths,z) end
+  if (k+turn)%2==0 and z>0.8 then add(depths,z) end
  end
- add(depths,0.9)
+ add(depths,0.8)
  for z in all(depths) do
   line()
-  for x=-100,100,20 do grid_point(x,z,colour) end
+  for x=-100,100,40 do grid_point(x,z,colour) end
  end
  for x=-100,100,40 do
   line()
@@ -78,35 +78,67 @@ function draw_hill()
   local back=min(front+0.625,far_z)
   -- a gap for the street on the block's outer sides only
   if row%2==0 then front+=0.12 else back-=0.12 end
-  front=max(front,0.9)
+  front=max(front,0.8)
   if back>front then
    for column=0,9 do
     local left=column*20-100
     local right=left+20
     if column%2==0 then left+=4 else right-=4 end
-    local seed=(column*7+row*13)%20
-    local wrecked=seed<(100-city)/5
-    local height=wrecked and 2 or 4+seed%9
-    local x1,top,scale=project(left,front,height)
-    local x2=project(right,front,height)
-    local _,far_top=project(left,back,height)
-    local roof,wall=1,5
-    if wrecked then roof,wall=2,0 end
-    if city_flash>0 and k<3 and tick%4<2 then roof,wall=8,2 end
-    rectfill(x1,far_top,x2,top,roof)
-    rectfill(x1,top+1,x2,top+height*scale,wall)
-    if wrecked then
-     pset(x1+seed%4,far_top+1,(tick\6+seed)%3==0 and 9 or 8)
-     pset(x2-seed%3,top-1,(tick\5+seed)%3==0 and 10 or 0)
-     if rnd()<0.01 then
-      burst((x1+x2)/2,far_top,1,rnd{8,9,6},0.5,-0.04)
-     end
-    elseif scale>0.5 then
-     -- a lit window, and something on the roof to fly over
-     pset(x1+1+seed%3,top+2,10)
-     rectfill(x1+2,far_top+2,x1+2+scale*3,far_top+1+scale*2,13)
+    draw_tower(left,right,front,back,(column*7+row*13)%20,k<3)
+   end
+  end
+ end
+end
+
+-- one tower: a roof and a front wall of windows. `seed` (0..19) fixes its
+-- height, colours and roof, and its turn to suffer: as the city falls a
+-- tower is first damaged (windows out, some alight, a bite out of its
+-- top), then a burning ruin a third the height.
+function draw_tower(left,right,front,back,seed,near_row)
+ local harm=(100-city)/5-seed
+ local ruined=harm>0
+ local height=6+seed%8*2
+ if ruined then height/=3 end
+ local x1,top,scale=project(left,front,height)
+ local x2=x1+(right-left)*(0.6+scale/3)
+ local _,far_top=project(left,back,height)
+ local base=top+height*scale
+ local wall,roof=tower_tints[seed%4*2+1],tower_tints[seed%4*2+2]
+ if ruined then wall,roof=0,0 end
+ if city_flash>0 and near_row and tick%4<2 then wall,roof=2,8 end
+ rectfill(x1,far_top,x2,top,roof)
+ rectfill(x1,top+1,x2,base,wall)
+
+ if ruined then
+  -- a charred shell with a fire in it
+  rect(x1,far_top,x2,base,5)
+  circfill((x1+x2)/2+rnd(3)-1,(far_top+top)/2,scale*2+rnd(2),rnd{8,9,10})
+  if rnd()<0.02 then
+   burst((x1+x2)/2,far_top,1,rnd{5,6,9},0.5,-0.05)
+  end
+ elseif scale>0.6 then
+  local damaged=harm>-4
+  local glass=window_tints[seed%3+1]
+  for across=0,(x2-x1-2)\4 do
+   for down=0,min(6,(base-top-4)\3) do
+    local pane=across*3+down*5+seed
+    local colour=pane%4>0 and glass
+    if damaged then
+     colour=pane%5==0 and (tick\8+pane)%2*9 or 0
+    end
+    if colour then
+     pset(x1+1+across*4,top+3+down*3,colour)
     end
    end
+  end
+  if damaged then
+   rectfill(x2-2-scale*4,far_top,x2,top+scale*5,0)
+  elseif seed%5==0 then
+   -- a mast with a light
+   line(x1+3,far_top,x1+3,far_top-scale*5,6)
+   if tick%60<30 then pset(x1+3,far_top-scale*5,8) end
+  else
+   rectfill(x1+2,far_top+2,x1+2+scale*3,far_top+1+scale*2,13)
   end
  end
 end
