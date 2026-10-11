@@ -18,6 +18,7 @@ function update_player()
  player.hurt_flash=max(player.hurt_flash-1)
  player.muzzle=max(player.muzzle-1)
  player.recoil*=0.8
+ player.chill=max(player.chill-1)
  player.heat=max(player.heat-player.cooling)
  if player.heat<restart_heat then player.overheated=false end
  for weapon in all(weapon_specs) do
@@ -25,16 +26,16 @@ function update_player()
  end
 
  find_target()
- if btnp(5) then
-  if charge>=alpha_cost then
-   start_alpha()
-  else
-   repeat
-    player.weapon=player.weapon%#weapon_specs+1
-   until weapon_specs[player.weapon].wave<=wave
-   sfx(snd_switch)
-  end
+ local step=tonum(btnp(5))-tonum(btnp(3))
+ if step!=0 then
+  repeat
+   player.weapon=(player.weapon-1+step)%#weapon_specs+1
+   local candidate=weapon_specs[player.weapon]
+  until candidate.wave<=wave
+   and (candidate.ammo==0 or candidate.rounds>0)
+  sfx(snd_switch)
  end
+ if btnp(2) and charge>=alpha_cost then start_alpha() end
 
  if player.alpha>0 then
   player.alpha-=1
@@ -53,7 +54,12 @@ function update_player()
 
  local weapon=weapon_specs[player.weapon]
  if btn(4) and weapon.wait==0 and not player.overheated then
-  fire(weapon)
+  if weapon.ammo>0 and weapon.rounds<=0 then
+   bark(weapon.name.." is dry")
+   player.weapon=1
+  else
+   fire(weapon)
+  end
  end
 end
 
@@ -86,7 +92,8 @@ end
 
 function fire(weapon)
  weapon.wait=weapon.cooldown*max(0.4,player.haste)
- player.heat+=weapon.heat
+ weapon.rounds-=1
+ if player.chill==0 then player.heat+=weapon.heat end
  if player.heat>=max_heat then
   player.overheated=true
   bark("heat critical!")
@@ -207,7 +214,7 @@ function hurt_player(amount)
  if player.armor<=0 then
   burst(sx,sy,60,10,5)
   ring(sx,sy,70,8,1)
-  end_game(false)
+  end_game(false,"mech destroyed")
  end
 end
 

@@ -1,6 +1,6 @@
 -- test_weapons.lua : every weapon against a foe standing in the cone, near,
 -- far, flying and big, wherever the weapon's range covers where it starts. the mech stands still and holds fire, and is kept
--- cool, so this measures whether shots land and how long a kill takes; it
+-- cool and loaded, so this measures whether shots land and how long a kill takes; it
 -- says nothing about heat or about aiming by moving.
 -- then a staged scene with every kind of foe, for a screenshot.
 
@@ -65,12 +65,13 @@ function _update60()
  end
  held={[4]=true}
  player.heat,player.overheated=0,false
+ for weapon in all(weapon_specs) do weapon.rounds=weapon.ammo end
 
  if staged then
   held[1]=true
   if n==staged+70 then
    charge=alpha_cost
-   held[5]=true
+   held[2]=true
   end
  elseif victim.hp<=0 then
   printh(weapon_specs[weapon_index].name.." kills "

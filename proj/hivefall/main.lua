@@ -2,12 +2,28 @@
 -- callbacks. states: title, play, shop (pick an upgrade), over.
 
 function reset()
- foes,shots,sparks,rings,popups={},{},{},{},{}
+ foes,shots,sparks,rings,popups,drops={},{},{},{},{},{}
  parse_record(run_start,",",_ENV)
  player=parse_record(player_start,",")
  boss,alpha_told=nil
- for weapon in all(weapon_specs) do weapon.wait=0 end
+ restock()
  start_wave(1)
+end
+
+function restock()
+ for weapon in all(weapon_specs) do
+  weapon.wait,weapon.rounds=0,weapon.ammo
+ end
+end
+
+-- a foe that gets past the mech is loose in the city behind it
+function hurt_city(amount)
+ if city_flash==0 then bark("they're in the city!") end
+ city-=amount
+ city_flash=30
+ shake=max(shake,4)
+ sfx(snd_hurt)
+ if city<=0 then end_game(false,"the city has fallen") end
 end
 
 -- the pilot says something beside the portrait
@@ -49,7 +65,7 @@ function update_waves()
   if clear_wait==20 then bark("hill is clear") end
   if clear_wait>100 then
    if wave==#wave_specs then
-    end_game(true)
+    end_game(true,"the hive is broken")
    else
     open_shop()
    end
@@ -98,6 +114,7 @@ function update_shop()
   local pick=choices[chosen]
   player[pick.stat]+=pick.amount
   player.armor=min(player.max_armor,player.armor+20)
+  restock()
   sfx(snd_upgrade)
   white=2
   state="play"
@@ -105,8 +122,8 @@ function update_shop()
  end
 end
 
-function end_game(won)
- state,game_won,over_wait="over",won,90
+function end_game(won,text)
+ state,game_won,over_wait,over_text="over",won,90,text
 end
 
 function _init()
@@ -126,6 +143,7 @@ function _update60()
   update_waves()
   update_foes()
   update_shots()
+  update_drops()
  elseif state=="shop" then
   update_shop()
  else
@@ -155,20 +173,26 @@ function draw_hud()
  sspr(64,16,16,16,1,1)
  pal()
  bar(21,2,40,player.armor/player.max_armor,player.armor>30 and 11 or 8)
- local heat_colour=9
- if player.overheated then heat_colour=blink and 8 or 7 end
- bar(21,8,40,player.heat/max_heat,heat_colour)
+ if player.chill>0 then
+  bar(21,8,40,player.chill/chill_frames,blink and 7 or 12)
+ else
+  local heat_colour=9
+  if player.overheated then heat_colour=blink and 8 or 7 end
+  bar(21,8,40,player.heat/max_heat,heat_colour)
+ end
  local ready=charge>=alpha_cost
  bar(21,14,40,player.alpha>0 and player.alpha/alpha_frames or charge/alpha_cost,
   (ready or player.alpha>0) and blink and 7 or 12)
- if ready then print("x:alpha!",65,13,blink and 7 or 12) end
+ if ready then print("up:alpha!",65,14,blink and 7 or 12) end
 
  local current=weapon_specs[player.weapon]
  print(current.name,65,2,current.wait>0 and 5 or current.colour)
+ if current.ammo>0 then print(current.rounds,65,8,6) end
  for i,weapon in ipairs(weapon_specs) do
   local x=15+i*6
   if weapon.wave<=wave then
-   rectfill(x,21,x+3,23,weapon.wait>0 and 5 or weapon.colour)
+   local dry=weapon.ammo>0 and weapon.rounds<=0
+   rectfill(x,21,x+3,23,(dry or weapon.wait>0) and 5 or weapon.colour)
   end
   if i==player.weapon then rect(x-1,20,x+4,24,7) end
  end
@@ -180,12 +204,14 @@ function draw_hud()
   print("x"..multiplier(),120,9,blink and 10 or 9)
  end
  print("wave "..wave,104,16,6)
+ print("city",80,23,city_flash>0 and 8 or 6)
+ bar(98,24,28,city/100,city>30 and 12 or 8)
 
  if boss and boss.hp>0 then
-  bar(14,123,100,boss.hp/enemy_specs.tyrant.hp,8)
+  bar(14,35,100,boss.hp/enemy_specs.tyrant.hp,8)
  end
  if banner>0 then
-  centred(boss and boss.hp>0 and "the hive tyrant" or "wave "..wave,36,7)
+  centred(boss and boss.hp>0 and "the hive tyrant" or "wave "..wave,42,7)
  end
 end
 
@@ -208,9 +234,11 @@ function _draw()
  draw_foes(true)
  draw_hill()
  draw_foes(false)
+ draw_drops()
  if state=="play" then draw_aim() end
  draw_shots()
  if state!="over" or game_won then draw_player() end
+ draw_city_front()
  draw_effects()
  camera()
  if white>0 then rectfill(0,0,127,127,7) end
@@ -224,13 +252,13 @@ function _draw()
   print("\^w\^thivefall",32,6,7)
   centred("hold the hill",21,12)
   centred("left/right  move",70,13)
-  centred("z fire   x next weapon",78,13)
-  centred("x when charged: alpha strike",86,12)
+  centred("z fire   x/down swap gun",78,13)
+  centred("up: alpha strike when charged",86,12)
   if tick%60<40 then centred("press z to deploy",98,10) end
  else
   rectfill(20,44,107,84,0)
   rect(20,44,107,84,game_won and 11 or 8)
-  centred(game_won and "the hive is broken" or "mech destroyed",50,7)
+  centred(over_text,50,7)
   centred("score "..score.."00",60,10)
   centred("wave "..wave,68,6)
   if over_wait==0 then centred("press z",76,13) end

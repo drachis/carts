@@ -5,7 +5,7 @@
 -- the bot walks under the nearest foe, sidesteps a spit that is close,
 -- holds fire while it has the heat to spare, swaps weapon when the one in
 -- hand is reloading or has nothing in range, uses alpha when it has it and
--- takes the middle upgrade. it is a crude player: it measures how much is
+-- takes the middle upgrade, and walks to a drop when nothing is close. it is a crude player: it measures how much is
 -- going on and whether a plain strategy survives, not whether the game is
 -- fun. spawns are random, so runs differ; that is why there are three.
 --
@@ -35,10 +35,16 @@ function report()
   .." | overheats "..stats.overheats
   .." | alphas "..stats.alphas
   .." | hits "..stats.hits
+  .." | city "..flr(city)
+  .." | drops "..stats.drops
   .." | score "..score.."00")
 end
 
-local real_alpha,real_score=start_alpha,add_score
+local real_alpha,real_score,real_collect=start_alpha,add_score,collect
+function collect(drop)
+ stats.drops+=1
+ real_collect(drop)
+end
 function start_alpha()
  stats.alphas+=1
  real_alpha()
@@ -51,7 +57,7 @@ end
 function play()
  if wave!=wave_seen then
   wave_seen,wave_started=wave,n
-  stats={kills=0,most=0,overheats=0,alphas=0,hits=0}
+  stats={kills=0,most=0,overheats=0,alphas=0,hits=0,drops=0}
  end
  stats.most=max(stats.most,#foes)
 
@@ -61,16 +67,20 @@ function play()
  end
  if nearest then
   goal=nearest.x
-  if nearest.track==0 and nearest.z<3 then
+  if nearest.points==0 and nearest.z<3 then
    goal=nearest.centre+(player.x<nearest.centre and -22 or 22)
   end
+ end
+ for drop in all(drops) do
+  if drop.z<2.5 and not (nearest and nearest.z<1.8) then goal=drop.x end
  end
  if goal>player.x+3 then held[1]=true end
  if goal<player.x-3 then held[0]=true end
 
  local weapon=weapon_specs[player.weapon]
  held[4]=player.heat+weapon.heat<max_heat
- held[5]=n%10==0 and (charge>=alpha_cost or weapon.wait>20
+ held[2]=charge>=alpha_cost
+ held[5]=n%10==0 and (weapon.wait>20
   or nearest and not player.target and n%40==0)
 end
 

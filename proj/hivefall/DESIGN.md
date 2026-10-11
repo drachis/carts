@@ -1,10 +1,11 @@
 # Hivefall
 
-A heavy mech holds the bottom of the screen and shoots *into* it, while a
-bio-swarm crests a city on a hill and comes down the slope at you. You
-steer left and right, hold one button to fire and tap the other to cycle
-an Unreal-style arsenal; the guns lock on to whatever is in the cone above
-the mech.
+A heavy mech advances up a city street toward a hill and shoots *into* the
+screen, while a bio-swarm crests the hill and comes down at it. The city is
+around and behind the mech: whatever gets past it is loose in the city. You
+steer left and right, hold one button to fire and tap the other to cycle an
+Unreal-style arsenal; the guns lock on to whatever is in the cone above the
+mech.
 
 What it takes from where:
 
@@ -15,8 +16,11 @@ What it takes from where:
   line sparks, rings, shake, hit-stop, a kill-chain multiplier.
 - **Tyranids:** the enemy. Swarms of small things, winged things, a
   segmented burrower, a clawed brute, a brood ship, a hive tyrant.
+- **Doom (2016):** only the pulse gun is unlimited. The rest run on ammo
+  that kills drop, so the big guns are spent, not lived in, and close kills
+  pay best.
 - **The pace:** slow, with "bombastic bursts". The burst is the alpha
-  strike.
+  strike; the smaller lifts are drops, coolant and a new gun each wave.
 
 ## Rules of the build
 
@@ -38,11 +42,15 @@ would appear at the mech's line. Things shrink to 30% and close up toward
 the middle as they recede, and the crest sags at the edges so the ground
 reads as a hill. The view slides a quarter as far as the mech walks.
 
-Draw order: sky, foes still behind the crest, the city and hill (which
-hide them), the grid, foes far to near, aim, shots, mech, effects, HUD.
-A foe behind the crest rises until it stands on the rooftops at `far_z`,
-then hops down onto the slope over the next unit of depth. The city cannot
-be hurt.
+Draw order: sky, foes still behind the crest, the hill (which hides them),
+the grid, the street's buildings, foes far to near, drops, aim, shots,
+mech, the front rooftops, effects, HUD. A foe behind the crest rises over
+it, then hops down onto the slope.
+
+The mech is always advancing: `travel` slides the grid's cross lines and
+the buildings either side of the street toward the viewer. It is scenery
+only; foes close at their own speeds. The buildings cannot be hurt, but
+the city has a health bar.
 
 Sprites are 16x16 cells drawn with `sspr` at `size*scale`. A foe may have
 `parts`: more cells drawn around its body, bobbing, mirrored on the right
@@ -52,8 +60,11 @@ group whose members all weave along the same path, one behind the other
 
 ## The game
 
-- **Controls:** left/right walk. Z (O) fires while held. X cycles weapons,
-  or, when the alpha bar is full, sets off the alpha strike.
+- **Controls:** left/right walk. O (Z) fires while held. X and down cycle
+  weapons forward and back, skipping empty ones. Up sets off the alpha
+  strike when its bar is full. PICO-8 has only two action buttons, which a
+  pad repeats across its face buttons, so the extra actions are on the
+  d-pad or stick.
 - **Aim:** the nearest foe inside the cone above the mech, out to the
   weapon in hand's `range`, is locked (green brackets). The cone and its
   range are drawn as dots. Most shots home on what was locked.
@@ -62,10 +73,20 @@ group whose members all weave along the same path, one behind the other
   (fast), shock (long, pierces a line), rocket (long, blast), redeemer
   (long, slow, clears a third of the hill). Each has its own reload, so
   cycling through loaded guns is faster than waiting on one.
+- **Ammo:** the pulse gun is unlimited. Every other gun holds `ammo`
+  rounds, shown under its name; a dry gun drops back to pulse. A refit
+  reloads everything.
 - **Heat:** every shot adds heat; at 100 the guns lock until it falls to
   `restart_heat`.
-- **Foes** (`enemy_specs`) reach the mech's line and bite if it is within
-  reach, then are gone. Most close on the mech over the last stretch.
+- **Drops:** a kill may leave a drop that slides down the hill; be under it
+  when it reaches the mech's line. Bigger foes and kills made close
+  (`z<2.2`) leave more. Plate when armour is low, otherwise ammo for the
+  emptiest gun, a part-charge of alpha, or coolant, which clears heat and
+  stops any building for four seconds.
+- **Foes** (`enemy_specs`) that reach the mech's line bite the mech if it
+  is within reach, and otherwise damage the city for half as much. Losing
+  either bar loses the game. Skitters and wings keep their line and run
+  for the city; the wyrm, brute and tyrant close on the mech.
   Brutes and the tyrant lob spit that lands where the mech stood (a red
   ring marks it): walk out of it, or shoot it down. Ships and the tyrant
   halt partway down and keep brooding until killed. A bite gives half a
@@ -121,6 +142,6 @@ retries. It is PICO-8's, not the cart's.
   guess tuned only against the bot.
 - The sound effects and the two-channel music loop were written as numbers
   and have not been heard.
-- Whether left/right alone is enough to do: the spit is the only thing
-  that asks for a dodge.
+- Whether the city bar is under the right amount of threat: the bot loses
+  none of it before wave four, and most of it by wave eight.
 - No high score is saved.

@@ -21,6 +21,7 @@ function _update60()
   held[n\120%2]=true
   held[4]=n%90<60
   held[5]=n%200==0
+  held[3]=n%330==0
  end
  if n==1500 then open_shop() end
  if n==1700 then
@@ -30,11 +31,13 @@ function _update60()
  if n==1800 then
   boss.z=2.5
   charge=alpha_cost
-  held[5]=true
+  held[2]=true
+  add(drops,{x=player.x,z=1.3,kind="cool",colour=12})
+  add(drops,{x=0,z=3,kind="flak",colour=9,weapon=weapon_specs.flak})
  end
  if n==1830 then hurt_foe(boss,9999) end
- if n==2100 then end_game(false) end
- if n==2300 then end_game(true) end
+ if n==2100 then hurt_city(999) end
+ if n==2300 then end_game(true,"the hive is broken") end
  game_update()
  game_draw()
  if n==5 then dump_screen("boot_title") end

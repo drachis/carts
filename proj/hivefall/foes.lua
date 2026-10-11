@@ -70,9 +70,11 @@ function update_foes()
   place_foe(foe)
   if foe.z<=1 then
    del(foes,foe)
-   burst(foe.sx,foe.sy-6,8,foe.track==1 and 8 or 11,2)
+   burst(foe.sx,foe.sy-6,8,foe.points>0 and 8 or 11,2)
    if abs(foe.x-player.x)<8+8*foe.size then
     hurt_player(foe.bite)
+   elseif foe.points>0 then
+    hurt_city(foe.bite/2)
    end
   end
  end
@@ -90,6 +92,7 @@ function hurt_foe(foe,amount)
  end
  del(foes,foe)
  add_score(foe.points,x,y)
+ maybe_drop(foe)
  burst(x,y,6+size*8,8,1+size*1.5)
  burst(x,y,4+size*5,10,1+size)
  burst(x,y,4+size*6,2,1+size,0.12)
@@ -126,6 +129,72 @@ function update_dying()
  end
 end
 
+-- a kill may leave something that slides down to the mech's line: bigger
+-- foes and close kills leave more. what it is leans to what is needed:
+-- plate when armour is low, else ammo for the emptiest gun, a charge of
+-- alpha, or coolant.
+function maybe_drop(foe)
+ if #drops>5
+  or rnd()>0.05+foe.points*0.02+(foe.z<2.2 and 0.3 or 0) then
+  return
+ end
+ local kind,colour,weapon="cool",12
+ local roll=rnd()
+ if player.armor<player.max_armor*0.4 and roll<0.4 then
+  kind,colour="plate",6
+ elseif roll<0.6 then
+  local emptiest=1
+  for candidate in all(weapon_specs) do
+   local fill=candidate.rounds/max(1,candidate.ammo)
+   if candidate.wave<=wave and candidate.ammo>0 and fill<emptiest then
+    emptiest,weapon=fill,candidate
+   end
+  end
+  if weapon then kind,colour=weapon.name,weapon.colour end
+ elseif roll<0.75 then
+  kind,colour="alpha",7
+ end
+ add(drops,{x=foe.x,z=foe.z,kind=kind,colour=colour,weapon=weapon})
+end
+
+function update_drops()
+ for drop in all(drops) do
+  drop.z-=drop_speed
+  if drop.z<=1 then
+   del(drops,drop)
+   if abs(drop.x-player.x)<16 then collect(drop) end
+  end
+ end
+end
+
+function collect(drop)
+ local sx,sy=project(player.x,1,12)
+ local weapon=drop.weapon
+ ring(sx,sy,24,drop.colour,0.4)
+ add(popups,{x=sx,y=sy-24,text="+"..drop.kind,life=50})
+ sfx(snd_upgrade)
+ if weapon then
+  weapon.rounds=min(weapon.ammo,weapon.rounds+weapon.pack)
+ elseif drop.kind=="plate" then
+  player.armor=min(player.max_armor,player.armor+15)
+ elseif drop.kind=="alpha" then
+  charge=min(alpha_cost,charge+12)
+ else
+  -- coolant: the heat is gone, and none builds for a few seconds
+  player.heat,player.overheated,player.chill=0,false,chill_frames
+ end
+end
+
+function draw_drops()
+ for drop in all(drops) do
+  local sx,sy,scale=project(drop.x,drop.z,4+sin(tick/40)*2)
+  line(sx,sy,sx,sy-14*scale,drop.colour)
+  circfill(sx,sy,3*scale+1,drop.colour)
+  circfill(sx,sy,2*scale,7)
+  print(sub(drop.kind,1,1),sx-1,sy-14*scale-6,7)
+ end
+end
+
 -- far ones first, so near ones are drawn over them
 function sort_foes()
  for i=2,#foes do
@@ -152,7 +221,7 @@ function draw_foes(behind_crest)
     local gx,gy=project(foe.x,foe.z,0)
     ovalfill(gx-size/3,gy-1,gx+size/3,gy+1,1)
    end
-   if foe.track==0 then
+   if foe.points==0 then
     local gx,gy=project(foe.centre,1,0)
     if tick%8<4 then oval(gx-9,gy-3,gx+9,gy+3,8) end
    end

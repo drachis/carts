@@ -2,6 +2,8 @@
 
 camera_x=0
 tick=0
+-- how far the mech has advanced up the street, wrapping every five deep
+travel=0
 
 -- world (x across, z depth, h height) to screen. x and h are in pixels as
 -- they appear at the mech's line; things shrink and close up toward the
@@ -42,27 +44,48 @@ function grid_point(x,z,colour)
  line(sx,sy,colour)
 end
 
--- the city and the hill are drawn over anything still behind the crest
+-- the hill is drawn over anything still behind its crest. the grid and
+-- the street's buildings slide toward the mech as it advances.
 function draw_hill()
- for i,height in ipairs(skyline) do
-  local x=i*8-24-camera_x*0.4
-  local base=crest_y+(x-60)^2/700
-  rectfill(x,base-height,x+6,base+3,0)
-  for row=1,height\3 do
-   pset(x+1+(i+row)%4,base-row*3,(i*7+row*3)%5<2 and 10 or 5)
-  end
- end
  circfill(64,crest_y+350,350,0)
  rectfill(0,crest_y+12,127,127,0)
 
  local colour=grid_flash>0 and 13 or 1
- for z in all(grid_depths) do
+ local depths={far_z}
+ for k=8,1,-1 do
+  add(depths,1+(k-travel/0.625%1)*0.625)
+ end
+ add(depths,1)
+ for z in all(depths) do
   line()
   for x=-100,100,20 do grid_point(x,z,colour) end
  end
  for x=-100,100,20 do
   line()
-  for z in all(grid_depths) do grid_point(x,z,colour) end
+  for z in all(depths) do grid_point(x,z,colour) end
+ end
+
+ for k=5,0,-1 do
+  local z=1+k*block+block-travel%block
+  local which=(k+travel\block)%6
+  for side=-78,78,156 do
+   local sx,sy,scale=project(side,z,0)
+   local half,height=11*scale,skyline[which+1]*5*scale
+   rectfill(sx-half,sy-height,sx+half,sy,5)
+   for row=1,3 do
+    local y=sy-height*row/4
+    rectfill(sx-half/2,y,sx,y+scale*3,(which+row)%2==0 and 10 or 0)
+   end
+  end
+ end
+end
+
+-- the rooftops the mech is standing among; they flash when the city is hit
+function draw_city_front()
+ for i,height in ipairs(skyline) do
+  local x=i*8-24-camera_x*1.2
+  rectfill(x,127-height/2,x+6,127,city_flash>0 and tick%4<2 and 8 or 1)
+  pset(x+1+i%4,126-i%3,10)
  end
 end
 
@@ -106,6 +129,8 @@ function update_effects()
  shake*=0.88
  if shake<0.3 then shake=0 end
  grid_flash=max(grid_flash-1)
+ city_flash=max(city_flash-1)
+ travel=(travel+scroll_speed)%5
  white=max(white-1)
 end
 

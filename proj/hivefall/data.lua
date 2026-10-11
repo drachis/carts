@@ -36,7 +36,11 @@ end
 parse_record([[
 far_z=6
 crest_y=46
-crest_hop=47
+crest_hop=20
+scroll_speed=0.012
+block=0.8333
+drop_speed=0.015
+chill_frames=240
 cone_base=7
 max_heat=100
 restart_heat=50
@@ -59,20 +63,21 @@ snd_roar=15
 ]],nil,_ENV)
 
 -- what a new run starts from; reset() parses these
-player_start="x=0,vx=0,armor=100,max_armor=100,heat=0,weapon=1,hurt_flash=0,muzzle=0,recoil=0,gun_side=1,alpha=0,cooling=0.35,power=1,haste=1,agility=1,cone=0.3"
-run_start="score=0,shake=0,freeze=0,white=0,grid_flash=0,combo=0,combo_wait=0,charge=0,dying=0,bark_wait=0,over_wait=0"
+player_start="x=0,vx=0,armor=100,max_armor=100,heat=0,weapon=1,hurt_flash=0,muzzle=0,recoil=0,gun_side=1,alpha=0,chill=0,cooling=0.35,power=1,haste=1,agility=1,cone=0.3"
+run_start="score=0,shake=0,freeze=0,white=0,grid_flash=0,combo=0,combo_wait=0,charge=0,dying=0,bark_wait=0,over_wait=0,city=100,city_flash=0"
 
 -- cooldown is in frames (60 a second); speed is depth per frame;
 -- spread is sideways scatter; splash is a blast radius; range is how
--- deep it locks and reaches; wave is when the weapon is issued.
+-- deep it locks and reaches; wave is when the weapon is issued. ammo is
+-- what it holds (0 is unlimited) and pack is what an ammo drop gives.
 weapon_specs=parse_table[[
-name,wave,range,cooldown,damage,speed,count,spread,splash,heat,colour,homing,pierce,sound
-pulse,1,4.5,7,1,0.2,1,0,0,4,12,1,0,0
-flak,2,3,42,2,0.14,7,1,0,24,9,0,0,1
-minigun,3,4,3,0.6,0.25,1,0,0,2,10,1,0,2
-shock,4,6.2,34,5,0.6,1,0,0,20,14,1,1,3
-rocket,5,6.2,60,10,0.07,1,0,16,28,8,1,0,4
-redeemer,7,6.2,300,60,0.04,1,0,60,90,11,1,0,5
+name,wave,range,cooldown,damage,speed,count,spread,splash,heat,colour,homing,pierce,sound,ammo,pack
+pulse,1,4.5,7,1,0.2,1,0,0,4,12,1,0,0,0,0
+flak,2,3,42,2,0.14,7,1,0,24,9,0,0,1,14,6
+minigun,3,4,3,0.6,0.25,1,0,0,2,10,1,0,2,160,60
+shock,4,6.2,34,5,0.6,1,0,0,20,14,1,1,3,12,5
+rocket,5,6.2,60,10,0.07,1,0,16,28,8,1,0,4,8,3
+redeemer,7,6.2,150,60,0.04,1,0,60,90,11,1,0,5,1,1
 ]]
 
 -- between waves the pilot picks one of three; stat is the field of
@@ -90,14 +95,15 @@ optics,cone,0.1,+lock arc
 -- cell is the first of two sprite frames; tail is the cell the followers
 -- of a chain use. size scales the 16px sprite. fly is height off the
 -- ground; sway is how far it weaves; bite is damage on reaching the mech.
--- track 1 closes on the mech over the last stretch; 0 lands where the
--- mech stood when it was launched. brood is what it drops, every
+-- track 1 closes on the mech over the last stretch; 0 keeps its line and
+-- runs for the city. a foe worth no points is a missile: it lands where
+-- the mech stood when it was thrown, and does the city no harm. brood is what it drops, every
 -- brood_every frames. halt is a depth it stops at. parts are more sprites drawn around the body, as
 -- cell:across:down in sprite pixels; ones to the right are flipped.
 enemy_specs=parse_table[[
 name,cell,tail,size,hp,speed,fly,sway,bite,points,chain,track,brood,brood_every,halt,boss,parts
-skitter,0,0,0.7,2,0.011,0,10,6,1,0,1,,,,,
-wing,2,2,0.8,3,0.014,45,22,8,2,0,1,,,,,
+skitter,0,0,0.7,2,0.011,0,10,6,1,0,0,,,,,
+wing,2,2,0.8,3,0.014,45,22,8,2,0,0,,,,,
 brute,4,4,1.6,40,0.006,0,4,25,10,0,1,spit,260,,,16:-10:1/16:10:1
 wyrm,6,8,1.1,6,0.009,0,26,10,3,1,1,,,,,
 ship,10,10,2.4,70,0.004,60,8,30,25,0,1,skitter,220,2.4,,
@@ -123,5 +129,4 @@ ship*1,brute*2,skitter*14,wing*10,wyrm*10,ship*1,brute*2,skitter*14
 tyrant*1,skitter*12,wing*8,wyrm*8,brute*1,skitter*14,wing*10,brute*2,skitter*14,wing*10]],"\n")
 
 skyline=split"7,12,9,16,7,13,20,8,11,15,6,18,10,14,7,12,9,17,8,11,14,9"
-grid_depths=split"6,5,3.6,2.5,1.8,1.4,1.15,1"
 stars=split"9,5,30,11,52,3,71,9,96,6,118,12,84,16,40,17,14,15,107,2"
