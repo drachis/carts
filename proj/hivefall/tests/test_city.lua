@@ -12,6 +12,8 @@ function update_waves() end
 local n=0
 local game_update,game_draw=_update60,_draw
 local states={100,70,40,10}
+-- a foe parked behind the crest keeps the city rolling for the pictures
+local parked
 
 function _draw() end
 
@@ -20,9 +22,13 @@ function _update60()
  if n==1 then
   reset()
   state="play"
+  parked=spawn_foe(enemy_specs.skitter,0,far_z+2,0)
  end
  local shot=n\40+1
  city=states[shot] or 10
+ parked.z=far_z+2
+ -- the suburbs untouched, then the capitol at three states of ruin
+ wave=shot==1 and 1 or 8
  game_update()
  game_draw()
  if n%40==30 and states[shot] then

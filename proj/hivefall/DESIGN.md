@@ -23,7 +23,9 @@ What it takes from where:
   strike; the smaller lifts are drops, coolant, a fireball that throws a
   pack back up the hill, and a new gun each hill.
 
-A wave is called a **hill** on screen. The code says `wave`.
+A wave is a **district** on screen (`district_names`): the mech flies in
+from the suburbs to the capitol, and the towers grow from low houses to
+three times the height on the way. The code says `wave`.
 
 ## Rules of the build
 
@@ -51,9 +53,11 @@ Draw order: sky, foes still behind the crest, the hill (which hides them),
 streets, houses far to near, foes far to near, drops, aim, shots, mech,
 fireballs and sparks, HUD.
 
-**The city is the ground.** The grid is ten cells across and eight deep.
-Streets run along every second grid line, so the towers stand in blocks
-of four. `draw_tower` draws each as a roof and a front wall; a fixed hash
+**The city is the ground.** It is cut into cells 20 across and 0.625 deep.
+Roads run on both diagonals of that grid, at 45 degrees to the flight
+path, drawn as lines that bend with the hill and ripple under shockwaves.
+They leave diamonds between them, and each diamond (the cells where
+column+row is even) holds a block of two towers. `draw_tower` draws each as a roof and a front wall; a fixed hash
 of its column and row (`seed`) gives it a height, one of four wall and
 roof colours, one of three window colours, a grid of windows when it is
 near, and a mast with a blinking light or a box on the roof. `travel`
@@ -62,10 +66,13 @@ faster under boost, and eases to a stop when the hill is clear.
 
 There is no city health bar: the towers show it. `city` runs from 100 to
 0. Each tower has its turn, by `seed`: shortly before it falls it is
-*damaged* (windows dark, some alight, a bite out of its top), then it is a
-*ruin* (a black shell a third the height with a fire in it). At 70 a
-third of the city is one or the other; at 10 it is a field of burning
-shells. The near rows also flash when something gets in.
+*damaged* (windows dark, a few lit orange by fire, a bite out of its top),
+then it is a *ruin* (half the height, burnt brown, gutted so that from
+above it is a rim round a dark inside, its top edge broken, a little
+grey smoke). At 70 a third of the city
+is one or the other; at 10 it is rubble. Nothing on a tower flashes or
+flickers, so damage is not mistaken for enemy fire; the only flash is the
+near rows turning red for a moment when something gets in.
 
 The mech is drawn with a black edge so it stands off the rooftops.
 
@@ -178,4 +185,8 @@ retries. It is PICO-8's, not the cart's.
   strike; the most the bot has seen is 34 foes, which is not measured.
 - The sound effects and the two-channel music loop were written as numbers.
 - Boost has no reward beyond time; nothing yet pays for pushing forward.
+- A tower's front edge is let run to depth 0.45 below the mech. At 0.3
+  headless PICO-8 crashed every time (8 runs of 8) and at 0.45 and above it
+  did not (0 of 6); the cause was not found, only the margin. An overflow
+  in the hill's sag was ruled out.
 - No high score is saved.

@@ -1,4 +1,4 @@
--- main.lua : states, the wave director (a wave is a "hill"), score, the hud, and pico-8's
+-- main.lua : states, the wave director (a wave is a city district), score, the hud, and pico-8's
 -- callbacks. states: title, play, shop (pick an upgrade), over.
 
 function reset()
@@ -70,7 +70,7 @@ function update_waves()
  elseif #foes==0 then
   player.alpha=0
   clear_wait+=1
-  if clear_wait==20 then bark("hill is clear") end
+  if clear_wait==20 then bark("district clear") end
   if clear_wait>100 then
    if wave==#wave_specs then
     end_game(true,"the hive is broken")
@@ -215,7 +215,7 @@ function draw_hud()
  if combo>=5 then
   print("x"..multiplier(),120,8,blink and 10 or 9)
  end
- print("hill "..wave,104,13,6)
+ print(wave.."/"..#wave_specs,116,13,6)
 
  if bark_wait>0 then
   print(bark_text,1,21,7)
@@ -226,7 +226,7 @@ function draw_hud()
   bar(14,29,100,boss.hp/enemy_specs.tyrant.hp,8)
  end
  if banner>0 then
-  centred(boss and boss.hp>0 and "the hive tyrant" or "hill "..wave,42,7)
+  centred(boss and boss.hp>0 and "the hive tyrant" or district_names[wave],42,7)
  end
 end
 
@@ -274,7 +274,7 @@ function _draw()
   rect(20,44,107,84,game_won and 11 or 8)
   centred(over_text,50,7)
   centred("score "..score.."00",60,10)
-  centred("hill "..wave,68,6)
+  centred(district_names[wave],68,6)
   if over_wait==0 then centred("press fire",76,13) end
  end
 end

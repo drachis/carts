@@ -13,7 +13,10 @@ function project(x,z,h)
  local near=max((far_z/z-1)/(far_z-1))
  local scale=0.3+0.9*near
  local sx=64+(x-camera_x)*(0.7+0.3*near)
- local sy=crest_y+74*near+(sx-64)^2/700*(1-near)-h*scale
+ -- the sag is only on the hill; below the mech's line x runs far enough
+ -- off screen that squaring it overflows
+ local sag=near<1 and (sx-64)^2/700*(1-near) or 0
+ local sy=crest_y+74*near+sag-h*scale
  return sx,sy,scale
 end
 
@@ -47,96 +50,110 @@ end
 
 -- the hill is drawn over anything still behind its crest. its slope is
 -- the city, sliding toward the mech as it advances and on under it to the
--- bottom of the screen. streets run along every second grid line, so the
--- cube houses stand in blocks of four. the more of the swarm has got
--- through, the more of the houses are burnt-out wrecks.
+-- bottom of the screen.
+--
+-- the ground is cut into cells 20 across and 0.625 deep. roads run on
+-- both diagonals of that grid (a road moves 20 across for each cell of
+-- depth), which leaves diamonds between them; each diamond holds a block
+-- of two towers, in the cells where column+row is even.
 function draw_hill()
  circfill(64,crest_y+350,350,0)
  rectfill(0,crest_y+12,127,127,0)
 
  local colour=grid_flash>0 and 13 or 1
- local slide=travel/0.625%1
- local turn=travel\0.625
- local depths={far_z}
- for k=8,0,-1 do
-  local z=1+(k-slide)*0.625
-  if (k+turn)%2==0 and z>0.8 then add(depths,z) end
- end
- add(depths,0.8)
- for z in all(depths) do
-  line()
-  for x=-100,100,40 do grid_point(x,z,colour) end
- end
- for x=-100,100,40 do
-  line()
-  for z in all(depths) do grid_point(x,z,colour) end
+ for lane=-11,11 do
+  for lean=-1,1,2 do
+   line()
+   for z in all(road_depths) do
+    local x=lane*40+10-lean*10+lean*32*(z-1+travel)
+    if abs(x)<125 then
+     grid_point(x,z,colour)
+    else
+     line()
+    end
+   end
+  end
  end
 
+ local slide=travel/0.625%1
+ local turn=travel\0.625
  for k=8,-1,-1 do
-  local row=(k+turn)%8
-  local front=1+(k-slide)*0.625
-  local back=min(front+0.625,far_z)
-  -- a gap for the street on the block's outer sides only
-  if row%2==0 then front+=0.12 else back-=0.12 end
-  front=max(front,0.8)
+  -- the front edge runs on off the bottom of the screen. 0.45 is far
+  -- enough for the tallest tower to leave it; nearer than that the
+  -- numbers get big enough to crash pico-8 (measured: 0.3 does)
+  local front=max(1.1+(k-slide)*0.625,0.45)
+  local back=min(1.525+(k-slide)*0.625,far_z)
   if back>front then
-   for column=0,9 do
-    local left=column*20-100
-    local right=left+20
-    if column%2==0 then left+=4 else right-=4 end
-    draw_tower(left,right,front,back,(column*7+row*13)%20,k<3)
+   local row=(k+turn)%8
+   for column=row%2,9,2 do
+    local left=column*20-98
+    local seed=(column*7+row*13)%20
+    draw_tower(left,left+8,front,back,seed,k<3)
+    draw_tower(left+8,left+16,front,back,(seed+9)%20,k<3)
    end
   end
  end
 end
 
 -- one tower: a roof and a front wall of windows. `seed` (0..19) fixes its
--- height, colours and roof, and its turn to suffer: as the city falls a
--- tower is first damaged (windows out, some alight, a bite out of its
--- top), then a burning ruin a third the height.
+-- height, colours and roof, and its turn to suffer. as the city falls a
+-- tower is first damaged (windows out, a few lit by fire, a bite out of
+-- its top), then a ruin: half the height, burnt brown, gutted (a rim
+-- round a dark inside), its top edge broken, smoking. nothing on a tower flashes
+-- or moves fast, so it is not mistaken for something to dodge.
 function draw_tower(left,right,front,back,seed,near_row)
  local harm=(100-city)/5-seed
  local ruined=harm>0
- local height=6+seed%8*2
- if ruined then height/=3 end
+ -- low in the suburbs, three times the height by the capitol
+ local height=(6+seed%8*2)*(0.4+wave*0.15)
+ if ruined then height/=2 end
  local x1,top,scale=project(left,front,height)
  local x2=x1+(right-left)*(0.6+scale/3)
  local _,far_top=project(left,back,height)
  local base=top+height*scale
  local wall,roof=tower_tints[seed%4*2+1],tower_tints[seed%4*2+2]
- if ruined then wall,roof=0,0 end
+ if ruined then wall,roof=4,4 end
  if city_flash>0 and near_row and tick%4<2 then wall,roof=2,8 end
  rectfill(x1,far_top,x2,top,roof)
  rectfill(x1,top+1,x2,base,wall)
 
  if ruined then
-  -- a charred shell with a fire in it
-  rect(x1,far_top,x2,base,5)
-  circfill((x1+x2)/2+rnd(3)-1,(far_top+top)/2,scale*2+rnd(2),rnd{8,9,10})
-  if rnd()<0.02 then
-   burst((x1+x2)/2,far_top,1,rnd{5,6,9},0.5,-0.05)
+  -- gutted: seen from above, a rim round a dark inside
+  if top-far_top>4 then
+   rectfill(x1+2,far_top+2,x2-2,top-1,0)
+   pset(x1+3+seed%3,far_top+3,5)
   end
- elseif scale>0.6 then
+  -- and bites out of the top edge of the wall
+  for bite=0,1 do
+   local x=x1+(seed*3+bite*7)%(x2-x1)
+   rectfill(x,top,x+scale*2,top+(base-top)*(bite+1)/4,0)
+  end
+  if rnd()<0.03 then
+   burst((x1+x2)/2,top,1,rnd{5,6},0.4,-0.04)
+  end
+ end
+ if scale>0.6 then
   local damaged=harm>-4
   local glass=window_tints[seed%3+1]
   for across=0,(x2-x1-2)\4 do
    for down=0,min(6,(base-top-4)\3) do
     local pane=across*3+down*5+seed
     local colour=pane%4>0 and glass
-    if damaged then
-     colour=pane%5==0 and (tick\8+pane)%2*9 or 0
+    if ruined then
+     colour=pane%2==0 and 0
+    elseif damaged then
+     colour=pane%5==0 and 9 or 0
     end
-    if colour then
-     pset(x1+1+across*4,top+3+down*3,colour)
-    end
+    if colour then pset(x1+1+across*4,top+3+down*3,colour) end
    end
   end
-  if damaged then
+  if ruined then
+  elseif damaged then
    rectfill(x2-2-scale*4,far_top,x2,top+scale*5,0)
   elseif seed%5==0 then
    -- a mast with a light
    line(x1+3,far_top,x1+3,far_top-scale*5,6)
-   if tick%60<30 then pset(x1+3,far_top-scale*5,8) end
+   pset(x1+3,far_top-scale*5,8)
   else
    rectfill(x1+2,far_top+2,x1+2+scale*3,far_top+1+scale*2,13)
   end

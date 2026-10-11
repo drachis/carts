@@ -133,8 +133,12 @@ ship*1,wing*8,wyrm*8,skitter*14,brute*2,wing*10
 ship*1,brute*2,skitter*14,wing*10,wyrm*10,ship*1,brute*2,skitter*14
 tyrant*1,skitter*12,wing*8,wyrm*8,brute*1,skitter*14,wing*10,brute*2,skitter*14,wing*10]],"\n")
 
+-- one a wave: the mech flies in from the edge of the city to its centre
+district_names=split"the suburbs,riverside,old town,the market,midtown,the exchange,downtown,the capitol"
 skyline=split"7,12,9,16,7,13,20,8,11,15,6,18,10,14,7,12,9,17,8,11,14,9"
 blast_colours=split"7,10,9,8,2"
+-- the depths a road is drawn through, closer together where it is near
+road_depths=split"0.8,1,1.3,1.7,2.2,3,4.2,6"
 -- a tower takes one of four wall,roof pairs and one of three window colours
 tower_tints=split"5,6,13,5,3,5,1,13"
 window_tints=split"10,12,7"
