@@ -2,7 +2,7 @@
 
 camera_x=0
 tick=0
--- how far the mech has advanced up the street, wrapping every five deep
+-- how far the mech has advanced over the city, wrapping every five deep
 travel=0
 scroll_rate=0
 
@@ -10,7 +10,7 @@ scroll_rate=0
 -- they appear at the mech's line; things shrink and close up toward the
 -- crest, and the crest sags at the edges so the ground reads as a hill.
 function project(x,z,h)
- local near=mid(0,(far_z/z-1)/(far_z-1),1)
+ local near=max((far_z/z-1)/(far_z-1))
  local scale=0.3+0.9*near
  local sx=64+(x-camera_x)*(0.7+0.3*near)
  local sy=crest_y+74*near+(sx-64)^2/700*(1-near)-h*scale
@@ -45,59 +45,67 @@ function grid_point(x,z,colour)
  line(sx,sy,colour)
 end
 
--- the hill is drawn over anything still behind its crest. the grid and
--- the street's buildings slide toward the mech as it advances.
+-- the hill is drawn over anything still behind its crest. its slope is
+-- the city, sliding toward the mech as it advances and on under it to the
+-- bottom of the screen. streets run along every second grid line, so the
+-- cube houses stand in blocks of four. the more of the swarm has got
+-- through, the more of the houses are burnt-out wrecks.
 function draw_hill()
  circfill(64,crest_y+350,350,0)
  rectfill(0,crest_y+12,127,127,0)
 
  local colour=grid_flash>0 and 13 or 1
+ local slide=travel/0.625%1
+ local turn=travel\0.625
  local depths={far_z}
- for k=8,1,-1 do
-  add(depths,1+(k-travel/0.625%1)*0.625)
+ for k=8,0,-1 do
+  local z=1+(k-slide)*0.625
+  if (k+turn)%2==0 and z>0.9 then add(depths,z) end
  end
- add(depths,1)
+ add(depths,0.9)
  for z in all(depths) do
   line()
   for x=-100,100,20 do grid_point(x,z,colour) end
  end
- for x=-100,100,20 do
+ for x=-100,100,40 do
   line()
   for z in all(depths) do grid_point(x,z,colour) end
  end
 
- for k=5,0,-1 do
-  local z=1+k*block+block-travel%block
-  local which=(k+travel\block)%6
-  for side=-78,78,156 do
-   local sx,sy,scale=project(side,z,0)
-   local half,height=11*scale,skyline[which+1]*5*scale
-   rectfill(sx-half,sy-height,sx+half,sy,5)
-   for row=1,3 do
-    local y=sy-height*row/4
-    rectfill(sx-half/2,y,sx,y+scale*3,(which+row)%2==0 and 10 or 0)
-   end
-  end
- end
-end
-
--- the rooftops the mech is standing among. they flash when the city is
--- hit; one that has been hit (`ruin`) is shorter, dark, broken and burning.
-function draw_city_front()
- for i,height in ipairs(skyline) do
-  local x=i*8-24-camera_x*1.2
-  local damage=ruin[i] or 0
-  local top=127-max(1,height/2-damage*2)
-  local colour=damage>0 and 5 or 1
-  if city_flash>0 and tick%4<2 then colour=8 end
-  rectfill(x,top,x+6,127,colour)
-  if damage==0 then
-   pset(x+1+i%4,126-i%3,10)
-  else
-   pset(x+i%5,top,0)
-   pset(x+3+i%3,top,0)
-   if rnd()<0.04*damage then
-    burst(x+3,top,1,rnd{8,9,10},0.6,-0.04)
+ for k=8,-1,-1 do
+  local row=(k+turn)%8
+  local front=1+(k-slide)*0.625
+  local back=min(front+0.625,far_z)
+  -- a gap for the street on the block's outer sides only
+  if row%2==0 then front+=0.12 else back-=0.12 end
+  front=max(front,0.9)
+  if back>front then
+   for column=0,9 do
+    local left=column*20-100
+    local right=left+20
+    if column%2==0 then left+=4 else right-=4 end
+    local seed=(column*7+row*13)%20
+    local wrecked=seed<(100-city)/5
+    local height=wrecked and 2 or 4+seed%9
+    local x1,top,scale=project(left,front,height)
+    local x2=project(right,front,height)
+    local _,far_top=project(left,back,height)
+    local roof,wall=1,5
+    if wrecked then roof,wall=2,0 end
+    if city_flash>0 and k<3 and tick%4<2 then roof,wall=8,2 end
+    rectfill(x1,far_top,x2,top,roof)
+    rectfill(x1,top+1,x2,top+height*scale,wall)
+    if wrecked then
+     pset(x1+seed%4,far_top+1,(tick\6+seed)%3==0 and 9 or 8)
+     pset(x2-seed%3,top-1,(tick\5+seed)%3==0 and 10 or 0)
+     if rnd()<0.01 then
+      burst((x1+x2)/2,far_top,1,rnd{8,9,6},0.5,-0.04)
+     end
+    elseif scale>0.5 then
+     -- a lit window, and something on the roof to fly over
+     pset(x1+1+seed%3,top+2,10)
+     rectfill(x1+2,far_top+2,x1+2+scale*3,far_top+1+scale*2,13)
+    end
    end
   end
  end
@@ -122,7 +130,21 @@ function ring(x,y,size,colour,warp)
  add(rings,{x=x,y=y,radius=1,size=size,colour=colour,warp=warp})
 end
 
+-- a fireball: it swells white to red over a quarter second, then the
+-- spot burns for a moment more. size is its radius on screen.
+function blast(x,y,size)
+ add(blasts,{x=x,y=y,size=size,age=0})
+end
+
 function update_effects()
+ for fire in all(blasts) do
+  fire.age+=1
+  if fire.age%2==0 then
+   burst(fire.x+rnd(fire.size)-fire.size/2,fire.y+rnd(fire.size/2),
+    1,rnd{8,9,10},1,-0.1)
+  end
+  if fire.age>36 then del(blasts,fire) end
+ end
  for spark in all(sparks) do
   spark.x+=spark.vx
   spark.y+=spark.vy
@@ -144,7 +166,7 @@ function update_effects()
  if shake<0.3 then shake=0 end
  grid_flash=max(grid_flash-1)
  city_flash=max(city_flash-1)
- -- the street rolls while there is something to advance on, faster under
+ -- the city rolls while there is something to advance on, faster under
  -- boost, and eases to a stop when the hill is clear
  local rate=0
  if state=="play" then
@@ -156,6 +178,12 @@ function update_effects()
 end
 
 function draw_effects()
+ for fire in all(blasts) do
+  if fire.age<15 then
+   circfill(fire.x,fire.y,fire.size*min(1,fire.age/4),
+    blast_colours[fire.age\3+1])
+  end
+ end
  for wave in all(rings) do
   circ(wave.x,wave.y,wave.radius,wave.colour)
  end

@@ -1,8 +1,8 @@
--- main.lua : states, the wave director, score, the hud, and pico-8's
+-- main.lua : states, the wave director (a wave is a "hill"), score, the hud, and pico-8's
 -- callbacks. states: title, play, shop (pick an upgrade), over.
 
 function reset()
- foes,shots,sparks,rings,popups,drops,ruin={},{},{},{},{},{},{}
+ foes,shots,sparks,rings,popups,drops,blasts={},{},{},{},{},{},{}
  parse_record(run_start,",",_ENV)
  player=parse_record(player_start,",")
  boss,alpha_told=nil
@@ -16,17 +16,18 @@ function restock()
  end
 end
 
--- a foe that gets past the mech is loose in the city behind it, and
--- wrecks the rooftop where it went in (sx is where on the screen)
+-- a foe that gets past the mech is loose in the city. there is no bar
+-- for it: the houses show it (see draw_hill).
 function hurt_city(amount,sx)
- sx=sx or 64
- local roof=mid(1,(sx+camera_x*1.2+24)\8,#skyline)
- ruin[roof]=(ruin[roof] or 0)+1
- burst(sx,120,12,9,3)
- if city_flash==0 then bark("they're in the city!") end
+ if city>30 and city-amount<=30 then
+  bark("the city is burning!")
+ elseif city_flash==0 then
+  bark("they're in the city!")
+ end
  city-=amount
  city_flash=30
  shake=max(shake,4)
+ burst(sx or 64,122,12,9,3)
  sfx(snd_hurt)
  if city<=0 then end_game(false,"the city has fallen") end
 end
@@ -46,7 +47,7 @@ function start_wave(number)
    bark(weapon.name.." online")
   end
  end
- safety=true
+ safety,player.alpha=true,0
  sfx(snd_wave)
 end
 
@@ -67,6 +68,7 @@ function update_waves()
    group_wait=300
   end
  elseif #foes==0 then
+  player.alpha=0
   clear_wait+=1
   if clear_wait==20 then bark("hill is clear") end
   if clear_wait>100 then
@@ -162,8 +164,9 @@ function _update60()
  update_effects()
 end
 
+-- a bar on a grey back plate a pixel bigger all round
 function bar(x,y,width,fraction,colour)
- rect(x-1,y-1,x+width+1,y+3,5)
+ rectfill(x-1,y-1,x+width+1,y+3,5)
  rectfill(x,y,x+width*mid(0,fraction,1),y+2,colour)
 end
 
@@ -171,53 +174,59 @@ function centred(text,y,colour)
  print(text,64-#text*2,y,colour)
 end
 
+-- the hud keeps to a strip along the top: portrait, three bars (armour,
+-- heat, alpha), the gun in hand with its ammo, a pip per gun, score.
+-- the pilot's line and the boss's bar sit just under it.
 function draw_hud()
  local blink=tick%8<4
- rectfill(0,0,17,17,0)
- rect(0,0,17,17,player.hurt_flash>0 and 8 or 6)
+ rectfill(0,0,127,18,0)
+ line(0,18,127,18,5)
  if player.hurt_flash>0 or player.armor<=30 and blink then pal(12,8) end
  sspr(64,16,16,16,1,1)
  pal()
- bar(21,2,40,player.armor/player.max_armor,player.armor>30 and 11 or 8)
+
+ bar(20,2,38,player.armor/player.max_armor,player.armor>30 and 11 or 8)
  if player.chill>0 then
-  bar(21,8,40,player.chill/chill_frames,blink and 7 or 12)
+  bar(20,7,38,player.chill/chill_frames,blink and 7 or 12)
  else
   local heat_colour=9
   if player.overheated then heat_colour=blink and 8 or 7 end
-  bar(21,8,40,player.heat/max_heat,heat_colour)
+  bar(20,7,38,player.heat/max_heat,heat_colour)
  end
  local ready=charge>=alpha_cost
- bar(21,14,40,player.alpha>0 and player.alpha/alpha_frames or charge/alpha_cost,
+ bar(20,12,38,player.alpha>0 and player.alpha/alpha_frames or charge/alpha_cost,
   (ready or player.alpha>0) and blink and 7 or 12)
- if ready then print("dn:alpha!",65,14,blink and 7 or 12) end
 
  local current=weapon_specs[player.weapon]
- print(current.name,65,2,current.wait>0 and 5 or current.colour)
- if current.ammo>0 then print(current.rounds,65,8,6) end
+ sspr(player.weapon*8-8,48,8,8,62,1,16,16)
+ if current.ammo>0 then print(current.rounds,81,2,7) end
+ print(current.name,81,8,current.wait>0 and 5 or current.colour)
  for i,weapon in ipairs(weapon_specs) do
-  local x=15+i*6
   if weapon.wave<=wave then
+   local x=77+i*4
    local dry=weapon.ammo>0 and weapon.rounds<=0
-   rectfill(x,21,x+3,23,(dry or weapon.wait>0) and 5 or weapon.colour)
+   rectfill(x,14,x+2,16,(dry or weapon.wait>0) and 5 or weapon.colour)
+   if i==player.weapon then line(x,17,x+2,17,7) end
   end
-  if i==player.weapon then rect(x-1,20,x+4,24,7) end
  end
- if bark_wait>0 then print(bark_text,1,28,7) end
 
  local text=score.."00"
  print(text,128-#text*4,2,7)
  if combo>=5 then
-  print("x"..multiplier(),120,9,blink and 10 or 9)
+  print("x"..multiplier(),120,8,blink and 10 or 9)
  end
- print("wave "..wave,104,16,6)
- print("city",80,23,city_flash>0 and 8 or 6)
- bar(98,24,28,city/100,city>30 and 12 or 8)
+ print("hill "..wave,104,13,6)
 
+ if bark_wait>0 then
+  print(bark_text,1,21,7)
+ elseif ready then
+  print("down: alpha strike!",1,21,blink and 7 or 12)
+ end
  if boss and boss.hp>0 then
-  bar(14,35,100,boss.hp/enemy_specs.tyrant.hp,8)
+  bar(14,29,100,boss.hp/enemy_specs.tyrant.hp,8)
  end
  if banner>0 then
-  centred(boss and boss.hp>0 and "the hive tyrant" or "wave "..wave,42,7)
+  centred(boss and boss.hp>0 and "the hive tyrant" or "hill "..wave,42,7)
  end
 end
 
@@ -244,7 +253,6 @@ function _draw()
  if state=="play" then draw_aim() end
  draw_shots()
  if state!="over" or game_won then draw_player() end
- draw_city_front()
  draw_effects()
  camera()
  if white>0 then rectfill(0,0,127,127,7) end
@@ -266,7 +274,7 @@ function _draw()
   rect(20,44,107,84,game_won and 11 or 8)
   centred(over_text,50,7)
   centred("score "..score.."00",60,10)
-  centred("wave "..wave,68,6)
+  centred("hill "..wave,68,6)
   if over_wait==0 then centred("press fire",76,13) end
  end
 end

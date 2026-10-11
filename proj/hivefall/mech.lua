@@ -7,13 +7,6 @@ function update_player()
  if push==0 then player.vx*=0.9 end
  player.x=mid(-62,player.x+player.vx,62)
  camera_x=player.x*0.25
- -- a heavy footfall
- if (abs(player.vx)>0.3 or boost>0) and tick%24==0 then
-  local sx,sy=project(player.x,1,0)
-  burst(sx,sy,3,5,1)
-  shake=max(shake,1.2)
-  sfx(snd_step)
- end
 
  player.hurt_flash=max(player.hurt_flash-1)
  player.muzzle=max(player.muzzle-1)
@@ -93,15 +86,18 @@ function start_alpha()
  sfx(snd_alpha)
 end
 
--- the nearest foe inside the cone that opens upward from the guns
+-- half the lock cone's width at a depth, in world pixels
+function cone_half(z)
+ return cone_base+(z-1)*player.cone
+end
+
+-- the nearest foe inside the cone, out to the range of the gun in hand
 function find_target()
  local best
  local reach=weapon_specs[player.weapon].range
- local sx,sy=project(player.x,1,18)
  for foe in all(foes) do
-  local rise=sy-foe.sy+8*foe.size*foe.scale
   if foe.z<reach
-   and abs(foe.sx-sx)<cone_base+rise*player.cone
+   and abs(foe.x-player.x)<cone_half(foe.z)
    and (not best or foe.z<best.z) then
    best=foe
   end
@@ -129,7 +125,7 @@ function launch(weapon,target)
  for i=1,weapon.count do
   player.gun_side=-player.gun_side
   local shot=setmetatable({
-   x=player.x+player.gun_side*10,z=1,h=18,
+   x=player.x+player.gun_side*10,z=1,h=18+hover,
    vx=0,vh=0,
    target=target,struck={}
   },weapon)
@@ -191,6 +187,7 @@ function explode(shot)
  local sx,sy,scale=project(shot.x,shot.z,shot.h)
  ring(sx,sy,shot.splash*scale*1.2,shot.colour,shot.splash/40)
  ring(sx,sy,shot.splash*scale*0.8,7)
+ blast(sx,sy,shot.splash*scale*0.8)
  burst(sx,sy,shot.splash,shot.colour,shot.splash/6)
  shake=max(shake,shot.splash/4)
  grid_flash=8
@@ -201,6 +198,11 @@ function explode(shot)
    and abs(foe.x-shot.x)<shot.splash+8*foe.size
    and abs(foe.z-shot.z)<shot.splash/25 then
    hurt_foe(foe,shot.damage*player.power)
+   -- what lives through it is thrown back up the hill and aside
+   if foe.hp>0 then
+    foe.z=min(foe.z+shot.splash/40,far_z)
+    foe.centre+=sgn(foe.x-shot.x)*shot.splash/3
+   end
   end
  end
 end
@@ -217,15 +219,13 @@ function draw_shots()
  end
 end
 
--- a bite buys a moment of mercy, so a pack arriving together is one hit
+-- armour pays for whatever the mech stands in front of
 function hurt_player(amount)
- if player.hurt_flash>mercy_ends then return end
  if player.armor>30 and player.armor-amount<=30 then
   bark("armor critical!")
  end
  player.armor-=amount
- player.hurt_flash=45
- combo=0
+ player.hurt_flash=30
  shake=7
  sfx(snd_hurt)
  local sx,sy=project(player.x,1,12)
@@ -238,8 +238,7 @@ function hurt_player(amount)
 end
 
 function draw_player()
- local sx,sy=project(player.x,1,0)
- local frame=(abs(player.vx)>0.15 or boost>0) and tick\8%2 or 0
+ local sx,sy=project(player.x,1,hover+sin(tick/45)*1.5)
  if player.hurt_flash>0 and tick%4<2 then
   for colour=1,15 do pal(colour,8) end
  elseif player.alpha>0 and tick%4<2 then
@@ -250,8 +249,12 @@ function draw_player()
   pal(6,9)
   pal(13,8)
  end
- sspr(frame*24,64,24,24,sx-12,sy-23+player.recoil)
+ sspr(0,64,24,24,sx-12,sy-23+player.recoil)
  pal()
+ -- jump jets under the feet, longer under boost
+ for jet=-7,7,14 do
+  line(sx+jet,sy+1,sx+jet-player.vx*3,sy+3+rnd(3)+boost*500,rnd{9,10,7})
+ end
  if player.muzzle>0 then
   circfill(sx-10,sy-24,2,7)
   circfill(sx+9,sy-24,2,7)
@@ -261,18 +264,22 @@ function draw_player()
  end
 end
 
--- the cone, as two dotted edges out to the weapon's range, and
--- brackets around what is locked
+-- the cone, laid on the ground so it bends with the hill: dotted edges,
+-- an arc at the gun's range in the gun's colour, and brackets around
+-- what is locked
 function draw_aim()
- local sx,sy=project(player.x,1,18)
- local _,top=project(player.x,weapon_specs[player.weapon].range,0)
- local half
- for rise=6,sy-top,6 do
-  half=cone_base+rise*player.cone
-  pset(sx-half,sy-rise,5)
-  pset(sx+half,sy-rise,5)
+ local weapon=weapon_specs[player.weapon]
+ for z=1.4,weapon.range,0.4 do
+  for side=-1,1,2 do
+   local sx,sy=project(player.x+side*cone_half(z),z,0)
+   pset(sx,sy,6)
+  end
  end
- line(sx-half,top,sx+half,top,5)
+ line()
+ for across=-1,1,0.25 do
+  local sx,sy=project(player.x+across*cone_half(weapon.range),weapon.range,0)
+  line(sx,sy,weapon.colour)
+ end
  local foe=player.target
  if foe then
   local half=8*foe.size*foe.scale

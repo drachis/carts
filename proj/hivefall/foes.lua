@@ -72,7 +72,7 @@ function update_foes()
    del(foes,foe)
    burst(foe.sx,foe.sy-6,8,foe.points>0 and 8 or 11,2)
    if abs(foe.x-player.x)<8+8*foe.size then
-    hurt_player(foe.bite)
+    hurt_player(foe.points>0 and foe.hp or foe.bite)
    elseif foe.points>0 then
     hurt_city(foe.bite/2,foe.sx)
    end
@@ -131,7 +131,7 @@ end
 
 -- a kill may leave something that slides down to the mech's line: bigger
 -- foes and close kills leave more. what it is leans to what is needed:
--- plate when armour is low, else ammo for the emptiest gun, a charge of
+-- plate when armour is low, else ammo (rarer for heavier guns), a charge of
 -- alpha, or coolant.
 function maybe_drop(foe)
  if #drops>5
@@ -143,11 +143,14 @@ function maybe_drop(foe)
  if player.armor<player.max_armor*0.4 and roll<0.4 then
   kind,colour="plate",6
  elseif roll<0.6 then
-  local emptiest=1
+  -- ammo for a gun that has room, the heavier the shell the rarer
+  local total=0
   for candidate in all(weapon_specs) do
-   local fill=candidate.rounds/max(1,candidate.ammo)
-   if candidate.wave<=wave and candidate.ammo>0 and fill<emptiest then
-    emptiest,weapon=fill,candidate
+   if candidate.wave<=wave and candidate.ammo>0
+    and candidate.rounds<candidate.ammo then
+    local weight=1/sqrt(candidate.damage*candidate.count+candidate.splash/4)
+    total+=weight
+    if rnd(total)<weight then weapon=candidate end
    end
   end
   if weapon then kind,colour=weapon.name,weapon.colour end

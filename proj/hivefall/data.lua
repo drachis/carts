@@ -31,14 +31,14 @@ function parse_record(text,separator,into)
 end
 
 -- depth runs from 1 (the mech's line) to far_z (the crest of the hill).
--- cone_base is the auto-aim cone's half width at the guns; how fast it
--- opens is the mech's own `cone`, which an upgrade widens.
+-- cone_base is the lock cone's half width at the guns, in world pixels;
+-- it widens by the mech's own `cone` for each unit of depth, which an
+-- upgrade raises. hover is how high the mech flies.
 parse_record([[
 far_z=6
 crest_y=46
 crest_hop=20
 scroll_speed=0.012
-block=0.8333
 drop_speed=0.015
 chill_frames=240
 vent_delay=12
@@ -46,12 +46,12 @@ vent_rate=1.5
 boost_speed=0.008
 snd_vent=18
 cone_base=7
+hover=6
 max_heat=100
 restart_heat=50
 mech_accel=0.06
 mech_speed=0.9
 alpha_cost=60
-mercy_ends=15
 alpha_frames=180
 combo_frames=150
 snd_pop=6
@@ -67,7 +67,7 @@ snd_roar=15
 ]],nil,_ENV)
 
 -- what a new run starts from; reset() parses these
-player_start="x=0,vx=0,armor=100,max_armor=100,heat=0,weapon=1,hurt_flash=0,muzzle=0,recoil=0,gun_side=1,alpha=0,chill=0,cooling=0.35,power=1,haste=1,agility=1,cone=0.3"
+player_start="x=0,vx=0,armor=100,max_armor=100,heat=0,weapon=1,hurt_flash=0,muzzle=0,recoil=0,gun_side=1,alpha=0,chill=0,cooling=0.35,power=1,haste=1,agility=1,cone=6.5"
 run_start="score=0,shake=0,freeze=0,white=0,grid_flash=0,combo=0,combo_wait=0,charge=0,dying=0,bark_wait=0,over_wait=0,city=100,city_flash=0,x_held=0,boost=0"
 
 -- cooldown is in frames (60 a second); speed is depth per frame;
@@ -91,14 +91,15 @@ name,stat,amount,blurb
 armor,max_armor,30,+30 max
 heatsink,cooling,0.1,+cooling
 overload,power,0.25,+25% dmg
-loader,haste,-0.15,+fire rate
+loader,haste,-0.15,+15% rof
 servos,agility,0.3,+speed
-optics,cone,0.1,+lock arc
+optics,cone,2,+aim arc
 ]]
 
 -- cell is the first of two sprite frames; tail is the cell the followers
 -- of a chain use. size scales the 16px sprite. fly is height off the
--- ground; sway is how far it weaves; bite is damage on reaching the mech.
+-- ground; sway is how far it weaves; bite is what a missile does to the
+-- mech, and twice what a foe does to the city.
 -- track 1 closes on the mech over the last stretch; 0 keeps its line and
 -- runs for the city. a foe worth no points is a missile: it lands where
 -- the mech stood when it was thrown, and does the city no harm. brood is what it drops, every
@@ -133,4 +134,5 @@ ship*1,brute*2,skitter*14,wing*10,wyrm*10,ship*1,brute*2,skitter*14
 tyrant*1,skitter*12,wing*8,wyrm*8,brute*1,skitter*14,wing*10,brute*2,skitter*14,wing*10]],"\n")
 
 skyline=split"7,12,9,16,7,13,20,8,11,15,6,18,10,14,7,12,9,17,8,11,14,9"
+blast_colours=split"7,10,9,8,2"
 stars=split"9,5,30,11,52,3,71,9,96,6,118,12,84,16,40,17,14,15,107,2"
