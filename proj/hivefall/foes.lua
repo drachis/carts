@@ -52,7 +52,7 @@ end
 
 function update_foes()
  for foe in all(foes) do
-  foe.z=max(foe.z-foe.speed,foe.halt)
+  foe.z=max(foe.z-foe.speed-boost,foe.halt)
   foe.flash-=1
   foe.age+=1
   if foe.z<3 and foe.track==1 then
@@ -74,7 +74,7 @@ function update_foes()
    if abs(foe.x-player.x)<8+8*foe.size then
     hurt_player(foe.bite)
    elseif foe.points>0 then
-    hurt_city(foe.bite/2)
+    hurt_city(foe.bite/2,foe.sx)
    end
   end
  end
@@ -159,7 +159,7 @@ end
 
 function update_drops()
  for drop in all(drops) do
-  drop.z-=drop_speed
+  drop.z-=drop_speed+boost
   if drop.z<=1 then
    del(drops,drop)
    if abs(drop.x-player.x)<16 then collect(drop) end

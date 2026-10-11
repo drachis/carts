@@ -2,7 +2,7 @@
 -- callbacks. states: title, play, shop (pick an upgrade), over.
 
 function reset()
- foes,shots,sparks,rings,popups,drops={},{},{},{},{},{}
+ foes,shots,sparks,rings,popups,drops,ruin={},{},{},{},{},{},{}
  parse_record(run_start,",",_ENV)
  player=parse_record(player_start,",")
  boss,alpha_told=nil
@@ -16,8 +16,13 @@ function restock()
  end
 end
 
--- a foe that gets past the mech is loose in the city behind it
-function hurt_city(amount)
+-- a foe that gets past the mech is loose in the city behind it, and
+-- wrecks the rooftop where it went in (sx is where on the screen)
+function hurt_city(amount,sx)
+ sx=sx or 64
+ local roof=mid(1,(sx+camera_x*1.2+24)\8,#skyline)
+ ruin[roof]=(ruin[roof] or 0)+1
+ burst(sx,120,12,9,3)
  if city_flash==0 then bark("they're in the city!") end
  city-=amount
  city_flash=30
@@ -41,6 +46,7 @@ function start_wave(number)
    bark(weapon.name.." online")
   end
  end
+ safety=true
  sfx(snd_wave)
 end
 
@@ -53,7 +59,7 @@ function update_waves()
  if combo_wait==0 then combo=0 end
  if dying>0 then return update_dying() end
  if #groups>0 then
-  group_wait-=1
+  group_wait-=1+boost*250
   if #foes==0 then group_wait=min(group_wait,45) end
   if group_wait<=0 then
    local parts=split(deli(groups,1),"*")
@@ -183,7 +189,7 @@ function draw_hud()
  local ready=charge>=alpha_cost
  bar(21,14,40,player.alpha>0 and player.alpha/alpha_frames or charge/alpha_cost,
   (ready or player.alpha>0) and blink and 7 or 12)
- if ready then print("up:alpha!",65,14,blink and 7 or 12) end
+ if ready then print("dn:alpha!",65,14,blink and 7 or 12) end
 
  local current=weapon_specs[player.weapon]
  print(current.name,65,2,current.wait>0 and 5 or current.colour)
@@ -224,7 +230,7 @@ function draw_shop()
   print(pick.name,x+3,54,i==chosen and 10 or 6)
   print(pick.blurb,x+3,64,13)
  end
- centred("left/right, z to fit",82,6)
+ centred("left/right, fire to fit",82,6)
 end
 
 function _draw()
@@ -252,15 +258,15 @@ function _draw()
   print("\^w\^thivefall",32,6,7)
   centred("hold the hill",21,12)
   centred("left/right  move",70,13)
-  centred("z fire   x/down swap gun",78,13)
-  centred("up: alpha strike when charged",86,12)
-  if tick%60<40 then centred("press z to deploy",98,10) end
+  centred("o fire  x next gun  o+x vent",78,13)
+  centred("up advance  down alpha strike",86,12)
+  if tick%60<40 then centred("press fire to deploy",98,10) end
  else
   rectfill(20,44,107,84,0)
   rect(20,44,107,84,game_won and 11 or 8)
   centred(over_text,50,7)
   centred("score "..score.."00",60,10)
   centred("wave "..wave,68,6)
-  if over_wait==0 then centred("press z",76,13) end
+  if over_wait==0 then centred("press fire",76,13) end
  end
 end

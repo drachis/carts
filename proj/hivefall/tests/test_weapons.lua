@@ -64,14 +64,14 @@ function _update60()
   next_case()
  end
  held={[4]=true}
- player.heat,player.overheated=0,false
+ player.heat,player.overheated,safety=0,false,false
  for weapon in all(weapon_specs) do weapon.rounds=weapon.ammo end
 
  if staged then
   held[1]=true
   if n==staged+70 then
    charge=alpha_cost
-   held[2]=true
+   held[3]=true
   end
  elseif victim.hp<=0 then
   printh(weapon_specs[weapon_index].name.." kills "

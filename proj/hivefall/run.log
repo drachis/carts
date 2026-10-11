@@ -1,0 +1,93 @@
+wrote art and sound into 4 carts
+RUNNING: tests\test_boot.p8
+INFO: ok boot
+wrote boot_title.png
+wrote boot_play.png
+wrote boot_shop.png
+wrote boot_boss.png
+wrote boot_dying.png
+wrote boot_lost.png
+wrote boot_won.png
+RUNNING: tests\test_feel.p8
+INFO: wave 1 | 18s | armor 100/100 | kills 22 | most foes 14 | overheats 0 | alphas 0 | hits 0 | city 100 | drops 2 | score 4500
+INFO: wave 2 | 21s | armor 92/100 | kills 27 | most foes 15 | overheats 1 | alphas 1 | hits 1 | city 100 | drops 1 | score 12800
+INFO: wave 3 | 31s | armor 100/100 | kills 35 | most foes 16 | overheats 1 | alphas 1 | hits 0 | city 100 | drops 5 | score 28100
+INFO: wave 4 | 40s | armor 100/100 | kills 41 | most foes 20 | overheats 3 | alphas 2 | hits 0 | city 100 | drops 12 | score 45400
+INFO: wave 5 | 38s | armor 100/100 | kills 56 | most foes 17 | overheats 2 | alphas 2 | hits 0 | city 100 | drops 5 | score 71900
+INFO: wave 6 | 38s | armor 26/100 | kills 37 | most foes 24 | overheats 3 | alphas 0 | hits 7 | city 75 | drops 8 | score 83600
+INFO: wave 7 | 45s | armor 66/130 | kills 46 | most foes 30 | overheats 3 | alphas 2 | hits 6 | city 44 | drops 9 | score 112600
+INFO: wave 8 | 54s | armor 54/130 | kills 86 | most foes 28 | overheats 1 | alphas 2 | hits 4 | city -2 | drops 14 | score 174000
+INFO: the bot died on wave 8 after 290s
+INFO: wave 1 | 19s | armor 100/100 | kills 22 | most foes 13 | overheats 0 | alphas 0 | hits 0 | city 100 | drops 1 | score 3200
+INFO: wave 2 | 23s | armor 92/100 | kills 27 | most foes 15 | overheats 2 | alphas 0 | hits 1 | city 100 | drops 1 | score 9500
+INFO: wave 3 | 30s | armor 112/130 | kills 35 | most foes 15 | overheats 2 | alphas 2 | hits 0 | city 100 | drops 5 | score 23400
+INFO: wave 4 | 36s | armor 130/130 | kills 41 | most foes 19 | overheats 2 | alphas 1 | hits 0 | city 100 | drops 3 | score 43700
+INFO: wave 5 | 35s | armor 130/130 | kills 54 | most foes 16 | overheats 4 | alphas 2 | hits 0 | city 100 | drops 3 | score 66700
+INFO: wave 6 | 34s | armor 130/130 | kills 47 | most foes 17 | overheats 2 | alphas 2 | hits 0 | city 100 | drops 6 | score 93200
+wrote feel_early.png
+wrote feel_mid.png
+FAIL: tests\test_feel.p8 did not complete cleanly (pico8 exit code 0xc0000005)
+pico-8 crashed on tests\test_feel.p8 (attempt 1); running it again
+RUNNING: tests\test_feel.p8
+INFO: wave 1 | 18s | armor 100/100 | kills 22 | most foes 15 | overheats 0 | alphas 0 | hits 0 | city 100 | drops 1 | score 4500
+INFO: wave 2 | 22s | armor 100/100 | kills 28 | most foes 13 | overheats 1 | alphas 1 | hits 0 | city 100 | drops 2 | score 13400
+INFO: wave 3 | 30s | armor 100/100 | kills 35 | most foes 16 | overheats 2 | alphas 1 | hits 0 | city 100 | drops 3 | score 28500
+INFO: wave 4 | 37s | armor 100/100 | kills 40 | most foes 16 | overheats 3 | alphas 2 | hits 0 | city 100 | drops 9 | score 52000
+INFO: wave 5 | 37s | armor 84/100 | kills 54 | most foes 22 | overheats 3 | alphas 0 | hits 2 | city 100 | drops 3 | score 71700
+INFO: wave 6 | 36s | armor 92/100 | kills 47 | most foes 23 | overheats 4 | alphas 2 | hits 1 | city 100 | drops 2 | score 93600
+INFO: wave 7 | 44s | armor 100/100 | kills 59 | most foes 17 | overheats 1 | alphas 4 | hits 0 | city 100 | drops 5 | score 131700
+INFO: wave 8 | 46s | armor 112/130 | kills 88 | most foes 26 | overheats 3 | alphas 1 | hits 1 | city 100 | drops 11 | score 221600
+INFO: the bot won after 276s
+INFO: wave 1 | 19s | armor 100/100 | kills 22 | most foes 13 | overheats 0 | alphas 0 | hits 0 | city 100 | drops 0 | score 4500
+INFO: wave 2 | 25s | armor 100/100 | kills 27 | most foes 15 | overheats 1 | alphas 0 | hits 0 | city 96 | drops 2 | score 12600
+INFO: wave 3 | 31s | armor 100/100 | kills 35 | most foes 16 | overheats 0 | alphas 2 | hits 0 | city 96 | drops 2 | score 27900
+INFO: wave 4 | 32s | armor 92/100 | kills 37 | most foes 18 | overheats 2 | alphas 1 | hits 1 | city 88 | drops 2 | score 39400
+INFO: wave 5 | 39s | armor 82/100 | kills 49 | most foes 20 | overheats 4 | alphas 0 | hits 3 | city 82 | drops 9 | score 56500
+INFO: wave 6 | 36s | armor 100/100 | kills 50 | most foes 23 | overheats 1 | alphas 3 | hits 0 | city 82 | drops 9 | score 93900
+INFO: wave 7 | 50s | armor 69/100 | kills 61 | most foes 28 | overheats 2 | alphas 0 | hits 2 | city 57 | drops 8 | score 136200
+INFO: wave 8 | 52s | armor -5/100 | kills 55 | most foes 29 | overheats 0 | alphas 2 | hits 10 | city 0 | drops 8 | score 146500
+INFO: the bot died on wave 8 after 288s
+INFO: wave 1 | 19s | armor 100/100 | kills 22 | most foes 14 | overheats 0 | alphas 0 | hits 0 | city 100 | drops 0 | score 4500
+INFO: wave 2 | 24s | armor 84/100 | kills 21 | most foes 15 | overheats 4 | alphas 0 | hits 2 | city 84 | drops 0 | score 9000
+INFO: wave 3 | 30s | armor 100/100 | kills 35 | most foes 16 | overheats 1 | alphas 2 | hits 0 | city 84 | drops 4 | score 24300
+INFO: wave 4 | 41s | armor 68/100 | kills 32 | most foes 19 | overheats 4 | alphas 0 | hits 4 | city 78 | drops 5 | score 33900
+INFO: wave 5 | 35s | armor 88/100 | kills 55 | most foes 14 | overheats 1 | alphas 2 | hits 0 | city 78 | drops 6 | score 58400
+INFO: wave 6 | 33s | armor 100/100 | kills 48 | most foes 16 | overheats 4 | alphas 2 | hits 0 | city 78 | drops 4 | score 95100
+INFO: wave 7 | 47s | armor 100/100 | kills 67 | most foes 28 | overheats 1 | alphas 4 | hits 0 | city 78 | drops 7 | score 145800
+INFO: wave 8 | 57s | armor 72/100 | kills 98 | most foes 29 | overheats 0 | alphas 2 | hits 4 | city 70 | drops 21 | score 238200
+INFO: the bot won after 291s
+INFO: ok feel
+wrote feel_early.png
+wrote feel_mid.png
+RUNNING: tests\test_weapons.p8
+INFO: pulse kills skitter,2 in 11 frames
+INFO: pulse kills wing,2.5 in 20 frames
+INFO: pulse kills wing,4 in 27 frames
+INFO: pulse kills brute,4.5 in 282 frames
+INFO: flak kills skitter,2 in 12 frames
+INFO: flak kills wing,2.5 in 9 frames
+INFO: minigun kills skitter,2 in 12 frames
+INFO: minigun kills wing,2.5 in 19 frames
+INFO: minigun kills wing,4 in 28 frames
+INFO: shock kills skitter,2 in 1 frames
+INFO: shock kills wing,2.5 in 2 frames
+INFO: shock kills skitter,5.8 in 7 frames
+INFO: shock kills wing,4 in 4 frames
+INFO: shock kills brute,4.5 in 241 frames
+INFO: shock kills ship,5 in 451 frames
+INFO: rocket kills skitter,2 in 17 frames
+INFO: rocket kills wing,2.5 in 17 frames
+INFO: rocket kills skitter,5.8 in 58 frames
+INFO: rocket kills wing,4 in 34 frames
+INFO: rocket kills brute,4.5 in 210 frames
+INFO: rocket kills ship,5 in 399 frames
+INFO: redeemer kills skitter,2 in 23 frames
+INFO: redeemer kills wing,2.5 in 26 frames
+INFO: redeemer kills skitter,5.8 in 92 frames
+INFO: redeemer kills wing,4 in 53 frames
+INFO: redeemer kills brute,4.5 in 73 frames
+INFO: redeemer kills ship,5 in 230 frames
+INFO: cpu at 60fps with 24 foes: 0.4644
+INFO: ok weapons
+wrote scene.png
+wrote scene_later.png

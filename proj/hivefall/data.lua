@@ -41,6 +41,10 @@ scroll_speed=0.012
 block=0.8333
 drop_speed=0.015
 chill_frames=240
+vent_delay=12
+vent_rate=1.5
+boost_speed=0.008
+snd_vent=18
 cone_base=7
 max_heat=100
 restart_heat=50
@@ -64,7 +68,7 @@ snd_roar=15
 
 -- what a new run starts from; reset() parses these
 player_start="x=0,vx=0,armor=100,max_armor=100,heat=0,weapon=1,hurt_flash=0,muzzle=0,recoil=0,gun_side=1,alpha=0,chill=0,cooling=0.35,power=1,haste=1,agility=1,cone=0.3"
-run_start="score=0,shake=0,freeze=0,white=0,grid_flash=0,combo=0,combo_wait=0,charge=0,dying=0,bark_wait=0,over_wait=0,city=100,city_flash=0"
+run_start="score=0,shake=0,freeze=0,white=0,grid_flash=0,combo=0,combo_wait=0,charge=0,dying=0,bark_wait=0,over_wait=0,city=100,city_flash=0,x_held=0,boost=0"
 
 -- cooldown is in frames (60 a second); speed is depth per frame;
 -- spread is sideways scatter; splash is a blast radius; range is how

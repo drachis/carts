@@ -47,10 +47,11 @@ the grid, the street's buildings, foes far to near, drops, aim, shots,
 mech, the front rooftops, effects, HUD. A foe behind the crest rises over
 it, then hops down onto the slope.
 
-The mech is always advancing: `travel` slides the grid's cross lines and
-the buildings either side of the street toward the viewer. It is scenery
-only; foes close at their own speeds. The buildings cannot be hurt, but
-the city has a health bar.
+While there is anything on the hill the mech advances: `travel` slides the grid's cross lines and
+the buildings either side of the street toward the viewer, and eases to a
+stop when the hill is clear. The street's buildings cannot be hurt, but the
+city has a health bar, and each foe that gets in wrecks the front rooftop
+where it went in (`ruin`): shorter, dark, broken-topped and burning.
 
 Sprites are 16x16 cells drawn with `sspr` at `size*scale`. A foe may have
 `parts`: more cells drawn around its body, bobbing, mirrored on the right
@@ -60,11 +61,15 @@ group whose members all weave along the same path, one behind the other
 
 ## The game
 
-- **Controls:** left/right walk. O (Z) fires while held. X and down cycle
-  weapons forward and back, skipping empty ones. Up sets off the alpha
-  strike when its bar is full. PICO-8 has only two action buttons, which a
-  pad repeats across its face buttons, so the extra actions are on the
-  d-pad or stick.
+- **Controls:** left/right walk. O fires while held. A tap of X is the next
+  weapon (on release, skipping empty ones). O and X held together vent
+  heat: it falls fast and the guns are silent meanwhile. Down sets off the
+  alpha strike when its bar is full. Up boosts forward: the street rolls
+  faster and every foe and drop closes faster, and the next group comes
+  sooner. PICO-8 has only two action buttons, which a pad repeats across
+  its face buttons, so the extra actions are on the d-pad or stick.
+- **Safety:** after a refit (and at the start) fire must be let go once
+  before the guns answer, so confirming an upgrade does not spend a round.
 - **Aim:** the nearest foe inside the cone above the mech, out to the
   weapon in hand's `range`, is locked (green brackets). The cone and its
   range are drawn as dots. Most shots home on what was locked.

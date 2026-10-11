@@ -311,6 +311,7 @@ SOUNDS = [
          (4, 1, 5, 2), (3, 1, 4, 2), (3, 1, 3, 2)]),                         # 15 roar
     (16, [REST if pitch is None else (pitch, 2, 3, 0) for pitch in BASS_LINE]),  # 16 bass
     (16, DRUM_BAR * 2),                                                      # 17 drums
+    (2, [(60, 6, 2, 0), (56, 6, 2, 0), (52, 6, 1, 0)]),                      # 18 vent
 ]
 # pattern 0 loops on itself: bass and drums on the first two channels
 MUSIC = ["03 10114344"]

@@ -4,6 +4,7 @@ camera_x=0
 tick=0
 -- how far the mech has advanced up the street, wrapping every five deep
 travel=0
+scroll_rate=0
 
 -- world (x across, z depth, h height) to screen. x and h are in pixels as
 -- they appear at the mech's line; things shrink and close up toward the
@@ -80,12 +81,25 @@ function draw_hill()
  end
 end
 
--- the rooftops the mech is standing among; they flash when the city is hit
+-- the rooftops the mech is standing among. they flash when the city is
+-- hit; one that has been hit (`ruin`) is shorter, dark, broken and burning.
 function draw_city_front()
  for i,height in ipairs(skyline) do
   local x=i*8-24-camera_x*1.2
-  rectfill(x,127-height/2,x+6,127,city_flash>0 and tick%4<2 and 8 or 1)
-  pset(x+1+i%4,126-i%3,10)
+  local damage=ruin[i] or 0
+  local top=127-max(1,height/2-damage*2)
+  local colour=damage>0 and 5 or 1
+  if city_flash>0 and tick%4<2 then colour=8 end
+  rectfill(x,top,x+6,127,colour)
+  if damage==0 then
+   pset(x+1+i%4,126-i%3,10)
+  else
+   pset(x+i%5,top,0)
+   pset(x+3+i%3,top,0)
+   if rnd()<0.04*damage then
+    burst(x+3,top,1,rnd{8,9,10},0.6,-0.04)
+   end
+  end
  end
 end
 
@@ -130,7 +144,14 @@ function update_effects()
  if shake<0.3 then shake=0 end
  grid_flash=max(grid_flash-1)
  city_flash=max(city_flash-1)
- travel=(travel+scroll_speed)%5
+ -- the street rolls while there is something to advance on, faster under
+ -- boost, and eases to a stop when the hill is clear
+ local rate=0
+ if state=="play" then
+  rate=(#foes>0 and scroll_speed or 0)+boost*4
+ end
+ scroll_rate+=(rate-scroll_rate)*0.05
+ travel=(travel+scroll_rate)%5
  white=max(white-1)
 end
 

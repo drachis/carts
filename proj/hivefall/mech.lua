@@ -8,7 +8,7 @@ function update_player()
  player.x=mid(-62,player.x+player.vx,62)
  camera_x=player.x*0.25
  -- a heavy footfall
- if abs(player.vx)>0.3 and tick%24==0 then
+ if (abs(player.vx)>0.3 or boost>0) and tick%24==0 then
   local sx,sy=project(player.x,1,0)
   burst(sx,sy,3,5,1)
   shake=max(shake,1.2)
@@ -26,16 +26,34 @@ function update_player()
  end
 
  find_target()
- local step=tonum(btnp(5))-tonum(btnp(3))
- if step!=0 then
-  repeat
-   player.weapon=(player.weapon-1+step)%#weapon_specs+1
-   local candidate=weapon_specs[player.weapon]
-  until candidate.wave<=wave
-   and (candidate.ammo==0 or candidate.rounds>0)
-  sfx(snd_switch)
+ -- a tap of x is the next gun; x held along with fire vents heat
+ if btn(5) then
+  x_held=min(x_held+1,99)
+ else
+  if x_held>0 and x_held<=vent_delay then
+   repeat
+    player.weapon=player.weapon%#weapon_specs+1
+    local candidate=weapon_specs[player.weapon]
+   until candidate.wave<=wave
+    and (candidate.ammo==0 or candidate.rounds>0)
+   sfx(snd_switch)
+  end
+  x_held=0
  end
- if btnp(2) and charge>=alpha_cost then start_alpha() end
+ local venting=btn(4) and x_held>vent_delay
+ if venting then
+  player.heat=max(player.heat-vent_rate)
+  if tick%6==0 then
+   local sx,sy=project(player.x,1,16)
+   burst(sx+rnd(20)-10,sy,2,6,1,-0.06)
+   sfx(snd_vent)
+  end
+ end
+ if btnp(3) and charge>=alpha_cost then start_alpha() end
+ -- up pushes forward: everything on the hill closes faster
+ boost=btn(2) and boost_speed or 0
+ -- fire has to be let go once after a refit before the guns answer
+ if not btn(4) then safety=false end
 
  if player.alpha>0 then
   player.alpha-=1
@@ -53,7 +71,8 @@ function update_player()
  end
 
  local weapon=weapon_specs[player.weapon]
- if btn(4) and weapon.wait==0 and not player.overheated then
+ if btn(4) and weapon.wait==0 and not player.overheated
+  and not venting and not safety then
   if weapon.ammo>0 and weapon.rounds<=0 then
    bark(weapon.name.." is dry")
    player.weapon=1
@@ -220,7 +239,7 @@ end
 
 function draw_player()
  local sx,sy=project(player.x,1,0)
- local frame=abs(player.vx)>0.15 and tick\8%2 or 0
+ local frame=(abs(player.vx)>0.15 or boost>0) and tick\8%2 or 0
  if player.hurt_flash>0 and tick%4<2 then
   for colour=1,15 do pal(colour,8) end
  elseif player.alpha>0 and tick%4<2 then

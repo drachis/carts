@@ -5,7 +5,8 @@
 -- the bot walks under the nearest foe, sidesteps a spit that is close,
 -- holds fire while it has the heat to spare, swaps weapon when the one in
 -- hand is reloading or has nothing in range, uses alpha when it has it and
--- takes the middle upgrade, and walks to a drop when nothing is close. it is a crude player: it measures how much is
+-- takes the middle upgrade, and walks to a drop when nothing is close.
+-- it never boosts and never vents. it is a crude player: it measures how much is
 -- going on and whether a plain strategy survives, not whether the game is
 -- fun. spawns are random, so runs differ; that is why there are three.
 --
@@ -78,8 +79,8 @@ function play()
  if goal<player.x-3 then held[0]=true end
 
  local weapon=weapon_specs[player.weapon]
- held[4]=player.heat+weapon.heat<max_heat
- held[2]=charge>=alpha_cost
+ held[4]=not safety and player.heat+weapon.heat<max_heat
+ held[3]=charge>=alpha_cost
  held[5]=n%10==0 and (weapon.wait>20
   or nearest and not player.target and n%40==0)
 end
