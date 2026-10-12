@@ -80,14 +80,29 @@ function update_foes()
  end
 end
 
-function hurt_foe(foe,amount)
+-- `shot` is what did it, if a shot did. the gun a foe is weak to does
+-- double; a shot lighter than its armour glances for a third, with a grey
+-- spark and no flash, so it can be seen not to be working.
+function hurt_foe(foe,amount,shot)
  if foe.hp<=0 then return end
- foe.hp-=amount
- foe.flash=5
  local size=foe.size
  local x,y=foe.sx,foe.sy-8*size*foe.scale
+ local spark=7
+ if shot and shot.name==foe.weak then
+  amount*=2
+  spark=10
+  burst(x,y,4,10,2.5)
+ elseif shot and amount<foe.armor then
+  amount/=3
+  spark=5
+  sfx(snd_glance)
+  if bark_wait==0 then bark("armour! use a heavy gun") end
+ else
+  foe.flash=5
+ end
+ foe.hp-=amount
  if foe.hp>0 then
-  burst(x,y,2,7,1.5)
+  burst(x,y,2,spark,1.5)
   return
  end
  del(foes,foe)

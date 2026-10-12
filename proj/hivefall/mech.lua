@@ -127,7 +127,7 @@ function launch(weapon,target)
   local shot=setmetatable({
    x=player.x+player.gun_side*10,z=1,h=18+hover,
    vx=0,vh=0,
-   target=target,struck={}
+   target=target,fuse=target and target.z,struck={}
   },weapon)
   aim(shot)
   shot.vx+=(rnd(2)-1)*weapon.spread
@@ -153,6 +153,10 @@ function update_shots()
   shot.h+=shot.vh
   if shot.z>shot.range+0.3 then
    del(shots,shot)
+  elseif shot.splash>0 and shot.fuse and shot.z>=shot.fuse then
+   -- a blast that met nothing goes off where it was aimed
+   explode(shot)
+   del(shots,shot)
   else
    for foe in all(foes) do
     local reach=9*foe.size
@@ -173,7 +177,7 @@ function strike(shot,foe)
  if shot.splash>0 then
   explode(shot)
  else
-  hurt_foe(foe,shot.damage*player.power)
+  hurt_foe(foe,shot.damage*player.power,shot)
   if shot.pierce==1 then
    shot.struck[foe]=true
    return false
@@ -197,7 +201,7 @@ function explode(shot)
   if foe.z<far_z+0.3
    and abs(foe.x-shot.x)<shot.splash+8*foe.size
    and abs(foe.z-shot.z)<shot.splash/25 then
-   hurt_foe(foe,shot.damage*player.power)
+   hurt_foe(foe,shot.damage*player.power,shot)
    -- what lives through it is thrown back up the hill and aside
    if foe.hp>0 then
     foe.z=min(foe.z+shot.splash/40,far_z)
@@ -274,7 +278,8 @@ end
 
 -- the cone, laid on the ground so it bends with the hill: dotted edges,
 -- an arc at the gun's range in the gun's colour, and brackets around
--- what is locked
+-- what is locked: yellow if this gun is what it is weak to, red if it
+-- will only glance, green otherwise
 function draw_aim()
  local weapon=weapon_specs[player.weapon]
  for z=1.4,weapon.range,0.4 do
@@ -293,11 +298,17 @@ function draw_aim()
   local half=8*foe.size*foe.scale
   local cx,cy=foe.sx,foe.sy-half
   half+=2+sin(tick/30)
+  local hue=11
+  if weapon.name==foe.weak then
+   hue=10
+  elseif weapon.damage*player.power<foe.armor then
+   hue=8
+  end
   for side=-1,1,2 do
    for up=-1,1,2 do
     local x,y=cx+side*half,cy+up*half
-    line(x,y,x-side*3,y,11)
-    line(x,y,x,y-up*3,11)
+    line(x,y,x-side*3,y,hue)
+    line(x,y,x,y-up*3,hue)
    end
   end
  end

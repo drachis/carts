@@ -8,14 +8,14 @@ scroll_rate=0
 
 -- world (x across, z depth, h height) to screen. x and h are in pixels as
 -- they appear at the mech's line; things shrink and close up toward the
--- crest, and the crest sags at the edges so the ground reads as a hill.
+-- crest, and the crest sags at the edges so the ground reads as a globe.
 function project(x,z,h)
  local near=max((far_z/z-1)/(far_z-1))
  local scale=0.3+0.9*near
  local sx=64+(x-camera_x)*(0.7+0.3*near)
  -- the sag is only on the hill; below the mech's line x runs far enough
  -- off screen that squaring it overflows
- local sag=near<1 and (sx-64)^2/700*(1-near) or 0
+ local sag=near<1 and (sx-64)*(sx-64)/350*(1-near) or 0
  local sy=crest_y+74*near+sag-h*scale
  return sx,sy,scale
 end
@@ -57,10 +57,12 @@ end
 -- depth), which leaves diamonds between them; each diamond holds a block
 -- of two towers, in the cells where column+row is even.
 function draw_hill()
- circfill(64,crest_y+350,350,0)
- rectfill(0,crest_y+12,127,127,0)
+ -- the land is the top of a globe, with the light catching its rim
+ circfill(64,crest_y+globe,globe,3)
+ rectfill(0,crest_y+12,127,127,3)
+ circ(64,crest_y+globe,globe,11)
 
- local colour=grid_flash>0 and 13 or 1
+ local colour=grid_flash>0 and 7 or 5
  for lane=-11,11 do
   for lean=-1,1,2 do
    line()
@@ -79,8 +81,8 @@ function draw_hill()
  local turn=travel\0.625
  for k=8,-1,-1 do
   -- the front edge runs on off the bottom of the screen. 0.45 is far
-  -- enough for the tallest tower to leave it; nearer than that the
-  -- numbers get big enough to crash pico-8 (measured: 0.3 does)
+  -- enough for the tallest tower to leave it, and keeps depth well away
+  -- from 0, where the projection has no answer
   local front=max(1.1+(k-slide)*0.625,0.45)
   local back=min(1.525+(k-slide)*0.625,far_z)
   if back>front then
@@ -88,8 +90,17 @@ function draw_hill()
    for column=row%2,9,2 do
     local left=column*20-98
     local seed=(column*7+row*13)%20
-    draw_tower(left,left+8,front,back,seed,k<3)
-    draw_tower(left+8,left+16,front,back,(seed+9)%20,k<3)
+    if seed%5==2 then
+     -- a park: three trees, burnt black once the city has fallen this far
+     for tree=0,2 do
+      local sx,sy,scale=project(left+3+tree*5,front+(back-front)*(tree%2*0.5+0.25),0)
+      circfill(sx,sy-scale*3,scale*2.5,seed<(100-city)/5 and 0 or 11)
+      pset(sx,sy,4)
+     end
+    else
+     draw_tower(left,left+8,front,back,seed,k<3)
+     draw_tower(left+8,left+16,front,back,(seed+9)%20,k<3)
+    end
    end
   end
  end
@@ -106,18 +117,19 @@ function draw_tower(left,right,front,back,seed,near_row)
  local ruined=harm>0
  -- low in the suburbs, three times the height by the capitol
  local height=(6+seed%8*2)*(0.4+wave*0.15)
- if ruined then height/=2 end
+ if ruined then height/=3 end
  local x1,top,scale=project(left,front,height)
  local x2=x1+(right-left)*(0.6+scale/3)
  local _,far_top=project(left,back,height)
  local base=top+height*scale
  local wall,roof=tower_tints[seed%4*2+1],tower_tints[seed%4*2+2]
- if ruined then wall,roof=4,4 end
+ if ruined then wall,roof=0,5 end
  if city_flash>0 and near_row and tick%4<2 then wall,roof=2,8 end
  rectfill(x1,far_top,x2,top,roof)
  rectfill(x1,top+1,x2,base,wall)
 
  if ruined then
+  rect(x1,top+1,x2,base,5)
   -- gutted: seen from above, a rim round a dark inside
   if top-far_top>4 then
    rectfill(x1+2,far_top+2,x2-2,top-1,0)
@@ -133,7 +145,7 @@ function draw_tower(left,right,front,back,seed,near_row)
   end
  end
  if scale>0.6 then
-  local damaged=harm>-4
+  local damaged=harm>-4 and city<100
   local glass=window_tints[seed%3+1]
   for across=0,(x2-x1-2)\4 do
    for down=0,min(6,(base-top-4)\3) do
@@ -149,7 +161,7 @@ function draw_tower(left,right,front,back,seed,near_row)
   end
   if ruined then
   elseif damaged then
-   rectfill(x2-2-scale*4,far_top,x2,top+scale*5,0)
+   rectfill(x2-(x2-x1)/3,top-scale*2,x2,top+scale*3,0)
   elseif seed%5==0 then
    -- a mast with a light
    line(x1+3,far_top,x1+3,far_top-scale*5,6)

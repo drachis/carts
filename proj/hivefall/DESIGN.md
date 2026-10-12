@@ -44,8 +44,9 @@ three times the height on the way. The code says `wave`.
 `project(x,z,h)` in `world.lua` is the whole 2.5d. `z` is depth, from 1 at
 the mech's line to `far_z` (6) at the crest; `x` and `h` are pixels as they
 would appear at the mech's line. Things shrink to 30% and close up toward
-the middle as they recede, and the crest sags at the edges so the ground
-reads as a hill. Depths a little under 1 project below the mech, which is
+the middle as they recede, and the crest sags at the edges (`globe` is the
+radius of the circle it follows) so the ground reads as the top of a
+globe, with a lit rim along the horizon. Depths a little under 1 project below the mech, which is
 how the city carries on to the bottom of the screen. The view slides a
 quarter as far as the mech moves.
 
@@ -53,11 +54,13 @@ Draw order: sky, foes still behind the crest, the hill (which hides them),
 streets, houses far to near, foes far to near, drops, aim, shots, mech,
 fireballs and sparks, HUD.
 
-**The city is the ground.** It is cut into cells 20 across and 0.625 deep.
+**The city is the ground**, and is meant to read like a sim city laid on
+a sphere: green land, grey roads, blocks of coloured towers, parks. It is cut into cells 20 across and 0.625 deep.
 Roads run on both diagonals of that grid, at 45 degrees to the flight
 path, drawn as lines that bend with the hill and ripple under shockwaves.
 They leave diamonds between them, and each diamond (the cells where
-column+row is even) holds a block of two towers. `draw_tower` draws each as a roof and a front wall; a fixed hash
+column+row is even) holds a block of two towers, or, one in five, a park
+of three trees. `draw_tower` draws each as a roof and a front wall; a fixed hash
 of its column and row (`seed`) gives it a height, one of four wall and
 roof colours, one of three window colours, a grid of windows when it is
 near, and a mast with a blinking light or a box on the roof. `travel`
@@ -67,9 +70,9 @@ faster under boost, and eases to a stop when the hill is clear.
 There is no city health bar: the towers show it. `city` runs from 100 to
 0. Each tower has its turn, by `seed`: shortly before it falls it is
 *damaged* (windows dark, a few lit orange by fire, a bite out of its top),
-then it is a *ruin* (half the height, burnt brown, gutted so that from
-above it is a rim round a dark inside, its top edge broken, a little
-grey smoke). At 70 a third of the city
+then it is a *ruin* (a third the height, scorched black, gutted so that from
+above it is a grey rim round a dark inside, its top edge broken, a
+little grey smoke). Parks burn black in the same order. At 70 a third of the city
 is one or the other; at 10 it is rubble. Nothing on a tower flashes or
 flickers, so damage is not mistaken for enemy fire; the only flash is the
 near rows turning red for a moment when something gets in.
@@ -103,6 +106,20 @@ group whose members all weave along the same path, one behind the other
   shards), minigun (fast), shock (long, pierces a line), rocket (long,
   blast), redeemer (long, slow, one round, clears a third of the hill).
   Each has its own reload, so cycling through loaded guns beats waiting.
+- **Which gun for which foe.** Three things make the choice matter:
+  - *Armour:* a shot that does less damage than a foe's `armor` glances
+    for a third, with a grey spark and a tick instead of a flash. The brute
+    (4) shrugs off pulse, flak and minigun; the tyrant (1.5) shrugs off
+    pulse and minigun but not flak.
+  - *Weakness:* the gun named in a foe's `weak` does double: flak on
+    wings, shock on wyrm segments, rocket on brutes, minigun on ships,
+    redeemer on the tyrant.
+  - *Flight:* pulse, minigun and shock home on what was locked. Flak,
+    rockets and the redeemer fly straight at where the target was, so they
+    suit the slow and the bunched and tend to miss a weaving wing; a
+    rocket that meets nothing bursts where it was aimed.
+  The lock brackets say which case the gun in hand is: yellow for a
+  weakness, red for a glance, green otherwise.
 - **Blasts:** a rocket or redeemer bursts in a fireball that swells white
   to red and leaves the spot burning for a moment. Whatever survives is
   thrown back up the hill and aside.
@@ -185,8 +202,18 @@ retries. It is PICO-8's, not the cart's.
   strike; the most the bot has seen is 34 foes, which is not measured.
 - The sound effects and the two-channel music loop were written as numbers.
 - Boost has no reward beyond time; nothing yet pays for pushing forward.
-- A tower's front edge is let run to depth 0.45 below the mech. At 0.3
-  headless PICO-8 crashed every time (8 runs of 8) and at 0.45 and above it
-  did not (0 of 6); the cause was not found, only the margin. An overflow
-  in the hill's sag was ruled out.
+- Headless PICO-8 (`-x`, which the manual calls experimental) often dies
+  with an access violation while running these tests, and the cause is
+  not known. What was seen on 2026-10-11, on one build: the boot test
+  crashed 30 runs of 30 launched by `run_tests.py`, and passed 5 of 5
+  launched by hand from the shell with output sent to a file. Sending the
+  runner's output to a file instead of a pipe did not stop it. Three
+  causes were announced and each was wrong (how near a tower is drawn, a
+  line printed per frame, the pipe). It has not been reported in real
+  play. Until it is understood, a test that fails this way has not
+  passed: say so rather than retry until it does.
+- Whether the game holds 60fps on the user's machine. `stat(7)` reported
+  60 in the empty-city test at about 55% `stat(1)`; with a full hill it
+  has not been measured, and the manual does not say whether `stat(1)` is
+  a share of a 60fps or a 30fps frame.
 - No high score is saved.

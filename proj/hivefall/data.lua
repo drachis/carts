@@ -37,6 +37,7 @@ end
 parse_record([[
 far_z=6
 crest_y=46
+globe=175
 crest_hop=20
 scroll_speed=0.012
 drop_speed=0.015
@@ -45,6 +46,7 @@ vent_delay=12
 vent_rate=1.5
 boost_speed=0.008
 snd_vent=18
+snd_glance=19
 cone_base=7
 hover=6
 max_heat=100
@@ -71,6 +73,8 @@ player_start="x=0,vx=0,armor=100,max_armor=100,heat=0,weapon=1,hurt_flash=0,muzz
 run_start="score=0,shake=0,freeze=0,white=0,grid_flash=0,combo=0,combo_wait=0,charge=0,dying=0,bark_wait=0,over_wait=0,city=100,city_flash=0,x_held=0,boost=0"
 
 -- cooldown is in frames (60 a second); speed is depth per frame;
+-- homing 1 follows what was locked; 0 flies straight at where it was,
+-- and a blast goes off there if it has hit nothing on the way.
 -- spread is sideways scatter; splash is a blast radius; range is how
 -- deep it locks and reaches; wave is when the weapon is issued. ammo is
 -- what it holds (0 is unlimited) and pack is what an ammo drop gives.
@@ -79,9 +83,9 @@ name,wave,range,cooldown,damage,speed,count,spread,splash,heat,colour,homing,pie
 pulse,1,4.5,7,1,0.2,1,0,0,4,12,1,0,0,0,0
 flak,2,3,42,2,0.14,7,1,0,24,9,0,0,1,14,6
 minigun,3,4,3,0.6,0.25,1,0,0,2,10,1,0,2,160,60
-shock,4,6.2,34,5,0.6,1,0,0,20,14,1,1,3,12,5
-rocket,5,6.2,60,10,0.07,1,0,16,28,8,1,0,4,8,3
-redeemer,7,6.2,150,60,0.04,1,0,60,90,11,1,0,5,1,1
+shock,4,6.2,34,5,0.6,1,0,0,20,14,1,1,3,14,5
+rocket,5,6.2,60,10,0.07,1,0,16,28,8,0,0,4,8,3
+redeemer,7,6.2,150,60,0.04,1,0,60,90,11,0,0,5,1,1
 ]]
 
 -- between waves the pilot picks one of three; stat is the field of
@@ -105,15 +109,17 @@ optics,cone,2,+aim arc
 -- the mech stood when it was thrown, and does the city no harm. brood is what it drops, every
 -- brood_every frames. halt is a depth it stops at. parts are more sprites drawn around the body, as
 -- cell:across:down in sprite pixels; ones to the right are flipped.
+-- a shot that does less than `armor` glances for a third; the gun named
+-- in `weak` does double.
 enemy_specs=parse_table[[
-name,cell,tail,size,hp,speed,fly,sway,bite,points,chain,track,brood,brood_every,halt,boss,parts
-skitter,0,0,0.7,2,0.011,0,10,6,1,0,0,,,,,
-wing,2,2,0.8,3,0.014,45,22,8,2,0,0,,,,,
-brute,4,4,1.6,40,0.006,0,4,25,10,0,1,spit,260,,,16:-10:1/16:10:1
-wyrm,6,8,1.1,6,0.009,0,26,10,3,1,1,,,,,
-ship,10,10,2.4,70,0.004,60,8,30,25,0,1,skitter,220,2.4,,
-spit,14,14,0.6,1,0.028,14,0,9,0,0,0,,,,,
-tyrant,18,18,3,800,0.0024,0,6,60,100,0,1,spit,110,1.8,1,20:0:-7/16:-12:-3/16:12:-3/16:-10:4/16:10:4
+name,cell,tail,size,hp,speed,fly,sway,bite,points,chain,track,brood,brood_every,halt,boss,armor,weak,parts
+skitter,0,0,0.7,2,0.011,0,10,6,1,0,0,,,,,0,,
+wing,2,2,0.8,3,0.016,45,24,8,2,0,0,,,,,0,flak,
+brute,4,4,1.6,32,0.006,0,4,25,10,0,1,spit,260,,,4,rocket,16:-10:1/16:10:1
+wyrm,6,8,1.1,6,0.009,0,26,10,3,1,1,,,,,0,shock,
+ship,10,10,2.4,70,0.004,60,8,30,25,0,1,skitter,220,2.4,,0,minigun,
+spit,14,14,0.6,1,0.028,14,0,9,0,0,0,,,,,0,,
+tyrant,18,18,3,500,0.0024,0,6,60,100,0,1,spit,110,1.8,1,1.5,redeemer,20:0:-7/16:-12:-3/16:12:-3/16:-10:4/16:10:4
 ]]
 
 for spec in all(enemy_specs) do
@@ -140,6 +146,6 @@ blast_colours=split"7,10,9,8,2"
 -- the depths a road is drawn through, closer together where it is near
 road_depths=split"0.8,1,1.3,1.7,2.2,3,4.2,6"
 -- a tower takes one of four wall,roof pairs and one of three window colours
-tower_tints=split"5,6,13,5,3,5,1,13"
+tower_tints=split"5,6,13,6,4,5,1,13"
 window_tints=split"10,12,7"
 stars=split"9,5,30,11,52,3,71,9,96,6,118,12,84,16,40,17,14,15,107,2"
