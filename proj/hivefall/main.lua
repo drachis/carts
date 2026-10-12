@@ -266,12 +266,13 @@ function _draw()
  elseif state=="title" then
   print("\^w\^thivefall",32,6,7)
   centred("race to the capitol",21,12)
-  rectfill(4,66,123,106,0)
-  rect(4,66,123,106,5)
-  centred("left/right  move",70,6)
-  centred("o fire  x next gun  o+x vent",78,6)
-  centred("up advance  down alpha strike",86,12)
-  if tick%60<40 then centred("press fire to deploy",98,10) end
+  -- the hints sit high, over the far city, so the mech is in the clear
+  rectfill(4,30,123,66,0)
+  rect(4,30,123,66,5)
+  centred("left/right  move",34,6)
+  centred("o fire  x next gun  o+x vent",42,6)
+  centred("up advance  down alpha strike",50,12)
+  if tick%60<40 then centred("press fire to deploy",58,10) end
  else
   rectfill(20,44,107,84,0)
   rect(20,44,107,84,game_won and 11 or 8)
