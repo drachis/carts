@@ -312,31 +312,34 @@ e.......
 ...99...
 """]
 
+# a hover frame seen from behind: shoulder mounts (the guns are separate
+# sprites, see GUNS), a cockpit hump, stub wings, and twin engine pods
+# underneath whose nozzles the jet flames come from
 MECH = """
-..5.........
-..5.........
-.565........
-.565.....555
-.565...5566d
-.565..566ddd
-5d6555666d99
-5d65d6666d99
-5d65d66666dd
-5dd5d666ddd1
-5dd5d66dd1a1
-.55.5d6dd111
-.....5dddddd
-....55ddd555
-...5665.5dd5
-..56665..555
-..5665......
-.56665......
-.5665.......
-.5d65.......
-.5dd5.......
-..5d65......
-.55dd55.....
-.5555555....
+............
+............
+............
+.........555
+.......5566d
+..55..566ddd
+.5d6555666d9
+.5d65d6666d9
+.5dd5d66666d
+..555d666dd1
+..5555d6dd1a
+.5666d5ddd11
+566ddd55dddd
+5ddd5..5ddd5
+.55....56dd5
+......566d55
+.....5666d5.
+.....566dd5.
+.....56ddd5.
+.....5dddd5.
+......5dd5..
+......5115..
+......5995..
+............
 """
 
 # (speed, [(pitch 0..63, waveform 0..7, volume 0..7, effect 0..7), ...])

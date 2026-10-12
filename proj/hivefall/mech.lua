@@ -246,15 +246,15 @@ end
 
 function draw_player()
  local sx,sy=project(player.x,1,hover+sin(tick/45)*1.5)
- -- jump jets, drawn first so the feet are in front of them: a flame from
- -- behind each foot that tapers from a white-hot root through yellow to
+ -- jets, drawn first so the engine pods are in front of them: a flame from
+ -- each nozzle that tapers from a white-hot root through yellow to
  -- an orange tip, flickering, leaning against the way the mech is moving,
  -- and longer under boost
- for jet=-8,8,16 do
+ for jet=-5,4,9 do
   local length=9+rnd(3)+boost*500
   for step=0,length do
    local along=step/length
-   circfill(sx+jet-player.vx*step,sy-2+step,2.4*(1-along),
+   circfill(sx+jet-player.vx*step,sy-3+step,2.4*(1-along),
     along<0.3 and 7 or along<0.65 and 10 or 9)
   end
  end
