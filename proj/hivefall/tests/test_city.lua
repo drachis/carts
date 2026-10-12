@@ -32,7 +32,7 @@ function _update60()
  game_update()
  game_draw()
  if n%40==30 and states[shot] then
-  printh("city at "..city..": cpu "..stat(1))
+  printh("city at "..city..": cpu "..stat(1).." fps "..stat(7))
   dump_screen("city_"..city)
  end
  if n==170 then

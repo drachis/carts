@@ -1,6 +1,9 @@
 -- test_boot.lua : the real cart, nothing stubbed but input and sound, from
--- its first frame: the title, a start, a bot holding fire and pacing, the
--- shop, the boss arriving and dying, both endings and a restart, all drawn.
+-- its first frame: the title, a start, a bot holding fire and pacing (and
+-- boosting and venting), the shop, the boss arriving and dying, an alpha
+-- strike, drops, the city falling, the win and a restart, every frame drawn.
+--
+-- four game frames are run per pico-8 frame, to save time.
 
 local held={}
 function btn(i) return held[i] or false end
@@ -13,7 +16,7 @@ local game_update,game_draw=_update60,_draw
 
 function _draw() end
 
-function _update60()
+function game_frame()
  n+=1
  held={}
  if n==20 or n==2200 then held[4]=true end
@@ -51,5 +54,11 @@ function _update60()
  if n==2400 then
   printh("ok boot")
   extcmd("shutdown")
+ end
+end
+
+function _update60()
+ for i=1,4 do
+  if n<2400 then game_frame() end
  end
 end

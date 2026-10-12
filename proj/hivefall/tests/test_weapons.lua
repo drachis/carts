@@ -1,5 +1,6 @@
 -- test_weapons.lua : every weapon against a foe standing in the cone, near,
--- far, flying and big, wherever the weapon's range covers where it starts. the mech stands still and holds fire, and is kept
+-- far, flying and big, wherever the weapon's range covers where it starts
+-- and its shots are heavy enough for the foe's armour. the mech stands still and holds fire, and is kept
 -- cool and loaded, so this measures whether shots land and how long a kill takes; it
 -- says nothing about heat or about aiming by moving.
 -- then a staged scene with every kind of foe, for a screenshot.
@@ -27,7 +28,13 @@ function next_case()
  end
  if weapon_index>#weapon_specs then return false end
  local parts=split(setups[setup_index])
- if parts[2]>weapon_specs[weapon_index].range then return next_case() end
+ local weapon=weapon_specs[weapon_index]
+ if parts[2]>weapon.range then return next_case() end
+ -- a gun lighter than the foe's armour is meant not to do the job
+ if weapon.damage<enemy_specs[parts[1]].armor then
+  printh(weapon.name.." glances off "..setups[setup_index]..", as designed")
+  return next_case()
+ end
  foes,shots={},{}
  player.x,player.vx,player.armor,player.weapon=0,0,100,weapon_index
  for weapon in all(weapon_specs) do weapon.wait=0 end
@@ -86,7 +93,7 @@ function _update60()
  game_update()
  game_draw()
  if staged and n==staged+50 then
-  printh("cpu at 60fps with "..#foes.." foes: "..stat(1))
+  printh("with "..#foes.." foes: cpu "..stat(1).." fps "..stat(7))
   dump_screen("scene")
  end
  if staged and n==staged+110 then
