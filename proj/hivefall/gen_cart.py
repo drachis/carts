@@ -371,8 +371,8 @@ GUNS = ["""
 ........
 """]
 
-# a hover frame seen from behind: shoulder mounts (the guns are separate
-# sprites, see GUNS), a cockpit hump, stub wings, and twin engine pods
+# a hover frame seen from behind: no arms (the guns ride at its sides and
+# are separate sprites, see GUNS), a cockpit hump, stub wings, and twin engine pods
 # underneath whose nozzles the jet flames come from
 MECH = """
 ............
@@ -380,11 +380,11 @@ MECH = """
 ............
 .........555
 .......5566d
-..55..566ddd
-.5d6555666d9
-.5d65d6666d9
-.5dd5d66666d
-..555d666dd1
+......566ddd
+.....55666d9
+.....56666d9
+.....566666d
+.....5666dd1
 ..5555d6dd1a
 .5666d5ddd11
 566ddd55dddd

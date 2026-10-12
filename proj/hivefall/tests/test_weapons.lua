@@ -44,7 +44,7 @@ function stage_scene()
  staged=n
  foes,shots={},{}
  wave=8
- player.x,player.weapon=-20,5
+ player.x,player.weapon=-20,6
  spawn_group("skitter",8)
  spawn_group("wing",5)
  spawn_group("wyrm",7)

@@ -280,10 +280,12 @@ function draw_player()
   pal(13,8)
  end
  sspr(0,64,24,24,sx-12,top)
- -- the gun in hand, on both shoulders (the right one flipped)
+ -- the gun in hand rides at each side (the right one flipped); there are
+ -- no arms. a gun with a big blast, the redeemer, is drawn double size.
  local gun=player.weapon*8-8
- sspr(gun,56,8,8,sx-13,top)
- sspr(gun,56,8,8,sx+5,top,8,8,true)
+ local size=weapon_specs[player.weapon].splash>40 and 16 or 8
+ sspr(gun,56,8,8,sx-5-size,top+8-size,size,size)
+ sspr(gun,56,8,8,sx+5,top+8-size,size,size,true)
  pal()
  if player.muzzle>0 then
   circfill(sx-9,top,2,7)
