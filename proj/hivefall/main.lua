@@ -220,7 +220,7 @@ function draw_hud()
  if bark_wait>0 then
   print(bark_text,1,21,7)
  elseif ready then
-  print("down: alpha strike!",1,21,blink and 7 or 12)
+  print("\142+\151 alpha strike!",1,21,blink and 7 or 12)
  end
  if boss and boss.hp>0 then
   -- grey while its armour holds, red once it is down to flesh
@@ -269,9 +269,10 @@ function _draw()
   -- the hints sit high, over the far city, so the mech is in the clear
   rectfill(4,30,123,66,0)
   rect(4,30,123,66,5)
-  centred("left/right  move",34,6)
-  centred("o fire  x next gun  o+x vent",42,6)
-  centred("up advance  down alpha strike",50,12)
+  -- pico-8's button glyphs: 139 left, 145 right, 131 down, 142 o, 151 x
+  print("\139\145 move   \131 vent heat",16,34,6)
+  print("\142 fire   \151 next gun",22,42,6)
+  print("\142+\151 alpha strike",28,50,12)
   if tick%60<40 then centred("press fire to deploy",58,10) end
  else
   rectfill(20,44,107,84,0)

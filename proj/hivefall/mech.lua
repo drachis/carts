@@ -19,7 +19,8 @@ function update_player()
  end
 
  find_target()
- -- a tap of x is the next gun; x held along with fire vents heat
+ -- a tap of x is the next gun; x held along with fire is the alpha
+ -- strike, when it is charged; down vents heat
  if btn(5) then
   x_held=min(x_held+1,99)
  else
@@ -33,7 +34,10 @@ function update_player()
   end
   x_held=0
  end
- local venting=btn(4) and x_held>vent_delay
+ if btn(4) and x_held>vent_delay and charge>=alpha_cost then
+  start_alpha()
+ end
+ local venting=btn(3)
  if venting then
   player.heat=max(player.heat-vent_rate)
   if tick%6==0 then
@@ -42,9 +46,8 @@ function update_player()
    sfx(snd_vent)
   end
  end
- if btnp(3) and charge>=alpha_cost then start_alpha() end
- -- up pushes forward: everything on the hill closes faster
- boost=btn(2) and boost_speed or 0
+ -- up does nothing for now: boosting forward only made the game harder,
+ -- and its new job is not decided. `boost` stays 0.
  -- fire has to be let go once after a refit before the guns answer
  if not btn(4) then safety=false end
 

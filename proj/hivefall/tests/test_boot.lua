@@ -25,9 +25,10 @@ function _update60()
   held[n\40%2]=true
   held[4]=n%30<20
   held[5]=n%50==0
-  held[2]=n%90<20
-  if n%120<16 then held[4],held[5]=true,true end
+  held[3]=n%120>100
  end
+ -- fire and x held together set off the alpha strike
+ if n>=230 and n<246 then held[4],held[5]=true,true end
  if n==150 then open_shop() end
  if n==200 then
   state="play"
@@ -36,7 +37,6 @@ function _update60()
  if n==230 then
   boss.z=2.5
   charge=alpha_cost
-  held[3]=true
   add(drops,{x=player.x,z=1.2,kind="cool",colour=12})
   add(drops,{x=0,z=3,kind="flak",colour=9,weapon=weapon_specs.flak})
  end

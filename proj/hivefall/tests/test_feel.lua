@@ -80,9 +80,10 @@ function play()
 
  local weapon=weapon_specs[player.weapon]
  held[4]=not safety and player.heat+weapon.heat<max_heat
- held[3]=charge>=alpha_cost
  held[5]=n%10==0 and (weapon.wait>20
   or nearest and not player.target and n%40==0)
+ -- fire and x held together set off the alpha strike
+ if charge>=alpha_cost then held[4],held[5]=true,true end
 end
 
 function bot_frame()

@@ -71,9 +71,10 @@ function _update60()
 
  if staged then
   held[1]=true
-  if n==staged+70 then
+  -- fire and x held together set off the alpha strike
+  if n>=staged+56 and n<=staged+72 then
    charge=alpha_cost
-   held[3]=true
+   held[5]=true
   end
  elseif victim.hp<=0 then
   printh(weapon_specs[weapon_index].name.." kills "
