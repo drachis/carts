@@ -83,14 +83,14 @@ function draw_hill()
 
  local slide=travel/0.625%1
  local turn=travel\0.625
- for k=8,-1,-1 do
-  -- the front edge runs on off the bottom of the screen. 0.45 is far
-  -- enough for the tallest tower to leave it, and keeps depth well away
-  -- from 0, where the projection has no answer
-  local front=max(1.1+(k-slide)*0.625,0.45)
-  local back=min(1.525+(k-slide)*0.625,far_z)
+ -- rows are drawn to three below the mech's line: the tallest tower's
+ -- top is still on screen until its foot is that far past the bottom
+ -- edge, and a row dropped sooner makes its towers pop out
+ for k=8,-3,-1 do
+  local front=1.1+(k-slide)*0.625
+  local back=min(front+0.425,far_z)
   if back>front then
-   local row=(k+turn)%8
+   local row=(k+turn+8)%8
    for column=row%2,9,2 do
     local left=column*20-98
     local seed=(column*7+row*13)%20
