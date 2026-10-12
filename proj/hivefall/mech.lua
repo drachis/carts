@@ -263,9 +263,16 @@ function draw_player()
  end
  sspr(0,64,24,24,sx-12,top)
  pal()
- -- jump jets under the feet, longer under boost
+ -- jump jets under the feet: a flame that tapers from a white-hot root
+ -- through yellow to an orange tip, flickering, leaning against the way
+ -- the mech is moving, and longer under boost
  for jet=-7,7,14 do
-  line(sx+jet,sy+1,sx+jet-player.vx*3,sy+3+rnd(3)+boost*500,rnd{9,10,7})
+  local length=4+rnd(3)+boost*500
+  for step=0,length do
+   local along=step/length
+   circfill(sx+jet-player.vx*step,sy+1+step,2.4*(1-along),
+    along<0.3 and 7 or along<0.65 and 10 or 9)
+  end
  end
  if player.muzzle>0 then
   circfill(sx-10,sy-24,2,7)
