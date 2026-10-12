@@ -101,10 +101,17 @@ group whose members all weave along the same path, one behind the other
   and the guns are silent meanwhile. Up is the overcharge. A player has
   six buttons (manual), so the extra actions are on the d-pad or stick.
 - **Overcharge:** hold up for `charge_frames` to charge the gun in hand
-  (rings close on the gun pods, then pulse white), and let go for one
-  shot at `over_damage` times the damage, half again the blast, and twice
-  the heat. Letting go early fires nothing; the guns hold their fire while
-  it charges. Every gun has it; `test_charge` checks the rule. (Up used to
+  (rings close on the gun pods, then pulse white), and let go for that
+  gun's second mode, at twice the heat and one round. Letting go early
+  fires nothing; the guns hold their fire while it charges. The modes are
+  rows in `alt_specs`, each giving what differs from the gun's own row,
+  and follow Unreal Tournament's alt-fires (only the redeemer's was
+  checked against a source; the rest are as remembered):
+  pulse, a half-second stream of fast bolts (the pulse beam); flak, one
+  heavy shell that bursts at the target; minigun, a wild double-rate
+  spray; shock, the combo, a big blast on the target; rocket, three
+  loaded rockets in a fan; redeemer, a guided warhead that homes.
+  `test_charge` fires each at a target and checks the damage. (Up used to
   boost the mech forward; that only made the game harder. `boost` is
   still in the code at 0, to be removed.)
 - **Safety:** after a refit (and at the start) fire must be let go once

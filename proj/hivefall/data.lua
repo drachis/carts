@@ -57,7 +57,6 @@ mech_speed=0.9
 alpha_cost=60
 alpha_frames=180
 charge_frames=45
-over_damage=3
 combo_frames=150
 snd_pop=6
 snd_boom=7
@@ -72,7 +71,7 @@ snd_roar=15
 ]],nil,_ENV)
 
 -- what a new run starts from; reset() parses these
-player_start="x=0,vx=0,armor=100,max_armor=100,heat=0,weapon=1,hurt_flash=0,muzzle=0,recoil=0,gun_side=1,alpha=0,chill=0,charging=0,cooling=0.35,power=1,haste=1,agility=1,cone=6.5"
+player_start="x=0,vx=0,armor=100,max_armor=100,heat=0,weapon=1,hurt_flash=0,muzzle=0,recoil=0,gun_side=1,alpha=0,chill=0,charging=0,stream=0,cooling=0.35,power=1,haste=1,agility=1,cone=6.5"
 run_start="score=0,shake=0,freeze=0,white=0,combo=0,combo_wait=0,charge=0,dying=0,bark_wait=0,over_wait=0,city=100,city_flash=0,x_held=0,boost=0"
 
 -- cooldown is in frames (60 a second); speed is depth per frame;
@@ -90,6 +89,29 @@ shock,4,6.2,34,5,0.6,1,0,0,20,14,1,1,3,14,5
 rocket,5,6.2,60,10,0.07,1,0,16,28,8,0,0,4,8,3
 redeemer,7,6.2,150,60,0.04,1,0,60,90,11,0,0,5,1,1
 ]]
+
+-- what each gun does overcharged (hold up, let go), after unreal
+-- tournament's alt-fires. a row gives only what differs from the gun's own
+-- row; an empty cell reads through to it. stream is how many more
+-- volleys follow the first, two frames apart.
+--   pulse    a stream of fast bolts, like the pulse gun's beam
+--   flak     one heavy shell that bursts at the target
+--   minigun  a wild double-rate spray
+--   shock    the shock combo: a big blast on the target
+--   rocket   three loaded rockets in a fan
+--   redeemer a guided warhead: it homes
+alt_specs=parse_table[[
+name,damage,speed,count,spread,splash,homing,pierce,stream
+pulse,1.5,0.3,1,0,0,1,0,14
+flak,10,0.14,1,0,14,0,0,0
+minigun,0.6,0.25,2,1.2,0,0,0,30
+shock,14,0.6,1,0,24,1,0,0
+rocket,10,0.07,3,0.9,16,0,0,0
+redeemer,60,0.05,1,0,60,1,0,0
+]]
+for alt in all(alt_specs) do
+ setmetatable(alt,weapon_specs[alt.name])
+end
 
 -- between waves the pilot picks one of three; stat is the field of
 -- `player` that amount is added to.

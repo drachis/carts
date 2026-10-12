@@ -66,6 +66,11 @@ function update_player()
  end
 
  local weapon=weapon_specs[player.weapon]
+ if player.stream>0 and tick%2==0 then
+  player.stream-=1
+  launch(weapon,player.target,true)
+  sfx(weapon.sound)
+ end
  local able=weapon.wait==0 and not player.overheated and not venting
  -- overcharge: hold up to charge the gun in hand; let go once it is full
  -- for one shot of several times the damage, a bigger blast and twice
@@ -136,27 +141,30 @@ function fire(weapon,over)
   local sx,sy=project(player.x,1,18+hover)
   ring(sx,sy,26,weapon.colour,0.6)
   white=1
+  -- some overcharges keep coming: so many more volleys, two frames apart
+  player.stream=alt_specs[weapon.name].stream
  end
  launch(weapon,player.target,over)
 end
 
+-- an overcharged launch takes its shots from the gun's row in alt_specs,
+-- which reads through to the gun's own row for whatever it leaves out
 function launch(weapon,target,over)
+ local spec=over and alt_specs[weapon.name] or weapon
  player.muzzle=3
- for i=1,weapon.count do
+ for i=1,spec.count do
   player.gun_side=-player.gun_side
   local shot=setmetatable({
    x=player.x+player.gun_side*10,z=1,h=18+hover,
    vx=0,vh=0,
-   target=target,fuse=target and target.z,struck={},
-   damage=weapon.damage*(over and over_damage or 1),
-   splash=weapon.splash*(over and 1.5 or 1)
-  },weapon)
+   target=target,fuse=target and target.z,struck={}
+  },spec)
   aim(shot)
   -- a gun with spread throws its shots in an even fan about the aim
   -- line, each a little ragged, and scatters them up and down as well
-  local across=(i-0.5)/weapon.count*2-1
-  shot.vx+=weapon.spread*(across+rnd(0.3)-0.15)
-  shot.vh+=weapon.spread*(rnd(0.8)-0.4)
+  local across=(i-0.5)/spec.count*2-1
+  shot.vx+=spec.spread*(across+rnd(0.3)-0.15)
+  shot.vh+=spec.spread*(rnd(0.8)-0.4)
   add(shots,shot)
  end
 end
