@@ -114,11 +114,12 @@ group whose members all weave along the same path, one behind the other
   shards), minigun (fast), shock (long, pierces a line), rocket (long,
   blast), redeemer (long, slow, one round, clears a third of the hill).
   Each has its own reload, so cycling through loaded guns beats waiting.
-- **Which gun for which foe.** Three things make the choice matter:
-  - *Armour:* a shot that does less damage than a foe's `armor` glances
-    for a third, with a grey spark and a tick instead of a flash. The brute
-    (4) shrugs off pulse, flak and minigun; the tyrant (1.5) shrugs off
-    pulse and minigun but not flak.
+- **Armour** is extra health that goes first, and any gun wears it down.
+  A plated foe (the brute, the tyrant) is drawn with a steel-grey
+  carapace, and hits on it spark grey and tick; when the armour is gone
+  the plates fly off and it shows its own colours. The boss's bar is grey
+  while its armour holds and red after.
+- **Which gun for which foe.** Two things make the choice matter:
   - *Weakness:* the gun named in a foe's `weak` does double: flak on
     wings, shock on wyrm segments, rocket on brutes, minigun on ships,
     redeemer on the tyrant.
@@ -126,8 +127,8 @@ group whose members all weave along the same path, one behind the other
     rockets and the redeemer fly straight at where the target was, so they
     suit the slow and the bunched and tend to miss a weaving wing; a
     rocket that meets nothing bursts where it was aimed.
-  The lock brackets say which case the gun in hand is: yellow for a
-  weakness, red for a glance, green otherwise.
+  The lock brackets are yellow when the gun in hand is the one the target
+  is weak to, green otherwise.
 - **Blasts:** a rocket or redeemer bursts in a fireball that swells white
   to red and leaves the spot burning for a moment. Whatever survives is
   thrown back up the hill and aside.

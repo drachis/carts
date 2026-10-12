@@ -110,17 +110,18 @@ optics,cone,2,+aim arc
 -- the mech stood when it was thrown, and does the city no harm. brood is what it drops, every
 -- brood_every frames. halt is a depth it stops at. parts are more sprites drawn around the body, as
 -- cell:across:down in sprite pixels; ones to the right are flipped.
--- a shot that does less than `armor` glances for a third; the gun named
+-- `armor` is health on top of hp that goes first (any gun wears it down;
+-- the foe is drawn grey while it holds); the gun named
 -- in `weak` does double.
 enemy_specs=parse_table[[
 name,cell,tail,size,hp,speed,fly,sway,bite,points,chain,track,brood,brood_every,halt,boss,armor,weak,parts
 skitter,0,0,0.7,2,0.011,0,10,6,1,0,0,,,,,0,,
 wing,2,2,0.8,3,0.016,45,24,8,2,0,0,,,,,0,flak,
-brute,4,4,1.6,32,0.006,0,4,25,10,0,1,spit,260,,,4,rocket,16:-10:1/16:10:1
+brute,4,4,1.6,20,0.006,0,4,25,10,0,1,spit,260,,,20,rocket,16:-10:1/16:10:1
 wyrm,6,8,1.1,6,0.009,0,26,10,3,1,1,,,,,0,shock,
 ship,10,10,2.4,70,0.004,60,8,30,25,0,1,skitter,220,2.4,,0,minigun,
 spit,14,14,0.6,1,0.028,14,0,9,0,0,0,,,,,0,,
-tyrant,18,18,3,500,0.0024,0,6,60,100,0,1,spit,110,1.8,1,1.5,redeemer,20:0:-7/16:-12:-3/16:12:-3/16:-10:4/16:10:4
+tyrant,18,18,3,350,0.0024,0,6,60,100,0,1,spit,110,1.8,1,150,redeemer,20:0:-7/16:-12:-3/16:12:-3/16:-10:4/16:10:4
 ]]
 
 for spec in all(enemy_specs) do

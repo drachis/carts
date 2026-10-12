@@ -7,7 +7,7 @@ function spawn_foe(spec,centre,z,phase,cell,lead)
  local foe=setmetatable({
   centre=centre,z=z,phase=phase,
   cell=cell or spec.cell,lead=lead or 0,
-  hp=spec.hp,flash=0,age=0
+  hp=spec.hp+spec.armor,flesh=spec.hp,flash=0,age=0
  },spec)
  place_foe(foe)
  return add(foes,foe)
@@ -94,15 +94,22 @@ function hurt_foe(foe,amount,shot)
   amount*=2
   spark=10
   burst(x,y,4,10,2.5)
- elseif shot and amount<foe.armor then
-  amount/=3
+ end
+ -- armour is health that goes first: a foe is plated while it has more
+ -- than its row's hp. any gun wears it down. hits on plate spark grey
+ -- and tick; when it breaks, the plates fly off.
+ local plated=foe.hp>foe.flesh
+ foe.hp-=amount
+ if plated then
   spark=5
   sfx(snd_glance)
-  if bark_wait==0 then bark("armour! use a heavy gun") end
+  if foe.hp<=foe.flesh then
+   burst(x,y,16,6,3,0.12)
+   ring(x,y,10*size*foe.scale,6)
+  end
  else
   foe.flash=5
  end
- foe.hp-=amount
  if foe.hp>0 then
   burst(x,y,2,spark,1.5)
   return
@@ -245,6 +252,10 @@ function draw_foes(behind_crest)
    end
    if foe.flash>0 then
     for colour=1,15 do pal(colour,7) end
+   elseif foe.hp>foe.flesh then
+    -- plated: the carapace is steel grey until the armour is gone
+    pal(2,5)
+    pal(14,6)
    end
    draw_cell(foe.cell+frame,foe.sx,top,size)
    for i,part in ipairs(foe.part_list) do

@@ -223,7 +223,8 @@ function draw_hud()
   print("down: alpha strike!",1,21,blink and 7 or 12)
  end
  if boss and boss.hp>0 then
-  bar(14,29,100,boss.hp/enemy_specs.tyrant.hp,8)
+  -- grey while its armour holds, red once it is down to flesh
+  bar(14,29,100,boss.hp/(boss.flesh+boss.armor),boss.hp>boss.flesh and 6 or 8)
  end
  if banner>0 then
   centred(boss and boss.hp>0 and "the hive tyrant" or district_names[wave],42,7)

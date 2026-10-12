@@ -290,8 +290,8 @@ end
 
 -- the cone, laid on the ground so it bends with the hill: dotted edges,
 -- an arc at the gun's range in the gun's colour, and brackets around
--- what is locked: yellow if this gun is what it is weak to, red if it
--- will only glance, green otherwise
+-- what is locked: yellow if this gun is what it is weak to, green
+-- otherwise
 function draw_aim()
  local weapon=weapon_specs[player.weapon]
  for z=1.4,weapon.range,0.4 do
@@ -311,11 +311,7 @@ function draw_aim()
   local cx,cy=foe.sx,foe.sy-half
   half+=2+sin(tick/30)
   local hue=11
-  if weapon.name==foe.weak then
-   hue=10
-  elseif weapon.damage*player.power<foe.armor then
-   hue=8
-  end
+  if weapon.name==foe.weak then hue=10 end
   for side=-1,1,2 do
    for up=-1,1,2 do
     local x,y=cx+side*half,cy+up*half

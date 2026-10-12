@@ -1,6 +1,6 @@
 -- test_weapons.lua : every weapon against a foe standing in the cone, near,
--- far, flying and big, wherever the weapon's range covers where it starts
--- and its shots are heavy enough for the foe's armour. the mech stands still and holds fire, and is kept
+-- far, flying and big (armour included), wherever the weapon's range
+-- covers where it starts. the mech stands still and holds fire, and is kept
 -- cool and loaded, so this measures whether shots land and how long a kill takes; it
 -- says nothing about heat or about aiming by moving.
 -- then a staged scene with every kind of foe, for a screenshot.
@@ -30,11 +30,6 @@ function next_case()
  local parts=split(setups[setup_index])
  local weapon=weapon_specs[weapon_index]
  if parts[2]>weapon.range then return next_case() end
- -- a gun lighter than the foe's armour is meant not to do the job
- if weapon.damage<enemy_specs[parts[1]].armor then
-  printh(weapon.name.." glances off "..setups[setup_index]..", as designed")
-  return next_case()
- end
  foes,shots={},{}
  player.x,player.vx,player.armor,player.weapon=0,0,100,weapon_index
  for weapon in all(weapon_specs) do weapon.wait=0 end
