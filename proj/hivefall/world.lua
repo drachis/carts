@@ -66,7 +66,7 @@ function draw_hill()
  rectfill(0,crest_y+12,127,127,3)
  circ(64,crest_y+globe,globe,11)
 
- local colour=grid_flash>0 and 7 or 5
+ local colour=5
  for lane=-11,11 do
   for lean=-1,1,2 do
    line()
@@ -129,6 +129,12 @@ function draw_tower(left,right,front,back,seed,near_row)
  local wall,roof=tower_tints[seed%4*2+1],tower_tints[seed%4*2+2]
  if ruined then wall,roof=0,5 end
  if city_flash>0 and near_row and tick%4<2 then wall,roof=2,8 end
+ -- firelight: a new fireball lights the towers round it for a moment
+ for fire in all(blasts) do
+  if fire.age<8 and abs(x1-fire.x)+abs(top-fire.y)<fire.size*2+14 then
+   wall,roof=9,10
+  end
+ end
  rectfill(x1,far_top,x2,top,roof)
  rectfill(x1,top+1,x2,base,wall)
 
@@ -229,7 +235,6 @@ function update_effects()
  end
  shake*=0.88
  if shake<0.3 then shake=0 end
- grid_flash=max(grid_flash-1)
  city_flash=max(city_flash-1)
  -- scroll_rate is how fast the mech is advancing, in depth per frame. the
  -- city rolls under it at that rate and every foe closes at that rate

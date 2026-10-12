@@ -198,7 +198,6 @@ function explode(shot)
  blast(sx,sy,shot.splash*scale*0.8)
  burst(sx,sy,shot.splash,shot.colour,shot.splash/6)
  shake=max(shake,shot.splash/4)
- grid_flash=8
  if shot.splash>40 then white=3 end
  sfx(snd_boom)
  for foe in all(foes) do

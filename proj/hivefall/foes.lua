@@ -122,8 +122,9 @@ function hurt_foe(foe,amount,shot)
  burst(x,y,4+size*6,2,1+size,0.12)
  ring(x,y,10*size*foe.scale+4,7,size>1 and 0.5)
  shake=max(shake,size*2)
- grid_flash=4
  if size>1.5 then
+  -- a big one goes up in a fireball, which lights the towers round it
+  blast(x,y,5*size*foe.scale)
   freeze=6
   sfx(snd_boom)
  else
