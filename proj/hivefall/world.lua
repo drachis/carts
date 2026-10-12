@@ -10,7 +10,11 @@ scroll_rate=0
 -- they appear at the mech's line; things shrink and close up toward the
 -- crest, and the crest sags at the edges so the ground reads as a globe.
 function project(x,z,h)
- local near=max((far_z/z-1)/(far_z-1))
+ -- how near, 0 at the crest and 1 at the mech's line, as a square: rows
+ -- still close up toward the crest, but without true perspective's steep
+ -- rush at the camera, which stretched the nearest towers threefold
+ local near=max(far_z-z)/(far_z-1)
+ near*=near
  local scale=0.3+0.9*near
  local sx=64+(x-camera_x)*(0.7+0.3*near)
  -- the sag is only on the hill; below the mech's line x runs far enough

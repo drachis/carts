@@ -144,7 +144,7 @@ district_names=split"the suburbs,riverside,old town,the market,midtown,the excha
 skyline=split"7,12,9,16,7,13,20,8,11,15,6,18,10,14,7,12,9,17,8,11,14,9"
 blast_colours=split"7,10,9,8,2"
 -- the depths a road is drawn through, closer together where it is near
-road_depths=split"0.8,1,1.3,1.7,2.2,3,4.2,6"
+road_depths=split"0.7,1,1.4,1.9,2.5,3.2,4.2,6"
 -- a tower takes one of four wall,roof pairs and one of three window colours
 tower_tints=split"5,6,13,6,4,5,1,13"
 window_tints=split"10,12,7"
