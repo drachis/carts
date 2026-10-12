@@ -1,9 +1,10 @@
 -- test_boot.lua : the real cart, nothing stubbed but input and sound, from
--- its first frame: the title, a start, a bot holding fire and pacing (and
--- boosting and venting), the shop, the boss arriving and dying, an alpha
--- strike, drops, the city falling, the win and a restart, every frame drawn.
+-- its first frame, every frame drawn: the title, a start, a bot pacing,
+-- firing, boosting and venting, the shop, the boss arriving and dying, an
+-- alpha strike, drops, the city falling, a restart and the win.
 --
--- four game frames are run per pico-8 frame, to save time.
+-- it is kept short (480 frames, two screens dumped): headless pico-8
+-- crashes far more on long, fully drawn tests. see DESIGN.md.
 
 local held={}
 function btn(i) return held[i] or false end
@@ -16,49 +17,38 @@ local game_update,game_draw=_update60,_draw
 
 function _draw() end
 
-function game_frame()
+function _update60()
  n+=1
  held={}
- if n==20 or n==2200 then held[4]=true end
- if n>20 and n<2100 then
-  held[n\120%2]=true
-  held[4]=n%90<60
-  held[5]=n%200==0
-  held[2]=n%330<40
-  if n%500<30 then held[4],held[5]=true,true end
+ if n==10 or n==425 then held[4]=true end
+ if n>10 and n<330 then
+  held[n\40%2]=true
+  held[4]=n%30<20
+  held[5]=n%50==0
+  held[2]=n%90<20
+  if n%120<16 then held[4],held[5]=true,true end
  end
- if n==1500 then open_shop() end
- if n==1700 then
+ if n==150 then open_shop() end
+ if n==200 then
   state="play"
   spawn_group("tyrant",1)
  end
- if n==1800 then
+ if n==230 then
   boss.z=2.5
   charge=alpha_cost
   held[3]=true
-  add(drops,{x=player.x,z=1.3,kind="cool",colour=12})
+  add(drops,{x=player.x,z=1.2,kind="cool",colour=12})
   add(drops,{x=0,z=3,kind="flak",colour=9,weapon=weapon_specs.flak})
  end
- if n==1830 then hurt_foe(boss,9999) end
- if n==2100 then hurt_city(999) end
- if n==2300 then end_game(true,"the hive is broken") end
+ if n==250 then hurt_foe(boss,9999) end
+ if n==330 then hurt_city(999) end
+ if n==450 then end_game(true,"the hive is broken") end
  game_update()
  game_draw()
  if n==5 then dump_screen("boot_title") end
- if n==880 then dump_screen("boot_play") end
- if n==1520 then dump_screen("boot_shop") end
- if n==1825 then dump_screen("boot_boss") end
- if n==1900 then dump_screen("boot_dying") end
- if n==2150 then dump_screen("boot_lost") end
- if n==2350 then dump_screen("boot_won") end
- if n==2400 then
+ if n==245 then dump_screen("boot_play") end
+ if n==480 then
   printh("ok boot")
   extcmd("shutdown")
- end
-end
-
-function _update60()
- for i=1,4 do
-  if n<2400 then game_frame() end
  end
 end
