@@ -52,7 +52,9 @@ end
 
 function update_foes()
  for foe in all(foes) do
-  foe.z=max(foe.z-foe.speed-boost,foe.halt)
+  -- the ground carries it toward the mech; its own walk is what its
+  -- speed has over the ground's
+  foe.z=max(foe.z-scroll_rate-max(foe.speed-scroll_speed),foe.halt)
   foe.flash-=1
   foe.age+=1
   if foe.z<3 and foe.track==1 then
@@ -177,7 +179,7 @@ end
 
 function update_drops()
  for drop in all(drops) do
-  drop.z-=drop_speed+boost
+  drop.z-=scroll_rate+drop_speed
   if drop.z<=1 then
    del(drops,drop)
    if abs(drop.x-player.x)<16 then collect(drop) end

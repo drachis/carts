@@ -231,11 +231,18 @@ function update_effects()
  if shake<0.3 then shake=0 end
  grid_flash=max(grid_flash-1)
  city_flash=max(city_flash-1)
- -- the city rolls while there is something to advance on, faster under
- -- boost, and eases to a stop when the hill is clear
+ -- scroll_rate is how fast the mech is advancing, in depth per frame. the
+ -- city rolls under it at that rate and every foe closes at that rate
+ -- plus its own walk (see update_foes), so nothing slides on the ground.
+ -- the mech advances while there is something to advance on, faster under
+ -- boost; it holds its ground when the district is clear, and while the
+ -- boss stands at its halt line, so the boss's feet stay planted.
  local rate=0
  if state=="play" then
-  rate=(#foes>0 and scroll_speed or 0)+boost*4
+  rate=boost
+  if #foes>0 and not (boss and boss.hp>0 and boss.z<=boss.halt) then
+   rate+=scroll_speed
+  end
  end
  scroll_rate+=(rate-scroll_rate)*0.05
  travel=(travel+scroll_rate)%5

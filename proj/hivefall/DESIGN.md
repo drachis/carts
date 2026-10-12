@@ -67,6 +67,14 @@ near, and a mast with a blinking light or a box on the roof. `travel`
 slides the rows toward the viewer while there is anything on the hill,
 faster under boost, and eases to a stop when the hill is clear.
 
+**One world.** `scroll_rate` is the mech's advance, in depth per frame.
+The city rolls at that rate and every foe closes at that rate plus its own
+walk (`speed` less `scroll_speed`, never below zero), so a foe's feet do
+not slide over the streets. A drop lies on the ground and drifts in a
+little faster. The mech holds its ground when the district is clear, and
+while the boss stands at its halt line. Measured with 24 foes on screen:
+`stat(7)` reports 60fps at 77% `stat(1)`.
+
 There is no city health bar: the towers show it. `city` runs from 100 to
 0. Each tower has its turn, by `seed`: shortly before it falls it is
 *damaged* (windows dark, a few lit orange by fire, a bite out of its top),
