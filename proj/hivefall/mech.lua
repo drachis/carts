@@ -247,7 +247,19 @@ end
 
 function draw_player()
  local sx,sy=project(player.x,1,hover+sin(tick/45)*1.5)
- -- a black edge first, so it stands off the rooftops
+ -- jump jets, drawn first so the legs are in front of them: a flame from
+ -- behind each knee that tapers from a white-hot root through yellow to
+ -- an orange tip, flickering, leaning against the way the mech is moving,
+ -- and longer under boost
+ for jet=-7,7,14 do
+  local length=9+rnd(3)+boost*500
+  for step=0,length do
+   local along=step/length
+   circfill(sx+jet-player.vx*step,sy-5+step,2.4*(1-along),
+    along<0.3 and 7 or along<0.65 and 10 or 9)
+  end
+ end
+ -- a black edge next, so it stands off the rooftops
  local top=sy-23+player.recoil
  for colour=1,15 do pal(colour,0) end
  for nudge=-1,1,2 do
@@ -267,17 +279,6 @@ function draw_player()
  end
  sspr(0,64,24,24,sx-12,top)
  pal()
- -- jump jets under the feet: a flame that tapers from a white-hot root
- -- through yellow to an orange tip, flickering, leaning against the way
- -- the mech is moving, and longer under boost
- for jet=-7,7,14 do
-  local length=4+rnd(3)+boost*500
-  for step=0,length do
-   local along=step/length
-   circfill(sx+jet-player.vx*step,sy+1+step,2.4*(1-along),
-    along<0.3 and 7 or along<0.65 and 10 or 9)
-  end
- end
  if player.muzzle>0 then
   circfill(sx-10,sy-24,2,7)
   circfill(sx+9,sy-24,2,7)
