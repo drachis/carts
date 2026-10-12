@@ -201,8 +201,15 @@ group whose members all weave along the same path, one behind the other
   line per wave. It never boosts or vents. It measures how much is
   happening and whether a plain strategy survives. It does not measure fun.
 
-Headless PICO-8 sometimes dies with an access violation; the runner
-retries. It is PICO-8's, not the cart's.
+Each test cart runs in a PICO-8 window of its own (`pico8 -run`) and prints
+through `printh`'s file output to `tests/test_log.p8l`, which the runner
+reads (`tests/dump.lua` sets that up; every test cart includes it). The
+runner stops the PICO-8 it started and no other, and does not retry. The
+whole suite takes about three minutes.
+
+The tests used to run headless (`pico8 -x`) with the output read through a
+pipe, and PICO-8 crashed with an access violation unpredictably: 28 runs
+running at worst. The cause was never found. Running in a window ended it.
 
 ## Not built yet, or not checked
 
@@ -213,16 +220,6 @@ retries. It is PICO-8's, not the cart's.
   strike; the most the bot has seen is 34 foes, which is not measured.
 - The sound effects and the two-channel music loop were written as numbers.
 - Boost has no reward beyond time; nothing yet pays for pushing forward.
-- Headless PICO-8 (`-x`, which the manual calls experimental) often dies
-  with an access violation while running these tests, and the cause is
-  not known. What was seen on 2026-10-11, on one build: the boot test
-  crashed 30 runs of 30 launched by `run_tests.py`, and passed 5 of 5
-  launched by hand from the shell with output sent to a file. Sending the
-  runner's output to a file instead of a pipe did not stop it. Three
-  causes were announced and each was wrong (how near a tower is drawn, a
-  line printed per frame, the pipe). It has not been reported in real
-  play. Until it is understood, a test that fails this way has not
-  passed: say so rather than retry until it does.
 - Whether the game holds 60fps on the user's machine. `stat(7)` reported
   60 in the empty-city test at about 55% `stat(1)`; with a full hill it
   has not been measured, and the manual does not say whether `stat(1)` is
