@@ -41,6 +41,7 @@ globe=175
 crest_hop=20
 scroll_speed=0.005
 drop_speed=0.01
+redeemer_chance=0.08
 chill_frames=240
 vent_delay=12
 vent_rate=1.5

@@ -137,9 +137,12 @@ group whose members all weave along the same path, one behind the other
   `restart_heat`. Venting gets there much sooner.
 - **Drops:** a kill may leave a drop that slides down the hill; be under it
   when it reaches the mech's line. Bigger foes and kills made close
-  (`z<2.2`) leave more. Plate when armour is low; otherwise ammo for a gun
-  with room, the heavier the shell the rarer; a part-charge of alpha; or
-  coolant, which clears heat and stops any building for four seconds.
+  (`z<2.2`) leave more. Plate when armour is low; otherwise ammo for the
+  gun that foe is weak to (flak, if it has no weakness), so killing a
+  thing pays for killing more of it; `redeemer_chance` of the time a
+  redeemer round instead, once that gun is issued; a part-charge of
+  alpha; or coolant, which clears heat and stops any building for four
+  seconds. `test_drops` checks which ammo each foe leaves.
 - **Foes** (`enemy_specs`) that reach the mech's line are **body-blocked**
   if the mech is in the way: the foe is gone and its remaining health comes
   off the mech's armour, so a wounded foe is cheap to stop. Otherwise it

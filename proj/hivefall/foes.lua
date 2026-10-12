@@ -148,7 +148,7 @@ end
 
 -- a kill may leave something that slides down to the mech's line: bigger
 -- foes and close kills leave more. what it is leans to what is needed:
--- plate when armour is low, else ammo (rarer for heavier guns), a charge of
+-- plate when armour is low, else ammo for the gun that suits this foe, a charge of
 -- alpha, or coolant.
 function maybe_drop(foe)
  if #drops>5
@@ -160,17 +160,15 @@ function maybe_drop(foe)
  if player.armor<player.max_armor*0.4 and roll<0.4 then
   kind,colour="plate",6
  elseif roll<0.6 then
-  -- ammo for a gun that has room, the heavier the shell the rarer
-  local total=0
-  for candidate in all(weapon_specs) do
-   if candidate.wave<=wave and candidate.ammo>0
-    and candidate.rounds<candidate.ammo then
-    local weight=1/sqrt(candidate.damage*candidate.count+candidate.splash/4)
-    total+=weight
-    if rnd(total)<weight then weapon=candidate end
-   end
+  -- ammo for the gun this kind of foe is weak to (flak, for those with
+  -- no weakness), or now and then a redeemer round. only for a gun the
+  -- mech has been issued and that has room; otherwise it stays coolant.
+  weapon=weapon_specs[rnd()<redeemer_chance and "redeemer" or foe.weak or "flak"]
+  if weapon.wave>wave or weapon.rounds>=weapon.ammo then
+   weapon=nil
+  else
+   kind,colour=weapon.name,weapon.colour
   end
-  if weapon then kind,colour=weapon.name,weapon.colour end
  elseif roll<0.75 then
   kind,colour="alpha",7
  end
