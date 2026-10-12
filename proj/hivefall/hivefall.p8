@@ -1,7 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
--- hivefall : hold the hill
+-- hivefall : race to the capitol
 -- by toli carter
 #include data.lua
 #include world.lua
