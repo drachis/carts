@@ -96,12 +96,17 @@ group whose members all weave along the same path, one behind the other
 ## The game
 
 - **Controls:** left/right move. O fires while held. A tap of X is the next
-  weapon (on release, skipping empty ones). O and X held together vent
-  heat: it falls fast and the guns are silent meanwhile. Down sets off the
-  alpha strike when its bar is full. Up boosts forward: the city rolls
-  faster, every foe and drop closes faster, and the next group comes
-  sooner. PICO-8 has only two action buttons, which a pad repeats across
-  its face buttons, so the extra actions are on the d-pad or stick.
+  weapon (on release, skipping empty ones). O and X held together set off
+  the alpha strike when its bar is full. Down vents heat: it falls fast
+  and the guns are silent meanwhile. Up is the overcharge. A player has
+  six buttons (manual), so the extra actions are on the d-pad or stick.
+- **Overcharge:** hold up for `charge_frames` to charge the gun in hand
+  (rings close on the gun pods, then pulse white), and let go for one
+  shot at `over_damage` times the damage, half again the blast, and twice
+  the heat. Letting go early fires nothing; the guns hold their fire while
+  it charges. Every gun has it; `test_charge` checks the rule. (Up used to
+  boost the mech forward; that only made the game harder. `boost` is
+  still in the code at 0, to be removed.)
 - **Safety:** after a refit (and at the start) fire must be let go once
   before the guns answer, so confirming an upgrade does not spend a round.
 - **Aim:** the lock cone lies on the ground, so it bends with the hill:

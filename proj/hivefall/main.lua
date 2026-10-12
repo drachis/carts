@@ -272,7 +272,8 @@ function _draw()
   -- pico-8's button glyphs: 139 left, 145 right, 131 down, 142 o, 151 x
   print("\139\145 move   \131 vent heat",16,34,6)
   print("\142 fire   \151 next gun",22,42,6)
-  print("\142+\151 alpha strike",28,50,12)
+  -- 148 is up: hold it to overcharge the gun in hand
+  print("\142+\151 alpha  \148 hold: charge",8,50,12)
   if tick%60<40 then centred("press fire to deploy",58,10) end
  else
   rectfill(20,44,107,84,0)

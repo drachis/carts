@@ -46,8 +46,7 @@ function update_player()
    sfx(snd_vent)
   end
  end
- -- up does nothing for now: boosting forward only made the game harder,
- -- and its new job is not decided. `boost` stays 0.
+ -- (`boost` is left from when up pushed forward; it stays 0)
  -- fire has to be let go once after a refit before the guns answer
  if not btn(4) then safety=false end
 
@@ -67,8 +66,19 @@ function update_player()
  end
 
  local weapon=weapon_specs[player.weapon]
- if btn(4) and weapon.wait==0 and not player.overheated
-  and not venting and not safety then
+ local able=weapon.wait==0 and not player.overheated and not venting
+ -- overcharge: hold up to charge the gun in hand; let go once it is full
+ -- for one shot of several times the damage, a bigger blast and twice
+ -- the heat. letting go early fires nothing. the guns hold their fire
+ -- while it charges.
+ if btn(2) and able and (weapon.ammo==0 or weapon.rounds>0) then
+  player.charging=min(player.charging+1,charge_frames)
+  if player.charging==charge_frames-1 then sfx(snd_switch) end
+ else
+  if player.charging==charge_frames and able then fire(weapon,true) end
+  player.charging=0
+ end
+ if btn(4) and able and player.charging==0 and not safety then
   if weapon.ammo>0 and weapon.rounds<=0 then
    bark(weapon.name.." is dry")
    player.weapon=1
@@ -108,29 +118,38 @@ function find_target()
  player.target=best
 end
 
-function fire(weapon)
+-- `over` is an overcharged shot: more of everything, heat included
+function fire(weapon,over)
+ local heat=weapon.heat*(over and 2 or 1)
  weapon.wait=weapon.cooldown*max(0.4,player.haste)
  weapon.rounds-=1
- if player.chill==0 then player.heat+=weapon.heat end
+ if player.chill==0 then player.heat+=heat end
  if player.heat>=max_heat then
   player.overheated=true
   bark("heat critical!")
   sfx(snd_overheat)
  end
- player.recoil=1+weapon.heat/8
- shake=max(shake,weapon.heat/10)
+ player.recoil=1+heat/8
+ shake=max(shake,heat/10)
  sfx(weapon.sound)
- launch(weapon,player.target)
+ if over then
+  local sx,sy=project(player.x,1,18+hover)
+  ring(sx,sy,26,weapon.colour,0.6)
+  white=1
+ end
+ launch(weapon,player.target,over)
 end
 
-function launch(weapon,target)
+function launch(weapon,target,over)
  player.muzzle=3
  for i=1,weapon.count do
   player.gun_side=-player.gun_side
   local shot=setmetatable({
    x=player.x+player.gun_side*10,z=1,h=18+hover,
    vx=0,vh=0,
-   target=target,fuse=target and target.z,struck={}
+   target=target,fuse=target and target.z,struck={},
+   damage=weapon.damage*(over and over_damage or 1),
+   splash=weapon.splash*(over and 1.5 or 1)
   },weapon)
   aim(shot)
   -- a gun with spread throws its shots in an even fan about the aim
@@ -289,6 +308,15 @@ function draw_player()
  if player.muzzle>0 then
   circfill(sx-11,top-3,2,7)
   circfill(sx+10,top-3,2,7)
+ end
+ -- an overcharge gathering at the gun pods: a ring in the gun's colour
+ -- closing in on each, then a white one pulsing when it is ready
+ if player.charging>0 then
+  local full=player.charging==charge_frames
+  for side=-11,10,21 do
+   circ(sx+side,top-3,full and 3+tick\3%3 or 12-player.charging/5,
+    full and 7 or weapon_specs[player.weapon].colour)
+  end
  end
  if player.overheated and tick%3==0 then
   burst(sx+rnd(16)-8,sy-16,1,6,0.8,-0.05)
