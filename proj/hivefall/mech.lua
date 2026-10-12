@@ -280,16 +280,15 @@ function draw_player()
   pal(13,8)
  end
  sspr(0,64,24,24,sx-12,top)
- -- the gun in hand rides at each side (the right one flipped); there are
- -- no arms. a gun with a big blast, the redeemer, is drawn double size.
+ -- the gun in hand is a pod at each side (the right one flipped), drawn
+ -- for this mech: its strut meets the torso. there are no arms.
  local gun=player.weapon*8-8
- local size=weapon_specs[player.weapon].splash>40 and 16 or 8
- sspr(gun,56,8,8,sx-5-size,top+8-size,size,size)
- sspr(gun,56,8,8,sx+5,top+8-size,size,size,true)
+ sspr(gun,96,8,16,sx-15,top-4)
+ sspr(gun,96,8,16,sx+7,top-4,8,16,true)
  pal()
  if player.muzzle>0 then
-  circfill(sx-9,top,2,7)
-  circfill(sx+8,top,2,7)
+  circfill(sx-11,top-3,2,7)
+  circfill(sx+10,top-3,2,7)
  end
  if player.overheated and tick%3==0 then
   burst(sx+rnd(16)-8,sy-16,1,6,0.8,-0.05)
