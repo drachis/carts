@@ -130,7 +130,11 @@ function launch(weapon,target)
    target=target,fuse=target and target.z,struck={}
   },weapon)
   aim(shot)
-  shot.vx+=(rnd(2)-1)*weapon.spread
+  -- a gun with spread throws its shots in an even fan about the aim
+  -- line, each a little ragged, and scatters them up and down as well
+  local across=(i-0.5)/weapon.count*2-1
+  shot.vx+=weapon.spread*(across+rnd(0.3)-0.15)
+  shot.vh+=weapon.spread*(rnd(0.8)-0.4)
   add(shots,shot)
  end
 end

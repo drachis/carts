@@ -82,7 +82,7 @@ run_start="score=0,shake=0,freeze=0,white=0,grid_flash=0,combo=0,combo_wait=0,ch
 weapon_specs=parse_table[[
 name,wave,range,cooldown,damage,speed,count,spread,splash,heat,colour,homing,pierce,sound,ammo,pack
 pulse,1,4.5,7,1,0.2,1,0,0,4,12,1,0,0,0,0
-flak,2,3,42,2,0.14,7,1,0,24,9,0,0,1,14,6
+flak,2,3,42,2,0.14,7,1.6,0,24,9,0,0,1,14,6
 minigun,3,4,3,0.6,0.25,1,0,0,2,10,1,0,2,160,60
 shock,4,6.2,34,5,0.6,1,0,0,20,14,1,1,3,14,5
 rocket,5,6.2,60,10,0.07,1,0,16,28,8,0,0,4,8,3
