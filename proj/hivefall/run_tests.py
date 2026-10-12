@@ -1,4 +1,4 @@
-"""run_tests.py - run a PICO-8 project's test carts headless and save their screenshots.
+"""run_tests.py - run a PICO-8 project's test carts, each in its own window, and save their screenshots.
 
 usage: py run_tests.py [--no-comments] [cart ...]
 
@@ -8,10 +8,12 @@ executable if it is not in the default location.
 
 What it does:
   * runs gen_cart.py first, if the project has one (art, map, generated data);
-  * runs each cart with `pico8 -x`, and passes it only if it printed a line
-    starting "ok " (printh("ok <name>")) and nothing containing "error";
-  * runs a cart again if headless PICO-8 itself died with an access
-    violation, which it does now and then for no reason a cart controls;
+  * runs each cart with `pico8 -run`, in a PICO-8 window of its own, and
+    passes it only if it printed a line starting "ok " (printh("ok <name>"))
+    and nothing containing "error". The carts print to tests/test_log.p8l
+    through printh's file output; headless PICO-8 read through a pipe
+    crashed unpredictably. A window will open over whatever is on screen;
+  * stops only the PICO-8 it started;
   * turns any screen a cart dumped (tests/dump.lua) into <name>.png;
   * with --no-comments, fails if a game module has a Lua comment (for
     projects that keep notes in CODE_NOTES.md to save characters).
@@ -23,16 +25,16 @@ import os
 import re
 import subprocess
 import sys
-import threading
+import time
 
 from png import write_png
 
 HERE = os.getcwd()
 PICO8 = os.environ.get("PICO8", r"C:\Program Files (x86)\PICO-8\pico8.exe")
+LOG = os.path.join(HERE, "tests", "test_log.p8l")
 TIMEOUT_SECONDS = 540
-SCREEN_ROW = re.compile(r"^INFO: (\w+) ([0-9a-f]{128})$")
-CRASHED = 0xC0000005  # headless pico-8's own access violation
-ATTEMPTS = 4
+STALL_SECONDS = 60
+SCREEN_ROW = re.compile(r"^(\w+) ([0-9a-f]{128})$")
 
 
 def save_screens(log):
@@ -53,42 +55,52 @@ def save_screens(log):
     return "\n".join(rest)
 
 
+def read_log():
+    if not os.path.exists(LOG):
+        return ""
+    with open(LOG, encoding="utf-8", errors="replace") as handle:
+        return handle.read()
+
+
 def run_cart(cart):
-    """Run a cart headless; True if it printed its "ok" line and no error."""
-    for attempt in range(ATTEMPTS):
-        passed, code = run_once(cart)
-        if passed or code != CRASHED:
-            return passed
-        print("pico-8 crashed on %s (attempt %d); running it again" % (cart, attempt + 1))
-    return False
+    """Run a cart in its own PICO-8 window; True if it printed "ok" and no error.
 
-
-def run_once(cart):
-    process = subprocess.Popen([PICO8, "-x", cart], cwd=HERE, text=True,
-                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    # a cart that is over budget or has a syntax error can idle instead of
-    # exiting, so stop it at the time limit
-    watchdog = threading.Timer(TIMEOUT_SECONDS, process.kill)
-    watchdog.start()
-    lines, finished = [], False
-    for line in process.stdout:
-        lines.append(line)
-        if line.startswith("INFO: ok ") and not finished:
-            finished = True
-            threading.Timer(3, process.kill).start()
-        if "too large" in line or "error" in line.lower():
-            lines += process.stdout.readlines(2000)
-            process.kill()
-            break
-    watchdog.cancel()
+    The cart writes to tests/test_log.p8l (see tests/dump.lua) and this
+    watches the file. PICO-8 does not close a `-run` window when the cart
+    asks it to, so the process started here is stopped here; no other
+    PICO-8 is touched. One run, no retries.
+    """
+    if os.path.exists(LOG):
+        os.remove(LOG)
+    process = subprocess.Popen([PICO8, "-run", cart], cwd=HERE,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    started = last_growth = time.time()
+    size, why = 0, None
+    while why is None:
+        time.sleep(0.25)
+        log = read_log()
+        if len(log) != size:
+            size, last_growth = len(log), time.time()
+        if any(line.startswith("ok ") for line in log.splitlines()):
+            why = "ok"
+        elif "error" in log.lower():
+            why = "the cart reported an error"
+        elif process.poll() is not None:
+            why = "pico-8 closed (exit code %#x)" % (process.returncode & 0xffffffff)
+        elif time.time() - last_growth > STALL_SECONDS:
+            # an error on pico-8's own screen, or a cart too large to run,
+            # leaves the window open and the log silent
+            why = "nothing printed for %d seconds; look at the pico-8 window's message" % STALL_SECONDS
+        elif time.time() - started > TIMEOUT_SECONDS:
+            why = "still running after %d seconds" % TIMEOUT_SECONDS
+    if process.poll() is None:
+        process.kill()
     process.wait()
-    log = "".join(lines)
-    code = process.returncode & 0xffffffff
-    print(save_screens(log).strip())
-    if not finished or "error" in log.lower():
-        print("FAIL: %s did not complete cleanly (pico8 exit code %#x)" % (cart, code))
-        return False, code
-    return True, code
+    print(save_screens(read_log()).strip())
+    if why != "ok":
+        print("FAIL: %s: %s" % (cart, why))
+        return False
+    return True
 
 
 def comments_in_modules():
