@@ -1,5 +1,6 @@
 -- forest.lua : the level. ground and branches are written into the map
--- (128 columns, rows 0..15); mushrooms are a list.
+-- (128 columns, rows 0..15); mushrooms are a list. make_forest also
+-- draws up the run's recipe, since what grows depends on it.
 --
 -- the forest is cut into cells five columns wide. the ground only changes
 -- height between cells, by two tiles at most, and a branch sits three
@@ -12,13 +13,24 @@
 
 function make_forest(seed)
  srand(seed)
+ new_recipe()
  -- only the sixteen rows the forest uses
  memset(0x2000,0,0x800)
  mushrooms={}
- -- four of each true kind and three of each lookalike: one for each cell
- local kinds={}
- for kind=1,6 do
-  for i=1,3+kind%2 do add(kinds,kind) end
+ -- what grows, one to a cell: every mushroom the recipe wants, a spare
+ -- of each kind it wants, and for the rest their lookalikes, which are
+ -- the other forms of the same families
+ local kinds,wanted={},{}
+ for slot in all(recipe) do
+  add(kinds,slot.kind)
+  if not wanted[slot.kind] then
+   wanted[slot.kind]=true
+   add(kinds,slot.kind)
+  end
+ end
+ while #kinds<21 do
+  local lookalike=(rnd(recipe).kind-1)\4*4+flr(rnd(4))+1
+  if not wanted[lookalike] then add(kinds,lookalike) end
  end
  local top=clearing_row
  for first=0,125,5 do

@@ -15,12 +15,18 @@ from png import write_png
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-# mushroom kind k is sprite 95+k, and the sprite below it (111+k) is its
-# second dance step, made by leaning(). odd kinds are the true ingredients, and each
-# even number is the lookalike of the one before it, differing in one detail.
-MUSHROOMS = [
-    # 1 redcap: white spots
-    """
+# mushrooms come in four families of four forms: 16 kinds, and kind k is
+# sprite 95+k, with the sprite below it (111+k) its second dance step,
+# made by leaning(). kinds 1..4 are the redcaps, 5..8 the bluecaps, 9..12
+# the goldcups and 13..16 the moonpuffs. the forms of a family differ by a
+# pixel or two; no form is the good one, the recipe names one each run.
+#
+# a family is its first form drawn out, and then for each other form the
+# pixels that differ, as (x, y, colour). the bottom three rows are the
+# stem, which stays put when the cap leans.
+MUSHROOM_FAMILIES = [
+    # redcaps: four spots; a spot moved; three spots; a grey ring on the stem
+    ("""
 ........
 ..8888..
 .878878.
@@ -29,20 +35,14 @@ MUSHROOMS = [
 ...77...
 ...77...
 ..7777..
-""",
-    # 2 false redcap: no spots
-    """
-........
-..8888..
-.888888.
-88888888
-88888888
-...77...
-...77...
-..7777..
-""",
-    # 3 bluecap: pale stem
-    """
+""", [
+        [(5, 3, "8"), (2, 3, "7")],
+        [(1, 4, "8")],
+        [(3, 5, "6"), (4, 5, "6")],
+    ]),
+    # bluecaps: shine on the left; shine on the right; gills in the middle;
+    # a grey foot
+    ("""
 ...cc...
 ..cccc..
 ..c7cc..
@@ -51,20 +51,14 @@ MUSHROOMS = [
 ...77...
 ...77...
 ...77...
-""",
-    # 4 false bluecap: dark stem
-    """
-...cc...
-..cccc..
-..c7cc..
-.cccccc.
-.c1cc1c.
-...dd...
-...dd...
-...dd...
-""",
-    # 5 goldcup: a funnel
-    """
+""", [
+        [(3, 2, "c"), (4, 2, "7")],
+        [(2, 4, "c"), (5, 4, "c"), (3, 4, "1"), (4, 4, "1")],
+        [(3, 7, "6"), (4, 7, "6")],
+    ]),
+    # goldcups: shading inside the rim; shading at the rim; no notch; a
+    # pale throat
+    ("""
 ........
 a......a
 aa9..9aa
@@ -73,19 +67,44 @@ aa9..9aa
 ...99...
 ...99...
 ...99...
-""",
-    # 6 false goldcup: a dome
-    """
+""", [
+        [(2, 2, "a"), (5, 2, "a"), (1, 2, "9"), (6, 2, "9")],
+        [(3, 2, "a"), (4, 2, "a")],
+        [(3, 4, "a"), (4, 4, "a")],
+    ]),
+    # moonpuffs: two dimples; the upper one moved; one dimple; three
+    ("""
 ........
-..aaaa..
-.aa9aaa.
-aaaaaaaa
-a9aaaa9a
-...99...
-...99...
-...99...
-""",
+..7777..
+.777777.
+77d77777
+7777d777
+.777777.
+...66...
+..6666..
+""", [
+        [(2, 3, "7"), (5, 3, "d")],
+        [(4, 4, "7")],
+        [(5, 2, "d")],
+    ]),
 ]
+
+
+def mushroom_kinds():
+    """The 16 mushrooms in kind order, each as 8 rows."""
+    kinds = []
+    for first, others in MUSHROOM_FAMILIES:
+        rows = rows_of(first, 8)
+        kinds.append(rows)
+        for changes in others:
+            form = [list(row) for row in rows]
+            for x, y, colour in changes:
+                assert form[y][x] != colour, "a change that changes nothing"
+                form[y][x] = colour
+            kinds.append(["".join(row) for row in form])
+    assert len(set(map(tuple, kinds))) == 16, "two kinds look the same"
+    return kinds
+
 
 # tiles from sprite 16; flag 0 is solid ground, flag 1 a branch that can be
 # jumped up through and stood on.
@@ -350,8 +369,7 @@ def leaning(rows):
 
 def build_gfx():
     sheet = [["0"] * 128 for _ in range(128)]
-    for number, mushroom in enumerate(MUSHROOMS):
-        rows = rows_of(mushroom, 8)
+    for number, rows in enumerate(mushroom_kinds()):
         stamp(sheet, rows, 96 + number)
         stamp(sheet, leaning(rows), 112 + number)
     for number, tile in enumerate(TILES):

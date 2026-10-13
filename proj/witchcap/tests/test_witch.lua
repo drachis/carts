@@ -184,7 +184,7 @@ local cases={
   buttons={},frames=1,
   setup=function()
    arena()
-   recipe={{kind=1,state=0},{kind=3,state=0}}
+   recipe={{kind=1,state=0},{kind=5,state=0}}
    witch.x=300
    grow(1)
    pick_mushroom()
@@ -201,9 +201,9 @@ local cases={
   buttons={},frames=1,
   setup=function()
    arena()
-   recipe={{kind=1,state=2},{kind=3,state=1},{kind=5,state=1}}
+   recipe={{kind=1,state=2},{kind=5,state=1},{kind=9,state=1}}
    witch.x=300
-   grow(4)
+   grow(6)
    pick_mushroom()
   end,
   check=function()
@@ -217,7 +217,7 @@ local cases={
   buttons={},frames=2,
   setup=function()
    arena()
-   recipe={{kind=1,state=1},{kind=3,state=1}}
+   recipe={{kind=1,state=1},{kind=5,state=1}}
   end,
   check=function()
    return mode=="brewed" and recipe[2].state==2,"mode "..mode

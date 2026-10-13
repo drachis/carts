@@ -14,7 +14,6 @@ end
 
 function start_run()
  make_forest(flr(rnd(9999)))
- new_recipe()
  reset_witch()
  reset_hut()
  frames_left=level_seconds*60
@@ -66,8 +65,10 @@ function draw_title()
  print_centred("fill the recipe from the forest",46,7)
  print_centred("and bring it to the pot",53,7)
  print_centred("beware the lookalikes",63,8)
- for kind=1,6 do
-  spr(95+kind,28+(kind-1)\2*28+(kind-1)%2*10,74)
+ -- two forms of each family, side by side
+ for family=0,3 do
+  spr(96+family*4,22+family*24,74)
+  spr(97+family*4,31+family*24,74)
  end
  print_centred("arrows run   o jump   x pick",92,6)
  if best_frames>0 then
