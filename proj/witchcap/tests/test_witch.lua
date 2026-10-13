@@ -59,6 +59,22 @@ cases={
   end,
  },
  {
+  name="comes to a dead stop after running left",
+  buttons={},frames=120,
+  setup=function()
+   arena()
+   witch.vx=-run_speed
+  end,
+  each=function()
+   stopped_at=stopped_at or witch.vx==0 and witch.x
+  end,
+  check=function()
+   local passed=stopped_at and witch.x==stopped_at
+   stopped_at=nil
+   return passed,"speed "..witch.vx.." at "..witch.x
+  end,
+ },
+ {
   name="runs at half speed when poisoned",
   buttons={1},frames=60,
   setup=function()

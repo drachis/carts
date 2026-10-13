@@ -45,7 +45,10 @@ function update_witch()
  if btn(0) then direction=-1 end
  if btn(1) then direction=1 end
  if direction==0 then
+  -- to a stop: left to itself a leftward speed shrinks to the smallest
+  -- number below zero and stays there, and she creeps for ever
   w.vx*=0.8
+  if abs(w.vx)<0.05 then w.vx=0 end
  else
   w.facing=direction
   w.vx=mid(-top_speed,w.vx+direction*run_accel,top_speed)
