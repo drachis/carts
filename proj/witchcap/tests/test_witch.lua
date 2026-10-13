@@ -4,12 +4,14 @@
 
 local function arena()
  start_run()
- memset(0x2000,0,0x1000)
+ memset(0x2000,0,0x800)
  for column=0,127 do
   mset(column,12,16)
   for row=13,15 do mset(column,row,17) end
  end
  mushrooms={}
+ -- the arena's ground is not where the forest's was
+ reset_witch()
 end
 
 -- a step up in the ground, 60 pixels to her right, its top at `top_row`

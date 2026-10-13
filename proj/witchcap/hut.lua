@@ -41,7 +41,7 @@ function draw_hut(camera_x)
  local x,turn=hut.x-camera_x,hut.turn
  local flipped=turn<0
  -- the floor of the hut, which rides up and down a little as it goes
- local floor_y=40+sin(t()/2)*1.5
+ local floor_y=50+sin(t()/2)*1.5
  for foot in all(hut.feet) do
   local foot_x=foot.x-camera_x
   -- a stepping foot is lifted in an arc
@@ -55,9 +55,9 @@ function draw_hut(camera_x)
   end
   circfill(knee_x,knee_y,2,9)
   -- the foot sprite's ankle is 13 pixels in from its heel
-  sspr(48,32,16,8,foot_x-(flipped and 19 or 13),ankle_y,32,16,flipped)
-  sspr(64,32,8,8,hip_x-8,floor_y-2,16,16)
+  sspr(96,64,16,8,foot_x-(flipped and 19 or 13),ankle_y,32,16,flipped)
+  sspr(112,64,8,8,hip_x-8,floor_y-2,16,16)
  end
  local width=abs(turn)*96
- sspr(0,32,48,16,x-width/2,floor_y-32,width,32,flipped)
+ sspr(0,64,48,20,x-width/2,floor_y-40,width,40,flipped)
 end

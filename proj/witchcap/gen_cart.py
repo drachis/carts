@@ -181,9 +181,9 @@ CAULDRON = """
 """
 
 # baba yaga's hut is the big picture of the game. it is drawn at twice the
-# size, facing right, from three pieces: the body (sprite 64, 48 by 16:
-# what shows of it below the top of the screen), a foot (sprite 70, 16 by
-# 8, the ankle at its top), and the feathers where a leg joins (sprite 72).
+# size, facing right, from three pieces: the body (sprite 128, 48 by 20:
+# what shows of it below the top of the screen), a foot (sprite 140, 16 by
+# 8, the ankle at its top), and the feathers where a leg joins (sprite 142).
 # the body is built by build_hut() from these details.
 HUT_WINDOW = """
 55555555
@@ -293,47 +293,48 @@ def build_gfx():
         assert len(witch) == 16
         stamp(sheet, witch, 32 + number * 2)
     stamp(sheet, rows_of(CAULDRON, 16), 38)
-    stamp(sheet, build_hut(), 64)
-    stamp(sheet, rows_of(HUT_FOOT, 16), 70)
-    stamp(sheet, rows_of(HUT_FEATHERS, 8), 72)
+    # the hut has the lower half of the sheet
+    stamp(sheet, build_hut(48, [
+        (HUT_WINDOW, 8, 9, 7), (HUT_PORTHOLE, 4, 22, 8), (HUT_DOOR, 8, 31, 8),
+        (HUT_SKULL, 5, 32, 3), (HUT_LANTERN, 3, 41, 8)]), 128)
+    stamp(sheet, rows_of(HUT_FOOT, 16), 140)
+    stamp(sheet, rows_of(HUT_FEATHERS, 8), 142)
     return ["".join(row) for row in sheet]
 
 
-def build_hut():
-    """The hut's body, 48 by 16: a thatch eave, a wall of logs, a floor."""
-    body = [["0"] * 48 for _ in range(16)]
+def build_hut(width, details):
+    """A view of the hut's body, 20 rows: a thatch eave, a wall of logs, a floor.
 
-    def detail(text, width, left, top):
-        for y, row in enumerate(rows_of(text, width)):
-            for x, colour in enumerate(row):
-                if colour != "0":
-                    body[top + y][left + x] = colour
-
-    # the eave: three rows of thatch with a ragged lower edge
-    for y in range(3):
-        for x in range(48):
-            if y < 2 or x % 3:
+    `details` are (text, width, left, top) pictures laid over the wall.
+    """
+    body = [["0"] * width for _ in range(20)]
+    # the eave: four rows of thatch with a ragged lower edge
+    for y in range(4):
+        for x in range(width):
+            if y < 3 or x % 3:
                 body[y][x] = "6" if (x * 3 + y * 5) % 7 == 0 else "5"
     # the wall: logs four rows deep with dark seams between, and their
     # pale sawn ends at the two corners
-    for y in range(3, 14):
-        for x in range(3, 45):
-            seam = (y - 3) % 4 == 3
+    for y in range(4, 17):
+        seam = (y - 4) % 4 == 3
+        for x in range(3, width - 3):
             knot = (x * 5 + y * 3) % 41 == 0
             body[y][x] = "2" if seam else "9" if knot else "4"
-        if (y - 3) % 4 != 3:
-            for x in (2, 3, 44, 45):
+        if not seam:
+            for x in (2, 3, width - 4, width - 3):
                 body[y][x] = "f"
     # the floor, wider than the wall, with joists and things hanging
-    for x in range(48):
-        body[14][x] = "5"
-        if 0 < x < 47:
-            body[15][x] = "6" if x % 6 == 0 else "2"
-    detail(HUT_WINDOW, 8, 9, 5)
-    detail(HUT_PORTHOLE, 4, 22, 6)
-    detail(HUT_DOOR, 8, 31, 5)
-    detail(HUT_SKULL, 5, 32, 1)
-    detail(HUT_LANTERN, 3, 41, 6)
+    for x in range(width):
+        body[17][x] = "5"
+        if 0 < x < width - 1:
+            body[18][x] = "6" if x % 6 == 0 else "2"
+        if x % 9 == 4:
+            body[19][x] = "5"
+    for text, detail_width, left, top in details:
+        for y, row in enumerate(rows_of(text, detail_width)):
+            for x, colour in enumerate(row):
+                if colour != "0":
+                    body[top + y][left + x] = colour
     return ["".join(row) for row in body]
 
 
@@ -353,7 +354,7 @@ def build_sfx():
 
 def main():
     gfx = build_gfx()
-    write_png(os.path.join(HERE, "sheet.png"), gfx[:64])
+    write_png(os.path.join(HERE, "sheet.png"), gfx[:96])
     tail = "\n".join(["__gfx__"] + gfx + ["__gff__"] + build_flags()
                      + ["__sfx__"] + build_sfx()) + "\n"
     carts = ["witchcap.p8"] + sorted(glob.glob(os.path.join(HERE, "tests", "test_*.p8")))

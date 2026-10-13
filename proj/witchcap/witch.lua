@@ -6,7 +6,7 @@
 
 function reset_witch()
  witch={
-  x=cauldron_x,y=96,vx=0,vy=0,facing=1,
+  x=cauldron_x,y=ground_top(cauldron_x),vx=0,vy=0,facing=1,
   grounded=true,air_frames=0,jump_buffer=0,poison=0,
  }
 end

@@ -26,7 +26,7 @@ end
 local function walk_forest()
  local stands={}
  for column=0,127 do stands[column]=surfaces(column) end
- local reached,queue={[64*16+12]=true},{{64,12}}
+ local reached,queue={[64*16+clearing_row]=true},{{64,clearing_row}}
  while #queue>0 do
   local here=deli(queue)
   for column=max(here[1]-1),min(here[1]+1,127) do
