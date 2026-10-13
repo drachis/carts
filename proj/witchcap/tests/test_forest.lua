@@ -63,13 +63,13 @@ local function check_forest()
    printh("error: seed "..seed.." has a mushroom in the clearing")
   end
  end
- -- what the recipe wants grows, with one to spare, and everything else
- -- is a lookalike from a family the recipe uses
+ -- the recipe never asks twice for a kind; exactly one of each kind it
+ -- wants grows; and everything else is a lookalike from a family it uses
  local wanted_families={}
  for kind=1,16 do
   if needed[kind]>0 then
    wanted_families[(kind-1)\4]=true
-   if counts[kind]!=needed[kind]+1 then
+   if needed[kind]>1 or counts[kind]!=1 then
     printh("error: seed "..seed.." wants "..needed[kind].." of kind "..kind.." and grows "..counts[kind])
    end
   end

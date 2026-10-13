@@ -2,25 +2,46 @@
 --
 -- mushrooms are kinds 1..16: four families of four forms, kind
 -- family*4+form+1. the forms of a family are nearly alike, and none is
--- the good one: each run the recipe names one form from each of three
--- families, and every other form of those families is its lookalike.
+-- the good one: each run the recipe names five different kinds, and the
+-- other forms of their families are the lookalikes. exactly one of each
+-- wanted kind grows; when one is spoiled, another grows somewhere.
 --
 -- the recipe is a list of slots, each a mushroom kind and a state:
 -- 0 still wanted, 1 in the basket, 2 in the cauldron. what is in the
 -- cauldron is safe; a lookalike spoils something from the basket.
 
+-- five mushrooms, no two the same, and no more than two of a family
 function new_recipe()
- local wanted={}
- for family=0,3 do
-  add(wanted,family*4+flr(rnd(4))+1)
- end
- -- one family sits the run out
- del(wanted,rnd(wanted))
  recipe={}
- for kind in all{wanted[1],wanted[2],wanted[3],rnd(wanted),rnd(wanted)} do
-  add(recipe,{kind=kind,state=0})
+ local from_family={0,0,0,0}
+ while #recipe<5 do
+  local kind=flr(rnd(16))+1
+  local family=(kind-1)\4+1
+  if from_family[family]<2 and not slot_in(nil,kind) then
+   from_family[family]+=1
+   add(recipe,{kind=kind,state=0})
+  end
  end
  message_frames=0
+end
+
+-- a spoiled mushroom grows again: in a place where something has been
+-- picked, and not right beside her if that can be helped
+function regrow(kind)
+ local place
+ for try=1,8 do
+  place=rnd(picked)
+  if abs(near(place.x)-witch.x)>90 then break end
+ end
+ del(picked,place)
+ place.kind=kind
+ add(mushrooms,place)
+end
+
+-- every mushroom that leaves the forest goes through here
+function uproot(mushroom)
+ del(mushrooms,mushroom)
+ add(picked,mushroom)
 end
 
 function say(text,colour)
@@ -41,17 +62,20 @@ function pick_mushroom()
   if abs(near(mushroom.x)-witch.x)<7 and abs(mushroom.y-witch.y)<10 then
    local wanted=slot_in(0,mushroom.kind)
    if wanted then
-    del(mushrooms,mushroom)
+    uproot(mushroom)
     wanted.state=1
     sfx(1)
    elseif slot_in(nil,mushroom.kind) then
     say("enough of those",6)
     sfx(6)
    else
-    del(mushrooms,mushroom)
+    uproot(mushroom)
     witch.poison=poison_frames
     local spoiled=slot_in(1)
-    if spoiled then spoiled.state=0 end
+    if spoiled then
+     spoiled.state=0
+     regrow(spoiled.kind)
+    end
     say(spoiled and "a lookalike! one spoiled" or "a lookalike!",8)
     sfx(3)
    end

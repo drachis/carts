@@ -230,7 +230,7 @@ local cases={
   end,
  },
  {
-  name="a lookalike poisons her and spoils one from the basket",
+  name="a lookalike poisons her and spoils one from the basket, which grows again",
   buttons={},frames=1,
   setup=function()
    arena()
@@ -241,8 +241,9 @@ local cases={
   end,
   check=function()
    return witch.poison>0 and recipe[1].state==2 and recipe[2].state==0
-    and recipe[3].state==1 and #mushrooms==0,
+    and recipe[3].state==1 and #mushrooms==1 and mushrooms[1].kind==5,
     "poison "..witch.poison..", slots "..recipe[1].state..recipe[2].state..recipe[3].state
+    ..", "..#mushrooms.." growing"
   end,
  },
  {
