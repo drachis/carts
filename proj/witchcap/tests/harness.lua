@@ -8,6 +8,7 @@ function btn(i) return held[i] or false end
 btnp=btn
 function sfx() end
 dset=sfx
+music=sfx
 
 local game_update,game_draw=_update60,_draw
 

@@ -368,6 +368,44 @@ SOUNDS = [
          (40, 5, 5, 0), (43, 5, 4, 0), (48, 5, 3, 0)]),                      # 4 brewed
     (10, [(16, 0, 4, 0), (13, 0, 4, 0), (10, 0, 4, 0), (6, 0, 3, 0)]),       # 5 out of time
     (3, [(10, 4, 3, 0), (8, 4, 2, 0)]),                                      # 6 not needed
+    (1, []),                                                                 # 7 unused
+]
+
+# the tune: cute and spooky. a music-box melody in a minor, a tiptoeing
+# bass under it, and on the repeat a wavering ghost of a voice over the
+# top. each list is four bars of eight steps; 0 is a rest. pitches count
+# semitones from c0, so 45 is the a below middle c.
+TUNE_SPEED = 18
+MELODY_1 = [45, 0, 48, 0, 52, 0, 48, 0,  47, 0, 50, 0, 53, 0, 50, 0,
+            45, 0, 48, 0, 52, 0, 57, 0,  56, 0, 52, 0, 51, 0, 52, 0]
+MELODY_2 = [57, 0, 56, 0, 57, 0, 52, 0,  53, 0, 52, 0, 50, 0, 48, 0,
+            47, 0, 48, 0, 50, 0, 53, 0,  52, 0, 0, 0, 40, 0, 0, 0]
+BASS_1 = [21, 0, 28, 0, 21, 0, 28, 0,  26, 0, 33, 0, 26, 0, 33, 0,
+          21, 0, 28, 0, 21, 0, 28, 0,  16, 0, 28, 0, 16, 0, 32, 0]
+BASS_2 = [21, 0, 28, 0, 21, 0, 28, 0,  26, 0, 33, 0, 26, 0, 33, 0,
+          26, 0, 33, 0, 26, 0, 33, 0,  16, 0, 28, 0, 16, 0, 0, 0]
+GHOST = [57] * 8 + [53] * 8 + [52] * 8 + [56] * 8
+
+
+def voice(pitches, waveform, volume, effect):
+    return [(pitch, waveform, volume, effect) if pitch else (0, 0, 0, 0) for pitch in pitches]
+
+
+SOUNDS += [
+    (TUNE_SPEED, voice(MELODY_1, 0, 4, 5)),    # 8: triangle, each note fading
+    (TUNE_SPEED, voice(MELODY_2, 0, 4, 5)),    # 9
+    (TUNE_SPEED, voice(BASS_1, 1, 2, 5)),      # 10: tilted saw, soft
+    (TUNE_SPEED, voice(BASS_2, 1, 2, 5)),      # 11
+    (TUNE_SPEED, voice(GHOST, 5, 1, 2)),       # 12: organ with vibrato, faint
+]
+# four patterns, looping: the tune, then the tune again with the ghost.
+# the first byte is 1 where the loop starts and 2 where it ends; a channel
+# of 0x40 and over is silent.
+MUSIC = [
+    "01 080a4344",
+    "00 090b4344",
+    "00 080a0c44",
+    "02 090b0c44",
 ]
 
 
@@ -483,7 +521,7 @@ def main():
     gfx = build_gfx()
     write_png(os.path.join(HERE, "sheet.png"), gfx[:96])
     tail = "\n".join(["__gfx__"] + gfx + ["__gff__"] + build_flags()
-                     + ["__sfx__"] + build_sfx()) + "\n"
+                     + ["__sfx__"] + build_sfx() + ["__music__"] + MUSIC) + "\n"
     carts = ["witchcap.p8"] + sorted(glob.glob(os.path.join(HERE, "tests", "test_*.p8")))
     for cart in carts:
         path = os.path.join(HERE, cart)

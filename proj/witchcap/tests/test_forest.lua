@@ -7,6 +7,8 @@
 -- three tiles higher. test_witch.lua checks that the real witch can climb
 -- three tiles and cannot climb four.
 
+function music() end
+
 local seed,branches,highest=0,0,15
 lookalikes,seen_kinds=0,{}
 

@@ -8,6 +8,8 @@ cartdata("witchcap_1")
 
 function _init()
  place_limbs()
+ -- the tune keeps the first three channels and leaves one for sounds
+ music(0,0,7)
  mode,mode_frames="title",0
  best_frames=dget(0)
 end
