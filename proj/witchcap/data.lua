@@ -19,4 +19,8 @@ coyote_frames=6
 poison_frames=180
 level_seconds=60
 cauldron_x=500
+hut_speed=0.9
+hut_stance=18
+hut_stride=22
+hut_step_frames=16
 ]],nil,_ENV)

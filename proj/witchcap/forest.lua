@@ -45,6 +45,14 @@ function ground_at(x,y)
  return fget(mget(x\8,y\8),0)
 end
 
+-- the height of the ground's surface at x, in pixels down the screen
+function ground_top(x)
+ for row=0,15 do
+  if ground_at(x,row*8) then return row*8 end
+ end
+ return 128
+end
+
 -- a flat clump of leaves with moss hanging from it in strands
 function draw_moss(x,y,seed)
  ovalfill(x-11,y-3,x+11,y+3,0)
@@ -76,8 +84,6 @@ function draw_backdrop(camera_x)
  for tree=1,17 do
   draw_tree(tree*44-30-camera_x\2,24+tree%3*11,tree)
  end
- -- baba yaga's hut, shifting from foot to foot west of the clearing
- sspr(96,16,16,16,226-camera_x\2,62+sin(t()/3)*2,32,32)
 end
 
 function draw_forest()

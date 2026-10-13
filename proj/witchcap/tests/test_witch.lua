@@ -94,6 +94,29 @@ local cases={
   end,
  },
  {
+  name="the hut falls behind her at a run, with its feet under it",
+  buttons={1},frames=300,
+  setup=arena,
+  check=function()
+   local gap=witch.x-hut.x
+   local spread=max(abs(hut.feet[1].x-hut.x),abs(hut.feet[2].x-hut.x))
+   return gap>150 and hut.x>cauldron_x+100 and spread<50,
+    "hut "..gap.." pixels behind, a foot "..spread.." from its middle"
+  end,
+ },
+ {
+  name="the hut catches her up when she stands still",
+  buttons={},frames=420,
+  setup=function()
+   arena()
+   frames_left=3600
+  end,
+  check=function()
+   dump_screen("hut")
+   return abs(witch.x-hut.x)<8,"hut "..witch.x-hut.x.." pixels away"
+  end,
+ },
+ {
   name="picks what the recipe wants, and no more of it than that",
   buttons={},frames=1,
   setup=function()

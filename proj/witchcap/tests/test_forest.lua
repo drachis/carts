@@ -79,6 +79,7 @@ function _update60()
   make_forest(7)
   new_recipe()
   reset_witch()
+  reset_hut()
   frames_left,mode=3600,"play"
   for screen=0,3 do
    witch.x=64+screen*128

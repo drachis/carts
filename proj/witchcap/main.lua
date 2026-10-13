@@ -15,6 +15,7 @@ function start_run()
  make_forest(flr(rnd(9999)))
  new_recipe()
  reset_witch()
+ reset_hut()
  frames_left=level_seconds*60
  mode="play"
 end
@@ -33,6 +34,7 @@ end
 function _update60()
  if mode=="play" then
   update_witch()
+  update_hut()
   if btnp(5) then pick_mushroom() end
   frames_left-=1
   message_frames=max(message_frames-1)
@@ -127,6 +129,7 @@ function _draw()
  end
  cls(1)
  draw_backdrop(camera_x)
+ draw_hut(camera_x)
  camera(camera_x,sway)
  draw_forest()
  draw_witch()

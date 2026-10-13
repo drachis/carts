@@ -5,6 +5,7 @@ __lua__
 #include ../data.lua
 #include ../forest.lua
 #include ../witch.lua
+#include ../hut.lua
 #include ../potion.lua
 #include ../main.lua
 #include dump.lua
