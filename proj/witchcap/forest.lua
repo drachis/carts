@@ -97,7 +97,7 @@ end
 function draw_forest()
  map()
  local cauldron_y=clearing_row*8-16
- spr(38,cauldron_x-8,cauldron_y,2,2)
+ spr(46,cauldron_x-8,cauldron_y,2,2)
  -- the brew bubbles
  for bubble=0,2 do
   local rise=(t()*8+bubble*5)%12

@@ -63,12 +63,15 @@ end
 
 function draw_witch()
  local w=witch
- local frame=36
- if w.grounded then
-  frame=abs(w.vx)>0.2 and 32+w.x\6%2*2 or 32
+ -- frame 0 stands, 1..4 walk, 5 rises and 6 falls
+ local frame=0
+ if not w.grounded then
+  frame=w.vy<0 and 5 or 6
+ elseif abs(w.vx)>0.2 then
+  frame=1+w.x\5%4
  end
  -- a green face while the poison lasts
  if w.poison>0 then pal(15,11) end
- spr(frame,w.x-8,w.y-16,2,2,w.facing<0)
+ spr(32+frame*2,w.x-8,w.y-16,2,2,w.facing<0)
  pal(15,15)
 end
