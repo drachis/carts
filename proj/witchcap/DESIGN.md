@@ -72,23 +72,26 @@ Yaga's hut lumbering along behind for company.
 - **Levels:** nine. The recipe wants 1, 2, 3, 4, then 5 different
   mushrooms. Imposters, which are other forms of the wanted mushrooms'
   families, number 0, 2, 4, 7, 10, 13, then 17. The rest of the 22 are
-  of families the recipe does not use. The clocks are 20, 35, 45, 55,
-  60, 60, 55, 50 and 45 seconds. Brewing the highest level unlocked
-  unlocks the next, and X goes on to it. On the title and after a
-  failure, left and right choose among the unlocked levels.
+  of families the recipe does not use. Every level has 60 seconds on the
+  clock, and a par to beat: 20, 35, 45, 55, 60, 60, 55, 50 and 45
+  seconds, shown on the title and beside the time brewed, which is green
+  when it beats par. Brewing the highest level unlocked unlocks the
+  next, and X goes on to it. On the title and after a failure, left and
+  right choose among the unlocked levels. The level is shown in the
+  status bar.
 - **The recipe** never asks twice for a kind, takes at most two from a
   family, and never uses one family, picked afresh each run. It runs
   along the bottom of the screen; a slot is boxed yellow once that
   mushroom is in her basket or in the air, green once it is in the pot.
 - **Picking** a mushroom the recipe still wants puts it in the basket, in
-  a burst of gold. Picking a wanted kind she already has does nothing.
-  Picking anything else poisons her for three seconds (half speed, a
-  green sky, the view swaying, no broom), in a green cloud that jolts
-  the view, and spoils one mushroom from the basket. A spoiled mushroom
-  grows again where something was picked, away from her if it can.
+  a burst of gold. Picking anything else poisons her for three seconds,
+  in a green cloud that jolts the view: half speed, a green sky, the
+  view swaying, no broom, and the mushrooms dancing three times as fast,
+  which makes them harder to tell apart. Poison costs time and nothing
+  else: what she has gathered is never spoiled.
 - **The cauldron:** when she stands at it her basket empties, each
-  mushroom flying from her to the pot in an arc. What has left the basket
-  cannot be spoiled. The potion is brewed when the last one lands.
+  mushroom flying from her to the pot in an arc. The potion is brewed
+  when the last one lands.
 - **The broom** carries her a screen's width the way she faces, skimming
   the ground and clearing any step, then rests four seconds. A small
   broom by the clock shows how rested it is.
@@ -151,9 +154,9 @@ frames of the game for each frame PICO-8 shows.
   ages.
 - `test_witch`: the real witch on flat ground, one case each: ledges of
   three and four tiles, jumps, running, stopping dead, poison, the broom,
-  the world going round, and the recipe's rules for picking, spoiling,
-  regrowth, the flight to the pot, brewing, unlocking, the level picker
-  and running out of time.
+  the world going round, and the recipe's rules for picking, poison and
+  the faster dance, the flight to the pot, brewing, unlocking, the level
+  picker and running out of time.
 - `test_hut`: the hut on flat ground: falling behind, stepping in turn,
   staying over its feet, turning, showing its front, catching up and
   standing square, its walls meeting with no gap, and 60 frames a second
@@ -166,11 +169,11 @@ frames of the game for each frame PICO-8 shows.
 
 - Nobody has played the build with levels, the broom, the cylinder or
   the victory sequence. Whether the one-pixel differences can be read at
-  a run, and whether the clocks are fair, is unknown: the clocks come
-  from a bot that never misreads.
+  a run, and whether the pars are fair, is unknown: the pars come from a
+  bot that never misreads.
 - The music and sounds have never been heard by their author.
 - A score board; levelling up into abilities (the broom is simply given).
-- Levels 7 to 9 differ only in their clocks.
+- Levels 7 to 9 differ only in their pars.
 - The green sky when poisoned is a screen palette change, which the test
   screenshots cannot show.
 - With the hut on screen a frame costs about 0.3 of what `stat(1)` calls

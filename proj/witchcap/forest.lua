@@ -16,7 +16,7 @@ function make_forest(seed)
  new_recipe()
  -- only the sixteen rows the forest uses
  memset(0x2000,0,0x800)
- mushrooms,picked={},{}
+ mushrooms={}
  -- what grows, one to a cell: one of each mushroom the recipe wants; as
  -- many imposters as the level has, which are other forms of the wanted
  -- mushrooms' families; and for the rest, mushrooms of families the
@@ -241,8 +241,10 @@ function draw_forest(camera_x)
  end
  for mushroom in all(mushrooms) do
   -- they dance, each on its own beat: a hop, and a lean on every other
-  -- one. kind k is sprite 95+k, and its leaning step is the sprite below
-  local beat=t()*2+mushroom.x/40
+  -- one. kind k is sprite 95+k, and its leaning step is the sprite
+  -- below. `dance` counts the beats, and counts faster while she is
+  -- poisoned.
+  local beat=dance+mushroom.x/40
   spr(95+mushroom.kind+beat%2\1*16,near(mushroom.x)-4,mushroom.y-8-abs(sin(beat/2))*2)
  end
 end

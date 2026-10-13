@@ -156,7 +156,7 @@ cases={
   end,
  },
  {
-  name="picks what the recipe wants, and no more of it than that",
+  name="picks what the recipe wants into the basket, unharmed",
   buttons={},frames=1,
   setup=function()
    arena()
@@ -164,29 +164,30 @@ cases={
    witch.x=300
    grow(1)
    pick_mushroom()
-   grow(1)
-   pick_mushroom()
   end,
   check=function()
-   return recipe[1].state==1 and #mushrooms==1,
-    "slot state "..recipe[1].state..", "..#mushrooms.." left growing"
+   return recipe[1].state==1 and recipe[2].state==0 and #mushrooms==0
+    and witch.poison==0,
+    "slot state "..recipe[1].state..", "..#mushrooms.." left growing, poison "..witch.poison
   end,
  },
  {
-  name="a lookalike poisons her and spoils one from the basket, which grows again",
-  buttons={},frames=1,
+  name="a lookalike poisons her, spoils nothing, and sets the mushrooms dancing three times as fast",
+  buttons={},frames=30,
   setup=function()
    arena()
    recipe={{kind=1,state=2},{kind=5,state=1},{kind=9,state=1}}
    witch.x=300
    grow(6)
    pick_mushroom()
+   dance=0
   end,
   check=function()
-   return witch.poison>0 and recipe[1].state==2 and recipe[2].state==0
-    and recipe[3].state==1 and #mushrooms==1 and mushrooms[1].kind==5,
+   -- thirty frames is one beat of the dance unpoisoned, and three poisoned
+   return witch.poison>0 and recipe[1].state==2 and recipe[2].state==1
+    and recipe[3].state==1 and #mushrooms==0 and dance>2.9 and dance<3.1,
     "poison "..witch.poison..", slots "..recipe[1].state..recipe[2].state..recipe[3].state
-    ..", "..#mushrooms.." growing"
+    ..", "..dance.." beats danced in half a second"
   end,
  },
  {

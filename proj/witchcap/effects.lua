@@ -1,5 +1,6 @@
--- effects.lua : sparks, the shake of the view, and the mushrooms that fly
--- from the witch's pockets into the pot.
+-- effects.lua : sparks, the shake of the view, the beat the mushrooms
+-- dance to, and the mushrooms that fly from the witch's pockets into the
+-- pot.
 --
 -- a spark is a pixel with a speed and a life. a flight is a recipe slot
 -- on its way to the cauldron: its frame counts up from below zero, so
@@ -7,7 +8,7 @@
 -- and the slot is in the pot.
 
 function reset_effects()
- sparks,flights,shake={},{},0
+ sparks,flights,shake,dance={},{},0,0
 end
 
 -- `count` sparks of a colour thrown out from a place, at up to `speed`
@@ -28,6 +29,9 @@ end
 
 function update_effects()
  shake=max(shake-1)
+ -- the mushrooms' dance: two beats a second, and six while she is
+ -- poisoned, when they are that much harder to tell apart
+ dance+=witch.poison>0 and dance_poisoned or dance_pace
  for spark in all(sparks) do
   spark.x+=spark.vx
   spark.y+=spark.vy
