@@ -156,15 +156,16 @@ function draw_hud()
  -- arrow on the side it lies
  local away=near(cauldron_x)-witch.x
  if abs(away)>70 then
-  circfill(75,122,5,3)
-  circ(75,122,5+t()*2%2,11)
+  circfill(68,122,5,3)
+  circ(68,122,5+t()*2%2,11)
   pal(5,0)
-  sspr(112,16,16,16,71,118,8,8)
+  sspr(112,16,16,16,64,118,8,8)
   pal(5,5)
-  print(away>0 and ">" or "<",away>0 and 83 or 64,120,11)
+  print(away>0 and ">" or "<",away>0 and 76 or 57,120,11)
  end
  print(ceil(frames_left/60),114,121,frames_left<600 and 8 or 7)
- print("level "..level,2,2,6)
+ -- the level, between the pot and the broom
+ print("l"..level,83,121,6)
  -- the broom, and under it how rested it is
  local rested=1-witch.broom_wait/broom_rest
  line(96,125,104,120,rested==1 and 4 or 5)
