@@ -53,15 +53,21 @@ function update_hut()
 end
 
 -- the limb picture in map column `column`, drawn from one joint to the
--- other at twice its width: a textured line for every half pixel across
+-- other at twice its width, as textured lines side by side. the joints
+-- are moved to whole pixels and the lines are a whole pixel apart, along
+-- x for an upright limb and along y for a level one, so every line
+-- covers the same pixels of the picture and nothing shimmers as it moves.
 function draw_limb(column,x0,y0,x1,y1)
+ x0,y0,x1,y1=flr(x0),flr(y0),flr(x1),flr(y1)
  local dx,dy=x1-x0,y1-y0
- local length=sqrt(dx*dx+dy*dy)
- local down_picture=3/max(abs(dx),abs(dy))
- for across=-8,7.5,0.5 do
-  local shift_x,shift_y=-dy/length*across,dx/length*across
+ local long=max(abs(dx),abs(dy))
+ -- a slanted limb is cut on the slant, so it takes more lines to be as thick
+ local half=flr(8*sqrt(dx*dx+dy*dy)/long)
+ local upright=abs(dy)>=abs(dx)
+ for across=-half,half-1 do
+  local shift_x,shift_y=upright and across or 0,upright and 0 or across
   tline(x0+shift_x,y0+shift_y,x1+shift_x,y1+shift_y,
-   column+(across+8)/16,16,0,down_picture)
+   column+(across+half)/half/2,16,0,3/long)
  end
 end
 
