@@ -94,15 +94,35 @@ function draw_tree(x,top,seed)
 end
 
 -- the moon is the clock: `moon` is the share of the time left, 1 a full
--- moon and 0 a new one, as the night's shadow slides across it and leaves
--- the bright edge till last. it hangs in the corner, above the trees and
--- to the right of where the hut settles.
+-- moon and 0 a new one. the whole disc is always there in shadow, and the
+-- lit part wanes across it the way the moon's does: always lit from the
+-- left limb, as far as an edge that goes from the right limb through a
+-- half moon to a crescent. it hangs in the corner, above the trees and to
+-- the right of where the hut settles.
 function draw_backdrop(camera_x,moon)
- circfill(116,21,9,6)
- circfill(113,19,7,7)
- circfill(116+moon*21,21,10,1)
+ -- stars that stay put, each winking out now and then
+ for star=1,24 do
+  if (t()/3+star/7)%1<0.85 then
+   pset(star*37%128,11+star*23%60,star%3==0 and 7 or 13)
+  end
+ end
+ circfill(116,21,9,5)
+ for row=-9,9 do
+  local half=sqrt(81-row*row)
+  local lit=half*(moon*2-1)
+  if lit>-half then
+   rectfill(116-half,21+row,116+lit,21+row,7)
+   pset(116+lit,21+row,6)
+  end
+ end
  for tree=1,17 do
   draw_tree(tree*44-30-camera_x\2,40+tree%3*11,tree)
+ end
+ -- three bats cross the sky, each at its own pace and height
+ for bat=1,3 do
+  local x=t()/(6+bat*3)%1*200-36
+  if bat==2 then x=120-x end
+  spr(19+(t()*6+bat)%2\1,x,10+bat*9+sin(t()/2+bat/3)*5)
  end
 end
 

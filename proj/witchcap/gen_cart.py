@@ -145,6 +145,30 @@ b3333b33
 ]
 TILE_FLAGS = {16: 1, 17: 1, 18: 2}
 
+# 19, 20: a bat for the backdrop, wings up and wings down
+BATS = [
+    """
+........
+2.2..2.2
+22222222
+22e22e22
+..2222..
+...22...
+........
+........
+""",
+    """
+........
+..2..2..
+.222222.
+22e22e22
+2.2222.2
+2..22..2
+........
+........
+""",
+]
+
 # the witch is two sprites square, facing right. her seven frames are put
 # together from a hat (8 rows), hair and face (3), a dress (3) and a hem
 # with legs (2), so that the hat's point and her hair flap as she moves.
@@ -373,7 +397,7 @@ def build_gfx():
     for number, rows in enumerate(mushroom_kinds()):
         stamp(sheet, rows, 96 + number)
         stamp(sheet, leaning(rows), 112 + number)
-    for number, tile in enumerate(TILES):
+    for number, tile in enumerate(TILES + BATS):
         stamp(sheet, rows_of(tile, 8), 16 + number)
     for number, (hat, hair, legs) in enumerate(WITCH_FRAMES):
         witch = (rows_of(WITCH_HATS[hat], 16) + rows_of(WITCH_HAIR[hair], 16)
