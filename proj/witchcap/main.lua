@@ -89,7 +89,7 @@ function draw_hud()
  end
  local away=cauldron_x-witch.x
  if abs(away)>70 then
-  print(away>0 and "pot >" or "< pot",56,3,6)
+  print(away>0 and "pot >" or "< pot",66,3,6)
  end
  print(ceil(frames_left/60),114,3,frames_left<600 and 8 or 7)
 end
