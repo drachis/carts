@@ -119,6 +119,31 @@ local cases={
   end,
  },
  {
+  name="the hut's feet come down in turn, each well beyond the other",
+  buttons={1},frames=400,
+  setup=function()
+   arena()
+   landings,was_stepping={},{}
+  end,
+  each=function()
+   for number,foot in ipairs(hut.feet) do
+    if was_stepping[number] and foot.step==0 then
+     add(landings,{number,foot.x})
+    end
+    was_stepping[number]=foot.step>0
+   end
+  end,
+  check=function()
+   local closest,in_turn=999,true
+   for i=2,#landings do
+    closest=min(closest,landings[i][2]-landings[i-1][2])
+    if landings[i][1]==landings[i-1][1] then in_turn=false end
+   end
+   return #landings>6 and in_turn and closest>24,
+    #landings.." landings, the closest "..closest.." pixels beyond the one before"
+  end,
+ },
+ {
   name="the hut turns to face the way it walks",
   buttons={0},frames=200,
   setup=arena,
@@ -134,7 +159,7 @@ local cases={
   setup=function()
    arena()
    hut.x,hut.turn=witch.x-24,-0.1
-   for foot in all(hut.feet) do foot.x=hut.x+foot.home end
+   for foot in all(hut.feet) do foot.x=hut.x+foot.hip*3 end
   end,
   check=function()
    dump_screen("hut_front")
@@ -237,6 +262,7 @@ function step()
   bare_frames+=1
  end
  highest=min(highest,witch.y)
+ if case.each then case.each() end
  hold(case.buttons)
  case_frame+=1
 end

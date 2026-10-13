@@ -23,8 +23,8 @@ clearing_row=13
 highest_row=11
 lowest_row=14
 hut_speed=0.9
-hut_stance=18
-hut_stride=22
+hut_hips=6
+hut_stride=64
 hut_step_frames=16
-hut_bone=28
+hut_bone=32
 ]],nil,_ENV)

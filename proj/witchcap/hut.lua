@@ -3,14 +3,16 @@
 -- the top, and what shows is its eave, its walls, its door and its legs.
 -- it touches nothing; it is only company.
 --
--- hut.x is its middle, in world pixels. each foot stays planted on the
--- ground until the hut has walked `hut_stride` pixels past it, then steps
--- ahead, one foot at a time. foot.step counts a step's frames down.
+-- hut.x is its middle, in world pixels, and hut.travel how far it has
+-- walked. a foot stays planted while the hut walks over it, and lifts
+-- once in every `hut_stride` pixels of travel, the two feet half a stride
+-- apart, so they come down in turn and never in the same place.
+-- foot.step counts a step's frames down.
 --
 -- hut.facing is 1 or -1, the way it last walked. hut.turn follows it from
 -- one to the other in two thirds of a second. the hut is drawn side on
 -- while turn is past 0.4 either way, and in between it shows its end
--- wall, face on, with its hips closer together. the knees bend by as
+-- wall, face on, with its hips apart. the knees bend by as
 -- much as turn, so they swing through straight as it comes round.
 --
 -- a leg is a thigh and a shank, each `hut_bone` pixels long, meeting at a
@@ -27,9 +29,15 @@ function place_limbs()
 end
 
 function reset_hut()
- hut={x=cauldron_x-100,facing=1,turn=1,feet={}}
- for side=-1,1,2 do
-  add(hut.feet,{x=hut.x+side*hut_stance,home=side*hut_stance,step=0})
+ hut={x=cauldron_x-100,walk=0,travel=0,facing=1,turn=1,feet={}}
+ -- it stands with one foot ahead of the other, and the two take their
+ -- steps half a stride apart
+ for number=1,2 do
+  local side=number*2-3
+  add(hut.feet,{
+   x=hut.x+side*hut_stride/4,hip=side*hut_hips,
+   lift_at=number*hut_stride/2,step=0,
+  })
  end
 end
 
@@ -38,16 +46,19 @@ function update_hut()
  -- while she picks. it settles a little to her left, clear of the moon
  local walk=mid(-hut_speed,(witch.x-24-hut.x)/60,hut_speed)
  hut.x+=walk
+ hut.travel+=abs(walk)
  if abs(walk)>0.3 then hut.facing=sgn(walk) end
  hut.turn+=mid(-0.05,hut.facing-hut.turn,0.05)
- for number,foot in ipairs(hut.feet) do
-  local behind=hut.x+foot.home-foot.x
+ for foot in all(hut.feet) do
   if foot.step>0 then
    foot.x+=(foot.to_x-foot.x)/foot.step
    foot.step-=1
-  elseif abs(behind)>hut_stride and hut.feet[3-number].step==0 then
+  elseif hut.travel>=foot.lift_at then
+   -- each foot lifts once for every stride the hut walks, and swings to
+   -- where it will be as far ahead on landing as it was behind on lifting
+   foot.lift_at+=hut_stride
    foot.step=hut_step_frames
-   foot.to_x=foot.x+behind+sgn(behind)*hut_stride
+   foot.to_x=hut.x+sgn(walk)*(hut_stride+abs(walk)*hut_step_frames)/2
   end
  end
 end
@@ -81,7 +92,8 @@ function draw_hut(camera_x)
   local foot_x=foot.x-camera_x
   -- a stepping foot is lifted in an arc
   local ankle_y=ground_top(foot.x)-16+sin(foot.step/hut_step_frames/2)*14
-  local hip_x,hip_y=x+foot.home*(side_on and 1 or 0.6),floor_y-4
+  -- side on, one hip is just behind the other; face on, they are apart
+  local hip_x,hip_y=x+foot.hip*(side_on and 1 or 2.5),floor_y-4
   local dx,dy=foot_x-hip_x,ankle_y-hip_y
   local distance=sqrt(dx*dx+dy*dy)
   -- the knee stands off the line from hip to ankle by what the two
