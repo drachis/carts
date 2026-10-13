@@ -123,9 +123,13 @@ local cases={
   buttons={1},frames=400,
   setup=function()
    arena()
-   landings,was_stepping={},{}
+   landings,was_stepping,overhang={},{},0
   end,
   each=function()
+   -- how far its body is outside the span of its feet
+   local back=min(hut.feet[1].x,hut.feet[2].x)
+   local front=max(hut.feet[1].x,hut.feet[2].x)
+   overhang=max(overhang,max(back-hut.body_x,hut.body_x-front))
    for number,foot in ipairs(hut.feet) do
     if was_stepping[number] and foot.step==0 then
      add(landings,{number,foot.x})
@@ -139,8 +143,8 @@ local cases={
     closest=min(closest,landings[i][2]-landings[i-1][2])
     if landings[i][1]==landings[i-1][1] then in_turn=false end
    end
-   return #landings>6 and in_turn and closest>24,
-    #landings.." landings, the closest "..closest.." pixels beyond the one before"
+   return #landings>6 and in_turn and closest>24 and overhang<4,
+    #landings.." landings, the closest "..closest.." pixels beyond the one before; its body never past its feet by more than "..overhang
   end,
  },
  {
@@ -159,6 +163,7 @@ local cases={
   setup=function()
    arena()
    hut.x,hut.turn=witch.x-24,-0.1
+   hut.body_x=hut.x
    for foot in all(hut.feet) do foot.x=hut.x+foot.hip*3 end
   end,
   check=function()
@@ -175,8 +180,13 @@ local cases={
   end,
   check=function()
    dump_screen("hut")
-   return abs(witch.x-24-hut.x)<8 and stat(7)==60,
-    "hut "..witch.x-hut.x.." pixels to her left, "..stat(7).." frames a second, cpu "..frame_cpu
+   -- and it stands with a foot either side of its middle
+   local feet=hut.feet
+   return abs(witch.x-24-hut.x)<8 and stat(7)==60
+    and feet[1].x<hut.body_x and feet[2].x>hut.body_x and feet[2].x-feet[1].x<50,
+    "hut "..witch.x-hut.x.." pixels to her left, feet at "..feet[1].x-hut.body_x
+    .." and "..feet[2].x-hut.body_x.." from its body, "
+    ..stat(7).." frames a second, cpu "..frame_cpu
   end,
  },
  {

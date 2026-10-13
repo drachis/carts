@@ -29,7 +29,8 @@ function place_limbs()
 end
 
 function reset_hut()
- hut={x=cauldron_x-100,walk=0,travel=0,facing=1,turn=1,feet={}}
+ hut={x=cauldron_x-100,travel=0,facing=1,turn=1,feet={}}
+ hut.body_x=hut.x
  -- it stands with one foot ahead of the other, and the two take their
  -- steps half a stride apart
  for number=1,2 do
@@ -49,7 +50,9 @@ function update_hut()
  hut.travel+=abs(walk)
  if abs(walk)>0.3 then hut.facing=sgn(walk) end
  hut.turn+=mid(-0.05,hut.facing-hut.turn,0.05)
- for foot in all(hut.feet) do
+ for number,foot in ipairs(hut.feet) do
+  -- where this foot belongs when the hut is standing
+  local standing_x=hut.x+foot.hip*2
   if foot.step>0 then
    foot.x+=(foot.to_x-foot.x)/foot.step
    foot.step-=1
@@ -59,32 +62,45 @@ function update_hut()
    foot.lift_at+=hut_stride
    foot.step=hut_step_frames
    foot.to_x=hut.x+sgn(walk)*(hut_stride+abs(walk)*hut_step_frames)/2
+  elseif abs(walk)<0.2 and abs(foot.x-standing_x)>10
+   and hut.feet[3-number].step==0 then
+   -- once it has stopped it brings its feet back under itself
+   foot.step=hut_step_frames
+   foot.to_x=standing_x
   end
  end
+ -- its weight stays over its feet: the body moves over the foot that is
+ -- planted while the other swings, and midway between them when both
+ -- are down, so it sways forward with each step and never overhangs
+ local first,second=hut.feet[1],hut.feet[2]
+ local balance=(first.x+second.x)/2
+ if first.step>0 then balance=second.x end
+ if second.step>0 then balance=first.x end
+ hut.body_x+=(balance-hut.body_x)/4
 end
 
--- the limb picture in map column `column`, drawn from one joint to the
--- other at twice its width, as textured lines side by side. the joints
--- are moved to whole pixels and the lines are a whole pixel apart, along
--- x for an upright limb and along y for a level one, so every line
--- covers the same pixels of the picture and nothing shimmers as it moves.
+-- the limb picture in map column `column`, turned to lie from one joint
+-- to the other, `thickness` pixels to either side of the bone. it is
+-- drawn as textured lines across the limb at right angles to the bone,
+-- one for each row of the picture's length and half a pixel apart so
+-- that none are missed: a true turn, with no shear. the joints are moved
+-- to whole pixels so that the picture does not crawl as it moves.
 function draw_limb(column,thickness,x0,y0,x1,y1)
  x0,y0,x1,y1=flr(x0),flr(y0),flr(x1),flr(y1)
  local dx,dy=x1-x0,y1-y0
- local long=max(abs(dx),abs(dy))
- -- `thickness` is half the limb's width in pixels. a slanted limb is cut
- -- on the slant, so it takes more lines to be as thick
- local half=flr(thickness*sqrt(dx*dx+dy*dy)/long)
- local upright=abs(dy)>=abs(dx)
- for across=-half,half-1 do
-  local shift_x,shift_y=upright and across or 0,upright and 0 or across
-  tline(x0+shift_x,y0+shift_y,x1+shift_x,y1+shift_y,
-   column+(across+half)/half/2,16,0,3/long)
+ local length=sqrt(dx*dx+dy*dy)
+ local side_x,side_y=-dy/length*thickness,dx/length*thickness
+ -- the picture is one tile wide, over as many pixels as a line has
+ local across_picture=0.5/max(abs(side_x),abs(side_y))
+ for along=0,length-0.5,0.5 do
+  local x,y=x0+dx*along/length,y0+dy*along/length
+  tline(x-side_x,y-side_y,x+side_x,y+side_y,
+   column,16+along/length*3,across_picture,0)
  end
 end
 
 function draw_hut(camera_x)
- local x,turn=hut.x-camera_x,hut.turn
+ local x,turn=hut.body_x-camera_x,hut.turn
  local flipped,side_on=turn<0,abs(turn)>0.4
  -- the floor of the hut, which rides up and down a little as it goes
  -- and lifts as it turns
