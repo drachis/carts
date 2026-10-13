@@ -91,6 +91,10 @@ local game_draw=_draw
 function _draw() end
 
 function _update60()
+ run_frame(forest_frame)
+end
+
+function forest_frame()
  for i=1,2 do
   seed+=1
   check_forest()

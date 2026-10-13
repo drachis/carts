@@ -2,7 +2,7 @@
 
 usage: py gen_cart.py
 
-Rewrites everything from __gfx__ on in witchcap.p8 and tests/test_*.p8,
+Rewrites everything from __gfx__ on in witchcap.p8 and tests/*.p8,
 leaving the Lua alone, and writes sheet.png so the sprites can be looked at.
 run_tests.py runs this first.
 
@@ -574,7 +574,7 @@ def main():
     write_png(os.path.join(HERE, "sheet.png"), gfx[:96])
     tail = "\n".join(["__gfx__"] + gfx + ["__gff__"] + build_flags()
                      + ["__sfx__"] + build_sfx() + ["__music__"] + MUSIC) + "\n"
-    carts = ["witchcap.p8"] + sorted(glob.glob(os.path.join(HERE, "tests", "test_*.p8")))
+    carts = ["witchcap.p8"] + sorted(glob.glob(os.path.join(HERE, "tests", "*.p8")))
     written = 0
     for cart in carts:
         path = os.path.join(HERE, cart)

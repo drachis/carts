@@ -13,7 +13,10 @@ What it does:
     not the sum of them. A window for each cart will open over whatever is
     on screen;
   * passes a cart only if it printed a line starting "ok " (printh("ok
-    <name>")) and nothing containing "error". Each cart prints to a log of
+    <name>")) and nothing containing "error". A runtime error in a cart is
+    caught by the cart and printed (run_frame in tests/dump.lua), so it
+    fails here at once with PICO-8's message; a cart that has not printed
+    "started" after 20 seconds never loaded. Each cart prints to a log of
     its own, tests/log_<name>.p8l for tests/test_<name>.p8, through
     printh's file output (see tests/dump.lua); headless PICO-8 read
     through a pipe crashed unpredictably;
@@ -38,6 +41,7 @@ HERE = os.getcwd()
 PICO8 = os.environ.get("PICO8", r"C:\Program Files (x86)\PICO-8\pico8.exe")
 TIMEOUT_SECONDS = 540
 STALL_SECONDS = 60
+START_SECONDS = 20
 SCREEN_ROW = re.compile(r"^(\w+) ([0-9a-f]{128})$")
 
 
@@ -95,6 +99,10 @@ class Run:
             self.why = "ok"
         elif "error" in log.lower():
             self.why = "the cart reported an error"
+        elif "started" not in log and time.time() - self.started > START_SECONDS:
+            # every cart prints "started" on its first frame (tests/dump.lua)
+            self.why = ("never started in %d seconds: a syntax error, or an error before the "
+                        "first frame; look at the pico-8 window's message" % START_SECONDS)
         elif self.process.poll() is not None:
             self.why = "pico-8 closed (exit code %#x)" % (self.process.returncode & 0xffffffff)
         elif time.time() - self.last_growth > STALL_SECONDS:

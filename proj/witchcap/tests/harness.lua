@@ -84,7 +84,7 @@ end
 
 function _draw() end
 
-function _update60()
+local function work()
  for frame=1,speed do
   step()
   game_update()
@@ -92,4 +92,8 @@ function _update60()
  game_draw()
  -- what the last update and the draw cost, for a case to report
  frame_cpu=stat(1)
+end
+
+function _update60()
+ run_frame(work)
 end

@@ -21,6 +21,10 @@ end
 function _draw() end
 
 function _update60()
+ run_frame(boot_frame)
+end
+
+function boot_frame()
  n+=1
  held={}
  if n==40 or n==570 then held[5]=true end
