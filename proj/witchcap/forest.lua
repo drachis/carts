@@ -78,11 +78,16 @@ function draw_tree(x,top,seed)
  draw_moss(crown,top-2,seed)
 end
 
-function draw_backdrop(camera_x)
- circfill(100,24,9,6)
- circfill(97,22,7,7)
+-- the moon is the clock: `moon` is the share of the time left, 1 a full
+-- moon and 0 a new one, as the night's shadow slides across it and leaves
+-- the bright edge till last. it hangs in the corner, above the trees and
+-- to the right of where the hut settles.
+function draw_backdrop(camera_x,moon)
+ circfill(116,21,9,6)
+ circfill(113,19,7,7)
+ circfill(116+moon*21,21,10,1)
  for tree=1,17 do
-  draw_tree(tree*44-30-camera_x\2,24+tree%3*11,tree)
+  draw_tree(tree*44-30-camera_x\2,40+tree%3*11,tree)
  end
 end
 

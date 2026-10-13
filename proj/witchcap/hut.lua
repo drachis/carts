@@ -16,8 +16,8 @@ end
 
 function update_hut()
  -- slower than the witch: she leaves it behind and it catches her up
- -- while she picks
- hut.x+=mid(-hut_speed,(witch.x-hut.x)/60,hut_speed)
+ -- while she picks. it settles a little to her left, clear of the moon
+ hut.x+=mid(-hut_speed,(witch.x-24-hut.x)/60,hut_speed)
  for number,foot in ipairs(hut.feet) do
   local behind=hut.x+foot.home-foot.x
   if foot.step>0 then

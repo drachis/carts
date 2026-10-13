@@ -60,7 +60,7 @@ end
 
 function draw_title()
  cls(1)
- draw_backdrop(0)
+ draw_backdrop(0,1)
  print_centred("witchcap",30,10)
  print_centred("fill the recipe from the forest",46,7)
  print_centred("and bring it to the pot",53,7)
@@ -129,7 +129,7 @@ function _draw()
  end
  camera_x=mid(0,camera_x,896)
  cls(1)
- draw_backdrop(camera_x)
+ draw_backdrop(camera_x,frames_left/60/level_seconds)
  draw_hut(camera_x)
  camera(camera_x)
  draw_forest()

@@ -125,7 +125,7 @@ local cases={
   end,
   check=function()
    dump_screen("hut")
-   return abs(witch.x-hut.x)<8,"hut "..witch.x-hut.x.." pixels away"
+   return abs(witch.x-24-hut.x)<8,"hut "..witch.x-hut.x.." pixels to her left"
   end,
  },
  {

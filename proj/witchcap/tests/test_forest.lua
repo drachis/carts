@@ -80,9 +80,11 @@ function _update60()
   new_recipe()
   reset_witch()
   reset_hut()
-  frames_left,mode=3600,"play"
+  mode="play"
   for screen=0,3 do
    witch.x=64+screen*128
+   -- and the moon at four ages, from full to nearly gone
+   frames_left=3600-screen*1100
    game_draw()
    dump_screen("forest_"..screen)
   end
