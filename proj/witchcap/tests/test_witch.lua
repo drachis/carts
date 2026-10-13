@@ -267,7 +267,7 @@ function step()
   case.setup()
   highest=witch.y
   bare_frames=0
- elseif pget(64,127)<2 then
+ elseif pget(64,116)<2 then
   -- the last frame drawn had sky or a tree where the earth should be
   bare_frames+=1
  end

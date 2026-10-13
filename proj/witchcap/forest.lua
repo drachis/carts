@@ -97,22 +97,25 @@ end
 -- moon and 0 a new one. the whole disc is always there in shadow, and the
 -- lit part wanes across it the way the moon's does: always lit from the
 -- left limb, as far as an edge that goes from the right limb through a
--- half moon to a crescent. it hangs in the corner, above the trees and to
--- the right of where the hut settles.
-function draw_backdrop(camera_x,moon)
- -- stars that stay put, each winking out now and then
- for star=1,24 do
-  if (t()/3+star/7)%1<0.85 then
-   pset(star*37%128,11+star*23%60,star%3==0 and 7 or 13)
-  end
- end
- circfill(116,21,9,5)
+-- half moon to a crescent. it is always in the top right corner, and is
+-- drawn over the hut so that nothing ever hides the clock.
+function draw_moon(moon)
+ circfill(116,12,9,5)
  for row=-9,9 do
   local half=sqrt(81-row*row)
   local lit=half*(moon*2-1)
   if lit>-half then
-   rectfill(116-half,21+row,116+lit,21+row,7)
-   pset(116+lit,21+row,6)
+   rectfill(116-half,12+row,116+lit,12+row,7)
+   pset(116+lit,12+row,6)
+  end
+ end
+end
+
+function draw_backdrop(camera_x)
+ -- stars that stay put, each winking out now and then
+ for star=1,24 do
+  if (t()/3+star/7)%1<0.85 then
+   pset(star*37%128,star*23%70,star%3==0 and 7 or 13)
   end
  end
  for tree=1,17 do

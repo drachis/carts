@@ -62,7 +62,8 @@ end
 
 function draw_title()
  cls(1)
- draw_backdrop(0,1)
+ draw_backdrop(0)
+ draw_moon(1)
  print_centred("witchcap",30,10)
  print_centred("fill the recipe from the forest",46,7)
  print_centred("and bring it to the pot",53,7)
@@ -79,21 +80,23 @@ function draw_title()
  print_centred("press x",116,7)
 end
 
+-- the recipe runs along the bottom of the screen, over the earth, and
+-- leaves the sky to the hut and the moon
 function draw_hud()
- rectfill(0,0,127,10,0)
+ rectfill(0,117,127,127,0)
  for number,slot in ipairs(recipe) do
   local x=number*11-8
-  spr(95+slot.kind,x,1)
+  spr(95+slot.kind,x,119)
   -- yellow once it is in the basket, green once it is in the pot
   if slot.state>0 then
-   rect(x-1,0,x+8,9,slot.state==1 and 10 or 11)
+   rect(x-1,118,x+8,127,slot.state==1 and 10 or 11)
   end
  end
  local away=cauldron_x-witch.x
  if abs(away)>70 then
-  print(away>0 and "pot >" or "< pot",66,3,6)
+  print(away>0 and "pot >" or "< pot",66,121,6)
  end
- print(ceil(frames_left/60),114,3,frames_left<600 and 8 or 7)
+ print(ceil(frames_left/60),114,121,frames_left<600 and 8 or 7)
 end
 
 function draw_ending()
@@ -133,9 +136,11 @@ function _draw()
  end
  camera_x=mid(0,camera_x,896)
  cls(1)
- draw_backdrop(camera_x,frames_left/60/level_seconds)
+ draw_backdrop(camera_x)
  draw_hut(camera_x)
- camera(camera_x)
+ draw_moon(frames_left/60/level_seconds)
+ -- the world is drawn `view_drop` pixels down the screen
+ camera(camera_x,-view_drop)
  draw_forest()
  draw_witch()
  if message_frames>0 then

@@ -104,11 +104,12 @@ function draw_hut(camera_x)
  local flipped,side_on=turn<0,abs(turn)>0.4
  -- the floor of the hut, which rides up and down a little as it goes
  -- and lifts as it turns
- local floor_y=47+sin(t()/2)*1.5+abs(turn)*3
+ local floor_y=45+sin(t()/2)*1.5+abs(turn)*3
  for foot in all(hut.feet) do
   local foot_x=foot.x-camera_x
   -- a stepping foot is lifted in an arc
-  local ankle_y=ground_top(foot.x)-16+sin(foot.step/hut_step_frames/2)*14
+  local ankle_y=ground_top(foot.x)+view_drop-16
+   +sin(foot.step/hut_step_frames/2)*14
   -- side on, one hip is just behind the other; face on, they are apart
   local hip_x,hip_y=x+foot.hip*(side_on and 1 or 2.5),floor_y-4
   local dx,dy=foot_x-hip_x,ankle_y-hip_y
@@ -123,9 +124,13 @@ function draw_hut(camera_x)
   -- the foot sprite's ankle is 13 pixels in from its heel
   sspr(96,64,16,8,foot_x-(flipped and 19 or 13),ankle_y,32,16,flipped)
  end
+ -- the body, and over it the foot of the roof, made of the eave's own
+ -- thatch drawn again a little narrower, up to the top of the screen
  if side_on then
+  sspr(0,64,48,3,x-42,floor_y-52,84,12,flipped)
   sspr(0,64,48,20,x-48,floor_y-40,96,40,flipped)
  else
+  sspr(48,64,32,3,x-27,floor_y-52,54,12)
   sspr(48,64,32,20,x-32,floor_y-40,64,40)
  end
 end
