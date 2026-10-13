@@ -94,6 +94,18 @@ local cases={
   end,
  },
  {
+  name="the poison's sway never shows what is under the ground",
+  buttons={},frames=120,
+  setup=function()
+   arena()
+   witch.poison=poison_frames
+  end,
+  check=function()
+   return bare_frames==0,
+    "the bottom of the screen was not ground on "..bare_frames.." frames of 120"
+  end,
+ },
+ {
   name="the hut falls behind her at a run, with its feet under it",
   buttons={1},frames=300,
   setup=arena,
@@ -193,6 +205,10 @@ function step()
  if case_frame==0 then
   case.setup()
   highest=witch.y
+  bare_frames=0
+ elseif pget(64,127)<2 then
+  -- the last frame drawn had sky or a tree where the earth should be
+  bare_frames+=1
  end
  highest=min(highest,witch.y)
  hold(case.buttons)

@@ -120,17 +120,18 @@ function _draw()
   draw_title()
   return
  end
- local camera_x=mid(0,witch.x-64,896)
- local sway=0
- -- poison turns the night sky green and sets the ground swaying
+ local camera_x=witch.x-64
+ -- poison turns the night sky green and sets the view swaying from side
+ -- to side; up and down would show what is under the ground
  if witch.poison>0 then
   pal(1,3,1)
-  sway=sin(t()*2)*2
+  camera_x+=sin(t()*2)*3
  end
+ camera_x=mid(0,camera_x,896)
  cls(1)
  draw_backdrop(camera_x)
  draw_hut(camera_x)
- camera(camera_x,sway)
+ camera(camera_x)
  draw_forest()
  draw_witch()
  if message_frames>0 then
