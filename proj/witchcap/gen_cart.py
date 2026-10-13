@@ -15,7 +15,8 @@ from png import write_png
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-# mushrooms are sprites 1..6: odd numbers are the true ingredients, and each
+# mushroom kind k is sprite 95+k, and the sprite below it (111+k) is its
+# second dance step, made by leaning(). odd kinds are the true ingredients, and each
 # even number is the lookalike of the one before it, differing in one detail.
 MUSHROOMS = [
     # 1 redcap: white spots
@@ -271,10 +272,20 @@ def stamp(sheet, rows, sprite):
         sheet[top + y][left:left + len(row)] = row
 
 
+def leaning(rows):
+    """A mushroom's second dance step: its cap a pixel to the right of its stem.
+
+    The bottom three rows of every mushroom are its stem and stay put.
+    """
+    return ["0" + row[:-1] for row in rows[:-3]] + rows[-3:]
+
+
 def build_gfx():
     sheet = [["0"] * 128 for _ in range(128)]
     for number, mushroom in enumerate(MUSHROOMS):
-        stamp(sheet, rows_of(mushroom, 8), 1 + number)
+        rows = rows_of(mushroom, 8)
+        stamp(sheet, rows, 96 + number)
+        stamp(sheet, leaning(rows), 112 + number)
     for number, tile in enumerate(TILES):
         stamp(sheet, rows_of(tile, 8), 16 + number)
     for number, legs in enumerate(WITCH_LEGS):

@@ -66,7 +66,7 @@ function draw_title()
  print_centred("and bring it to the pot",53,7)
  print_centred("beware the lookalikes",63,8)
  for kind=1,6 do
-  spr(kind,28+(kind-1)\2*28+(kind-1)%2*10,74)
+  spr(95+kind,28+(kind-1)\2*28+(kind-1)%2*10,74)
  end
  print_centred("arrows run   o jump   x pick",92,6)
  if best_frames>0 then
@@ -79,7 +79,7 @@ function draw_hud()
  rectfill(0,0,127,10,0)
  for number,slot in ipairs(recipe) do
   local x=number*11-8
-  spr(slot.kind,x,1)
+  spr(95+slot.kind,x,1)
   -- yellow once it is in the basket, green once it is in the pot
   if slot.state>0 then
    rect(x-1,0,x+8,9,slot.state==1 and 10 or 11)
