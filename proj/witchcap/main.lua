@@ -1,8 +1,12 @@
 -- main.lua : the loop, the screens and the hud.
 --
 -- mode is "title", "play", "brewed" (the recipe was delivered in time) or
--- "cold" (the time ran out). the best brewing time, in frames, is kept in
--- cartdata slot 0; 0 means no potion has been brewed yet.
+-- "cold" (the time ran out).
+--
+-- there are nine levels. `level` is the one being played and `unlocked`
+-- the highest that may be: brewing a level unlocks the next. cartdata
+-- slot 1 keeps `unlocked`, and slot 10+level the fastest brew of each
+-- level, in frames, 0 when it has not been brewed.
 
 cartdata("witchcap_1")
 
@@ -10,16 +14,30 @@ function _init()
  -- the tune keeps the first three channels and leaves one for sounds
  music(0,0,7)
  mode,mode_frames="title",0
- best_frames=dget(0)
+ unlocked=mid(1,dget(1),9)
+ level=unlocked
 end
 
 function start_run()
+ level_seconds=level_clock[level]
  make_forest(flr(rnd(9999)))
  reset_witch()
  reset_hut()
  reset_effects()
  frames_left=level_seconds*60
  mode="play"
+end
+
+-- on the title and after a failure, left and right choose a level from
+-- those unlocked
+function choose_level()
+ if btnp(0) then level=max(level-1,1) end
+ if btnp(1) then level=min(level+1,unlocked) end
+end
+
+function print_level(y)
+ print_centred((level>1 and "< " or "  ").."level "..level
+  ..(level<unlocked and " >" or "  "),y,10)
 end
 
 -- what a recipe brews is settled by what went into it
@@ -29,10 +47,15 @@ potion_names=split"crimson draught,amber tonic,golden elixir,green brew,blue phi
 function end_run(brewed)
  mode,mode_frames=brewed and "brewed" or "cold",0
  run_frames=level_seconds*60-frames_left
+ best_frames=dget(10+level)
  new_best=brewed and (best_frames==0 or run_frames<best_frames)
  if new_best then
   best_frames=run_frames
-  dset(0,best_frames)
+  dset(10+level,best_frames)
+ end
+ if brewed and level==unlocked and level<9 then
+  unlocked+=1
+  dset(1,unlocked)
  end
  local kinds=0
  for slot in all(recipe) do kinds+=slot.kind end
@@ -73,9 +96,15 @@ function _update60()
   end
  else
   mode_frames=min(mode_frames+1,300)
-  if mode=="brewed" then update_victory() end
-  -- a press does not count until the ending has been seen
+  if mode=="brewed" then
+   update_victory()
+  else
+   choose_level()
+  end
+  -- a press does not count until the screen has been seen
   if mode_frames>(mode=="brewed" and again_frame or 30) and btnp(5) then
+   -- from a brewed potion, on to the next level
+   if mode=="brewed" then level=min(level+1,unlocked) end
    start_run()
   end
  end
@@ -102,11 +131,13 @@ function draw_title()
   spr(96+family*4,22+family*24,74)
   spr(97+family*4,31+family*24,74)
  end
- print_centred("o jump  x pick  up broom",92,6)
- if best_frames>0 then
-  print_centred("best brew "..seconds_text(best_frames),104,11)
+ print_centred("o jump  x pick  up broom",90,6)
+ print_level(101)
+ local best=dget(10+level)
+ if best>0 then
+  print_centred("best brew "..seconds_text(best),109,11)
  end
- print_centred("press x",116,7)
+ print_centred("press x",118,7)
 end
 
 -- the recipe runs along the bottom of the screen, over the earth, and
@@ -133,6 +164,7 @@ function draw_hud()
   print(away>0 and ">" or "<",away>0 and 83 or 64,120,11)
  end
  print(ceil(frames_left/60),114,121,frames_left<600 and 8 or 7)
+ print("level "..level,2,2,6)
  -- the broom, and under it how rested it is
  local rested=1-witch.broom_wait/broom_rest
  line(96,125,104,120,rested==1 and 4 or 5)
@@ -148,9 +180,11 @@ function draw_cold()
  for slot in all(recipe) do
   if slot.state==2 then delivered+=1 end
  end
- print_centred("the pot went cold",44,8)
- print_centred(delivered.." of "..#recipe.." in the pot",56,7)
- print_centred("x: another forest",80,6)
+ print_centred("the pot went cold",43,8)
+ print_centred(delivered.." of "..#recipe.." in the pot",53,7)
+ -- try again, or pick another level that is unlocked
+ print_level(66)
+ print_centred("x: try it",80,6)
 end
 
 -- `pot_x` is where the pot is on the screen
@@ -183,7 +217,8 @@ function draw_victory(pot_x)
    print_centred("best "..seconds_text(best_frames),90,6)
   end
   if mode_frames>again_frame then
-   print_centred("x: another forest",101,6)
+   print_centred(level<unlocked and "x: on to level "..level+1
+    or "x: brew another",101,6)
   end
  end
 end

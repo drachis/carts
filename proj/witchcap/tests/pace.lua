@@ -6,12 +6,13 @@
 -- which mushrooms the recipe wants, never picks a lookalike, goes to the
 -- nearest wanted one first and to the pot when it has all five.
 --
--- it is played four ways: with and without the broom, and with and
--- without stopping to read. a reading bot stands still for `read_frames`
--- at every mushroom it comes within reach of, wanted or not, which is a
--- guess at what telling them apart costs a person. the bot does not get
--- lost, hesitate or go back for a spoiled mushroom, so a person will be
--- slower than any of these.
+-- every level is played by a bot that stands still for `read_frames` at
+-- every mushroom it comes within reach of, wanted or not, which is a
+-- guess at what telling them apart costs a person. the last level is
+-- also played with the broom and without stopping to read. the bot does
+-- not get lost, hesitate or go back for a spoiled mushroom, so a person
+-- will be slower than any of these. the levels' clocks in data.lua are
+-- set from the first nine lines this prints.
 --
 -- sixteen frames of the game are played for each frame pico-8 shows, and
 -- nothing is drawn.
@@ -28,18 +29,22 @@ local game_update=_update60
 function _draw() end
 
 level_seconds=180
-local seeds=5
-local ways={
- {name="walking, reading at a glance",read_frames=0},
- {name="with the broom, reading at a glance",read_frames=0,broom=true},
- {name="walking, 3/4 second a mushroom",read_frames=45},
- {name="with the broom, 3/4 second a mushroom",read_frames=45,broom=true},
-}
+local seeds=4
+-- every level, on foot, stopping 3/4 of a second at each mushroom; and
+-- the last level the three other ways, for comparison
+local ways={}
+for number=1,9 do
+ add(ways,{name="level "..number.." on foot, 3/4 second a mushroom",read_frames=45,level=number})
+end
+add(ways,{name="level 9 with the broom, 3/4 second a mushroom",read_frames=45,broom=true,level=9})
+add(ways,{name="level 9 on foot, reading at a glance",read_frames=0,level=9})
+add(ways,{name="level 9 with the broom, reading at a glance",read_frames=0,broom=true,level=9})
 local way_number,seed,times=1,0,{}
 local read,pause,still,last_x
 
 local function begin()
  seed+=1
+ level=ways[way_number].level
  make_forest(seed)
  reset_witch()
  reset_hut()
@@ -153,7 +158,7 @@ function pace_frame()
     if not ways[way_number] then
      printh("ok pace")
      extcmd("shutdown")
-     ways,way_number={{read_frames=0}},1
+     ways,way_number={{read_frames=0,level=1}},1
     end
    end
    begin()

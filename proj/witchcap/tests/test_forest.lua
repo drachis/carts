@@ -47,6 +47,8 @@ local function walk_forest()
 end
 
 local function check_forest()
+ -- every level in turn
+ level=seed%9+1
  make_forest(seed)
  local reached=walk_forest()
  local counts,needed={},{}
@@ -63,8 +65,8 @@ local function check_forest()
    printh("error: seed "..seed.." has a mushroom in the clearing")
   end
  end
- -- the recipe never asks twice for a kind; exactly one of each kind it
- -- wants grows; and everything else is a lookalike from a family it uses
+ -- the recipe never asks twice for a kind, and exactly one of each kind
+ -- it wants grows
  local wanted_families={}
  for kind=1,16 do
   if needed[kind]>0 then
@@ -74,13 +76,19 @@ local function check_forest()
    end
   end
  end
+ -- an imposter is an unwanted mushroom of a wanted mushroom's family.
+ -- the level says how many there are, and how long the recipe is.
+ local imposters=0
  for kind=1,16 do
-  if counts[kind]>0 and not wanted_families[(kind-1)\4] then
-   printh("error: seed "..seed.." grows kind "..kind..", of a family the recipe does not use")
+  if needed[kind]==0 and wanted_families[(kind-1)\4] then
+   imposters+=counts[kind]
   end
  end
- if #recipe!=5 then
-  printh("error: seed "..seed.." has a recipe of "..#recipe)
+ if imposters!=level_imposters[level] then
+  printh("error: seed "..seed.." at level "..level.." has "..imposters.." imposters")
+ end
+ if #recipe!=level_wanted[level] then
+  printh("error: seed "..seed.." at level "..level.." has a recipe of "..#recipe)
  end
  if #mushrooms!=22 then
   printh("error: seed "..seed.." has "..#mushrooms.." mushrooms")
@@ -105,9 +113,11 @@ function forest_frame()
   for kind=1,16 do
    if seen_kinds[kind] then kinds_seen+=1 end
   end
-  printh(lookalikes/seed.." lookalikes in each forest of 22; "..kinds_seen.." of the 16 kinds grew somewhere")
-  -- the left half of one forest, a screen at a time. the witch is
-  -- only moved sideways to carry the camera, so she may hang in the air
+  printh(kinds_seen.." of the 16 kinds grew somewhere")
+  -- the left half of one forest of level 5, a screen at a time. the
+  -- witch is only moved sideways to carry the camera, so she may hang
+  -- in the air
+  level,level_seconds=5,60
   make_forest(7)
   reset_witch()
   reset_hut()

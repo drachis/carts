@@ -11,11 +11,14 @@
 -- cauldron, 2 in the cauldron. what has left the basket is safe; a
 -- lookalike spoils something still in it.
 
--- five mushrooms, no two the same, and no more than two of a family
+-- as many mushrooms as the level wants, no two the same and no more than
+-- two of a family. one family, picked at random, is left out of every
+-- recipe, so that there is always something that is plainly not wanted.
 function new_recipe()
  recipe={}
  local from_family={0,0,0,0}
- while #recipe<5 do
+ from_family[flr(rnd(4))+1]=2
+ while #recipe<level_wanted[level] do
   local kind=flr(rnd(16))+1
   local family=(kind-1)\4+1
   if from_family[family]<2 and not slot_in(nil,kind) then

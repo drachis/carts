@@ -26,6 +26,9 @@ function hold(buttons)
 end
 
 function arena()
+ -- the saved progress on this machine is the player's: tests name their
+ -- own level
+ level,unlocked=5,5
  start_run()
  memset(0x2000,0,0x800)
  for column=0,127 do

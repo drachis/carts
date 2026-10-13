@@ -17,16 +17,23 @@ function make_forest(seed)
  -- only the sixteen rows the forest uses
  memset(0x2000,0,0x800)
  mushrooms,picked={},{}
- -- what grows, one to a cell: one of each mushroom the recipe wants, and
- -- for the rest their lookalikes, the other forms of the same families
- local kinds,wanted={},{}
+ -- what grows, one to a cell: one of each mushroom the recipe wants; as
+ -- many imposters as the level has, which are other forms of the wanted
+ -- mushrooms' families; and for the rest, mushrooms of families the
+ -- recipe does not use
+ local kinds,wanted,wanted_family={},{},{}
  for slot in all(recipe) do
   add(kinds,slot.kind)
   wanted[slot.kind]=true
+  wanted_family[(slot.kind-1)\4]=true
+ end
+ while #kinds<#recipe+level_imposters[level] do
+  local imposter=(rnd(recipe).kind-1)\4*4+flr(rnd(4))+1
+  if not wanted[imposter] then add(kinds,imposter) end
  end
  while #kinds<22 do
-  local lookalike=(rnd(recipe).kind-1)\4*4+flr(rnd(4))+1
-  if not wanted[lookalike] then add(kinds,lookalike) end
+  local other=flr(rnd(16))+1
+  if not wanted_family[(other-1)\4] then add(kinds,other) end
  end
  local top=clearing_row
  for first=0,125,5 do

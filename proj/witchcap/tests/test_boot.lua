@@ -26,6 +26,8 @@ end
 
 function boot_frame()
  n+=1
+ -- the saved progress on this machine is the player's: play level 3 of 3
+ if n==2 then level,unlocked=3,3 end
  held={}
  if n==40 or n==570 then held[5]=true end
  if n>40 and n<400 then

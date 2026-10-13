@@ -17,7 +17,9 @@ jump_speed=3
 gravity=0.15
 coyote_frames=6
 poison_frames=180
-level_seconds=60
+level_wanted=1,2,3,4,5,5,5,5,5
+level_imposters=0,2,4,7,10,13,17,17,17
+level_clock=20,35,45,55,60,60,55,50,45
 broom_speed=3.2
 broom_frames=40
 broom_rest=240
@@ -35,3 +37,15 @@ hut_step_frames=16
 hut_bone=32
 hut_thigh=11
 ]],nil,_ENV)
+
+-- the level_ rows are lists, one number for each of the nine levels: how
+-- many mushrooms the recipe wants, how many imposters (other forms of
+-- the wanted mushrooms' families) grow, and the seconds on the clock.
+-- the rest of a forest's 22 mushrooms are of families the recipe does
+-- not use, and plainly something else. the clocks are about twice what
+-- the bot in tests/pace.lua takes on foot, stopping 3/4 of a second at
+-- each mushroom (5 17 21 27 29 29 29 29 29 seconds), and less than
+-- twice for the last three levels, which differ only in their clocks.
+level_wanted=split(level_wanted)
+level_imposters=split(level_imposters)
+level_clock=split(level_clock)

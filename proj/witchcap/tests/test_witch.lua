@@ -215,6 +215,44 @@ cases={
   end,
  },
  {
+  name="brewing the highest level unlocked unlocks the next, and x goes on to it",
+  buttons={5},frames=260,
+  setup=function()
+   arena()
+   level,unlocked=2,2
+   recipe={{kind=1,state=1}}
+  end,
+  check=function()
+   return unlocked==3 and level==3 and mode=="play" and #recipe==level_wanted[3],
+    "level "..level.." of "..unlocked..", mode "..mode..", a recipe of "..#recipe
+  end,
+ },
+ {
+  name="after a failure, left picks a lower level and never goes below the first",
+  buttons={0},frames=20,
+  setup=function()
+   arena()
+   level,unlocked=3,4
+   frames_left=1
+  end,
+  check=function()
+   return mode=="cold" and level==1,"mode "..mode..", level "..level
+  end,
+ },
+ {
+  name="after a failure, right stops at the highest level unlocked, and x plays it",
+  buttons={1,5},frames=60,
+  setup=function()
+   arena()
+   level,unlocked=1,4
+   frames_left=1
+  end,
+  check=function()
+   return mode=="play" and level==4 and #recipe==level_wanted[4],
+    "mode "..mode..", level "..level..", a recipe of "..#recipe
+  end,
+ },
+ {
   name="an unfinished recipe goes cold when the time runs out",
   buttons={},frames=3,
   setup=function()
