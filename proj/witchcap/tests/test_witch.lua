@@ -117,6 +117,16 @@ local cases={
   end,
  },
  {
+  name="the hut turns to face the way it walks",
+  buttons={0},frames=200,
+  setup=arena,
+  check=function()
+   dump_screen("hut_left")
+   return hut.facing==-1 and hut.turn<-0.9,
+    "facing "..hut.facing..", turned "..hut.turn
+  end,
+ },
+ {
   name="the hut catches her up when she stands still",
   buttons={},frames=420,
   setup=function()

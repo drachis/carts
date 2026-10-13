@@ -179,25 +179,69 @@ CAULDRON = """
 ....99999999....
 """
 
-# 44: baba yaga's hut on its chicken legs, two sprites square, drawn at
-# twice the size in the backdrop
-HUT = """
-..........55....
-.....5....55....
-....555..5555...
-...5555555555...
-..555555555555..
-.55555555555555.
-..222222222222..
-..222aa2222222..
-..222aa2222222..
-..222222222222..
-....4......4....
-...4......4.....
-...4......4.....
-....4......4....
-....4......4....
-..444....444....
+# baba yaga's hut is the big picture of the game. it is drawn at twice the
+# size, facing right, from three pieces: the body (sprite 64, 48 by 16:
+# what shows of it below the top of the screen), a foot (sprite 70, 16 by
+# 8, the ankle at its top), and the feathers where a leg joins (sprite 72).
+# the body is built by build_hut() from these details.
+HUT_WINDOW = """
+55555555
+5aa55aa5
+5a955a95
+55555555
+5aa55aa5
+5a955a95
+55555555
+66666666
+"""
+HUT_PORTHOLE = """
+.55.
+5aa5
+5a95
+.55.
+"""
+HUT_DOOR = """
+..5555..
+.522225.
+52222225
+52d22d25
+52222225
+52222a25
+52d22d25
+52222225
+52222225
+"""
+HUT_SKULL = """
+.777.
+71717
+77777
+.7.7.
+"""
+HUT_LANTERN = """
+.5.
+5a5
+aaa
+5a5
+"""
+HUT_FOOT = """
+......99........
+......99........
+.....999........
+.....9999.......
+....999999......
+..9999999999997.
+79999.99999.....
+......9999997...
+"""
+HUT_FEATHERS = """
+.777777.
+77777777
+76777677
+77777777
+.767767.
+..7777..
+...77...
+........
 """
 
 # (speed, notes); a note is (pitch 0..63, waveform, volume, effect)
@@ -238,8 +282,48 @@ def build_gfx():
         assert len(witch) == 16
         stamp(sheet, witch, 32 + number * 2)
     stamp(sheet, rows_of(CAULDRON, 16), 38)
-    stamp(sheet, rows_of(HUT, 16), 44)
+    stamp(sheet, build_hut(), 64)
+    stamp(sheet, rows_of(HUT_FOOT, 16), 70)
+    stamp(sheet, rows_of(HUT_FEATHERS, 8), 72)
     return ["".join(row) for row in sheet]
+
+
+def build_hut():
+    """The hut's body, 48 by 16: a thatch eave, a wall of logs, a floor."""
+    body = [["0"] * 48 for _ in range(16)]
+
+    def detail(text, width, left, top):
+        for y, row in enumerate(rows_of(text, width)):
+            for x, colour in enumerate(row):
+                if colour != "0":
+                    body[top + y][left + x] = colour
+
+    # the eave: three rows of thatch with a ragged lower edge
+    for y in range(3):
+        for x in range(48):
+            if y < 2 or x % 3:
+                body[y][x] = "6" if (x * 3 + y * 5) % 7 == 0 else "5"
+    # the wall: logs four rows deep with dark seams between, and their
+    # pale sawn ends at the two corners
+    for y in range(3, 14):
+        for x in range(3, 45):
+            seam = (y - 3) % 4 == 3
+            knot = (x * 5 + y * 3) % 41 == 0
+            body[y][x] = "2" if seam else "9" if knot else "4"
+        if (y - 3) % 4 != 3:
+            for x in (2, 3, 44, 45):
+                body[y][x] = "f"
+    # the floor, wider than the wall, with joists and things hanging
+    for x in range(48):
+        body[14][x] = "5"
+        if 0 < x < 47:
+            body[15][x] = "6" if x % 6 == 0 else "2"
+    detail(HUT_WINDOW, 8, 9, 5)
+    detail(HUT_PORTHOLE, 4, 22, 6)
+    detail(HUT_DOOR, 8, 31, 5)
+    detail(HUT_SKULL, 5, 32, 1)
+    detail(HUT_LANTERN, 3, 41, 6)
+    return ["".join(row) for row in body]
 
 
 def build_flags():
