@@ -2,6 +2,8 @@ pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
 -- test_boot.p8 : run it with: py run_tests.py
+-- everything this cart prints goes to tests/log_boot.p8l
+log_name="log_boot"
 #include ../data.lua
 #include ../forest.lua
 #include ../witch.lua

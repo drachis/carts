@@ -2,6 +2,8 @@ pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
 -- test_forest.p8 : run it with: py run_tests.py
+-- everything this cart prints goes to tests/log_forest.p8l
+log_name="log_forest"
 #include ../data.lua
 #include ../forest.lua
 #include ../witch.lua
