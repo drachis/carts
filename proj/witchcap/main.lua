@@ -4,7 +4,8 @@
 -- "cold" (the time ran out).
 --
 -- there are nine levels. `level` is the one being played and `unlocked`
--- the highest that may be: brewing a level unlocks the next. cartdata
+-- the highest that may be: brewing a level unlocks the next. every level
+-- has level_seconds on the clock and a par to beat (level_par). cartdata
 -- slot 1 keeps `unlocked`, and slot 10+level the fastest brew of each
 -- level, in frames, 0 when it has not been brewed.
 
@@ -19,7 +20,6 @@ function _init()
 end
 
 function start_run()
- level_seconds=level_clock[level]
  make_forest(flr(rnd(9999)))
  reset_witch()
  reset_hut()
@@ -133,10 +133,10 @@ function draw_title()
  end
  print_centred("o jump  x pick  up broom",90,6)
  print_level(101)
+ -- the time to beat, and her own best if she has one
  local best=dget(10+level)
- if best>0 then
-  print_centred("best brew "..seconds_text(best),109,11)
- end
+ print_centred("par "..level_par[level].."s"
+  ..(best>0 and "  best "..seconds_text(best) or ""),109,11)
  print_centred("press x",118,7)
 end
 
@@ -211,7 +211,9 @@ function draw_victory(pot_x)
   rect(10,60,117,110,colour)
   print_centred("you brewed a",64,7)
   print_centred(potion_names[potion],72,colour)
-  print_centred("in "..seconds_text(run_frames),82,7)
+  -- green when it beat the level's par
+  print_centred("in "..seconds_text(run_frames).."  par "..level_par[level].."s",82,
+   run_frames<=level_par[level]*60 and 11 or 7)
   if new_best then
    print_centred("your fastest brew",90,10)
   else

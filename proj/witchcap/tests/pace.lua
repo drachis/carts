@@ -11,7 +11,7 @@
 -- guess at what telling them apart costs a person. the last level is
 -- also played with the broom and without stopping to read. the bot does
 -- not get lost, hesitate or go back for a spoiled mushroom, so a person
--- will be slower than any of these. the levels' clocks in data.lua are
+-- will be slower than any of these. the levels' pars in data.lua are
 -- set from the first nine lines this prints.
 --
 -- sixteen frames of the game are played for each frame pico-8 shows, and
