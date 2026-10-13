@@ -63,6 +63,10 @@ glance, and being punished only by her own haste.
   and spoils one mushroom from the basket, which must be found again.
 - **The cauldron** takes the basket whenever she stands at it. What is in
   the pot cannot be spoiled. The potion is brewed when all four are in.
+- **The look:** night, a moon, and black swamp trees hung with moss,
+  drawn in code and sliding at half the camera's speed. Baba Yaga's hut
+  stands on chicken legs west of the clearing. The mushrooms dance. The
+  witch is two sprites square, with a tall hat whose point trails behind.
 - **Time:** 60 seconds. Brewed in time shows the time taken against the
   saved best; out of time, "the pot went cold".
 

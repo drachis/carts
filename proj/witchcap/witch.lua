@@ -63,12 +63,12 @@ end
 
 function draw_witch()
  local w=witch
- local frame=34
+ local frame=36
  if w.grounded then
-  frame=abs(w.vx)>0.2 and 32+w.x\6%2 or 32
+  frame=abs(w.vx)>0.2 and 32+w.x\6%2*2 or 32
  end
  -- a green face while the poison lasts
  if w.poison>0 then pal(15,11) end
- spr(frame,w.x-4,w.y-16,1,2,w.facing<0)
+ spr(frame,w.x-8,w.y-16,2,2,w.facing<0)
  pal(15,15)
 end
