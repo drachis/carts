@@ -18,6 +18,7 @@ function start_run()
  make_forest(flr(rnd(9999)))
  reset_witch()
  reset_hut()
+ reset_effects()
  frames_left=level_seconds*60
  mode="play"
 end
@@ -34,6 +35,7 @@ function end_run(brewed)
 end
 
 function _update60()
+ if mode!="title" then update_effects() end
  if mode=="play" then
   update_witch()
   update_hut()
@@ -89,7 +91,7 @@ function draw_hud()
   spr(95+slot.kind,x,119)
   -- yellow once it is in the basket, green once it is in the pot
   if slot.state>0 then
-   rect(x-1,118,x+8,127,slot.state==1 and 10 or 11)
+   rect(x-1,118,x+8,127,slot.state==2 and 11 or 10)
   end
  end
  local away=near(cauldron_x)-witch.x
@@ -138,10 +140,12 @@ function _draw()
  draw_backdrop(camera_x)
  draw_hut(camera_x)
  draw_moon(frames_left/60/level_seconds)
- -- the world is drawn `view_drop` pixels down the screen
- camera(camera_x,-view_drop)
+ -- the world is drawn `view_drop` pixels down the screen, which also
+ -- leaves room below it for the view to be shaken
+ camera(camera_x+rnd(shake/4)-shake/8,rnd(shake/4)-shake/8-view_drop)
  draw_forest(camera_x)
  draw_witch()
+ draw_effects()
  if message_frames>0 then
   print(message,witch.x-#message*2,witch.y-24,message_colour)
  end

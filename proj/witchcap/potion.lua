@@ -7,8 +7,9 @@
 -- wanted kind grows; when one is spoiled, another grows somewhere.
 --
 -- the recipe is a list of slots, each a mushroom kind and a state:
--- 0 still wanted, 1 in the basket, 2 in the cauldron. what is in the
--- cauldron is safe; a lookalike spoils something from the basket.
+-- 0 still wanted, 1 in the basket, 3 in the air on its way to the
+-- cauldron, 2 in the cauldron. what has left the basket is safe; a
+-- lookalike spoils something still in it.
 
 -- five mushrooms, no two the same, and no more than two of a family
 function new_recipe()
@@ -64,6 +65,9 @@ function pick_mushroom()
    if wanted then
     uproot(mushroom)
     wanted.state=1
+    -- a good one goes off in gold
+    burst(witch.x,witch.y-6,12,10,1.2)
+    burst(witch.x,witch.y-6,5,7,0.7)
     sfx(1)
    elseif slot_in(nil,mushroom.kind) then
     say("enough of those",6)
@@ -71,6 +75,10 @@ function pick_mushroom()
    else
     uproot(mushroom)
     witch.poison=poison_frames
+    -- a bad one bursts in a sick green cloud and jolts the view
+    burst(witch.x,witch.y-6,18,11,1.6)
+    burst(witch.x,witch.y-6,10,2,1)
+    shake=14
     local spoiled=slot_in(1)
     if spoiled then
      spoiled.state=0
@@ -84,14 +92,22 @@ function pick_mushroom()
  end
 end
 
--- at the cauldron the basket goes in; true once the recipe is complete
+-- at the cauldron the basket empties: each mushroom flies from her
+-- pocket to the pot, one after another. true once every mushroom of the
+-- recipe has landed in it.
 function deliver()
- if abs(witch.x-near(cauldron_x))>12 or not witch.grounded then return end
- local carried=slot_in(1)
- while slot_in(1) do slot_in(1).state=2 end
- if carried then
-  say("into the pot",11)
-  sfx(2)
+ if abs(witch.x-near(cauldron_x))<=12 and witch.grounded then
+  local wait=#flights*8
+  for slot in all(recipe) do
+   if slot.state==1 then
+    slot.state=3
+    add(flights,{slot=slot,x=witch.x,y=witch.y-6,frame=-wait})
+    wait+=8
+   end
+  end
  end
- return not slot_in(0)
+ for slot in all(recipe) do
+  if slot.state!=2 then return end
+ end
+ return true
 end

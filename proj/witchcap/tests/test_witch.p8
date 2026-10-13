@@ -7,6 +7,7 @@ __lua__
 #include ../witch.lua
 #include ../hut.lua
 #include ../potion.lua
+#include ../effects.lua
 #include ../main.lua
 #include dump.lua
 #include harness.lua

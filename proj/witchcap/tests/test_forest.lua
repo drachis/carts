@@ -107,6 +107,7 @@ function _update60()
   make_forest(7)
   reset_witch()
   reset_hut()
+  reset_effects()
   mode="play"
   for screen=0,3 do
    witch.x=64+screen*128

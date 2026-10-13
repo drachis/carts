@@ -247,14 +247,28 @@ local cases={
   end,
  },
  {
-  name="the basket goes into the pot and a full recipe is brewed",
-  buttons={},frames=2,
+  name="at the pot the basket takes to the air, and the potion waits for it",
+  buttons={},frames=20,
+  setup=function()
+   arena()
+   recipe={{kind=1,state=1},{kind=5,state=1},{kind=9,state=1}}
+  end,
+  check=function()
+   dump_screen("deposit")
+   return mode=="play" and recipe[1].state==3 and #flights==3,
+    "mode "..mode..", "..#flights.." in the air"
+  end,
+ },
+ {
+  name="the potion is brewed when the last mushroom lands in the pot",
+  buttons={},frames=60,
   setup=function()
    arena()
    recipe={{kind=1,state=1},{kind=5,state=1}}
   end,
   check=function()
-   return mode=="brewed" and recipe[2].state==2,"mode "..mode
+   return mode=="brewed" and recipe[2].state==2 and run_frames>30,
+    "mode "..mode.." after "..run_frames.." frames"
   end,
  },
  {

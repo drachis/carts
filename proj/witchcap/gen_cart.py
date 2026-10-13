@@ -10,6 +10,7 @@ Sprites are rows of PICO-8 colour digits; "." is colour 0, transparent.
 """
 import glob
 import os
+import time
 
 from png import write_png
 
@@ -523,13 +524,31 @@ def main():
     tail = "\n".join(["__gfx__"] + gfx + ["__gff__"] + build_flags()
                      + ["__sfx__"] + build_sfx() + ["__music__"] + MUSIC) + "\n"
     carts = ["witchcap.p8"] + sorted(glob.glob(os.path.join(HERE, "tests", "test_*.p8")))
+    written = 0
     for cart in carts:
         path = os.path.join(HERE, cart)
-        with open(path, encoding="utf-8") as handle:
-            lua = handle.read().split("__gfx__")[0]
-        with open(path, "w", encoding="utf-8", newline="\n") as handle:
-            handle.write(lua.rstrip("\n") + "\n" + tail)
-    print("wrote art and sound into %d carts" % len(carts))
+        with open(path, encoding="utf-8", newline="") as handle:
+            before = handle.read()
+        after = before.split("__gfx__")[0].rstrip("\n") + "\n" + tail
+        # a cart that is already right is left alone. twice, opening a cart
+        # to write just after it had been used failed with "invalid
+        # argument" and worked a moment later; the cause is not known.
+        if after != before:
+            write_cart(path, after)
+            written += 1
+    print("wrote art and sound into %d of %d carts" % (written, len(carts)))
+
+
+def write_cart(path, text):
+    for attempt in range(3):
+        try:
+            with open(path, "w", encoding="utf-8", newline="\n") as handle:
+                handle.write(text)
+            return
+        except OSError:
+            if attempt == 2:
+                raise
+            time.sleep(0.5)
 
 
 if __name__ == "__main__":

@@ -18,6 +18,7 @@ gravity=0.15
 coyote_frames=6
 poison_frames=180
 level_seconds=60
+flight_frames=30
 cauldron_x=500
 view_drop=8
 clearing_row=12
