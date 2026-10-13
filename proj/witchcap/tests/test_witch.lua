@@ -129,6 +129,19 @@ local cases={
   end,
  },
  {
+  name="the hut shows its end wall in the middle of a turn",
+  buttons={},frames=2,
+  setup=function()
+   arena()
+   hut.x,hut.turn=witch.x-24,-0.1
+   for foot in all(hut.feet) do foot.x=hut.x+foot.home end
+  end,
+  check=function()
+   dump_screen("hut_front")
+   return abs(hut.turn)<0.4,"turned "..hut.turn
+  end,
+ },
+ {
   name="the hut catches her up when she stands still",
   buttons={},frames=420,
   setup=function()

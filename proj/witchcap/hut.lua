@@ -8,8 +8,10 @@
 -- ahead, one foot at a time. foot.step counts a step's frames down.
 --
 -- hut.facing is 1 or -1, the way it last walked. hut.turn follows it from
--- one to the other over a moment, and the hut is drawn as wide as turn is
--- large, so it swings round like a door.
+-- one to the other in two thirds of a second. the hut is drawn side on
+-- while turn is past 0.4 either way, and in between it shows its end
+-- wall, face on, with its hips closer together. the knees bend by as
+-- much as turn, so they swing through straight as it comes round.
 --
 -- a leg is a thigh and a shank, each `hut_bone` pixels long, meeting at a
 -- knee worked out from where the hip and the ankle are. their pictures
@@ -37,7 +39,7 @@ function update_hut()
  local walk=mid(-hut_speed,(witch.x-24-hut.x)/60,hut_speed)
  hut.x+=walk
  if abs(walk)>0.3 then hut.facing=sgn(walk) end
- hut.turn+=(hut.facing-hut.turn)/12
+ hut.turn+=mid(-0.05,hut.facing-hut.turn,0.05)
  for number,foot in ipairs(hut.feet) do
   local behind=hut.x+foot.home-foot.x
   if foot.step>0 then
@@ -65,26 +67,30 @@ end
 
 function draw_hut(camera_x)
  local x,turn=hut.x-camera_x,hut.turn
- local flipped=turn<0
+ local flipped,side_on=turn<0,abs(turn)>0.4
  -- the floor of the hut, which rides up and down a little as it goes
- local floor_y=50+sin(t()/2)*1.5
+ -- and lifts as it turns
+ local floor_y=47+sin(t()/2)*1.5+abs(turn)*3
  for foot in all(hut.feet) do
   local foot_x=foot.x-camera_x
   -- a stepping foot is lifted in an arc
   local ankle_y=ground_top(foot.x)-16+sin(foot.step/hut_step_frames/2)*14
-  local hip_x,hip_y=x+foot.home*max(abs(turn),0.3),floor_y-4
+  local hip_x,hip_y=x+foot.home*(side_on and 1 or 0.6),floor_y-4
   local dx,dy=foot_x-hip_x,ankle_y-hip_y
   local distance=sqrt(dx*dx+dy*dy)
   -- the knee stands off the line from hip to ankle by what the two
   -- bones have to spare, and bends backwards, as a hen's does
   local half=min(distance/2,hut_bone)
-  local bend=sqrt(hut_bone*hut_bone-half*half)*sgn(turn)
+  local bend=sqrt(hut_bone*hut_bone-half*half)*turn
   local knee_x,knee_y=hip_x+dx/2-dy/distance*bend,hip_y+dy/2+dx/distance*bend
   draw_limb(0,hip_x,hip_y,knee_x,knee_y)
   draw_limb(1,knee_x,knee_y,foot_x,ankle_y)
   -- the foot sprite's ankle is 13 pixels in from its heel
   sspr(96,64,16,8,foot_x-(flipped and 19 or 13),ankle_y,32,16,flipped)
  end
- local width=abs(turn)*96
- sspr(0,64,48,20,x-width/2,floor_y-40,width,40,flipped)
+ if side_on then
+  sspr(0,64,48,20,x-48,floor_y-40,96,40,flipped)
+ else
+  sspr(48,64,32,20,x-32,floor_y-40,64,40)
+ end
 end

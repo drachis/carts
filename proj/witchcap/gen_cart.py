@@ -320,6 +320,9 @@ def build_gfx():
     stamp(sheet, build_hut(48, [
         (HUT_WINDOW, 8, 9, 7), (HUT_PORTHOLE, 4, 22, 8), (HUT_DOOR, 8, 31, 8),
         (HUT_SKULL, 5, 32, 3), (HUT_LANTERN, 3, 41, 8)]), 128)
+    # its end wall, 32 wide, seen face on in the middle of a turn
+    stamp(sheet, build_hut(32, [
+        (HUT_WINDOW, 8, 12, 7), (HUT_SKULL, 5, 13, 2), (HUT_LANTERN, 3, 25, 8)]), 134)
     stamp(sheet, rows_of(HUT_FOOT, 16), 140)
     stamp(sheet, rows_of(HUT_THIGH, 8), 142)
     stamp(sheet, build_shank(), 143)
