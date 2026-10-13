@@ -1,0 +1,139 @@
+-- main.lua : the loop, the screens and the hud.
+--
+-- mode is "title", "play", "brewed" (the recipe was delivered in time) or
+-- "cold" (the time ran out). the best brewing time, in frames, is kept in
+-- cartdata slot 0; 0 means no potion has been brewed yet.
+
+cartdata("witchcap_1")
+
+function _init()
+ mode,mode_frames="title",0
+ best_frames=dget(0)
+end
+
+function start_run()
+ make_forest(flr(rnd(9999)))
+ new_recipe()
+ reset_witch()
+ frames_left=level_seconds*60
+ mode="play"
+end
+
+function end_run(brewed)
+ mode,mode_frames=brewed and "brewed" or "cold",0
+ run_frames=level_seconds*60-frames_left
+ new_best=brewed and (best_frames==0 or run_frames<best_frames)
+ if new_best then
+  best_frames=run_frames
+  dset(0,best_frames)
+ end
+ sfx(brewed and 4 or 5)
+end
+
+function _update60()
+ if mode=="play" then
+  update_witch()
+  if btnp(5) then pick_mushroom() end
+  frames_left-=1
+  message_frames=max(message_frames-1)
+  if deliver() then
+   end_run(true)
+  elseif frames_left<=0 then
+   end_run(false)
+  end
+ else
+  -- a moment before a press counts, so the ending is seen
+  mode_frames=min(mode_frames+1,60)
+  if mode_frames>30 and btnp(5) then start_run() end
+ end
+end
+
+function seconds_text(frames)
+ return flr(frames/6)/10 .."s"
+end
+
+function print_centred(text,y,colour)
+ print(text,64-#text*2,y,colour)
+end
+
+function draw_title()
+ cls(1)
+ draw_backdrop(0)
+ print_centred("witchcap",30,10)
+ print_centred("fill the recipe from the forest",46,7)
+ print_centred("and bring it to the pot",53,7)
+ print_centred("beware the lookalikes",63,8)
+ for kind=1,6 do
+  spr(kind,28+(kind-1)\2*28+(kind-1)%2*10,74)
+ end
+ print_centred("arrows run   o jump   x pick",92,6)
+ if best_frames>0 then
+  print_centred("best brew "..seconds_text(best_frames),104,11)
+ end
+ print_centred("press x",116,7)
+end
+
+function draw_hud()
+ rectfill(0,0,127,10,0)
+ for number,slot in ipairs(recipe) do
+  local x=number*11-8
+  spr(slot.kind,x,1)
+  -- yellow once it is in the basket, green once it is in the pot
+  if slot.state>0 then
+   rect(x-1,0,x+8,9,slot.state==1 and 10 or 11)
+  end
+ end
+ local away=cauldron_x-witch.x
+ if abs(away)>70 then
+  print(away>0 and "pot >" or "< pot",56,3,6)
+ end
+ print(ceil(frames_left/60),114,3,frames_left<600 and 8 or 7)
+end
+
+function draw_ending()
+ rectfill(14,38,113,92,0)
+ rect(14,38,113,92,5)
+ if mode=="brewed" then
+  print_centred("the potion is brewed!",44,11)
+  print_centred("in "..seconds_text(run_frames),56,7)
+  if new_best then
+   print_centred("your fastest brew",66,10)
+  else
+   print_centred("best "..seconds_text(best_frames),66,6)
+  end
+ else
+  local delivered=0
+  for slot in all(recipe) do
+   if slot.state==2 then delivered+=1 end
+  end
+  print_centred("the pot went cold",44,8)
+  print_centred(delivered.." of "..#recipe.." in the pot",56,7)
+ end
+ print_centred("x: another forest",80,6)
+end
+
+function _draw()
+ pal()
+ if mode=="title" then
+  draw_title()
+  return
+ end
+ local camera_x=mid(0,witch.x-64,896)
+ local sway=0
+ -- poison turns the night sky green and sets the ground swaying
+ if witch.poison>0 then
+  pal(1,3,1)
+  sway=sin(t()*2)*2
+ end
+ cls(1)
+ draw_backdrop(camera_x)
+ camera(camera_x,sway)
+ draw_forest()
+ draw_witch()
+ if message_frames>0 then
+  print(message,witch.x-#message*2,witch.y-24,message_colour)
+ end
+ camera()
+ draw_hud()
+ if mode!="play" then draw_ending() end
+end

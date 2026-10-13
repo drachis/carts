@@ -1,0 +1,4 @@
+*.png
+__pycache__/
+run.log
+tests/test_log.p8l
