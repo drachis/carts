@@ -95,10 +95,12 @@ class Run:
         log = self.read_log()
         if len(log) != self.size:
             self.size, self.last_growth = len(log), time.time()
-        if any(line.startswith("ok ") for line in log.splitlines()):
-            self.why = "ok"
-        elif "error" in log.lower():
+        # an error is looked for first: it counts even when the cart went
+        # on to print "ok" before this looked again
+        if "error" in log.lower():
             self.why = "the cart reported an error"
+        elif any(line.startswith("ok ") for line in log.splitlines()):
+            self.why = "ok"
         elif "started" not in log and time.time() - self.started > START_SECONDS:
             # every cart prints "started" on its first frame (tests/dump.lua)
             self.why = ("never started in %d seconds: a syntax error, or an error before the "

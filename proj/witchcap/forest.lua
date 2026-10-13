@@ -169,17 +169,24 @@ function draw_backdrop(camera_x)
    draw_tree(x,top,seed)
   end
  end
- -- bats fly through: each crossing is a new one, with a height, a way
- -- and a slant of its own, and a while out of sight before the next
- for bat=1,3 do
-  local period=7+bat*2
-  local crossing=t()\period+bat*5
-  local share=t()%period/period
-  local x=share*300-90
-  if crossing%2==0 then x=120-x end
-  spr(19+(t()*6+bat)%2\1,x,
-   4+crossing*29%44+share*(crossing%3-1)*36+sin(t()+bat/3)*3)
+ -- far bats, small and black against the sky
+ for bat=1,4 do
+  local x,y=bat_place(bat,9+bat*2)
+  local flap=(t()*5+bat)%2\1*2-1
+  line(x-2,y+flap,x,y,0)
+  line(x+2,y+flap,x,y,0)
  end
+end
+
+-- where a bat is: bats fly through. each crossing is a new one, with a
+-- height, a way and a slant of its own, and a while out of sight before
+-- the next. `period` is the seconds from one crossing to the next.
+function bat_place(bat,period)
+ local crossing=t()\period+bat*5
+ local share=t()%period/period
+ local x=share*300-90
+ if crossing%2==0 then x=120-x end
+ return x,4+crossing*29%44+share*(crossing%3-1)*36+sin(t()+bat/3)*3
 end
 
 -- nearer than everything: leaves along the top of the screen with
@@ -201,6 +208,11 @@ function draw_foreground(camera_x)
     circfill(end_x,length,1,3)
    end
   end
+ end
+ -- near bats, larger and quicker, with their eyes showing
+ for bat=5,6 do
+  local x,y=bat_place(bat,bat-1)
+  spr(19+(t()*8+bat)%2\1,x,y)
  end
 end
 

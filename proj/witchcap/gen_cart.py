@@ -270,11 +270,11 @@ CAULDRON = """
 """
 
 # baba yaga's hut is the big picture of the game. it is drawn at twice the
-# size, facing right, in the lower half of the sheet: the body (sprite
-# 128, 48 by 20: what shows of it below the top of the screen), a foot
-# (sprite 140, 16 by 8, the ankle at its top), and the two halves of a leg
-# (sprites 142 and 143, each with two more below it).
-# the body is built by build_hut() from these details.
+# size, facing right, in the lower half of the sheet: its long side
+# (sprite 128, 48 by 20: what shows of it below the top of the screen),
+# its front (sprite 134, 32 by 20), and a foot (sprite 140, 16 by 8, the
+# ankle at its top) with two more poses under it.
+# the walls are built by build_hut() from these details.
 HUT_WINDOW = """
 55555555
 5aa55aa5
@@ -369,36 +369,8 @@ HUT_FOOT_CLENCHED = """
 ..7ee..eee7.....
 ..7....e7.......
 """
-# a leg is two pictures, each one sprite wide and three long, which the
-# game stretches along the bone from joint to joint: a hen's feathered
-# thigh, widest at the hip, and under it a scaly shank with the knee at
-# its top (made by build_shank()).
-HUT_THIGH = """
-.444444.
-44f44f44
-44444444
-4f44f44f
-44444444
-44f44f44
-44444444
-4f44f44f
-44444444
-44f44f44
-44444444
-4f44f442
-44444442
-44f44f42
-.444444.
-.4f44f4.
-.444442.
-.4f4442.
-..4444..
-..4f42..
-..e44e..
-...ee...
-...ee...
-...ee...
-"""
+# the legs themselves are not sprites: the game draws them solid
+# (draw_limb in hut.lua).
 
 # (speed, notes); a note is (pitch 0..63, waveform, volume, effect)
 SOUNDS = [
@@ -506,8 +478,6 @@ def build_gfx():
     stamp(sheet, rows_of(HUT_FOOT, 16), 140)
     stamp(sheet, rows_of(HUT_FOOT_HALF, 16), 156)
     stamp(sheet, rows_of(HUT_FOOT_CLENCHED, 16), 172)
-    stamp(sheet, rows_of(HUT_THIGH, 8), 142)
-    stamp(sheet, build_shank(), 143)
     return ["".join(row) for row in sheet]
 
 
@@ -545,14 +515,6 @@ def build_hut(width, details):
                 if colour != "0":
                     body[top + y][left + x] = colour
     return ["".join(row) for row in body]
-
-
-def build_shank():
-    """The lower leg, 8 by 24: a knob of a knee, then scales with darker bands."""
-    rows = ["..eeee..", "..effe..", "..eeee.."]
-    for y in range(3, 24):
-        rows.append("..." + ("2e" if y % 4 == 3 else "ef" if y % 2 else "ee") + "...")
-    return [row.replace(".", "0") for row in rows]
 
 
 def build_flags():

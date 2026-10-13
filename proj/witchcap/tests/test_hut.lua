@@ -97,4 +97,22 @@ cases={
    return stat(7)==60,stat(7).." frames a second, cpu "..frame_cpu
   end,
  },
+ {
+  name="the hut's walls meet: no sky shows between its side and its front",
+  buttons={},frames=2,every_frame=true,
+  setup=hut_beside_her,
+  check=function()
+   -- along a row of logs, from the middle of the side to the middle of
+   -- the front, counting pixels of sky or of the black behind it
+   local gaps,where=0,""
+   for x=hut.body_x-witch.x+64-20,hut.body_x-witch.x+64+44 do
+    if pget(x,28)<2 then
+     gaps+=1
+     where..=" "..flr(x)
+    end
+   end
+   return gaps==0,gaps.." pixels of sky in the wall at x"..where
+    ..", the join being at "..flr(hut.body_x-witch.x+64+26)
+  end,
+ },
 }

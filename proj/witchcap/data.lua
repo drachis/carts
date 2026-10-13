@@ -33,5 +33,5 @@ hut_hips=6
 hut_stride=64
 hut_step_frames=16
 hut_bone=32
-hut_thigh=13
+hut_thigh=11
 ]],nil,_ENV)
