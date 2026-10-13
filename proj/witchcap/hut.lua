@@ -10,6 +10,19 @@
 -- hut.facing is 1 or -1, the way it last walked. hut.turn follows it from
 -- one to the other over a moment, and the hut is drawn as wide as turn is
 -- large, so it swings round like a door.
+--
+-- a leg is a thigh and a shank, each `hut_bone` pixels long, meeting at a
+-- knee worked out from where the hip and the ankle are. their pictures
+-- are sprites, stretched along the bone with tline. tline reads the map,
+-- so place_limbs() puts the two pictures in map rows 16..18, under the
+-- forest: the thigh in column 0, the shank in column 1.
+
+function place_limbs()
+ for row=0,2 do
+  mset(0,16+row,142+row*16)
+  mset(1,16+row,143+row*16)
+ end
+end
 
 function reset_hut()
  hut={x=cauldron_x-100,facing=1,turn=1,feet={}}
@@ -37,6 +50,19 @@ function update_hut()
  end
 end
 
+-- the limb picture in map column `column`, drawn from one joint to the
+-- other at twice its width: a textured line for every half pixel across
+function draw_limb(column,x0,y0,x1,y1)
+ local dx,dy=x1-x0,y1-y0
+ local length=sqrt(dx*dx+dy*dy)
+ local down_picture=3/max(abs(dx),abs(dy))
+ for across=-8,7.5,0.5 do
+  local shift_x,shift_y=-dy/length*across,dx/length*across
+  tline(x0+shift_x,y0+shift_y,x1+shift_x,y1+shift_y,
+   column+(across+8)/16,16,0,down_picture)
+ end
+end
+
 function draw_hut(camera_x)
  local x,turn=hut.x-camera_x,hut.turn
  local flipped=turn<0
@@ -46,17 +72,18 @@ function draw_hut(camera_x)
   local foot_x=foot.x-camera_x
   -- a stepping foot is lifted in an arc
   local ankle_y=ground_top(foot.x)-16+sin(foot.step/hut_step_frames/2)*14
-  local hip_x=x+foot.home*max(abs(turn),0.3)
-  -- the knee bends backwards, as a hen's does
-  local knee_x,knee_y=(hip_x+foot_x)/2-12*turn,(floor_y+10+ankle_y)/2
-  for thickness=-1,1 do
-   line(hip_x+thickness,floor_y+8,knee_x+thickness,knee_y,4)
-   line(knee_x+thickness,knee_y,foot_x+thickness,ankle_y,9)
-  end
-  circfill(knee_x,knee_y,2,9)
+  local hip_x,hip_y=x+foot.home*max(abs(turn),0.3),floor_y-4
+  local dx,dy=foot_x-hip_x,ankle_y-hip_y
+  local distance=sqrt(dx*dx+dy*dy)
+  -- the knee stands off the line from hip to ankle by what the two
+  -- bones have to spare, and bends backwards, as a hen's does
+  local half=min(distance/2,hut_bone)
+  local bend=sqrt(hut_bone*hut_bone-half*half)*sgn(turn)
+  local knee_x,knee_y=hip_x+dx/2-dy/distance*bend,hip_y+dy/2+dx/distance*bend
+  draw_limb(0,hip_x,hip_y,knee_x,knee_y)
+  draw_limb(1,knee_x,knee_y,foot_x,ankle_y)
   -- the foot sprite's ankle is 13 pixels in from its heel
   sspr(96,64,16,8,foot_x-(flipped and 19 or 13),ankle_y,32,16,flipped)
-  sspr(112,64,8,8,hip_x-8,floor_y-2,16,16)
  end
  local width=abs(turn)*96
  sspr(0,64,48,20,x-width/2,floor_y-40,width,40,flipped)

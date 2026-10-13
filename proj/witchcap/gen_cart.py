@@ -181,9 +181,10 @@ CAULDRON = """
 """
 
 # baba yaga's hut is the big picture of the game. it is drawn at twice the
-# size, facing right, from three pieces: the body (sprite 128, 48 by 20:
-# what shows of it below the top of the screen), a foot (sprite 140, 16 by
-# 8, the ankle at its top), and the feathers where a leg joins (sprite 142).
+# size, facing right, in the lower half of the sheet: the body (sprite
+# 128, 48 by 20: what shows of it below the top of the screen), a foot
+# (sprite 140, 16 by 8, the ankle at its top), and the two halves of a leg
+# (sprites 142 and 143, each with two more below it).
 # the body is built by build_hut() from these details.
 HUT_WINDOW = """
 55555555
@@ -234,15 +235,35 @@ HUT_FOOT = """
 79999.99999.....
 ......9999997...
 """
-HUT_FEATHERS = """
-.777777.
-77777777
-76777677
-77777777
-.767767.
-..7777..
-...77...
-........
+# a leg is two pictures, each one sprite wide and three long, which the
+# game stretches along the bone from joint to joint: a hen's feathered
+# thigh, widest at the hip, and under it a scaly shank with the knee at
+# its top (made by build_shank()).
+HUT_THIGH = """
+.444444.
+44944944
+44444444
+49449449
+44444444
+44944944
+44444444
+49449442
+44444442
+.4944942
+.444444.
+.494494.
+.444442.
+..4944..
+..4444..
+..4942..
+..4444..
+...44...
+..9449..
+...99...
+...99...
+...99...
+...99...
+...99...
 """
 
 # (speed, notes); a note is (pitch 0..63, waveform, volume, effect)
@@ -298,7 +319,8 @@ def build_gfx():
         (HUT_WINDOW, 8, 9, 7), (HUT_PORTHOLE, 4, 22, 8), (HUT_DOOR, 8, 31, 8),
         (HUT_SKULL, 5, 32, 3), (HUT_LANTERN, 3, 41, 8)]), 128)
     stamp(sheet, rows_of(HUT_FOOT, 16), 140)
-    stamp(sheet, rows_of(HUT_FEATHERS, 8), 142)
+    stamp(sheet, rows_of(HUT_THIGH, 8), 142)
+    stamp(sheet, build_shank(), 143)
     return ["".join(row) for row in sheet]
 
 
@@ -336,6 +358,14 @@ def build_hut(width, details):
                 if colour != "0":
                     body[top + y][left + x] = colour
     return ["".join(row) for row in body]
+
+
+def build_shank():
+    """The lower leg, 8 by 24: a knob of a knee, then scales with darker bands."""
+    rows = ["..9999..", "..9aa9..", "..9999.."]
+    for y in range(3, 24):
+        rows.append("..." + ("49" if y % 4 == 3 else "9a" if y % 2 else "99") + "...")
+    return [row.replace(".", "0") for row in rows]
 
 
 def build_flags():

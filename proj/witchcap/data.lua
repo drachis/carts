@@ -26,4 +26,5 @@ hut_speed=0.9
 hut_stance=18
 hut_stride=22
 hut_step_frames=16
+hut_bone=28
 ]],nil,_ENV)

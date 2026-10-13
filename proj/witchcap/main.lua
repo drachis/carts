@@ -7,6 +7,7 @@
 cartdata("witchcap_1")
 
 function _init()
+ place_limbs()
  mode,mode_frames="title",0
  best_frames=dget(0)
 end
