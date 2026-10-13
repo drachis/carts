@@ -74,8 +74,10 @@ function draw_backdrop(camera_x)
  circfill(100,24,9,6)
  circfill(97,22,7,7)
  for tree=1,17 do
-  draw_tree(tree*44-30-camera_x\2,34+tree%3*11,tree)
+  draw_tree(tree*44-30-camera_x\2,24+tree%3*11,tree)
  end
+ -- baba yaga's hut, shifting from foot to foot west of the clearing
+ sspr(96,16,16,16,226-camera_x\2,62+sin(t()/3)*2,32,32)
 end
 
 function draw_forest()

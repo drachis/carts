@@ -32,6 +32,7 @@ function _update60()
  game_update()
  game_draw()
  if n==5 then expect_mode("title") dump_screen("boot_title") end
+ if n==45 then expect_mode("play") dump_screen("boot_start") end
  if n==190 then expect_mode("play") dump_screen("boot_play") end
  if n==410 then expect_mode("brewed") dump_screen("boot_brewed") end
  if n==460 then expect_mode("play") end
