@@ -38,7 +38,7 @@ end
 
 function pick_mushroom()
  for mushroom in all(mushrooms) do
-  if abs(mushroom.x-witch.x)<7 and abs(mushroom.y-witch.y)<10 then
+  if abs(near(mushroom.x)-witch.x)<7 and abs(mushroom.y-witch.y)<10 then
    local wanted=slot_in(0,mushroom.kind)
    if wanted then
     del(mushrooms,mushroom)
@@ -62,7 +62,7 @@ end
 
 -- at the cauldron the basket goes in; true once the recipe is complete
 function deliver()
- if abs(witch.x-cauldron_x)>12 or not witch.grounded then return end
+ if abs(witch.x-near(cauldron_x))>12 or not witch.grounded then return end
  local carried=slot_in(1)
  while slot_in(1) do slot_in(1).state=2 end
  if carried then

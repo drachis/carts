@@ -92,7 +92,7 @@ function draw_hud()
    rect(x-1,118,x+8,127,slot.state==1 and 10 or 11)
   end
  end
- local away=cauldron_x-witch.x
+ local away=near(cauldron_x)-witch.x
  if abs(away)>70 then
   print(away>0 and "pot >" or "< pot",66,121,6)
  end
@@ -134,14 +134,13 @@ function _draw()
   pal(1,3,1)
   camera_x+=sin(t()*2)*3
  end
- camera_x=mid(0,camera_x,896)
  cls(1)
  draw_backdrop(camera_x)
  draw_hut(camera_x)
  draw_moon(frames_left/60/level_seconds)
  -- the world is drawn `view_drop` pixels down the screen
  camera(camera_x,-view_drop)
- draw_forest()
+ draw_forest(camera_x)
  draw_witch()
  if message_frames>0 then
   print(message,witch.x-#message*2,witch.y-24,message_colour)

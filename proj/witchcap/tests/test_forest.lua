@@ -32,7 +32,9 @@ local function walk_forest()
  local reached,queue={[64*16+clearing_row]=true},{{64,clearing_row}}
  while #queue>0 do
   local here=deli(queue)
-  for column=max(here[1]-1),min(here[1]+1,127) do
+  for step=-1,1 do
+   -- round the join as well
+   local column=(here[1]+step+128)%128
    for row in all(stands[column]) do
     if row>=here[2]-3 and not reached[column*16+row] then
      reached[column*16+row]=true
@@ -80,7 +82,7 @@ local function check_forest()
  if #recipe!=5 then
   printh("error: seed "..seed.." has a recipe of "..#recipe)
  end
- if #mushrooms!=21 then
+ if #mushrooms!=22 then
   printh("error: seed "..seed.." has "..#mushrooms.." mushrooms")
  end
 end
@@ -99,7 +101,7 @@ function _update60()
   for kind=1,16 do
    if seen_kinds[kind] then kinds_seen+=1 end
   end
-  printh(lookalikes/seed.." lookalikes in each forest of 21; "..kinds_seen.." of the 16 kinds grew somewhere")
+  printh(lookalikes/seed.." lookalikes in each forest of 22; "..kinds_seen.." of the 16 kinds grew somewhere")
   -- the left half of one forest, a screen at a time. the witch is
   -- only moved sideways to carry the camera, so she may hang in the air
   make_forest(7)

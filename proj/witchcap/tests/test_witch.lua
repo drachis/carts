@@ -96,6 +96,29 @@ local cases={
   end,
  },
  {
+  name="the world goes round: she runs left past its edge on solid ground",
+  buttons={0},frames=600,
+  setup=arena,
+  check=function()
+   return witch.x<-150 and witch.y==96 and bare_frames==0,
+    "at "..witch.x..","..witch.y..", "..bare_frames.." frames without ground drawn under her"
+  end,
+ },
+ {
+  name="a mushroom a lap away is the same mushroom",
+  buttons={},frames=1,
+  setup=function()
+   arena()
+   recipe={{kind=1,state=0}}
+   add(mushrooms,{x=1000,y=96,kind=1})
+   witch.x=-24
+   pick_mushroom()
+  end,
+  check=function()
+   return recipe[1].state==1 and #mushrooms==0,"slot state "..recipe[1].state
+  end,
+ },
+ {
   name="the poison's sway never shows what is under the ground",
   buttons={},frames=120,
   setup=function()

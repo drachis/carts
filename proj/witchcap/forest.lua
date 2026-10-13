@@ -28,7 +28,7 @@ function make_forest(seed)
    add(kinds,slot.kind)
   end
  end
- while #kinds<21 do
+ while #kinds<22 do
   local lookalike=(rnd(recipe).kind-1)\4*4+flr(rnd(4))+1
   if not wanted[lookalike] then add(kinds,lookalike) end
  end
@@ -45,7 +45,7 @@ function make_forest(seed)
     mset(column,row,row==top and 16 or 17)
    end
   end
-  if not clearing and first>0 and first<125 then
+  if not clearing and first<125 then
    local column,row=first+flr(rnd(5)),top
    if rnd()<0.5 then
     for branch=first+1,first+3 do mset(branch,top-3,18) end
@@ -56,8 +56,21 @@ function make_forest(seed)
  end
 end
 
+-- the forest is a cylinder: 128 columns round, and the same in both
+-- directions for ever. places are plain numbers that are never wrapped;
+-- only looking at the map wraps. 3840 is thirty times round, to keep the
+-- column positive.
+function tile_at(x,y)
+ return mget((x\8+3840)%128,y\8)
+end
+
 function ground_at(x,y)
- return fget(mget(x\8,y\8),0)
+ return fget(tile_at(x,y),0)
+end
+
+-- the copy of a place that is nearest the witch, whichever way round
+function near(x)
+ return x+flr((witch.x-x)/1024+0.5)*1024
 end
 
 -- the height of the ground's surface at x, in pixels down the screen
@@ -118,8 +131,12 @@ function draw_backdrop(camera_x)
    pset(star*37%128,star*23%70,star%3==0 and 7 or 13)
   end
  end
- for tree=1,17 do
-  draw_tree(tree*44-30-camera_x\2,40+tree%3*11,tree)
+ -- trees at half the camera's speed, twelve of them to a lap of the
+ -- forest, so that going right round brings the same ones back
+ local scroll=camera_x/2
+ for tree=flr(scroll*3/128)-1,flr(scroll*3/128)+4 do
+  local seed=(tree%12+12)%12+1
+  draw_tree(tree*128/3-scroll,40+seed%3*11,seed)
  end
  -- three bats cross the sky, each at its own pace and height
  for bat=1,3 do
@@ -129,22 +146,26 @@ function draw_backdrop(camera_x)
  end
 end
 
-function draw_forest()
- map()
+function draw_forest(camera_x)
+ -- the map twice over, for where the view crosses the join
+ local lap=flr(camera_x/1024)*1024
+ map(0,0,lap,0,128,16)
+ map(0,0,lap+1024,0,128,16)
  local cauldron_y=clearing_row*8-16
  -- the pot is drawn in grey and shown as black iron
  pal(5,0)
- spr(46,cauldron_x-8,cauldron_y,2,2)
+ local pot_x=near(cauldron_x)
+ spr(46,pot_x-8,cauldron_y,2,2)
  pal(5,5)
  -- the brew bubbles
  for bubble=0,2 do
   local rise=(t()*8+bubble*5)%12
-  pset(cauldron_x-5+bubble*4,cauldron_y+2-rise,11)
+  pset(pot_x-5+bubble*4,cauldron_y+2-rise,11)
  end
  for mushroom in all(mushrooms) do
   -- they dance, each on its own beat: a hop, and a lean on every other
   -- one. kind k is sprite 95+k, and its leaning step is the sprite below
   local beat=t()*2+mushroom.x/40
-  spr(95+mushroom.kind+beat%2\1*16,mushroom.x-4,mushroom.y-8-abs(sin(beat/2))*2)
+  spr(95+mushroom.kind+beat%2\1*16,near(mushroom.x)-4,mushroom.y-8-abs(sin(beat/2))*2)
  end
 end

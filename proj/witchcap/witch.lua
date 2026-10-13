@@ -25,7 +25,7 @@ function update_witch()
   w.facing=direction
   w.vx=mid(-top_speed,w.vx+direction*run_accel,top_speed)
  end
- local new_x=mid(4,w.x+w.vx,1019)
+ local new_x=w.x+w.vx
  if ground_at(new_x+sgn(w.vx)*3,w.y-1) then
   w.vx=0
  else
@@ -51,7 +51,7 @@ function update_witch()
  w.grounded=false
  if w.vy>=0 then
   for side=-2,2,4 do
-   local tile=mget((w.x+side)\8,w.y\8)
+   local tile=tile_at(w.x+side,w.y)
    local tile_top=w.y\8*8
    if fget(tile,0) or fget(tile,1) and old_y<=tile_top then
     w.y,w.vy,w.grounded=tile_top,0,true
