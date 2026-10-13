@@ -22,4 +22,6 @@ function _update60()
  step()
  game_update()
  game_draw()
+ -- what the frame's update and draw cost, for a case to report
+ frame_cpu=stat(1)
 end

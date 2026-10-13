@@ -138,7 +138,7 @@ local cases={
   check=function()
    dump_screen("hut")
    return abs(witch.x-24-hut.x)<8 and stat(7)==60,
-    "hut "..witch.x-hut.x.." pixels to her left, "..stat(7).." frames a second, cpu "..stat(1)
+    "hut "..witch.x-hut.x.." pixels to her left, "..stat(7).." frames a second, cpu "..frame_cpu
   end,
  },
  {
