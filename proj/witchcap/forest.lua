@@ -89,6 +89,8 @@ function draw_forest()
   pset(cauldron_x-5+bubble*4,82-rise,11)
  end
  for mushroom in all(mushrooms) do
-  spr(mushroom.kind,mushroom.x-4,mushroom.y-8)
+  -- they dance: a hop and a turn, each on its own beat
+  local beat=t()*2+mushroom.x/40
+  spr(mushroom.kind,mushroom.x-4,mushroom.y-8-abs(sin(beat/2))*2,1,1,beat%1<0.5)
  end
 end
