@@ -23,6 +23,10 @@ function start_run()
  mode="play"
 end
 
+-- what a recipe brews is settled by what went into it
+potion_colours=split"8,9,10,11,12,14,13,7"
+potion_names=split"crimson draught,amber tonic,golden elixir,green brew,blue philtre,rose cordial,violet tincture,moonlight essence"
+
 function end_run(brewed)
  mode,mode_frames=brewed and "brewed" or "cold",0
  run_frames=level_seconds*60-frames_left
@@ -31,7 +35,28 @@ function end_run(brewed)
   best_frames=run_frames
   dset(0,best_frames)
  end
- sfx(brewed and 4 or 5)
+ local kinds=0
+ for slot in all(recipe) do kinds+=slot.kind end
+ potion=kinds%8+1
+ sfx(brewed and 2 or 5)
+end
+
+-- the victory, by mode_frames: the pot boils over in the potion's colour
+-- for boil_frames, then goes up in a burst and the bottle rises out of it
+-- to the middle of the screen, and then the words come
+boil_frames,words_frame,again_frame=70,115,150
+
+function update_victory()
+ local x,y=pot_mouth()
+ local colour=potion_colours[potion]
+ if mode_frames<boil_frames and mode_frames%3==0 then
+  burst(x,y,3,colour,1.4)
+ elseif mode_frames==boil_frames then
+  burst(x,y,40,colour,2.5)
+  burst(x,y,15,7,1.5)
+  shake=16
+  sfx(4)
+ end
 end
 
 function _update60()
@@ -48,9 +73,12 @@ function _update60()
    end_run(false)
   end
  else
-  -- a moment before a press counts, so the ending is seen
-  mode_frames=min(mode_frames+1,60)
-  if mode_frames>30 and btnp(5) then start_run() end
+  mode_frames=min(mode_frames+1,300)
+  if mode=="brewed" then update_victory() end
+  -- a press does not count until the ending has been seen
+  if mode_frames>(mode=="brewed" and again_frame or 30) and btnp(5) then
+   start_run()
+  end
  end
 end
 
@@ -94,9 +122,16 @@ function draw_hud()
    rect(x-1,118,x+8,127,slot.state==2 and 11 or 10)
   end
  end
+ -- which way the pot is: the cauldron, small, in a green glow, with an
+ -- arrow on the side it lies
  local away=near(cauldron_x)-witch.x
  if abs(away)>70 then
-  print(away>0 and "pot >" or "< pot",66,121,6)
+  circfill(75,122,5,3)
+  circ(75,122,5+t()*2%2,11)
+  pal(5,0)
+  sspr(112,16,16,16,71,118,8,8)
+  pal(5,5)
+  print(away>0 and ">" or "<",away>0 and 83 or 64,120,11)
  end
  print(ceil(frames_left/60),114,121,frames_left<600 and 8 or 7)
  -- the broom, and under it how rested it is
@@ -107,26 +142,51 @@ function draw_hud()
  line(95,127,95+rested*10,127,rested==1 and 11 or 6)
 end
 
-function draw_ending()
+function draw_cold()
  rectfill(14,38,113,92,0)
  rect(14,38,113,92,5)
- if mode=="brewed" then
-  print_centred("the potion is brewed!",44,11)
-  print_centred("in "..seconds_text(run_frames),56,7)
-  if new_best then
-   print_centred("your fastest brew",66,10)
-  else
-   print_centred("best "..seconds_text(best_frames),66,6)
-  end
- else
-  local delivered=0
-  for slot in all(recipe) do
-   if slot.state==2 then delivered+=1 end
-  end
-  print_centred("the pot went cold",44,8)
-  print_centred(delivered.." of "..#recipe.." in the pot",56,7)
+ local delivered=0
+ for slot in all(recipe) do
+  if slot.state==2 then delivered+=1 end
  end
+ print_centred("the pot went cold",44,8)
+ print_centred(delivered.." of "..#recipe.." in the pot",56,7)
  print_centred("x: another forest",80,6)
+end
+
+-- `pot_x` is where the pot is on the screen
+function draw_victory(pot_x)
+ local colour=potion_colours[potion]
+ if mode_frames>=boil_frames then
+  -- the bottle, drawn blue and shown in the potion's colour, rising
+  -- from the pot to the middle of the screen at twice its size
+  local share=min((mode_frames-boil_frames)/40,1)
+  local pot_y=clearing_row*8+view_drop-40
+  local x,y=pot_x+(64-pot_x)*share,pot_y+(20-pot_y)*share
+  pal(12,colour)
+  sspr(80,64,16,16,x-16,y,32,32)
+  pal(12,12)
+  -- and a ring of glints going round it
+  for glint=1,6 do
+   local angle=t()/3+glint/6
+   pset(x+cos(angle)*24,y+16+sin(angle)*20,7)
+  end
+ end
+ if mode_frames>=words_frame then
+  rectfill(10,60,117,110,0)
+  rect(10,60,117,110,colour)
+  print_centred("you brewed a",64,7)
+  print_centred(potion_names[potion],72,colour)
+  print_centred("in "..seconds_text(run_frames),82,7)
+  if new_best then
+   print_centred("your fastest brew",90,10)
+  else
+   print_centred("best "..seconds_text(best_frames),90,6)
+  end
+  if mode_frames>again_frame then
+   print_centred("x: another forest",101,6)
+  end
+ end
 end
 
 function _draw()
@@ -157,5 +217,9 @@ function _draw()
  end
  camera()
  draw_hud()
- if mode!="play" then draw_ending() end
+ if mode=="brewed" then
+  draw_victory(near(cauldron_x)-camera_x)
+ elseif mode=="cold" then
+  draw_cold()
+ end
 end

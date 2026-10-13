@@ -314,6 +314,26 @@ HUT_LANTERN = """
 aaa
 5a5
 """
+# 138: the potion bottle shown at the end, two sprites square. its liquid
+# is drawn in blue (c) and shown in whatever colour was brewed.
+BOTTLE = """
+......4444......
+......4444......
+......7777......
+.....7....7.....
+.....7....7.....
+.....7....7.....
+....7......7....
+...7........7...
+..7.cccccccc.7..
+.7cccccccccccc7.
+.7c7cccccccccc7.
+.7c7cccccccccc7.
+.7cccccccccccc7.
+..7cccccccccc7..
+...7cccccccc7...
+....77777777....
+"""
 # the legs and feet are a hen's pink, a colour nothing else in the game
 # has, so that a foot planted beside a mushroom, the cauldron or the witch
 # does not hide it
@@ -460,6 +480,7 @@ def build_gfx():
     stamp(sheet, build_hut(32, [
         (HUT_DOOR, 8, 12, 8), (HUT_SKULL, 5, 13, 2), (HUT_PORTHOLE, 4, 5, 9),
         (HUT_LANTERN, 3, 24, 8)]), 134)
+    stamp(sheet, rows_of(BOTTLE, 16), 138)
     stamp(sheet, rows_of(HUT_FOOT, 16), 140)
     stamp(sheet, rows_of(HUT_THIGH, 8), 142)
     stamp(sheet, build_shank(), 143)
