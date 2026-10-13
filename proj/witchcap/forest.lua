@@ -45,13 +45,36 @@ function ground_at(x,y)
  return fget(mget(x\8,y\8),0)
 end
 
+-- a flat clump of leaves with moss hanging from it in strands
+function draw_moss(x,y,seed)
+ ovalfill(x-11,y-3,x+11,y+3,0)
+ for strand=0,20,3 do
+  local strand_x=x-10+strand
+  line(strand_x,y,strand_x,y+5+(strand*7+seed*5)%10,0)
+ end
+end
+
+-- a swamp tree: a leaning trunk that spreads at the foot, and two limbs
+function draw_tree(x,top,seed)
+ local crown=x+seed%5*2-4
+ for offset=-5,5 do
+  line(x+offset,127,crown+offset/4,top,0)
+ end
+ for side=-1,1,2 do
+  local limb_x=crown+side*(13+(seed+side)%3*4)
+  local limb_y=top-2-(seed+side)%4*2
+  line(crown,top+8,limb_x,limb_y,0)
+  line(crown,top+9,limb_x,limb_y+1,0)
+  draw_moss(limb_x,limb_y,seed+side)
+ end
+ draw_moss(crown,top-2,seed)
+end
+
 function draw_backdrop(camera_x)
  circfill(100,24,9,6)
  circfill(97,22,7,7)
- for tree=0,24 do
-  local x=tree*29-camera_x\2
-  rectfill(x,24+tree%3*9,x+3+tree%4,127,0)
-  circfill(x+2,20+tree%3*9,10+tree%5*2,0)
+ for tree=1,17 do
+  draw_tree(tree*44-30-camera_x\2,34+tree%3*11,tree)
  end
 end
 
