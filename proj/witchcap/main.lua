@@ -205,13 +205,16 @@ function _draw()
  cls(1)
  draw_backdrop(camera_x)
  draw_hut(camera_x)
- draw_moon(frames_left/60/level_seconds)
  -- the world is drawn `view_drop` pixels down the screen, which also
  -- leaves room below it for the view to be shaken
  camera(camera_x+rnd(shake/4)-shake/8,rnd(shake/4)-shake/8-view_drop)
  draw_forest(camera_x)
  draw_witch()
  draw_effects()
+ camera()
+ draw_foreground(camera_x)
+ -- the moon last of all the scene: it is the clock
+ draw_moon(frames_left/60/level_seconds)
  if message_frames>0 then
   print(message,witch.x-#message*2,witch.y-24,message_colour)
  end

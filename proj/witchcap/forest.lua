@@ -102,6 +102,33 @@ function draw_tree(x,top,seed)
  draw_moss(crown,top-2,seed)
 end
 
+-- a dead tree: a thin trunk and bare forks to either side in turn
+function draw_snag(x,top,seed)
+ for offset=-3,3 do
+  line(x+offset,127,x+offset/3,top,0)
+ end
+ for fork=0,3 do
+  local y=top+6+fork*10
+  local reach=(fork%2*2-1)*(9+(seed+fork)%3*5)
+  line(x,y+8,x+reach,y-3,0)
+  line(x+reach,y-3,x+reach*1.3,y-12,0)
+  line(x+reach*0.6,y+1,x+reach*0.5,y-9,0)
+ end
+end
+
+-- a toadstool the size of a tree: a stalk, and the top half of an oval
+function draw_toadstool(x,top,seed)
+ local half=16+seed%3*4
+ rectfill(x-3,top,x+3,127,0)
+ clip(x-half,top-12,half*2+1,13)
+ ovalfill(x-half,top-12,x+half,top+12,0)
+ clip()
+ -- its gills, hanging a little below the rim
+ for gill=-half+3,half-3,4 do
+  line(x+gill,top,x+gill,top+2,0)
+ end
+end
+
 -- the moon is the clock: `moon` is the share of the time left, 1 a full
 -- moon and 0 a new one. the whole disc is always there in shadow, and the
 -- lit part wanes across it the way the moon's does: always lit from the
@@ -132,13 +159,48 @@ function draw_backdrop(camera_x)
  local scroll=camera_x/2
  for tree=flr(scroll*3/128)-1,flr(scroll*3/128)+4 do
   local seed=(tree%12+12)%12+1
-  draw_tree(tree*128/3-scroll,40+seed%3*11,seed)
+  local x,top=tree*128/3-scroll,40+seed%3*11
+  -- half are mossy swamp trees, a quarter dead ones, a quarter toadstools
+  if seed%4==0 then
+   draw_toadstool(x,top+14,seed)
+  elseif seed%4==2 then
+   draw_snag(x,top-8,seed)
+  else
+   draw_tree(x,top,seed)
+  end
  end
- -- three bats cross the sky, each at its own pace and height
+ -- bats fly through: each crossing is a new one, with a height, a way
+ -- and a slant of its own, and a while out of sight before the next
  for bat=1,3 do
-  local x=t()/(6+bat*3)%1*200-36
-  if bat==2 then x=120-x end
-  spr(19+(t()*6+bat)%2\1,x,10+bat*9+sin(t()/2+bat/3)*5)
+  local period=7+bat*2
+  local crossing=t()\period+bat*5
+  local share=t()%period/period
+  local x=share*300-90
+  if crossing%2==0 then x=120-x end
+  spr(19+(t()*6+bat)%2\1,x,
+   4+crossing*29%44+share*(crossing%3-1)*36+sin(t()+bat/3)*3)
+ end
+end
+
+-- nearer than everything: leaves along the top of the screen with
+-- creepers hanging from them, sliding at one and a half times the
+-- camera's speed. they stay in the top 18 pixels, above anywhere the
+-- witch can reach, and there are 48 clumps to a lap of the forest.
+function draw_foreground(camera_x)
+ local scroll=camera_x*1.5
+ for clump=flr(scroll/32)-1,flr(scroll/32)+5 do
+  local seed=(clump%48+48)%48
+  if seed%3>0 then
+   local x=clump*32-scroll
+   ovalfill(x-9-seed%5,-7,x+9+seed%4,2+seed%3,0)
+   for creeper=-1,1 do
+    local length=5+(seed*7+creeper*5)%11
+    local end_x=x+creeper*6+sin(t()/4+seed/5+creeper/7)*2
+    line(x+creeper*6,0,end_x,length,0)
+    -- a leaf at its tip
+    circfill(end_x,length,1,3)
+   end
+  end
  end
 end
 

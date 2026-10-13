@@ -121,8 +121,15 @@ function draw_hut(camera_x)
   local knee_x,knee_y=hip_x+dx/2-dy/distance*bend,hip_y+dy/2+dx/distance*bend
   draw_limb(0,hut_thigh,hip_x,hip_y,knee_x,knee_y)
   draw_limb(1,8,knee_x,knee_y,foot_x,ankle_y)
-  -- the foot sprite's ankle is 13 pixels in from its heel
-  sspr(96,64,16,8,foot_x-(flipped and 19 or 13),ankle_y,32,16,flipped)
+  -- its toes: spread on the ground, half curled as it lifts and as it
+  -- comes down, clenched in the air between. the three pictures are one
+  -- under another, and the ankle is 13 pixels in from the heel.
+  local through=foot.step/hut_step_frames
+  local toes=0
+  if through>0 then
+   toes=(through>0.25 and through<0.75) and 16 or 8
+  end
+  sspr(96,64+toes,16,8,foot_x-(flipped and 19 or 13),ankle_y,32,16,flipped)
  end
  -- the body, and over it the foot of the roof, made of the eave's own
  -- thatch drawn again a little narrower, up to the top of the screen
