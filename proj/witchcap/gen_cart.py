@@ -249,20 +249,20 @@ HUT_THIGH = """
 44444444
 44f44f44
 44444444
+4f44f44f
+44444444
+44f44f44
+44444444
 4f44f442
 44444442
-.4f44f42
+44f44f42
 .444444.
 .4f44f4.
 .444442.
-..4f44..
+.4f4442.
 ..4444..
 ..4f42..
-..4444..
-...44...
 ..5445..
-...55...
-...55...
 ...55...
 ...55...
 ...55...
@@ -317,12 +317,15 @@ def build_gfx():
         stamp(sheet, witch, 32 + number * 2)
     stamp(sheet, rows_of(CAULDRON, 16), 38)
     # the hut has the lower half of the sheet
+    # its long side: windows, and a lantern at the front corner
     stamp(sheet, build_hut(48, [
-        (HUT_WINDOW, 8, 9, 7), (HUT_PORTHOLE, 4, 22, 8), (HUT_DOOR, 8, 31, 8),
-        (HUT_SKULL, 5, 32, 3), (HUT_LANTERN, 3, 41, 8)]), 128)
-    # its end wall, 32 wide, seen face on in the middle of a turn
+        (HUT_WINDOW, 8, 8, 7), (HUT_PORTHOLE, 4, 21, 8), (HUT_WINDOW, 8, 29, 7),
+        (HUT_LANTERN, 3, 41, 8)]), 128)
+    # its front, 32 wide, seen face on in the middle of a turn: the door,
+    # with the skull over it
     stamp(sheet, build_hut(32, [
-        (HUT_WINDOW, 8, 12, 7), (HUT_SKULL, 5, 13, 2), (HUT_LANTERN, 3, 25, 8)]), 134)
+        (HUT_DOOR, 8, 12, 8), (HUT_SKULL, 5, 13, 2), (HUT_PORTHOLE, 4, 5, 9),
+        (HUT_LANTERN, 3, 24, 8)]), 134)
     stamp(sheet, rows_of(HUT_FOOT, 16), 140)
     stamp(sheet, rows_of(HUT_THIGH, 8), 142)
     stamp(sheet, build_shank(), 143)

@@ -11,8 +11,8 @@
 --
 -- hut.facing is 1 or -1, the way it last walked. hut.turn follows it from
 -- one to the other in two thirds of a second. the hut is drawn side on
--- while turn is past 0.4 either way, and in between it shows its end
--- wall, face on, with its hips apart. the knees bend by as
+-- while turn is past 0.4 either way, and in between it shows its front,
+-- door forward, with its hips apart. the knees bend by as
 -- much as turn, so they swing through straight as it comes round.
 --
 -- a leg is a thigh and a shank, each `hut_bone` pixels long, meeting at a
@@ -68,12 +68,13 @@ end
 -- are moved to whole pixels and the lines are a whole pixel apart, along
 -- x for an upright limb and along y for a level one, so every line
 -- covers the same pixels of the picture and nothing shimmers as it moves.
-function draw_limb(column,x0,y0,x1,y1)
+function draw_limb(column,thickness,x0,y0,x1,y1)
  x0,y0,x1,y1=flr(x0),flr(y0),flr(x1),flr(y1)
  local dx,dy=x1-x0,y1-y0
  local long=max(abs(dx),abs(dy))
- -- a slanted limb is cut on the slant, so it takes more lines to be as thick
- local half=flr(8*sqrt(dx*dx+dy*dy)/long)
+ -- `thickness` is half the limb's width in pixels. a slanted limb is cut
+ -- on the slant, so it takes more lines to be as thick
+ local half=flr(thickness*sqrt(dx*dx+dy*dy)/long)
  local upright=abs(dy)>=abs(dx)
  for across=-half,half-1 do
   local shift_x,shift_y=upright and across or 0,upright and 0 or across
@@ -101,8 +102,8 @@ function draw_hut(camera_x)
   local half=min(distance/2,hut_bone)
   local bend=sqrt(hut_bone*hut_bone-half*half)*turn
   local knee_x,knee_y=hip_x+dx/2-dy/distance*bend,hip_y+dy/2+dx/distance*bend
-  draw_limb(0,hip_x,hip_y,knee_x,knee_y)
-  draw_limb(1,knee_x,knee_y,foot_x,ankle_y)
+  draw_limb(0,hut_thigh,hip_x,hip_y,knee_x,knee_y)
+  draw_limb(1,8,knee_x,knee_y,foot_x,ankle_y)
   -- the foot sprite's ankle is 13 pixels in from its heel
   sspr(96,64,16,8,foot_x-(flipped and 19 or 13),ankle_y,32,16,flipped)
  end
