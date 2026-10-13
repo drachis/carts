@@ -70,6 +70,38 @@ cases={
   end,
  },
  {
+  name="the broom carries her a screen's width and sets her down",
+  buttons={2},frames=70,
+  setup=arena,
+  check=function()
+   local flown=witch.x-cauldron_x
+   return flown>120 and flown<136 and witch.y==96 and highest>=80,
+    "flew "..flown.." pixels, "..96-highest.." above the ground at most"
+  end,
+ },
+ {
+  name="the broom lifts her over a ledge four tiles high",
+  buttons={2},frames=70,
+  setup=function() ledge(8) end,
+  check=function()
+   return witch.x>600 and witch.y==64,"at "..witch.x..","..witch.y
+  end,
+ },
+ {
+  name="the broom has to rest, and will not fly her poisoned",
+  buttons={2},frames=200,
+  setup=function()
+   arena()
+   witch.poison=poison_frames
+  end,
+  check=function()
+   -- poisoned for 180 frames, then one flight, which is still resting
+   local flown=witch.x-cauldron_x
+   return flown>0 and flown<136 and witch.broom_wait>0,
+    "flew "..flown.." pixels in 200 frames, "..witch.broom_wait.." frames of rest to go"
+  end,
+ },
+ {
   name="the world goes round: she runs left past its edge on solid ground",
   buttons={0},frames=200,every_frame=true,
   setup=function()

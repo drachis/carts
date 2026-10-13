@@ -8,6 +8,7 @@ function reset_witch()
  witch={
   x=cauldron_x,y=ground_top(cauldron_x),vx=0,vy=0,facing=1,
   grounded=true,air_frames=0,jump_buffer=0,poison=0,
+  flying=0,broom_wait=0,
  }
 end
 
@@ -15,6 +16,30 @@ function update_witch()
  local w=witch
  local top_speed=w.poison>0 and run_speed/2 or run_speed
  w.poison=max(w.poison-1)
+
+ -- down: a cackle, for the joy of it
+ if btnp(3) then
+  say("hee hee hee!",14)
+  sfx(13)
+ end
+
+ -- up: the broom. it carries her a screen's width the way she faces,
+ -- skimming the ground, and then has to rest. poison grounds it.
+ w.broom_wait=max(w.broom_wait-1)
+ if btnp(2) and w.broom_wait==0 and w.poison==0 then
+  w.flying,w.broom_wait=broom_frames,broom_rest
+  sfx(7)
+ end
+ if w.flying>0 then
+  w.flying-=1
+  w.x+=w.facing*broom_speed
+  -- she rises at once to clear what is ahead, and sinks a pixel a frame
+  local skim=min(ground_top(w.x),ground_top(w.x+w.facing*12))-broom_height
+  w.y=min(w.y+1,skim)
+  w.vx,w.vy,w.grounded,w.air_frames=w.facing*run_speed,0,false,coyote_frames
+  if w.flying%2==0 then burst(w.x-w.facing*8,w.y-3,1,10,0.4) end
+  return
+ end
 
  local direction=0
  if btn(0) then direction=-1 end
@@ -69,6 +94,16 @@ function draw_witch()
   frame=w.vy<0 and 5 or 6
  elseif abs(w.vx)>0.2 then
   frame=1+w.x\5%4
+ end
+ -- on the broom she sits as she falls, and the broom is drawn under
+ -- her: a brown stick with a yellow brush at its tail
+ if w.flying>0 then
+  frame=6
+  local tail=w.x-w.facing*10
+  line(tail,w.y-1,w.x+w.facing*9,w.y-3,4)
+  for bristle=-2,2 do
+   line(tail,w.y-1,tail-w.facing*5,w.y-1+bristle,10)
+  end
  end
  -- a green face while the poison lasts
  if w.poison>0 then pal(15,11) end

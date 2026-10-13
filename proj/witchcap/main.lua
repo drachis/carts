@@ -75,7 +75,7 @@ function draw_title()
   spr(96+family*4,22+family*24,74)
   spr(97+family*4,31+family*24,74)
  end
- print_centred("arrows run   o jump   x pick",92,6)
+ print_centred("o jump  x pick  up broom",92,6)
  if best_frames>0 then
   print_centred("best brew "..seconds_text(best_frames),104,11)
  end
@@ -99,6 +99,12 @@ function draw_hud()
   print(away>0 and "pot >" or "< pot",66,121,6)
  end
  print(ceil(frames_left/60),114,121,frames_left<600 and 8 or 7)
+ -- the broom, and under it how rested it is
+ local rested=1-witch.broom_wait/broom_rest
+ line(96,125,104,120,rested==1 and 4 or 5)
+ line(96,125,94,122,rested==1 and 10 or 5)
+ line(96,125,93,126,rested==1 and 10 or 5)
+ line(95,127,95+rested*10,127,rested==1 and 11 or 6)
 end
 
 function draw_ending()

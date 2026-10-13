@@ -369,8 +369,13 @@ SOUNDS = [
          (40, 5, 5, 0), (43, 5, 4, 0), (48, 5, 3, 0)]),                      # 4 brewed
     (10, [(16, 0, 4, 0), (13, 0, 4, 0), (10, 0, 4, 0), (6, 0, 3, 0)]),       # 5 out of time
     (3, [(10, 4, 3, 0), (8, 4, 2, 0)]),                                      # 6 not needed
-    (1, []),                                                                 # 7 unused
+    (3, [(30, 6, 2, 0), (36, 6, 3, 0), (42, 6, 3, 0), (48, 6, 2, 0),
+         (54, 6, 1, 0)]),                                                    # 7 the broom
 ]
+REST = (0, 0, 0, 0)
+# 13, after the tune's five: hee hee hee
+CACKLE = (4, [(52, 4, 4, 2), REST, (52, 4, 4, 2), REST, (49, 4, 4, 2), REST,
+              (49, 4, 3, 2), (45, 4, 3, 1)])
 
 # the tune: cute and spooky. a music-box melody in a minor, a tiptoeing
 # bass under it, and on the repeat a wavering ghost of a voice over the
@@ -398,6 +403,7 @@ SOUNDS += [
     (TUNE_SPEED, voice(BASS_1, 1, 2, 5)),      # 10: tilted saw, soft
     (TUNE_SPEED, voice(BASS_2, 1, 2, 5)),      # 11
     (TUNE_SPEED, voice(GHOST, 5, 1, 2)),       # 12: organ with vibrato, faint
+    CACKLE,
 ]
 # four patterns, looping: the tune, then the tune again with the ghost.
 # the first byte is 1 where the loop starts and 2 where it ends; a channel
