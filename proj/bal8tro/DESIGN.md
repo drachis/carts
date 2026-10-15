@@ -119,7 +119,8 @@ the layout); the challenge is fitting it in one cart.
   evenly over 30 frames 52 later. Same dance, fewer dancers.
 - **Transitions** matched to Balatro's logged ones: the cash-out panel
   slides up from below and drops away when pressed; the shop rises after
-  Balatro's pause and slides down to open a pack (whose cards come out
+  Balatro's pause (its sign, our sidebar strip, dropping in from above)
+  and slides down to open a pack (whose cards come out
   after its delay) or to leave for the next blind, and back up after a
   pack.
 - **Music:** an original slow lounge loop in A minor, calm without its

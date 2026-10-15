@@ -26,6 +26,7 @@ EMPTY = {
     "table": ["draw_pack_screen", "draw_mini_tarot"],
     "late": ["draw_info"],
     "finale": ["draw_info", "draw_pack_screen", "draw_mini_tarot"],
+    "motion": ["draw_info", "draw_title"],
 }
 
 

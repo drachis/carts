@@ -17,7 +17,10 @@ music=sfx
 local start=40
 local presses=parse_record[[
 40=4
-1200=4
+1600=4
+2560=4
+2920=4
+3160=4
 ]]
 
 local events=parse_record[[
@@ -27,7 +30,10 @@ local events=parse_record[[
 470=discard
 610=pick
 760=play
-1200=cash_out
+1600=cash_out
+2560=pack_open
+2920=pack_skip
+3160=shop_exit
 ]]
 
 local game_update,game_draw=_update60,_draw
@@ -55,6 +61,11 @@ local function motion_frame()
   hand[1].picked,hand[2].picked=true,true
  end
  if n==760 then play_hand() end
+ if n==2559 then
+  money,shop_focus.row,shop_focus.columns[3]=50,3,1
+ end
+ if n==2919 then pack_focus.row,pack_focus.columns[2]=2,#pack_choices+1 end
+ if n==3159 then shop_focus.row,shop_focus.columns[2]=2,1 end
  game_update()
  game_draw()
  if n>=start then
@@ -63,8 +74,17 @@ local function motion_frame()
   for card in all(flying) do log_card(card,"discard") end
   for joker in all(jokers) do log_card(joker,"jokers") end
   printh("hud "..(n/60).." "..chips.." "..mult.." "..big_text(score or 0))
+  if (mode=="cashout" or mode=="won") and banner.y then printh("ui "..(n/60).." cash_out 0 "..((40+banner.y-78)/21)) end
+  if mode=="shop" and shop_panel.y then
+   printh("ui "..(n/60).." shop 0 "..((27+shop_panel.y-78)/21))
+   for item in all(shop_items) do log_card(item,"shop_jokers") end
+   for pack in all(shop_packs) do log_card(pack,"shop_booster") end
+  end
+  if mode=="pack" then
+   for item in all(pack_choices) do log_card(item,"pack") end
+  end
  end
- if n==1320 then
+ if n==3500 then
   printh("ok motion")
   extcmd("shutdown")
  end

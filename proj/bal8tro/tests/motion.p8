@@ -8,9 +8,9 @@ log_name="motion"
 #include ../cards.lua
 #include ../scoring.lua
 #include ../main.lua
-#include ../shop.lua
+#include lite/motion/shop.lua
 #include ../effects.lua
-#include ../draw.lua
+#include lite/motion/draw.lua
 #include dump.lua
 #include motion.lua
 __gfx__

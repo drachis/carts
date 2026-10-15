@@ -124,11 +124,12 @@ end
 function draw_sidebar()
  rectfill(-8,-8,38,135,1)
  line(39,-8,39,135,heat>=2 and rnd(split"8,9,10") or 0)
- local in_shop=mode=="shop" or mode=="pack"
- rectfill(1,1,37,13,in_shop and 10 or boss_on() and 8 or blind==2 and 9 or 12)
+ local in_shop,top=mode=="shop" or mode=="pack",0
+ if in_shop then _,top=glide(sign,0,exiting and -14 or 0) end
+ rectfill(1,1+top,37,13+top,in_shop and 10 or boss_on() and 8 or blind==2 and 9 or 12)
  local words=split(in_shop and "the shop" or blind_name(blind)," ")
- print_centre(words[1],2,in_shop and 8 or 7,19)
- print_centre(words[2],8,in_shop and 8 or 7,19)
+ print_centre(words[1],2+top,in_shop and 8 or 7,19)
+ print_centre(words[2],8+top,in_shop and 8 or 7,19)
  for box in all(sidebar_boxes) do sidebar_box(box) end
  draw_flames()
  rectfill(chips_x-chips_bump,boxes_y-chips_bump,chips_x+16+chips_bump,boxes_y+8+chips_bump,12)

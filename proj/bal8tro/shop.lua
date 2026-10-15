@@ -88,7 +88,7 @@ function open_shop()
  for i=1,2 do shop_packs[i]=setmetatable({},rnd(pack_specs)) end
  reroll_cost=reroll_base
  shop_focus={row=2,columns={1,3}}
- mode,leaving,shop_panel="shop",false,{glide_x=0,glide_y=110,wait=0}
+ mode,leaving,exiting,shop_panel,sign="shop",false,false,{glide_x=0,glide_y=110,wait=0},{glide_x=0,glide_y=-14,wait=0}
 end
 
 function sell_price(joker)
@@ -129,7 +129,7 @@ function update_shop()
   emit("coin",jokers[column].x+10,jokers[column].y+10)
   deli(jokers,column)
  elseif column==1 then
-  leaving=true
+  leaving,exiting=true,true
   after(exit_wait,function()
    ante,blind=next_blind()
    start_blind()
@@ -240,9 +240,9 @@ function draw_shop()
   print_centre("$"..pack.cost,64,10,x+10)
   draw_pack(pack,x+1,71,shop_focus.row==3 and shop_focus.columns[3]==i)
  end
- camera()
  local tip=shop_focus.row==1 and jokers[shop_focus.columns[1]] or focus and focus>2 and shop_items[focus-2]
  if tip then draw_tooltip(tip,shop_focus.row==1 and 25 or 72) end
+ camera()
  for i=0,min(#run_deck\13,3) do draw_back(deck_x-i,deck_y-i) end
  draw_particles()
  print_centre(shop_message(),118,7,74)

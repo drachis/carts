@@ -42,4 +42,4 @@ A booster: a card-sized packet in the pack's colour with its name's first four l
 The open pack: the felt turns the pack's colour (Balatro does the same), the choices sit centred under the joker row, the pack's name and "choose 1" under them, then skip; the tooltip names a planet or joker, kept clear of the label.
 
 **shop.lua:215** `function draw_shop()`
-Draws the shop over the same felt and sidebar as the table, its panel and everything in it shifted by shop_panel's glide (so it slides up on opening and down when leaving, about 20 frames at the speed cap, as Balatro's does), then the tooltip for whatever the cursor is on (under the cards it may cover the packs, as Balatro's hover does), the deck pile, particles and the message line.
+Draws the shop over the same felt and sidebar as the table, its panel, everything in it and the tooltip shifted by shop_panel's glide (so it slides up on opening and down when leaving, about 20 frames at the speed cap, as Balatro's does), then the tooltip for whatever the cursor is on (under the cards it may cover the packs, as Balatro's hover does), the deck pile, particles and the message line.
