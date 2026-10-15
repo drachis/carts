@@ -123,17 +123,17 @@ the layout); the challenge is fitting it in one cart.
     py run_tests.py --no-comments
     py count_tokens.py bal8tro.p8
 
-- `test_boot`, `test_mid`, `test_late` (each the real, whole cart,
+- `test_boot`, `test_score`, `test_mid`, `test_late` (each the real, whole cart,
   replaying one scripted run from the title, `tests/boot_script.lua`;
   the checks split by frame because game plus checks passed 8192): boot
-  has the title and deck choice, dealing, motion, the pair of kings (480
-  with joker and sly), kicks, flames, the hitstop; mid the cash-out, the
+  has the title, deck choice, dealing and the pick; score the pair of
+  kings (480 with joker and sly), kicks, flames, the hitstop; mid the cash-out, the
   shop (buys, a refusal, a sale, a reroll), the joker row, the buttons,
   the info overlay, a sort and a discard; late a lost blind, a boss, an
   arcana pack, ante 2, a won run at ante 8 and a hand five times the goal
   setting the floor alight. Each dumps its screens. Endings are reached
-  by setting the ante, hands and score, not by play. test_boot has about
-  125 tokens spare: any game growth needs a compaction or another split.
+  by setting the ante, hands and score, not by play. When the game grows past a cart's room, split its checks into another
+  cart (`py count_tokens.py tests/test_<name>.p8`).
 - `test_hands` (rules, no drawing): every hand type and how many cards it
   scores, joker combinations, growing jokers, bosses, levels, 32-bit
   totals, sorts, blind goals.
