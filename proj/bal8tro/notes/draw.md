@@ -16,7 +16,7 @@ Cards are 15x21. A card or joker in the current step is lifted 3px. A debuffed c
 The full 31x20 joker, with name, effect and condition: the shop only.
 
 **draw.lua:84** `function draw_mini_joker(joker,x,y,focused)`
-The table's 20x20 joker: its effect in its colour (blue chips, red mult and xmult) and a four-letter tag or the suit it fires on. The name and full text are in the tooltip, as Balatro shows them on hover.
+The table's 20x20 joker: its 8x8 portrait (joker.sprite, drawn by gen_cart.py) above its current worth in its colour (blue chips, red mult and xmult). The name and full text are in the tooltip, as Balatro shows them on hover. The tag column is no longer drawn here.
 
 **draw.lua:94** `function draw_tooltip(joker)`
 Under the focused joker, kept on the right side: name, effect, condition and sell price.

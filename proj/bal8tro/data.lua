@@ -114,6 +114,8 @@ ante_label,2,97,18,ante,9,
 round_number,20,97,36,rnd,9,
 ]]
 
+for number,spec in ipairs(joker_specs) do spec.sprite=31+number end
+
 table_buttons=parse_table[[
 name,label,colour,left
 play,play,12,42

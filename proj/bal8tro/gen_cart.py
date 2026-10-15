@@ -94,6 +94,142 @@ SPRITES = {}
 for suit, (big, small) in SUITS.items():
     SPRITES[suit] = big
     SPRITES[16 + suit] = small
+
+# joker portraits, 8x8, sprite 32+n for the n-th row of joker_specs (data.lua
+# gives each spec its sprite in that order). Bal8tro's own art: jesters told
+# apart by hat, face and mouth, and a few objects. "." is transparent, so the
+# joker card's white shows through.
+# a jester: A and B the hat's two colours, F the face, E the eyes, M the mouth
+JESTER = """
+A......B
+AAA..BBB
+.AAABBB.
+..FFFF..
+.FEFFEF.
+.FFFFFF.
+.FMMMMF.
+..FFFF..
+"""
+
+
+def jester(hat_a, hat_b, face="f", eyes="0", mouth="8", eye_row=None, mouth_row=None):
+    rows = JESTER.strip().split("\n")
+    if eye_row:
+        rows[4] = eye_row
+    if mouth_row:
+        rows[6] = mouth_row
+    text = "\n".join(rows)
+    for key, colour in (("A", hat_a), ("B", hat_b), ("F", face), ("E", eyes), ("M", mouth)):
+        text = text.replace(key, colour)
+    return text
+
+
+JOKER_ART = [
+    jester("8", "c"),                                        # joker
+    jester("9", "9"),                                        # greedy, diamonds
+    jester("8", "8"),                                        # lusty, hearts
+    jester("1", "1"),                                        # wrath, spades
+    jester("3", "3"),                                        # glutton, clubs
+    jester("a", "9", mouth_row=".F8888F."),  # jolly
+    jester("e", "2", eyes="c", eye_row=".Fc0Fc0."),         # zany, wild eyes
+    jester("8", "2", face="e", eye_row=".F00F00."),          # mad
+    jester("d", "c", mouth_row=".FF88FF."),                  # droll
+    jester("5", "1", eye_row=".FF0FF0."),                    # sly, eyes aside
+    jester("c", "1", eye_row=".0c00c0."),                    # clever, glasses
+    """
+..0000..
+.000000.
+.0b00b0.
+.000000.
+..0770..
+..7.7...
+..0000..
+........
+""",                                                         # scary, a skull
+    """
+8..c8..c
+88cc88cc
+.ff..ff.
+f0f0f0f0
+ffffffff
+f88ff88f
+.ff..ff.
+........
+""",                                                         # the duo
+    """
+8c.9a.2e
+.ff.ff.f
+f0ff0ff0
+ffffffff
+f8ff8ff8
+.ff.ff.f
+........
+........
+""",                                                         # tribe
+    """
+..88....
+.8888...
+..88.ccc
+....cccc
+.aa..ccc
+aaaa....
+.aa..33.
+.....33.
+""",                                                         # abstract: shapes
+    """
+5888888.
+5888888.
+5888888.
+5.......
+5.......
+5.......
+5.......
+55......
+""",                                                         # banner: a flag
+    """
+........
+...77...
+..7767..
+..6666..
+.666666.
+.655556.
+65555556
+55555555
+""",                                                         # mystic summit
+    """
+8......c
+888...cc
+.88..cc.
+.ff.....
+f0f.....
+fff.....
+f88.....
+.ff.....
+""",                                                         # half a jester
+    """
+...a....
+.a.a.a..
+..aaa...
+aaa7aaa.
+..aaa...
+.a.a.a..
+...a....
+........
+""",                                                         # supernova
+    jester("b", "3", face="b", eyes="0", mouth="3"),         # green joker
+    """
+........
+aaaaaaa.
+a7a7a7a.
+aaaaaaaa
+aaaaaaaa
+a0aaa0a.
+.5...5..
+........
+""",                                                         # ride the bus
+]
+for number, art in enumerate(JOKER_ART):
+    SPRITES[32 + number] = art
 # sprite number -> flag byte (1 is flag 0, 2 is flag 1, ...)
 FLAGS = {}
 
