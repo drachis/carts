@@ -45,6 +45,7 @@ score_wait=52
 score_roll=30
 spring=0.3
 damping=0.6
+glide_cap=6
 play_delay=28
 play_stagger=8
 lift_wait=38

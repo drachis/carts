@@ -62,7 +62,10 @@ function take_picked()
 end
 
 function fly_away(cards)
- for card in all(cards) do add(flying,card) end
+ for i,card in ipairs(cards) do
+  card.hold=(i-1)*play_stagger
+  add(flying,card)
+ end
 end
 
 function play_hand()

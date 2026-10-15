@@ -26,8 +26,8 @@ function glide(thing,x,y)
  elseif (thing.hold or 0)>0 then
   thing.hold-=1
  else
-  thing.vx=((thing.vx or 0)+(x-thing.glide_x)*spring)*damping
-  thing.vy=((thing.vy or 0)+(y-thing.glide_y)*spring)*damping
+  thing.vx=mid(-glide_cap,((thing.vx or 0)+(x-thing.glide_x)*spring)*damping,glide_cap)
+  thing.vy=mid(-glide_cap,((thing.vy or 0)+(y-thing.glide_y)*spring)*damping,glide_cap)
   thing.glide_x+=thing.vx
   thing.glide_y+=thing.vy
  end
@@ -175,10 +175,13 @@ function draw_table()
   draw_card(card,150,60)
   if card.x>127 then del(flying,card) end
  end
+ local arrived,slot=0,0
+ for card in all(hand) do arrived+=card.wait==0 and 1 or 0 end
  for i,card in ipairs(hand) do
-  local arc=(i-4.5)*(i-4.5)\6
+  slot+=card.wait==0 and 1 or 0
+  local from_middle=slot-(arrived+1)/2
   local hovered=mode=="play" and table_focus.row==2 and i==cursor
-  draw_card(card,41+(i-1)*10,(card.picked and 73 or 78)+arc-(hovered and 2 or 0))
+  draw_card(card,76+from_middle*10,(card.picked and 73 or 78)+from_middle*from_middle\6-(hovered and 2 or 0))
  end
  local card=hand[cursor]
  if mode=="play" and table_focus.row==2 and card and card.wait==0 then rect(card.x-1,card.y-1,card.x+15,card.y+21,10) end

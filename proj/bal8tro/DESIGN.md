@@ -110,8 +110,9 @@ the layout); the challenge is fitting it in one cart.
   user's own copy (`balatro_ref/`: the harness logs every card every
   frame; `tests/motion.p8` plays bal8tro through the same sequence;
   `motion_metrics.py` and `compare_motion.py` compare them as data): 7
-  frames between dealt cards, a 5px pick that snaps, cards that move on
-  a spring and overshoot, played cards waiting 28 frames then flying in 8
+  frames between dealt cards into a hand that fans open as they arrive,
+  a 5px pick that snaps, cards that travel at a capped speed and spring
+  into place, a still hand at rest, discards leaving 8 apart, played cards waiting 28 frames then flying in 8
   apart, the scoring ones lifting at frame 72, a card or joker that fires pulsing
   in size like Balatro's juice (24 frames, swinging three times, fading), the first score 110 frames after play, cards 47 apart,
   jokers 59, the boxes clearing 98 after the last, the score counting up
