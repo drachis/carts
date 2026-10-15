@@ -91,6 +91,7 @@ function update_play()
  if btnp(4) and card then
   if card.picked or #picked_cards()<max_picked then
    card.picked=not card.picked
+   kick(card,1.5)
    sfx(snd_pick)
   end
  end
@@ -120,6 +121,8 @@ function update_score()
   local colour=step.chips and 12 or 8
   pop(step.xmult and "x"..step.xmult or "+"..(step.chips or step.mult),x,y,colour)
   emit("spark",x,y+4,colour)
+  kick(step.thing,step.under and 3 or 2)
+  if step.under then kick(step.under,1.5) end
   if step.chips then chips_bump=2 else mult_bump=2 end
   sfx((step.chips and snd_chips or snd_mult)+min(step_index-1,7))
   step_timer=step_frames
@@ -130,6 +133,8 @@ function update_score()
   add(pops,{text=big_text(total),x=table_centre,y=50,colour=10,age=0,big=true})
   emit("shower",chips_x,boxes_y)
   emit("shower",mult_x,boxes_y)
+  hitstop(min(4+total/goal*4,12))
+  if score>=goal then flash(3) end
   shake=min(2+total/goal*4,8)
   sfx(snd_total)
   step_timer=45
@@ -160,6 +165,7 @@ function cash_out()
  earned=0
  for line in all(earnings) do earned+=line[2] end
  money+=earned
+ emit("coin",15,86)
  mode="cashout"
 end
 

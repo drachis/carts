@@ -63,6 +63,12 @@ the cart.
   the total pops up big, showers sparks and shakes the screen. While the
   hand on screen would clear the blind, the chips and mult boxes burn.
   The felt, title and shop have slowly waving dithered stripes.
+- The juice runs on a small VFX engine (effects.lua): particle presets
+  as data, kick for a shake on any card or joker, turn_over for a card
+  flip, timers, hitstop and flash. Scoring kicks each card and shakes
+  each joker as it fires; dealt cards turn over in flight; the total
+  holds the game for a beat and flashes when it beats the blind;
+  cashing out throws coins; a bought joker jumps.
 - Every ante's boss blind is one of nine Balatro bosses, drawn when
   the ante starts and named in the shop beforehand: the club, goad, head
   and window debuff a suit (greyed, struck through, still count towards

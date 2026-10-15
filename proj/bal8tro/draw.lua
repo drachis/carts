@@ -19,7 +19,10 @@ function glide(thing,x,y)
  if not thing.glide_x then thing.glide_x,thing.glide_y,thing.wait=x,y,0 end
  if thing.wait>0 then
   thing.wait-=1
-  if thing.wait==0 then sfx(snd_deal) end
+  if thing.wait==0 then
+   sfx(snd_deal)
+   turn_over(thing)
+  end
  else
   thing.glide_x+=(x-thing.glide_x)/4
   thing.glide_y+=(y-thing.glide_y)/4

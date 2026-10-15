@@ -67,7 +67,7 @@ function update_shop()
     deli(shop_items,column)
    elseif #jokers<joker_slots then
     money-=item.cost
-    add(jokers,deli(shop_items,column))
+    kick(add(jokers,deli(shop_items,column)),4)
    end
   end
  elseif column==1 then
