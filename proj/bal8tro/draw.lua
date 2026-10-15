@@ -8,7 +8,9 @@ function print_right(text,x,y,colour)
 end
 
 function print_centre(text,y,colour,centre)
- print(text,(centre or 64)-print(text,0,-999)/2,y,colour)
+ local width=0
+ for i=1,#text do width+=ord(text,i)>127 and 8 or 4 end
+ print(text,(centre or 64)-width/2,y,colour)
 end
 
 function is_active(thing)
