@@ -43,6 +43,17 @@ function update_effects()
  chips_bump,mult_bump=max(chips_bump-.25,0),max(mult_bump-.25,0)
 end
 
+function draw_swirl(base,stripes,top)
+ cls(base)
+ fillp(▒)
+ local time=t()
+ for y=top,127,2 do
+  local offset=(sin(y/96+time/10)*24+y/2+time*6)%32
+  for x=offset-32,127,32 do rectfill(x,y,x+15,y+1,stripes) end
+ end
+ fillp()
+end
+
 function shake_camera()
  camera(rnd(shake)-shake/2,rnd(shake)-shake/2)
 end

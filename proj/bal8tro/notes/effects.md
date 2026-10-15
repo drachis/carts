@@ -13,9 +13,13 @@ Balatro's flames: while heat is 1 or more, a flickering band of red, orange and 
 heat is how many times over the blind's goal the score plus the hand on screen would be, while a hand is scoring, else 0. At 1 or more it adds flame sparks rising off both boxes, more and faster with heat; they ignore gravity and colour by life (flame_colours, white hottest).
 Keep: tests/test_boot.lua checks the scripted pair of kings has no flames at 30x6 and flames at 80x6 against a goal of 300.
 
-**effects.lua:46** `function shake_camera()`
+**effects.lua:46** `function draw_swirl(base,stripes,top)`
+The moving background, standing in for Balatro's swirl: cls to base, then from row top down, 16px dithered stripes every 32px, offset per row by a slow sine plus a drift, so they wave and slide. The table uses green with dark blue (from row 42, under the panel), the title dark blue with purple, the shop dark blue with black.
+Keep: stripes is one colour. fillp(▒) leaves its other pixels transparent, so only the low digit of a two-colour value draws, and 0x13 on green drew nothing. Measured 17% CPU at 60fps with stripes and flames together (tests/test_boot.lua prints it).
+
+**effects.lua:57** `function shake_camera()`
 Offsets the camera by up to shake pixels for the table only; _draw resets it before the banners.
 Keep: the panel is drawn 8px past every edge so a shake never shows the felt above it.
 
-**effects.lua:50** `function draw_sparks()`
+**effects.lua:61** `function draw_sparks()`
 Each spark is a short streak along its motion, so it reads at 128x128; it greys out in its last frames.

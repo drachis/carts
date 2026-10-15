@@ -106,7 +106,10 @@ function boot_frame()
  if n==51 then expect("a picked card glides, not jumps",hand[1].y>=100 and hand[1].y<=105,true) end
  if n==56 then expect("a picked card has risen",hand[1].y<=100,true) end
  if n==57 then dump_screen("boot_pick") expect("hand picked",hand_label,"pair lv1") end
- if n==150 then dump_screen("boot_score") end
+ if n==150 then
+  printh("cpu while scoring with flames: "..stat(1).." at "..stat(7).." fps")
+  dump_screen("boot_score")
+ end
  if n==120 or n==148 then
   local flames=0
   for spark in all(sparks) do if spark.flame then flames+=1 end end

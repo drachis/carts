@@ -46,6 +46,14 @@ the cart.
   type, then each scoring card adds its chips, card jokers fire on their
   cards, then hand jokers fire left to right. Each step pops its number
   over its card or joker; the total rolls into the score.
+- Juice (Balatro's feel is half the game): cards and jokers glide
+  rather than jump; the hand sits in an arc and bobs; cards are dealt
+  one by one face down off a deck pile and flip as they fly in;
+  discarded and played cards fly off the right edge. Each scoring step
+  throws sparks, swells its box and ticks a note higher than the last;
+  the total pops up big, showers sparks and shakes the screen. While the
+  hand on screen would clear the blind, the chips and mult boxes burn.
+  The felt, title and shop have slowly waving dithered stripes.
 - Reaching the goal clears the blind; clearing ante 8's boss wins. Running out
   of hands loses. O restarts.
 - Clearing a blind cashes out: the blind's $3/$4/$5, $1 per hand left, and

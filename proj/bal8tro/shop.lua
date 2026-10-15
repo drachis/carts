@@ -102,7 +102,7 @@ function draw_button(text,x,colour,focused)
 end
 
 function draw_shop()
- cls(1)
+ draw_swirl(1,0,0)
  print("shop",2,2,7)
  print_right("$"..money,126,2,10)
  print("jokers "..#jokers.."/"..joker_slots,2,12,6)

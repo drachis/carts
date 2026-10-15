@@ -84,7 +84,7 @@ function draw_panel()
 end
 
 function draw_table()
- cls(3)
+ draw_swirl(3,1,42)
  draw_panel()
  for i=1,joker_slots do
   local x,joker=1+(i-1)*32,jokers[i]
@@ -134,7 +134,7 @@ function draw_banner(title,line,colour,lines)
 end
 
 function draw_title()
- cls(1)
+ draw_swirl(1,2,0)
  print("\^w\^tbal8tro",36,14,10)
  for i=1,5 do
   draw_card({rank=9+i,suit=i%4+1},24+(i-1)*16,36)
