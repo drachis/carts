@@ -2,13 +2,11 @@ function _init()
  mode,deck_choice,deck_spec,intro_t,intro_cards=skip_intro and "title" or "intro",1,deck_specs[1],skip_intro and 2000 or 0,{}
  shown_score,title_cards=0,{}
  for i,rank in ipairs(split"8,14,11,14,10,9,12") do add(title_cards,{rank=rank,suit=i%4+1,glide_x=16,glide_y=78,wait=30+i*deal_frames}) end
- poke(0x5f5c,8)
- poke(0x5f5d,2)
+ poke(0x5f5c,8,2)
 end
 
 function start_run()
  ante,blind=1,1
- deck_spec=deck_specs[deck_choice]
  money=start_money+deck_spec.money
  jokers,run_deck,hands_left,discards_left,score,chips,mult={},new_deck(deck_spec),0,0,0,0,0
  deck,best_hand,cards_played,cards_discarded=run_deck,0,0,0
@@ -37,15 +35,11 @@ end
 function start_blind()
  deck=shuffled(run_deck)
  hand,flying={},{}
- played,hand_label,chips,mult=nil,nil,0,0
- pops,mode={},"play"
+ played,hand_label,chips,mult,pops,mode=nil,nil,0,0,{},"play"
  local active=boss_on()
  hands_left=active and active.hands or hands_per_blind+deck_spec.hands
  discards_left=active and active.discards or discards_per_blind+deck_spec.discards
- score,shown_score=0,0
- cursor,joker_focus,button_focus,leaving=1
- table_focus={row=2,columns={1,1,1}}
- sort_by_suit=false
+ score,shown_score,table_focus,cursor,joker_focus,button_focus,leaving,sort_by_suit=0,0,{row=2,columns={1,1,1}},1
  draw_up()
 end
 
@@ -235,12 +229,8 @@ function end_run(result)
  end
  end_lines={{"best hand",big_text(best_hand)},{"most played",most_spec.short.." "..most},{"cards played",cards_played,12},{"discarded",cards_discarded,8},{"ante",ante_label},{"round",round_number}}
  if result=="lost" then add(end_lines,{"lost to",blind_name(blind),8}) end
- local text=rnd(split(end_specs[result].quips,"/"))
  quip,banner,jimbo="",panel_at(67),{glide_x=-30,glide_y=22,wait=0,talk=0}
- for i=1,#text do
-  local letter=sub(text,i,i)
-  quip..=letter=="_" and "\n" or letter
- end
+ for line in all(split(rnd(split(end_specs[result].quips,"/")),"_",false)) do quip..=line.."\n" end
 end
 
 function cash_out()

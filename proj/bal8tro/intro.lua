@@ -14,7 +14,9 @@ function draw_intro()
  for card in all(intro_cards) do
   local left=(intro_t-card.born)/card.life
   local distance,width=(1-min(left/.9,1))*(18+card.size)*6.4,card.size*15*max(1-left,0)
-  local x,y=64+distance*sin(card.angle)-width/2,64+distance*cos(card.angle)-width*.7
+  local edge=max(1-distance/150,0)
+  local turn=card.angle+(.08+intro_t/2513)*edge*edge*(3-2*edge)
+  local x,y=64+distance*sin(turn)-width/2,64+distance*cos(turn)-width*.7
   if card.i%5<1 then
    box(x,y,width,width*1.4,8,7)
   else
