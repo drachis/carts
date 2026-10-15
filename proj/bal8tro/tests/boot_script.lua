@@ -12,7 +12,7 @@ dset=sfx
 function music(pattern) started_music=pattern end
 
 local n=0
-parse_record("step_frames=18,joker_frames=18,score_delay=30,total_gap=18,total_hold=45,score_wait=0,score_roll=8,glide_rate=.25,glide_speed=99,play_stagger=0,deal_frames=4",",",_ENV)
+parse_record("step_frames=18,joker_frames=18,score_delay=30,total_gap=18,total_hold=45,score_wait=0,score_roll=8,play_delay=0,play_stagger=0,deal_frames=4",",",_ENV)
 local game_update,game_draw=_update60,_draw
 
 function expect_mode(wanted)

@@ -68,7 +68,7 @@ end
 function play_hand()
  hands_left-=1
  played=take_picked()
- for i,card in ipairs(played) do card.hold=(i-1)*play_stagger end
+ for i,card in ipairs(played) do card.hold=play_delay+(i-1)*play_stagger end
  local played_spec,played_scoring=evaluate(played)
  hand_plays[played_spec.name]+=1
  grow_jokers("play",played_scoring)

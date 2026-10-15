@@ -26,8 +26,10 @@ function glide(thing,x,y)
  elseif (thing.hold or 0)>0 then
   thing.hold-=1
  else
-  thing.glide_x+=mid(-glide_speed,(x-thing.glide_x)*glide_rate,glide_speed)
-  thing.glide_y+=mid(-glide_speed,(y-thing.glide_y)*glide_rate,glide_speed)
+  thing.vx=((thing.vx or 0)+(x-thing.glide_x)*spring)*damping
+  thing.vy=((thing.vy or 0)+(y-thing.glide_y)*spring)*damping
+  thing.glide_x+=thing.vx
+  thing.glide_y+=thing.vy
  end
  local dx,dy=jiggle(thing)
  thing.x,thing.y=flr(thing.glide_x+dx+.5),flr(thing.glide_y+dy+.5)
@@ -160,7 +162,7 @@ function draw_table()
   local left=table_centre-#played*8
   for i,card in ipairs(played) do
    local scores=count(scoring_cards,card)>0
-   draw_card(card,left+(i-1)*16,scores and 44 or 48)
+   draw_card(card,left+(i-1)*16,scores and (step_index>0 or step_timer<lift_wait) and 44 or 48)
   end
  elseif boss_on() and not joker_focus then
   print_centre(boss.text,31,0,table_centre)
