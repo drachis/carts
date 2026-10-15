@@ -111,7 +111,7 @@ end
 
 function draw_sidebar()
  rectfill(-8,-8,38,135,1)
- line(39,-8,39,135,0)
+ line(39,-8,39,135,heat>=2 and rnd(split"8,9,10") or 0)
  rectfill(1,1,37,13,boss_on() and 8 or blind==2 and 9 or 12)
  local words=split(blind_name(blind)," ")
  print_centre(words[1],2,7,19)
@@ -179,6 +179,7 @@ function draw_table()
  local hints=split"⬇️ back to hand,🅾️pick ❎play,🅾️ press"
  if mode=="play" then print_centre(hints[table_focus.row],118,6,74) end
  if joker_focus then draw_tooltip(jokers[joker_focus]) end
+ draw_floor_fire()
  draw_particles()
  for p in all(pops) do
   local y,half,tall=p.y-p.age\4,#p.text*2,5

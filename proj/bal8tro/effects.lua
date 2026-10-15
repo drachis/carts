@@ -39,23 +39,30 @@ function jiggle(thing)
  return rnd(amount)-amount/2,-amount/2
 end
 
-function draw_flames()
- if heat<1 then return end
- local base=boxes_y-1
- for left=chips_x-1,mult_x-1,mult_x-chips_x do
-  for x=0,17,2 do
-   local height=1+rnd(2+min(heat,4)*2)
-   rectfill(left+x,base-height,left+x+1,base,8)
-   rectfill(left+x,base-height/2,left+x+1,base,9)
-   rectfill(left+x,base-1,left+x+1,base,10)
-  end
+function flame_band(left,right,base,height)
+ for x=left,right,2 do
+  local tall=1+rnd(height)
+  rectfill(x,base-tall,x+1,base,8)
+  rectfill(x,base-tall/2,x+1,base,9)
+  rectfill(x,base-1,x+1,base,10)
  end
 end
 
+function draw_flames()
+ if heat<1 then return end
+ flame_band(chips_x-1,mult_x+16,boxes_y-1,2+min(heat,4)*2)
+end
+
+function draw_floor_fire()
+ if heat>=2 then flame_band(0,heat>=3 and 127 or 37,127,min(heat*3,20)) end
+end
+
 function fan_flames()
- heat=mode=="score" and (score+hand_total(chips,mult))/goal or 0
+ local target=mode=="score" and hand_total(chips,mult)/goal or 0
+ heat=target>heat and target or heat*.96
  if heat<1 then return end
  for left=chips_x,mult_x,mult_x-chips_x do emit("flame",left,boxes_y,nil,min(heat,4)) end
+ if heat>=4 then emit("flame",rnd(112),127,nil,min(heat\2,6)) end
 end
 
 function update_effects()

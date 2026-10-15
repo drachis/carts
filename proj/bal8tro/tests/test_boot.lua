@@ -202,7 +202,15 @@ function boot_frame()
   expect("after the boss",ante..","..blind..","..big_text(goal),"2,1,800")
   dump_screen("boot_ante_2")
  end
- if n==790 then expect_mode("won") dump_screen("boot_won") end
+ if n==790 then
+  expect_mode("won") dump_screen("boot_won")
+  chips,mult,step_timer,score=1000,500,999,0
+  mode="score"
+ end
+ if n==797 then
+  expect("a hand of 5x the goal sets the floor alight",heat>=4,true)
+  dump_screen("boot_inferno")
+ end
  if n==800 then
   printh("ok boot")
   extcmd("shutdown")

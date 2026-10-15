@@ -66,7 +66,10 @@ the cart.
   discarded and played cards fly off the right edge. Each scoring step
   throws sparks, swells its box and ticks a note higher than the last;
   the total pops up big, showers sparks and shakes the screen. While the
-  hand on screen would clear the blind, the chips and mult boxes burn.
+  hand on screen alone is worth the blind's goal (Balatro's rule), the
+  chips and mult boxes burn; at twice the goal the sidebar's foot and
+  edge burn, at three times the whole bottom of the screen, at four
+  embers rise across the table.
   The felt, title and shop have slowly waving dithered stripes.
 - The juice runs on a small VFX engine (effects.lua): particle presets
   as data, kick for a shake on any card or joker, turn_over for a card
