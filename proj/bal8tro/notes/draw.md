@@ -8,11 +8,11 @@ Every card and joker eases a quarter of the way to where it is drawn each frame,
 Keep: the easing runs in the draw, once a frame at 60fps; tests/test_boot.lua checks a picked card is part-way after one frame.
 
 **draw.lua:39** `function draw_card(card,x,y)`
-Cards are 15x21, sixteen pixels apart so eight fill the screen. A card or joker in the current step is lifted 3px.
+Cards are 15x21, sixteen pixels apart so eight fill the screen. A card or joker in the current step is lifted 3px. A debuffed card is dimmed with a light ░ grey and struck through in red, light enough that its rank still reads (▒ hid it).
 
-**draw.lua:63** `function draw_panel()`
+**draw.lua:69** `function draw_panel()`
 The panel is the top 42 rows: blind and goal, ante beside the score label, money left of the hand name, chips box (blue) x mult box (red), hands, discards, deck.
 Keep: the ante sits right of the blind name because centred it met a six-digit goal and "small blind"; the money's row leaves room for "three of a kind" centred. The hand name is drawn after the flames and boxes, with a black shadow, because the flames covered it.
 
-**draw.lua:86** `function draw_table()`
+**draw.lua:94** `function draw_table()`
 Felt green table. Four joker slots across at y44, empty ones outlined. The deck pile is at deck_x,deck_y, one to four backs by how many cards are left. Cards in flying glide to (150,80), off the right edge, and are dropped once past x127. Played cards sit mid-screen, those that score 4px higher. The hand sits in a shallow arc (outer cards 3px lower) and each card bobs under a pixel on its own phase; picked cards rise 7px; the cursor is a yellow frame round the card as drawn.

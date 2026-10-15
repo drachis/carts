@@ -56,6 +56,12 @@ the cart.
   the total pops up big, showers sparks and shakes the screen. While the
   hand on screen would clear the blind, the chips and mult boxes burn.
   The felt, title and shop have slowly waving dithered stripes.
+- Every ante's boss blind is one of nine Balatro bosses, drawn when
+  the ante starts and named in the shop beforehand: the club, goad, head
+  and window debuff a suit (greyed, struck through, still count towards
+  the hand's type, score nothing); the wall is 4x the base; the needle
+  is 1x with one hand; the water has no discards; the psychic needs five
+  cards; the flint halves base chips and mult.
 - Reaching the goal clears the blind; clearing ante 8's boss wins. Running out
   of hands loses. O restarts.
 - Clearing a blind cashes out: the blind's $3/$4/$5, $1 per hand left, and
@@ -89,9 +95,10 @@ the cart.
 
 ## Not built yet, or not checked
 
-- Nobody has played this build. The sounds have never been heard.
-- No tarot cards, booster packs, vouchers, consumable slots, boss
-  blind effects, skipping blinds, joker rarities.
+- The user has played up to the juice build ("feels more like
+  balatro"). Music and boss blinds have not been played or heard.
+- No tarot cards, booster packs, vouchers, consumable slots, skipping
+  blinds, joker rarities; only nine of Balatro's bosses.
 - The late antes may be out of reach: before planets, by
   arithmetic, a flush with the four best jokers here scores a few
   thousand, and ante 5's boss wants 22000 in four hands. Not measured

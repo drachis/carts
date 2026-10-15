@@ -47,6 +47,12 @@ function draw_card(card,x,y)
  print(rank_names[card.rank-1],x+2,y+2,colour)
  spr(16+card.suit,x+2,y+8)
  spr(card.suit,x+7,y+12)
+ if is_debuffed(card) then
+  fillp(░)
+  rectfill(x+1,y+1,x+13,y+19,5)
+  fillp()
+  line(x+2,y+18,x+12,y+2,8)
+ end
 end
 
 function draw_joker(joker,x,y,focused)
@@ -62,7 +68,7 @@ end
 
 function draw_panel()
  rectfill(-8,-8,135,41,1)
- print(blind_specs[blind].name,2,2,7)
+ print(blind_name(blind),2,2,boss_on() and 8 or 7)
  print("goal "..big_text(goal),2,9,9)
  print_right("ante "..ante.."/"..#ante_bases,102,2,13)
  print("$"..money,2,17,10)
@@ -77,6 +83,8 @@ function draw_panel()
  if hand_label then
   print_centre(hand_label,18,0)
   print_centre(hand_label,17,7)
+ elseif boss_on() then
+  print_centre(boss.text,17,8)
  end
  print("hands "..hands_left,2,35,12)
  print("discards "..discards_left,40,35,8)
@@ -105,7 +113,7 @@ function draw_table()
  for i,card in ipairs(hand) do
   local arc=(i-4.5)*(i-4.5)\4+sin(t()/3+i/8)*.8
   draw_card(card,(i-1)*16,(card.picked and 96 or 103)+arc)
-  if mode=="play" and i==cursor then rect(card.x-1,card.y-1,card.x+15,card.y+21,10) end
+  if mode=="play" and i==cursor and card.wait==0 then rect(card.x-1,card.y-1,card.x+15,card.y+21,10) end
  end
  draw_sparks()
  for p in all(pops) do

@@ -16,3 +16,6 @@ The three blinds of every ante, with Balatro's rewards ($3, $4, $5). factor is t
 
 **data.lua:93** `ante_bases=split"3,8,20,50,110,200,350,500"`
 Balatro's eight ante base scores, in hundreds, because 50000 is past PICO-8's 32767. A run is won by clearing the boss of the last ante.
+
+**data.lua:95** `boss_specs=parse_table[[`
+Nine of Balatro's bosses, one drawn at random when an ante's small blind starts. factor is the goal in halves of the ante base (Balatro's 2x, the wall 4x, the needle 1x). debuff is a suit; hands and discards replace the blind's; must is the fewest cards a hand may have; halve halves the base chips and mult. text is shown on the panel when no cards are picked, at most 25 characters.

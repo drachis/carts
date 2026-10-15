@@ -118,7 +118,7 @@ function draw_shop()
  draw_button("reroll $"..reroll_cost,8,3,shop_row==3 and shop_column==1)
  draw_button("next blind",68,8,shop_row==3 and shop_column==2)
  local next_ante,next=next_blind()
- print_centre("next: ante "..next_ante.." "..blind_specs[next].name,100,6)
+ print_centre("next: ante "..next_ante.." "..blind_name(next),100,6)
  print_centre("goal "..big_text(blind_goal(next_ante,next)),108,9)
  print_centre(shop_message(),116,7)
 end

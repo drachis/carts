@@ -25,6 +25,20 @@ local function jokers_named(names)
  return named
 end
 
+local function index_of(text,letter)
+ for i=1,#text do
+  if sub(text,i,i)==letter then return i end
+ end
+end
+
+local function cards_named(names)
+ local cards={}
+ for name in all(split(names,"|",false)) do
+  add(cards,{rank=1+index_of("23456789tjqka",sub(name,1,1)),suit=index_of("shcd",sub(name,2,2))})
+ end
+ return cards
+end
+
 local function known_hand()
  hand={}
  for pair in all(split("13,1|13,2|9,3|7,4|5,1|4,2|3,3|2,4","|")) do
@@ -88,8 +102,13 @@ function boot_frame()
  if n==500 or n==640 then
   ante=n==500 and 1 or #ante_bases
   blind=#blind_specs
+  boss=boss_specs[n==500 and "the needle" or "the club"]
   start_blind()
   score=goal
+  if n==640 then
+   hand=cards_named"kc|9c|9h|5d|3s|2c|2h|2d"
+   jokers=jokers_named"scary,glutton"
+  end
  end
  game_update()
  game_draw()
@@ -147,6 +166,8 @@ function boot_frame()
  if n==320 then expect("the discard has left the screen",#flying,0) end
  if n==480 then expect_mode("lost") dump_screen("boot_lost") end
  if n==492 then expect("restart clears jokers",#jokers,0) end
+ if n==505 then expect("the needle gives one hand",hands_left,1) end
+ if n==648 then dump_screen("boot_boss") end
  if n==615 then expect_mode("cashout") expect("the boss pays $5",earnings[1][2],5) end
  if n==621 then dump_screen("boot_shop_ante") end
  if n==630 then

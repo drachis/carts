@@ -53,8 +53,31 @@ score_cases={
  {"kh ks 2c 2d 5s","mad,clever",(20+24+80)*(2+10)},
 }
 
+function boss_cases()
+ blind=#blind_specs
+ boss=boss_specs["the club"]
+ local spec,_,_,steps=score_steps(cards_of("kc kh"),{})
+ local chips,mult=hand_base(spec)
+ for step in all(steps) do chips,mult=apply_step(step,chips,mult) end
+ expect("the club: a debuffed king still makes the pair but scores nothing",spec.name..","..chips*mult,"pair,40")
+ boss=boss_specs["the flint"]
+ chips,mult=hand_base(hand_specs.pair)
+ expect("the flint halves the pair's base",chips..","..mult,"5,1")
+ boss=boss_specs["the psychic"]
+ expect("the psychic refuses four cards",can_play(cards_of("2h 3h 4h 5h")),false)
+ expect("the psychic takes five",can_play(cards_of("2h 3h 4h 5h 7s")),true)
+ boss=boss_specs["the wall"]
+ expect("the wall at ante 8",big_text(blind_goal(8,3)),"200000")
+ expect("the needle and the wall are boss names",blind_name(3),"the wall")
+ blind=1
+ expect("small blinds are never debuffed",is_debuffed(cards_of("kc")[1]),false)
+ expect("small blinds take one card",can_play(cards_of("kc")),true)
+ boss=boss_specs["the club"]
+end
+
 function run_cases()
  reset_levels()
+ boss_cases()
  for case in all(hand_cases) do
   local spec,scoring=evaluate(cards_of(case[1]))
   expect(case[1].." is",spec.name,case[2])

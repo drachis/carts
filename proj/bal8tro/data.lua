@@ -91,3 +91,16 @@ the boss,4,5
 ]]
 
 ante_bases=split"3,8,20,50,110,200,350,500"
+
+boss_specs=parse_table[[
+name,text,factor,debuff,hands,discards,must,halve
+the club,clubs are debuffed,4,3,,,,
+the goad,spades are debuffed,4,1,,,,
+the head,hearts are debuffed,4,2,,,,
+the window,diamonds are debuffed,4,4,,,,
+the wall,extra large blind,8,,,,,
+the needle,play only 1 hand,2,,1,,,
+the water,start with 0 discards,4,,,0,,
+the psychic,must play 5 cards,4,,,,5,
+the flint,base chips+mult halved,4,,,,,1
+]]

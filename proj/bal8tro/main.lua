@@ -16,7 +16,10 @@ function start_blind()
  hand,flying={},{}
  played,hand_label,chips,mult=nil,nil,0,0
  pops={}
- hands_left,discards_left=hands_per_blind,discards_per_blind
+ if blind==1 then boss=rnd(boss_specs) end
+ local active=boss_on()
+ hands_left=active and active.hands or hands_per_blind
+ discards_left=active and active.discards or discards_per_blind
  score,shown_score=0,0
  goal=blind_goal(ante,blind)
  cursor=1
@@ -94,7 +97,7 @@ function update_play()
   local spec,_,_,label=evaluate(picked)
   hand_label=hand_title(spec,label)
   chips,mult=hand_base(spec)
-  if btnp(5) then play_hand()
+  if btnp(5) and can_play(picked) then play_hand()
   elseif btnp(3) and discards_left>0 then discard_hand() end
  end
 end
@@ -144,7 +147,7 @@ end
 
 function cash_out()
  earnings={
-  {blind_specs[blind].name,blind_specs[blind].reward},
+  {blind_name(blind),blind_specs[blind].reward},
   {"hands left",hands_left},
   {"interest",min(money\interest_step,interest_cap)}
  }
