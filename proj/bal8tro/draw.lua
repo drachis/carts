@@ -38,6 +38,10 @@ function slide(panel)
  camera(0,-drop)
 end
 
+function pull(speed,target,at)
+ return mid(-glide_cap,((speed or 0)+(target-at)*spring)*damping,glide_cap)
+end
+
 function glide(thing,x,y)
  if not thing.glide_x then thing.glide_x,thing.glide_y,thing.wait=x,y,0 end
  if is_active(thing) then y-=3 end
@@ -45,18 +49,16 @@ function glide(thing,x,y)
   thing.wait-=1
   if thing.wait==0 then
    sfx(snd_deal)
-   turn_over(thing)
+   thing.flip=0
   end
  elseif (thing.hold or 0)>0 then
   thing.hold-=1
  else
-  thing.vx=mid(-glide_cap,((thing.vx or 0)+(x-thing.glide_x)*spring)*damping,glide_cap)
-  thing.vy=mid(-glide_cap,((thing.vy or 0)+(y-thing.glide_y)*spring)*damping,glide_cap)
+  thing.vx,thing.vy=pull(thing.vx,x,thing.glide_x),pull(thing.vy,y,thing.glide_y)
   thing.glide_x+=thing.vx
   thing.glide_y+=thing.vy
  end
- local dx,dy=jiggle(thing)
- thing.x,thing.y=flr(thing.glide_x+dx+.5),flr(thing.glide_y+dy+.5)
+ thing.x,thing.y=flr(thing.glide_x+jiggle(thing)+.5),flr(thing.glide_y+.5)
  return thing.x,thing.y
 end
 
@@ -158,8 +160,7 @@ function draw_sidebar()
 end
 
 function draw_table_button(button,enabled,focused)
- local dx,dy=jiggle(button)
- local x,y=button.left+dx,104+dy-(focused and 1 or 0)
+ local x,y=button.left+jiggle(button),104-(focused and 1 or 0)
  rectfill(x,y,x+16,y+9,enabled and button.colour or 5)
  print_centre(button.label,y+3,enabled and 7 or 6,x+9)
  if focused then rect(x-1,y-1,x+17,y+10,10) end

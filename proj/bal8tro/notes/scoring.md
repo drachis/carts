@@ -27,5 +27,5 @@ Scores are 32-bit integers: a value n is stored as n>>16, so they reach about 2 
 Keep: big_text prints with tostr(n,2) (manual: "write VAL as a signed 32-bit integer by shifting it left by 16 bits"). Compare and add scores only with other >>16 values.
 
 **scoring.lua:104** `function blind_goal(ante,which)`
-Turns the base (hundreds) into 32-bit first, then multiplies by 50 and the factor (halves), so 100000 never passes through a plain number. The boss blind uses its boss's factor (the wall 8, the needle 2). next_blind, below it, gives the ante and blind after the current one; an ante past #ante_bases means the run is won. blind_name gives the boss's own name for the boss blind.
+Turns the base (hundreds) into 32-bit first, then multiplies by 50 and the factor (halves), so 100000 never passes through a plain number. The boss blind uses its boss's factor (the wall 8, the needle 2). next_blind, below it, gives the ante and blind after the current one; an ante past #ante_bases means the run is won. blind_name(which,field) reads a field (name by default) from the blind's row, or the boss's for the boss blind; blind_goal reads factor through it.
 Keep: tests/test_hands.lua checks goals from 300 to 100000, and 200000 for the wall at ante 8.

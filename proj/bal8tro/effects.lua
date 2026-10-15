@@ -17,10 +17,6 @@ function kick(thing,amount)
  thing.kick,thing.juice=amount,0
 end
 
-function turn_over(card)
- card.flip=0
-end
-
 function after(frames,action)
  add(timers,{frames=frames,action=action})
 end
@@ -29,18 +25,14 @@ function hitstop(frames)
  freeze=max(freeze,frames)
 end
 
-function flash(frames)
- flash_frames=max(flash_frames,frames)
-end
-
 function jiggle(thing)
  local age=thing.juice or juice_frames
  thing.swell=0
- if age>=juice_frames then return 0,0 end
+ if age>=juice_frames then return 0 end
  thing.juice+=1
  local left=1-age/juice_frames
  thing.swell=-thing.kick*sin(age*.135)*left*left*left
- return thing.kick*sin(age*.108)*left*left/2,0
+ return thing.kick*sin(age*.108)*left*left/2
 end
 
 function flame_band(left,right,base,height)

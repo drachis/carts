@@ -198,7 +198,7 @@ function update_score()
   emit("shower",chips_x,boxes_y)
   emit("shower",mult_x,boxes_y)
   hitstop(min(4+total/goal*4,12))
-  if score+total>=goal then flash(3) end
+  if score+total>=goal then flash_frames=3 end
   shake=min(2+total/goal*4,8)
   sfx(snd_total)
   step_timer=score+total<goal and hands_left==0 and lose_hold or total_hold
