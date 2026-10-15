@@ -1,7 +1,7 @@
 function _init()
  mode,deck_choice,deck_spec,intro_t,intro_cards=skip_intro and "title" or "intro",1,deck_specs[1],skip_intro and 2000 or 0,{}
  shown_score,title_cards=0,{}
- for i,rank in ipairs(split"8,14,11,14,10,9,12") do add(title_cards,{rank=rank,suit=i%4+1,glide_x=16,glide_y=78,wait=30+i*deal_frames}) end
+ for i,rank in ipairs(split"8,14,11,14,10,9,12") do add(title_cards,{rank=rank,suit=i%4+1,glide_x=16,glide_y=78,wait=48+i*deal_frames}) end
  poke(0x5f5c,8,2)
 end
 

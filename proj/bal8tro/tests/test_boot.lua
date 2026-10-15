@@ -21,7 +21,7 @@ function _update60()
   n+=1
   game_update()
   game_draw()
-  for frame in all(split"90,200,330,480,640,720,800,860,950,1060") do
+  for frame in all(split"90,200,330,480,640,720,765,785,830,900") do
    if n==frame then dump_screen("boot_intro_"..n) end
   end
   if n==1180 then

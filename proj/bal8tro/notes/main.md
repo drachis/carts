@@ -1,7 +1,7 @@
 # main.lua
 
 **main.lua:1** `function _init()`
-The cart starts in the intro (intro.lua), or on the title when a test cart has set skip_intro. mode is intro, title, play, score, cashout, shop, pack, info, won or lost. tests/test_boot.lua reads it. deck_choice is the title's deck (left/right wrap through deck_specs; the arithmetic adds the count before % because % on negatives is not in the manual); the title sets deck_spec with it, whose hands, discards and money start_run and start_blind add. title_cards is the title's hand, 8 A J A T 9 Q (it reads BAL8TRO, as the user asked), dealt face down from the deck pile one every deal_frames after 30 frames, turning over as each lands.
+The cart starts in the intro (intro.lua), or on the title when a test cart has set skip_intro. mode is intro, title, play, score, cashout, shop, pack, info, won or lost. tests/test_boot.lua reads it. deck_choice is the title's deck (left/right wrap through deck_specs; the arithmetic adds the count before % because % on negatives is not in the manual); the title sets deck_spec with it, whose hands, discards and money start_run and start_blind add. title_cards is the title's hand, 8 A J A T 9 Q (it reads BAL8TRO, as the user asked), dealt face down from the deck pile one every deal_frames after 48 frames (as the intro's white clears, so the deal is seen: the user asked for it), turning over as each lands.
 Keep: tests/test_boot.lua presses start at frame 120, after the deal.
 
 **main.lua:17** `function open_select()`

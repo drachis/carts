@@ -324,7 +324,7 @@ function draw_title()
  print_centre("⬅️ "..deck_spec.name.." deck ➡️",82,7,68)
  print_centre(deck_spec.text,90,9,68)
  print_centre("press 🅾️ to start",112,10)
- local fade=(intro_t-intro_end)\60
+ local fade=(intro_t-intro_end)\12
  if fade<4 then
   fillp(({0,▓,▒,░})[fade+1])
   rectfill(0,0,127,127,7)

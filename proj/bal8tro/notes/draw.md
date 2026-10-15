@@ -63,4 +63,4 @@ Keep: never name a global flip. It replaced PICO-8's own flip(), and the cart st
 The Joker as a card: the card face sprite and joker portrait 32 stretched together with sspr, scale in card widths. The intro's splash Joker (1.2) and Jimbo (1.75) are both this.
 
 **draw.lua:327** `local fade=(intro_t-intro_end)`
-The title fades in out of the intro's white, as Balatro's menu does out of its flash (held, then gone over 4s): white through fillp patterns, solid, then dense, half and sparse, 60 frames each. intro_t counts on in update_title (capped at 2000, which is also where skip_intro starts it, past the fade).
+The title fades in out of the intro's white, as Balatro's menu does out of its flash (Balatro holds it, then clears it over 4s; the user found that long white a freeze): white through fillp patterns, solid, then dense, half and sparse, 12 frames each, so the title shows within 48 frames. intro_t counts on in update_title (capped at 2000, which is also where skip_intro starts it, past the fade).

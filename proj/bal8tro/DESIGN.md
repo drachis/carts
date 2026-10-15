@@ -43,7 +43,8 @@ the layout); the challenge is fitting it in one cart.
 ## The game
 
 - **A run:** Balatro's splash (the Joker, cards pulled into a blue vortex,
-  a white bloom, 834 frames as Balatro's 13.9s; O skips), the title, then Balatro's eight antes of three blinds each
+  a white bloom, 760 frames, the title clearing out of the white in 48 and
+  then dealing its hand; O skips), the title, then Balatro's eight antes of three blinds each
   (small, big, boss at 1, 1.5 and 2 times the ante's base of 300, 800,
   2000, 5000, 11000, 20000, 35000, 50000). Clearing ante 8's boss
   (100000) wins; running out of hands loses; O restarts. The title deals
