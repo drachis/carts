@@ -62,9 +62,8 @@ local presses=parse_record[[
 256=4
 258=3
 260=3
-262=0
 264=4
-266=1
+266=0
 268=4
 280=2
 282=1
@@ -84,9 +83,8 @@ local presses=parse_record[[
 510=4
 512=5
 620=4
-622=3
-624=3
-626=1
+622=0
+624=0
 628=4
 650=4
 652=5
@@ -184,7 +182,7 @@ function boot_frame()
  if n==249 then expect("bought jolly for $3",#jokers..",$"..money,"4,$7") end
  if n==251 then expect("mercury bought with the joker slots full",#jokers..",$"..money..",lv"..hand_levels.pair,"4,$4,lv2") end
  if n==257 then expect("sold greedy for $2",#jokers..",$"..money..","..jokers[2].name,"3,$6,sly") end
- if n==261 then expect("down twice reaches the buttons",shop_row..","..shop_column,"3,2") end
+ if n==261 then expect("after selling, down lands on reroll",shop_focus.row..","..shop_focus.columns[2],"2,2") end
  if n==263 then dump_screen("boot_shop_buttons") end
  if n==265 then expect("rerolled for $5",money..","..reroll_cost..","..#shop_items,"1,6,2") end
  if n==270 then expect_mode("play") expect("blind",blind,2) expect("jokers kept",#jokers,3) end

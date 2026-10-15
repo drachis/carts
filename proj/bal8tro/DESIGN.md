@@ -92,17 +92,12 @@ the cart.
   level adds; the panel shows the hand's level ("pair lv2"). A planet
   costs $3, needs no slot and is used as soon as it is bought (Balatro
   keeps it in a consumable slot first).
-- Then the shop (after every blind, bosses included): two items, each a
-  planet one time in three, otherwise a joker (no duplicates of owned
-  jokers) for sale; sell an owned joker for half its price, reroll for $5 (+$1 each reroll), or go on to the next blind.
-  Up/down pick the row (owned, for sale, buttons), left/right the item, O
-  acts; the bottom line says what O will do or why it cannot.
-
-## Tests
-
-    py run_tests.py --no-comments
-    py count_tokens.py bal8tro.p8
-
+- Then the shop (after every blind, bosses included), laid out like
+  Balatro's: the sidebar (its strip reading "the shop") and the joker row
+  stay, and a panel holds next-blind and reroll ($5, +$1 a reroll) on
+  the left and two cards for sale with price tags: each a planet one
+  time in three, otherwise a joker never owned. Up to the joker row to
+  sell (half price); a tooltip names whatever the cursor is on.
 - `test_boot`: the real cart from the title through a scripted pair of
   kings (checks 480 with joker and sly), the cash-out ($10), the shop
   (a buy, a refused buy with the slots full, a sale, a reroll, next

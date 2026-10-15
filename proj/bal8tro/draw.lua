@@ -70,17 +70,6 @@ function draw_card(card,x,y)
  clip()
 end
 
-function draw_joker(joker,x,y,focused)
- if is_active(joker) then y-=3 end
- x,y=glide(joker,x,y)
- rectfill(x,y,x+30,y+19,7)
- rect(x,y,x+30,y+19,focused and 10 or 13)
- print(joker.name,x+2,y+2,2)
- print(joker.text,x+2,y+8,joker.chips and 12 or 8)
- print(joker.cond or "",x+2,y+14,5)
- if joker.cond=="per" then spr(16+joker.need,x+15,y+14) end
-end
-
 function draw_mini_joker(joker,x,y,focused)
  if is_active(joker) then y-=3 end
  x,y=glide(joker,x,y)
@@ -91,15 +80,27 @@ function draw_mini_joker(joker,x,y,focused)
  print_centre(effect,y+12,joker.chips and 12 or 8,x+10)
 end
 
-function draw_tooltip(joker)
- local x=mid(40,joker.x-20,66)
- rectfill(x,25,x+60,44,7)
- rect(x,25,x+60,44,0)
- print(joker.name,x+3,27,2)
- print(joker.text,x+3,33,joker.chips and 12 or 8)
- print(joker.cond or "",x+3,39,5)
- if joker.cond=="per" then spr(16+joker.need,x+17,39) end
- print_right("sell $"..sell_price(joker),x+59,39,5)
+function draw_tooltip(thing,y)
+ local x,hand=mid(40,thing.x-20,66),thing.hand
+ rectfill(x,y,x+60,y+19,7)
+ rect(x,y,x+60,y+19,0)
+ print(thing.name,x+3,y+2,2)
+ if hand then
+  print(hand.label,x+3,y+8,12)
+  print("lvl "..hand_levels[hand.name].." > "..hand_levels[hand.name]+1,x+3,y+14,5)
+  return
+ end
+ print(thing.text,x+3,y+8,thing.chips and 12 or 8)
+ print(thing.cond or "",x+3,y+14,5)
+ if thing.cond=="per" then spr(16+thing.need,x+17,y+14) end
+ if count(jokers,thing)>0 then print_right("sell $"..sell_price(thing),x+59,y+14,5) end
+end
+
+function draw_joker_row(focused)
+ for i=1,joker_slots do
+  local x,joker=42+(i-1)*21,jokers[i]
+  if joker then draw_mini_joker(joker,x,3,focused==i) else rect(x,3,x+19,22,11) end
+ end
 end
 
 function sidebar_box(box)
@@ -112,10 +113,11 @@ end
 function draw_sidebar()
  rectfill(-8,-8,38,135,1)
  line(39,-8,39,135,heat>=2 and rnd(split"8,9,10") or 0)
- rectfill(1,1,37,13,boss_on() and 8 or blind==2 and 9 or 12)
- local words=split(blind_name(blind)," ")
- print_centre(words[1],2,7,19)
- print_centre(words[2],8,7,19)
+ local in_shop=mode=="shop"
+ rectfill(1,1,37,13,in_shop and 10 or boss_on() and 8 or blind==2 and 9 or 12)
+ local words=split(in_shop and "the shop" or blind_name(blind)," ")
+ print_centre(words[1],2,in_shop and 8 or 7,19)
+ print_centre(words[2],8,in_shop and 8 or 7,19)
  for box in all(sidebar_boxes) do sidebar_box(box) end
  draw_flames()
  rectfill(chips_x-chips_bump,boxes_y-chips_bump,chips_x+16+chips_bump,boxes_y+8+chips_bump,12)
@@ -146,10 +148,7 @@ end
 function draw_table()
  draw_swirl(3,1,0)
  draw_sidebar()
- for i=1,joker_slots do
-  local x,joker=42+(i-1)*21,jokers[i]
-  if joker then draw_mini_joker(joker,x,3,joker_focus==i) else rect(x,3,x+19,22,11) end
- end
+ draw_joker_row(joker_focus)
  if played then
   local left=table_centre-#played*8
   for i,card in ipairs(played) do
@@ -178,7 +177,7 @@ function draw_table()
  end
  local hints=split"⬇️ back to hand,🅾️pick ❎play,🅾️ press"
  if mode=="play" then print_centre(hints[table_focus.row],118,6,74) end
- if joker_focus then draw_tooltip(jokers[joker_focus]) end
+ if joker_focus then draw_tooltip(jokers[joker_focus],25) end
  draw_floor_fire()
  draw_particles()
  for p in all(pops) do
