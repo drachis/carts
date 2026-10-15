@@ -13,7 +13,7 @@ end
 
 function start_blind()
  deck=new_deck()
- hand={}
+ hand,flying={},{}
  played,hand_label,chips,mult=nil,nil,0,0
  pops={}
  hands_left,discards_left=hands_per_blind,discards_per_blind
@@ -26,7 +26,12 @@ function start_blind()
 end
 
 function draw_up()
- while #hand<hand_size and #deck>0 do add(hand,deli(deck)) end
+ local dealt=0
+ while #hand<hand_size and #deck>0 do
+  local card=add(hand,deli(deck))
+  card.glide_x,card.glide_y,card.wait=deck_x,deck_y,1+dealt*deal_frames
+  dealt+=1
+ end
  sort_cards(hand,sort_by_suit)
 end
 
@@ -48,6 +53,10 @@ function take_picked()
  return picked
 end
 
+function fly_away(cards)
+ for card in all(cards) do add(flying,card) end
+end
+
 function play_hand()
  hands_left-=1
  played=take_picked()
@@ -61,7 +70,7 @@ end
 
 function discard_hand()
  discards_left-=1
- take_picked()
+ fly_away(take_picked())
  draw_up()
 end
 
@@ -119,6 +128,7 @@ function update_score()
 end
 
 function finish_hand()
+ fly_away(played)
  played,hand_label,chips,mult=nil,nil,0,0
  draw_up()
  if score>=goal then

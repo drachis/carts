@@ -104,6 +104,7 @@ SOUNDS = [
     (2, [(48, 0, 3, 0), (52, 0, 2, 5)]),                  # 2 pick a card
     (6, [(24, 3, 5, 0), (31, 3, 5, 0), (36, 3, 5, 0),
          (43, 3, 4, 5)]),                                 # 3 hand total
+    (1, [(40, 6, 2, 0), (34, 6, 1, 5)]),                  # 4 card dealt
 ]
 # a pattern is "FF AABBCCDD": flags (1 loop start, 2 loop end), then the
 # sfx on each of four channels, 0x40 and over meaning silent

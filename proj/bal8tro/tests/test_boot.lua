@@ -93,6 +93,11 @@ function boot_frame()
  game_update()
  game_draw()
  if n==5 then dump_screen("boot_title") end
+ if n==41 or n==80 then
+  local waiting=0
+  for card in all(hand) do if card.wait>0 then waiting+=1 end end
+  expect("cards still on the deck at frame "..n,waiting,n==41 and 7 or 0)
+ end
  if n==41 then
   expect_mode("play")
   expect("a run starts with no jokers",#jokers,0)
@@ -117,7 +122,9 @@ function boot_frame()
  if n==263 then dump_screen("boot_shop_buttons") end
  if n==265 then expect("rerolled for $5",money..","..reroll_cost..","..#shop_items,"1,6,2") end
  if n==270 then expect_mode("play") expect("blind",blind,2) expect("jokers kept",#jokers,3) end
+ if n==293 then expect("the discard flies off",#flying,1) dump_screen("boot_discard") end
  if n==295 then expect("discards left",discards_left,2) expect("hand refilled",#hand,8) end
+ if n==320 then expect("the discard has left the screen",#flying,0) end
  if n==480 then expect_mode("lost") dump_screen("boot_lost") end
  if n==492 then expect("restart clears jokers",#jokers,0) end
  if n==615 then expect_mode("cashout") expect("the boss pays $5",earnings[1][2],5) end

@@ -16,16 +16,30 @@ function is_active(thing)
 end
 
 function glide(thing,x,y)
- if not thing.glide_x then thing.glide_x,thing.glide_y=x,y end
- thing.glide_x+=(x-thing.glide_x)/4
- thing.glide_y+=(y-thing.glide_y)/4
+ if not thing.glide_x then thing.glide_x,thing.glide_y,thing.wait=x,y,0 end
+ if thing.wait>0 then
+  thing.wait-=1
+  if thing.wait==0 then sfx(snd_deal) end
+ else
+  thing.glide_x+=(x-thing.glide_x)/4
+  thing.glide_y+=(y-thing.glide_y)/4
+ end
  thing.x,thing.y=flr(thing.glide_x+.5),flr(thing.glide_y+.5)
  return thing.x,thing.y
+end
+
+function draw_back(x,y)
+ rectfill(x,y,x+14,y+20,8)
+ fillp(░)
+ rectfill(x+2,y+2,x+12,y+18,0x82)
+ fillp()
+ rect(x,y,x+14,y+20,7)
 end
 
 function draw_card(card,x,y)
  if is_active(card) then y-=3 end
  x,y=glide(card,x,y)
+ if card.wait>0 then draw_back(x,y) return end
  rectfill(x,y,x+14,y+20,7)
  rect(x,y,x+14,y+20,6)
  pset(x,y,0) pset(x+14,y,0) pset(x,y+20,0) pset(x+14,y+20,0)
@@ -78,6 +92,11 @@ function draw_table()
    local scores=count(scoring_cards,card)>0
    draw_card(card,left+(i-1)*16,scores and 68 or 72)
   end
+ end
+ for i=0,min(#deck\13,3) do draw_back(deck_x-i,deck_y-i) end
+ for card in all(flying) do
+  draw_card(card,150,80)
+  if card.x>127 then del(flying,card) end
  end
  for i,card in ipairs(hand) do
   local arc=(i-4.5)*(i-4.5)\4+sin(t()/3+i/8)*.8
