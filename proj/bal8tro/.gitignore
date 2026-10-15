@@ -10,3 +10,5 @@ run.txt
 function_tokens.txt
 reference/
 tests/lite/
+tests/golden.base
+tests/golden.p8l
