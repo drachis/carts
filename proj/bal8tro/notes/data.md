@@ -14,7 +14,7 @@ Keep: name, text and cond are at most 7 characters each (the 31px shop joker); t
 Each spec's sprite is 31 plus its row number, set just below the sidebar table; a new joker needs its portrait added to JOKER_ART in gen_cart.py in the same position.
 
 **data.lua:117** `blind_specs=parse_table[[`
-The three blinds of every ante, with Balatro's rewards ($3, $4, $5). factor is the blind's goal multiplier in halves (Balatro's 1, 1.5, 2) so it stays whole; blind_goal uses it.
+The three blinds of every ante, with Balatro's rewards ($3, $4, $5). factor is the blind's goal multiplier in halves (Balatro's 1, 1.5, 2) so it stays whole; blind_goal uses it. colour is the sidebar sign and select chip (blue, orange, red).
 
 **data.lua:124** `ante_bases=split"3,8,20,50,110,200,350,500"`
 Balatro's eight ante base scores, in hundreds, because 50000 is past PICO-8's 32767. A run is won by clearing the boss of the last ante.
