@@ -34,7 +34,7 @@ function shop_message()
   return "🅾️ buy for $"..item.cost
  end
  if column==1 then return money<reroll_cost and "not enough money" or "🅾️ reroll for $"..reroll_cost end
- return "🅾️ next: "..blind_specs[blind+1].name
+ return "🅾️ go to the next blind"
 end
 
 function update_shop()
@@ -61,7 +61,7 @@ function update_shop()
    shop_items=deal_jokers(shop_slots,jokers)
   end
  else
-  blind+=1
+  ante,blind=next_blind()
   start_blind()
   return
  end
@@ -92,6 +92,8 @@ function draw_shop()
  end
  draw_button("reroll $"..reroll_cost,8,3,shop_row==3 and shop_column==1)
  draw_button("next blind",68,8,shop_row==3 and shop_column==2)
- print_centre("next: "..blind_specs[blind+1].name.."  goal "..blind_specs[blind+1].goal,106,6)
+ local next_ante,next=next_blind()
+ print_centre("next: ante "..next_ante.." "..blind_specs[next].name,100,6)
+ print_centre("goal "..big_text(blind_goal(next_ante,next)),108,9)
  print_centre(shop_message(),116,7)
 end

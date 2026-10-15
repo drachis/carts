@@ -4,7 +4,7 @@ function _init()
 end
 
 function start_run()
- blind=1
+ ante,blind=1,1
  money=start_money
  jokers={}
  start_blind()
@@ -17,7 +17,7 @@ function start_blind()
  pops={}
  hands_left,discards_left=hands_per_blind,discards_per_blind
  score,shown_score=0,0
- goal=blind_specs[blind].goal>>16
+ goal=blind_goal(ante,blind)
  cursor=1
  sort_by_suit=false
  draw_up()
@@ -120,7 +120,7 @@ function finish_hand()
  played,hand_label,chips,mult=nil,nil,0,0
  draw_up()
  if score>=goal then
-  if blind==#blind_specs then mode="won" else cash_out() end
+  if next_blind()>#ante_bases then mode="won" else cash_out() end
  elseif hands_left==0 then
   mode="lost"
  else

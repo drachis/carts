@@ -58,6 +58,13 @@ local presses=parse_record[[
 490=4
 510=4
 512=5
+620=4
+622=3
+624=3
+626=1
+628=4
+650=4
+652=5
 ]]
 
 function _draw() end
@@ -76,7 +83,8 @@ function boot_frame()
   money=10
  end
  if n==308 then hands_left=1 end
- if n==500 then
+ if n==500 or n==640 then
+  ante=n==500 and 1 or #ante_bases
   blind=#blind_specs
   start_blind()
   score=goal
@@ -109,8 +117,15 @@ function boot_frame()
  if n==295 then expect("discards left",discards_left,2) expect("hand refilled",#hand,8) end
  if n==480 then expect_mode("lost") dump_screen("boot_lost") end
  if n==492 then expect("restart clears jokers",#jokers,0) end
- if n==700 then expect_mode("won") dump_screen("boot_won") end
- if n==710 then
+ if n==615 then expect_mode("cashout") expect("the boss pays $5",earnings[1][2],5) end
+ if n==621 then dump_screen("boot_shop_ante") end
+ if n==630 then
+  expect_mode("play")
+  expect("after the boss",ante..","..blind..","..big_text(goal),"2,1,800")
+  dump_screen("boot_ante_2")
+ end
+ if n==790 then expect_mode("won") dump_screen("boot_won") end
+ if n==800 then
   printh("ok boot")
   extcmd("shutdown")
  end

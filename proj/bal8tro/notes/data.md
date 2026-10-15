@@ -12,4 +12,7 @@ when=card: fires once per scoring card that matches need (a suit number 1..4, or
 Keep: name, text and cond are at most 7 characters each, to fit the 31px joker that lets four sit across the screen.
 
 **data.lua:78** `blind_specs=parse_table[[`
-One ante: three blinds, with Balatro's goals and rewards ($3, $4, $5). Goals are plain numbers here and become 32-bit (>>16) in start_blind.
+The three blinds of every ante, with Balatro's rewards ($3, $4, $5). factor is the blind's goal multiplier in halves (Balatro's 1, 1.5, 2) so it stays whole; blind_goal uses it.
+
+**data.lua:85** `ante_bases=split"3,8,20,50,110,200,350,500"`
+Balatro's eight ante base scores, in hundreds, because 50000 is past PICO-8's 32767. A run is won by clearing the boss of the last ante.

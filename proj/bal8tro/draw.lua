@@ -42,7 +42,8 @@ function draw_panel()
  rectfill(0,0,127,41,1)
  print(blind_specs[blind].name,2,2,7)
  print("goal "..big_text(goal),2,9,9)
- print_centre("$"..money,5,10)
+ print_right("ante "..ante.."/"..#ante_bases,102,2,13)
+ print("$"..money,2,17,10)
  print_right("score",126,2,6)
  print_right(big_text(shown_score),126,9,7)
  if hand_label then print_centre(hand_label,17,7) end
@@ -112,6 +113,6 @@ function _draw()
  if mode=="shop" then draw_shop() return end
  draw_table()
  if mode=="cashout" then draw_banner("blind defeated!","🅾️ cash out $"..earned,11,earnings)
- elseif mode=="won" then draw_banner("you beat ante 1!","🅾️ play again",10,{})
+ elseif mode=="won" then draw_banner("you beat ante "..ante.."!","🅾️ play again",10,{})
  elseif mode=="lost" then draw_banner("game over","🅾️ try again",8,{}) end
 end

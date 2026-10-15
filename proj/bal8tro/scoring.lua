@@ -41,6 +41,15 @@ function hand_total(chips,mult)
  return (chips>>16)*mult
 end
 
+function blind_goal(ante,blind)
+ return (ante_bases[ante]>>16)*50*blind_specs[blind].factor
+end
+
+function next_blind()
+ if blind<#blind_specs then return ante,blind+1 end
+ return ante+1,1
+end
+
 function big_text(number)
  return tostr(number,2)
 end

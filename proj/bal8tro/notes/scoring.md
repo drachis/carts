@@ -10,3 +10,7 @@ Keep: xmult is applied after that step's +mult (apply_step), so a joker's own +m
 **scoring.lua:40** `function hand_total(chips,mult)`
 Scores are 32-bit integers: a value n is stored as n>>16, so they reach about 2 billion instead of 32767. chips and mult stay plain numbers below 32767.
 Keep: big_text prints with tostr(n,2) (manual: "write VAL as a signed 32-bit integer by shifting it left by 16 bits"). Compare and add scores only with other >>16 values.
+
+**scoring.lua:44** `function blind_goal(ante,blind)`
+Turns the base (hundreds) into 32-bit first, then multiplies by 50 and the factor (halves), so 100000 never passes through a plain number. next_blind, below it, gives the ante and blind after the current one; an ante past #ante_bases means the run is won.
+Keep: tests/test_hands.lua checks goals from 300 to 100000.

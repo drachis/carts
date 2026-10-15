@@ -74,6 +74,10 @@ function run_cases()
  expect("sorted by rank",hand[1].rank..","..hand[4].suit,"14,1")
  sort_cards(hand,true)
  expect("sorted by suit",hand[1].suit..","..hand[1].rank,"2,13")
+ for case in all(split("1,1,300|1,3,600|2,2,1200|4,3,10000|5,2,16500|8,1,50000|8,3,100000","|")) do
+  local values=split(case,",",false)
+  expect("goal of ante "..values[1].." blind "..values[2],big_text(blind_goal(tonum(values[1]),tonum(values[2]))),values[3])
+ end
  local owned={}
  for i=1,#joker_specs-2 do add(owned,setmetatable({},joker_specs[i])) end
  local offered=deal_jokers(3,owned)

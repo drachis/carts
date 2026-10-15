@@ -76,8 +76,10 @@ tribe,x2 mult,flush,hand,flush,,,2,8
 ]]
 
 blind_specs=parse_table[[
-name,goal,reward
-small blind,300,3
-big blind,450,4
-the boss,600,5
+name,factor,reward
+small blind,2,3
+big blind,3,4
+the boss,4,5
 ]]
+
+ante_bases=split"3,8,20,50,110,200,350,500"

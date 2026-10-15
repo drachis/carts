@@ -1,7 +1,7 @@
 # shop.lua
 
 **shop.lua:1** `function open_shop()`
-Opens after every cash-out but the last blind's. Two jokers for sale, reroll at $5 rising $1 a reroll, back to $5 next shop. The cursor starts on the first joker for sale.
+Opens after every cash-out, the bosses' included; only the last ante's boss ends the run instead. Its foot names the next ante, blind and goal. Two jokers for sale, reroll at $5 rising $1 a reroll, back to $5 next shop. The cursor starts on the first joker for sale.
 
 **shop.lua:8** `function sell_price(joker)`
 Balatro's sell value: half the cost, at least $1.
