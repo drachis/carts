@@ -7,6 +7,7 @@ function start_run()
  ante,blind=1,1
  money=start_money
  jokers={}
+ reset_levels()
  start_blind()
 end
 
@@ -50,9 +51,10 @@ end
 function play_hand()
  hands_left-=1
  played=take_picked()
- local spec
- spec,hand_label,scoring_cards,steps=score_steps(played,jokers)
- chips,mult=spec.chips,spec.mult
+ local spec,label
+ spec,label,scoring_cards,steps=score_steps(played,jokers)
+ hand_label=hand_title(spec,label)
+ chips,mult=hand_base(spec)
  step_index,step_timer,active_step=0,30
  mode="score"
 end
@@ -80,9 +82,9 @@ function update_play()
  local picked=picked_cards()
  hand_label,chips,mult=nil,0,0
  if #picked>0 then
-  local spec
-  spec,_,_,hand_label=evaluate(picked)
-  chips,mult=spec.chips,spec.mult
+  local spec,_,_,label=evaluate(picked)
+  hand_label=hand_title(spec,label)
+  chips,mult=hand_base(spec)
   if btnp(5) then play_hand()
   elseif btnp(3) and discards_left>0 then discard_hand() end
  end

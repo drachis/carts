@@ -34,6 +34,8 @@ discards_per_blind=3
 joker_slots=4
 shop_slots=2
 reroll_base=5
+planet_cost=3
+planet_chance=0.33
 step_frames=18
 start_money=4
 interest_step=5
@@ -45,16 +47,16 @@ snd_total=3
 ]],nil,_ENV)
 
 hand_specs=parse_table[[
-name,label,chips,mult
-high,high card,5,1
-pair,pair,10,2
-two,two pair,20,2
-three,three of a kind,30,3
-straight,straight,30,4
-flush,flush,35,4
-full,full house,40,4
-four,four of a kind,60,7
-sflush,straight flush,100,8
+name,label,chips,mult,planet,short,level_chips,level_mult
+high,high card,5,1,pluto,high,10,1
+pair,pair,10,2,mercury,pair,15,1
+two,two pair,20,2,uranus,2 pair,20,1
+three,three of a kind,30,3,venus,3 kind,20,2
+straight,straight,30,4,saturn,str8,30,3
+flush,flush,35,4,jupiter,flush,15,2
+full,full house,40,4,earth,full hs,25,2
+four,four of a kind,60,7,mars,4 kind,30,3
+sflush,straight flush,100,8,neptune,str8 fl,40,4
 ]]
 
 joker_specs=parse_table[[

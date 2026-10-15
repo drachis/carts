@@ -54,6 +54,7 @@ score_cases={
 }
 
 function run_cases()
+ reset_levels()
  for case in all(hand_cases) do
   local spec,scoring=evaluate(cards_of(case[1]))
   expect(case[1].." is",spec.name,case[2])
@@ -63,10 +64,18 @@ function run_cases()
  expect("royal flush label",label,"royal flush")
  for case in all(score_cases) do
   local spec,_,_,steps=score_steps(cards_of(case[1]),jokers_of(case[2]))
-  local chips,mult=spec.chips,spec.mult
+  local chips,mult=hand_base(spec)
   for step in all(steps) do chips,mult=apply_step(step,chips,mult) end
   expect(case[1].." with "..case[2],chips*mult,case[3])
  end
+ hand_levels.pair=3
+ local chips,mult=hand_base(hand_specs.pair)
+ expect("pair at level 3 (mercury twice)",chips..","..mult,"40,4")
+ expect("pair's title at level 3",hand_title(hand_specs.pair,"pair"),"pair lv3")
+ hand_levels.sflush=2
+ chips,mult=hand_base(hand_specs.sflush)
+ expect("straight flush at level 2 (neptune)",chips..","..mult,"140,12")
+ reset_levels()
  expect("big total",big_text(hand_total(300,200)),"60000")
  expect("bigger total",big_text(hand_total(1000,1000)),"1000000")
  local hand=cards_of("2s kh 2h as")

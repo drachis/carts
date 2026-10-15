@@ -1,5 +1,15 @@
-function open_shop()
+function deal_shop()
  shop_items=deal_jokers(shop_slots,jokers)
+ for i=1,#shop_items do
+  if rnd()<planet_chance then
+   local hand=rnd(hand_specs)
+   shop_items[i]={hand=hand,name=hand.planet,cost=planet_cost}
+  end
+ end
+end
+
+function open_shop()
+ deal_shop()
  reroll_cost=reroll_base
  shop_row,shop_column=2,1
  mode="shop"
@@ -29,7 +39,7 @@ function shop_message()
  if shop_row==1 then return "🅾️ sell for $"..sell_price(jokers[column]) end
  if shop_row==2 then
   local item=shop_items[column]
-  if #jokers>=joker_slots then return "joker slots full" end
+  if not item.hand and #jokers>=joker_slots then return "joker slots full" end
   if money<item.cost then return "not enough money" end
   return "🅾️ buy for $"..item.cost
  end
@@ -50,15 +60,21 @@ function update_shop()
   deli(jokers,column)
  elseif shop_row==2 then
   local item=shop_items[column]
-  if #jokers<joker_slots and money>=item.cost then
-   money-=item.cost
-   add(jokers,deli(shop_items,column))
+  if money>=item.cost then
+   if item.hand then
+    money-=item.cost
+    hand_levels[item.hand.name]+=1
+    deli(shop_items,column)
+   elseif #jokers<joker_slots then
+    money-=item.cost
+    add(jokers,deli(shop_items,column))
+   end
   end
  elseif column==1 then
   if money>=reroll_cost then
    money-=reroll_cost
    reroll_cost+=1
-   shop_items=deal_jokers(shop_slots,jokers)
+   deal_shop()
   end
  else
   ante,blind=next_blind()
@@ -68,6 +84,15 @@ function update_shop()
  sfx(snd_pick)
  if shop_row_size(shop_row)==0 then move_shop_row(1) end
  shop_column=mid(1,shop_column,shop_row_size(shop_row))
+end
+
+function draw_planet(item,x,y,focused)
+ local hand=item.hand
+ rectfill(x,y,x+30,y+19,13)
+ rect(x,y,x+30,y+19,focused and 10 or 6)
+ print(item.name,x+2,y+2,7)
+ print(hand.short,x+2,y+8,10)
+ print("lv"..hand_levels[hand.name].."+1",x+2,y+14,7)
 end
 
 function draw_button(text,x,colour,focused)
@@ -86,8 +111,8 @@ function draw_shop()
  end
  print("for sale",2,44,6)
  for i,item in ipairs(shop_items) do
-  local x=64-#shop_items*16+(i-1)*32
-  draw_joker(item,x,51,shop_row==2 and i==shop_column)
+  local x,focused=64-#shop_items*16+(i-1)*32,shop_row==2 and i==shop_column
+  if item.hand then draw_planet(item,x,51,focused) else draw_joker(item,x,51,focused) end
   print("$"..item.cost,x+12,73,10)
  end
  draw_button("reroll $"..reroll_cost,8,3,shop_row==3 and shop_column==1)

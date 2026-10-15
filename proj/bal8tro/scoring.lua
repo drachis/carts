@@ -10,6 +10,20 @@ function deal_jokers(count,owned)
  return dealt
 end
 
+function reset_levels()
+ hand_levels={}
+ for spec in all(hand_specs) do hand_levels[spec.name]=1 end
+end
+
+function hand_base(spec)
+ local ups=hand_levels[spec.name]-1
+ return spec.chips+ups*spec.level_chips,spec.mult+ups*spec.level_mult
+end
+
+function hand_title(spec,label)
+ return label.." lv"..hand_levels[spec.name]
+end
+
 function joker_fires_on(joker,card)
  return joker.when=="card" and (joker.need==card.suit or joker.need=="face" and is_face(card))
 end

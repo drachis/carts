@@ -48,8 +48,13 @@ the cart.
   of hands loses. O restarts.
 - Clearing a blind cashes out: the blind's $3/$4/$5, $1 per hand left, and
   $1 interest per $5 held, at most $5.
-- Then the shop (after every blind, bosses included): two jokers for sale, sell an owned joker for half its
-  price, reroll for $5 (+$1 each reroll), or go on to the next blind.
+- Planets level up a hand type, with Balatro's nine planets and what each
+  level adds; the panel shows the hand's level ("pair lv2"). A planet
+  costs $3, needs no slot and is used as soon as it is bought (Balatro
+  keeps it in a consumable slot first).
+- Then the shop (after every blind, bosses included): two items, each a
+  planet one time in three, otherwise a joker (no duplicates of owned
+  jokers) for sale; sell an owned joker for half its price, reroll for $5 (+$1 each reroll), or go on to the next blind.
   Up/down pick the row (owned, for sale, buttons), left/right the item, O
   acts; the bottom line says what O will do or why it cannot.
 
@@ -73,9 +78,9 @@ the cart.
 ## Not built yet, or not checked
 
 - Nobody has played this build. The sounds have never been heard.
-- No planet or tarot cards, booster packs, vouchers, hand levels, boss
+- No tarot cards, booster packs, vouchers, consumable slots, boss
   blind effects, skipping blinds, joker rarities.
-- Without hand levels the late antes are probably out of reach: by
+- The late antes may be out of reach: before planets, by
   arithmetic, a flush with the four best jokers here scores a few
   thousand, and ante 5's boss wants 22000 in four hands. Not measured
   with a bot.

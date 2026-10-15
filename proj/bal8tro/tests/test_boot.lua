@@ -79,7 +79,8 @@ function boot_frame()
  if presses[n] then held[presses[n]]=true end
  if n==45 then known_hand() end
  if n==245 then
-  shop_items=jokers_named"jolly,the duo"
+  shop_items=jokers_named"jolly"
+  add(shop_items,{hand=hand_specs.pair,name="mercury",cost=planet_cost})
   money=10
  end
  if n==308 then hands_left=1 end
@@ -97,7 +98,7 @@ function boot_frame()
   expect("a run starts with no jokers",#jokers,0)
   expect("a run starts with $4",money,4)
  end
- if n==57 then dump_screen("boot_pick") expect("hand picked",hand_label,"pair") end
+ if n==57 then dump_screen("boot_pick") expect("hand picked",hand_label,"pair lv1") end
  if n==150 then dump_screen("boot_score") end
  if n==230 then
   expect_mode("cashout")
@@ -108,11 +109,11 @@ function boot_frame()
  if n==242 then expect_mode("shop") expect("shop offers",#shop_items,2) end
  if n==247 then dump_screen("boot_shop") end
  if n==249 then expect("bought jolly for $3",#jokers..",$"..money,"4,$7") end
- if n==251 then expect("no fifth joker, no money spent",#jokers..",$"..money,"4,$7") end
- if n==257 then expect("sold greedy for $2",#jokers..",$"..money..","..jokers[2].name,"3,$9,sly") end
- if n==261 then expect("down twice reaches the buttons",shop_row..","..shop_column,"3,1") end
+ if n==251 then expect("mercury bought with the joker slots full",#jokers..",$"..money..",lv"..hand_levels.pair,"4,$4,lv2") end
+ if n==257 then expect("sold greedy for $2",#jokers..",$"..money..","..jokers[2].name,"3,$6,sly") end
+ if n==261 then expect("down twice reaches the buttons",shop_row..","..shop_column,"3,2") end
  if n==263 then dump_screen("boot_shop_buttons") end
- if n==265 then expect("rerolled for $5",money..","..reroll_cost..","..#shop_items,"4,6,2") end
+ if n==265 then expect("rerolled for $5",money..","..reroll_cost..","..#shop_items,"1,6,2") end
  if n==270 then expect_mode("play") expect("blind",blind,2) expect("jokers kept",#jokers,3) end
  if n==295 then expect("discards left",discards_left,2) expect("hand refilled",#hand,8) end
  if n==480 then expect_mode("lost") dump_screen("boot_lost") end
