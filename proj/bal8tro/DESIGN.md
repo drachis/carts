@@ -123,23 +123,26 @@ the layout); the challenge is fitting it in one cart.
     py run_tests.py --no-comments
     py count_tokens.py bal8tro.p8
 
-- `test_boot`, `test_score`, `test_mid`, `test_late` (each the real, whole cart,
-  replaying one scripted run from the title, `tests/boot_script.lua`;
-  the checks split by frame because game plus checks passed 8192): boot
-  has the title, deck choice, dealing and the pick; score the pair of
-  kings (480 with joker and sly), kicks, flames, the hitstop; mid the cash-out, the
-  shop (buys, a refusal, a sale, a reroll), the joker row, the buttons,
-  the info overlay, a sort and a discard; late a lost blind, a boss, an
-  arcana pack, ante 2, a won run at ante 8 and a hand five times the goal
-  setting the floor alight. Each dumps its screens. Endings are reached
-  by setting the ante, hands and score, not by play. When the game grows past a cart's room, split its checks into another
-  cart (`py count_tokens.py tests/test_<name>.p8`).
-- `test_hands` (rules, no drawing): every hand type and how many cards it
-  scores, joker combinations, growing jokers, bosses, levels, 32-bit
-  totals, sorts, blind goals.
-- `test_shop` (rules, no drawing): enhancements, every kind of tarot,
-  the three other packs, the run deck, the VFX engine, shop offers and
-  sell prices.
+- Replay carts, each the real, whole game replaying one scripted run
+  from the title (`tests/boot_script.lua`, which pins the older, faster
+  pace its frame-timed checks were written for); their checks are split
+  by frame, in halves, so each has 220-340 tokens of room for the game to
+  grow: `test_boot` (title, deck choice, music), `test_deal` (dealing, the
+  pick), `test_score` and `test_total` (the pair of kings, 480 with joker
+  and sly, sparks, kicks, flames, the hitstop, the total), `test_mid`
+  (cash-out, shop buys, refusal, sale, reroll) and `test_table` (joker
+  row, buttons, info overlay, sort, discard), `test_late` (a lost blind, a
+  boss, an arcana pack) and `test_finale` (ante 2, a won run, a hand five
+  times the goal). Endings are reached by setting the ante, hands and
+  score, not by play.
+- Rules carts, with only the modules they need (no drawing): `test_hands`
+  (hand types, scoring counts, joker combinations, levels, goals, sorts),
+  `test_jokers` (bosses, growing jokers), `test_shop` (packs, the run
+  deck, the VFX engine, shop offers), `test_tarots` (enhancements, every
+  kind of tarot, deck choice).
+- `tests/motion.p8`, run by name: bal8tro through the reference harness's
+  sequence at the real pace, logged for `balatro_ref/motion_metrics.py`
+  and `compare_motion.py`.
 - `balatro_ref/run_balatro_ref.py`: screenshots of the user's own Balatro
   for reference (not a test).
 
