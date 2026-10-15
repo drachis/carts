@@ -40,7 +40,7 @@ Nine of Balatro's bosses, one drawn at random when an ante's small blind starts.
 Balatro's enhancements with its values (game.lua m_bonus..m_lucky): chips and mult and xmult added when the card scores, held_xmult while it stays in hand (steel), colour for the card's border and corner letter. gold pays in cash_out and lucky's 1-in-5 is in score_steps, by name. Stone is left out (it needs rankless, suitless cards).
 
 **data.lua:149** `tarot_specs=parse_table[[`
-Fourteen of Balatro's tarots. act names what use_tarot does: enhance (to enhancement), suit (to suit), rank (+1, ace to 2), destroy, money (hermit: double, at most +$20). most is how many picked cards it takes (0: none). text and cond are the tooltip's lines.
+Fourteen of Balatro's tarots. act names what use_tarot does: a card field (enhancement or suit) set to value, rank (+1, ace to 2), destroy, money (hermit: double, at most +$20). most is how many picked cards it takes (0: none). text and cond are the tooltip's lines.
 
 **data.lua:167** `deck_specs=parse_table[[`
 Five of Balatro's starting decks (its source: b_red discards 1, b_blue hands 1, b_yellow dollars 10, b_abandoned remove_faces, b_checkered), chosen on the title. hands, discards and money add to a run's; faces 0 leaves out jacks, queens and kings; suits 2 makes every card a spade or a heart; colour is the card backs'. Black and painted are left out: an extra joker slot or two more cards in hand do not fit across 128 pixels as laid out.

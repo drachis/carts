@@ -147,21 +147,21 @@ lucky,,20,,,11
 ]]
 
 tarot_specs=parse_table[[
-name,text,act,most,enhancement,suit,cond
-magician,2 to lucky,enhance,2,lucky,,pick in hand
-empress,2 to mult,enhance,2,mult,,pick in hand
-hierophant,2 to bonus,enhance,2,bonus,,pick in hand
-lovers,1 to wild,enhance,1,wild,,pick in hand
-chariot,1 to steel,enhance,1,steel,,pick in hand
-justice,1 to glass,enhance,1,glass,,pick in hand
-devil,1 to gold,enhance,1,gold,,pick in hand
-star,3 to diamonds,suit,3,,4,pick in hand
-moon,3 to clubs,suit,3,,3,pick in hand
-sun,3 to hearts,suit,3,,2,pick in hand
-world,3 to spades,suit,3,,1,pick in hand
-strength,2 rank up,rank,2,,,pick in hand
-hanged man,destroy 2,destroy,2,,,pick in hand
-hermit,double $ max 20,money,0,,,
+name,text,act,most,value,cond
+magician,2 to lucky,enhancement,2,lucky,pick in hand
+empress,2 to mult,enhancement,2,mult,pick in hand
+hierophant,2 to bonus,enhancement,2,bonus,pick in hand
+lovers,1 to wild,enhancement,1,wild,pick in hand
+chariot,1 to steel,enhancement,1,steel,pick in hand
+justice,1 to glass,enhancement,1,glass,pick in hand
+devil,1 to gold,enhancement,1,gold,pick in hand
+star,3 to diamonds,suit,3,4,pick in hand
+moon,3 to clubs,suit,3,3,pick in hand
+sun,3 to hearts,suit,3,2,pick in hand
+world,3 to spades,suit,3,1,pick in hand
+strength,2 rank up,rank,2,,pick in hand
+hanged man,destroy 2,destroy,2,,pick in hand
+hermit,double $ max 20,money,0,,
 ]]
 
 deck_specs=parse_table[[

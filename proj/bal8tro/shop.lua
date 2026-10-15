@@ -40,13 +40,11 @@ function use_tarot(tarot)
   card.picked=false
   kick(card,4)
   local act=tarot.act
-  if act=="enhance" then card.enhancement=tarot.enhancement
-  elseif act=="suit" then card.suit=tarot.suit
-  elseif act=="rank" then card.rank=card.rank==14 and 2 or card.rank+1
-  else
+  if act=="rank" then card.rank=card.rank==14 and 2 or card.rank+1
+  elseif act=="destroy" then
    del(run_deck,card)
    del(pack_hand,card)
-  end
+  else card[act]=tarot.value end
  end
  return true
 end
