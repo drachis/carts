@@ -9,5 +9,5 @@ Cards are 15x21, sixteen pixels apart so eight fill the screen. A card or joker 
 **draw.lua:40** `function draw_panel()`
 The panel is the top 42 rows: blind and goal, score, hand name, chips box (blue) x mult box (red), hands, discards, deck.
 
-**draw.lua:57** `function draw_table()`
+**draw.lua:58** `function draw_table()`
 Felt green table. Played cards sit mid-screen, those that score 4px higher. Picked hand cards rise 7px; the cursor is a yellow frame.

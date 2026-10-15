@@ -40,7 +40,8 @@ end
 function draw_panel()
  rectfill(0,0,127,41,1)
  print(blind_specs[blind].name,2,2,7)
- print("goal "..big_text(goal),2,9,10)
+ print("goal "..big_text(goal),2,9,9)
+ print_centre("$"..money,5,10)
  print_right("score",126,2,6)
  print_right(big_text(shown_score),126,9,7)
  if hand_label then print_centre(hand_label,17,7) end
@@ -77,11 +78,16 @@ function draw_table()
  end
 end
 
-function draw_banner(title,line,colour)
- rectfill(14,52,113,82,0)
- rect(14,52,113,82,colour)
+function draw_banner(title,line,colour,lines)
+ local bottom=82+#lines*8
+ rectfill(14,52,113,bottom,0)
+ rect(14,52,113,bottom,colour)
  print_centre(title,58,colour)
- print_centre(line,72,7)
+ for i,entry in ipairs(lines) do
+  print(entry[1],20,62+i*8,7)
+  print_right("$"..entry[2],108,62+i*8,10)
+ end
+ print_centre(line,bottom-10,7)
 end
 
 function draw_title()
@@ -100,7 +106,7 @@ end
 function _draw()
  if mode=="title" then draw_title() return end
  draw_table()
- if mode=="cleared" then draw_banner("blind defeated!","🅾️ next blind",11)
- elseif mode=="won" then draw_banner("you beat ante 1!","🅾️ play again",10)
- elseif mode=="lost" then draw_banner("game over","🅾️ try again",8) end
+ if mode=="cashout" then draw_banner("blind defeated!","🅾️ cash out $"..earned,11,earnings)
+ elseif mode=="won" then draw_banner("you beat ante 1!","🅾️ play again",10,{})
+ elseif mode=="lost" then draw_banner("game over","🅾️ try again",8,{}) end
 end

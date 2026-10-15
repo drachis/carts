@@ -5,6 +5,7 @@ end
 
 function start_run()
  blind=1
+ money=start_money
  jokers=deal_jokers(joker_count)
  start_blind()
 end
@@ -119,12 +120,24 @@ function finish_hand()
  played,hand_label,chips,mult=nil,nil,0,0
  draw_up()
  if score>=goal then
-  mode=blind==#blind_specs and "won" or "cleared"
+  if blind==#blind_specs then mode="won" else cash_out() end
  elseif hands_left==0 then
   mode="lost"
  else
   mode="play"
  end
+end
+
+function cash_out()
+ earnings={
+  {blind_specs[blind].name,blind_specs[blind].reward},
+  {"hands left",hands_left},
+  {"interest",min(money\interest_step,interest_cap)}
+ }
+ earned=0
+ for line in all(earnings) do earned+=line[2] end
+ money+=earned
+ mode="cashout"
 end
 
 function pop(text,x,y,colour)
@@ -139,7 +152,7 @@ function _update60()
  elseif mode=="score" then
   update_score()
  elseif btnp(4) then
-  if mode=="cleared" then
+  if mode=="cashout" then
    blind+=1
    start_blind()
   else

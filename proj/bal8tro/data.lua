@@ -33,6 +33,9 @@ hands_per_blind=4
 discards_per_blind=3
 joker_count=3
 step_frames=18
+start_money=4
+interest_step=5
+interest_cap=5
 snd_chips=0
 snd_mult=1
 snd_pick=2
@@ -68,8 +71,8 @@ the tribe,x2 flush,hand,flush,,,2
 ]]
 
 blind_specs=parse_table[[
-name,goal
-small blind,300
-big blind,450
-the boss,600
+name,goal,reward
+small blind,300,3
+big blind,450,4
+the boss,600,5
 ]]

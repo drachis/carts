@@ -68,9 +68,10 @@ function boot_frame()
  if n==57 then dump_screen("boot_pick") expect("hand picked",hand_label,"pair") end
  if n==150 then dump_screen("boot_score") end
  if n==230 then
-  expect_mode("cleared")
+  expect_mode("cashout")
   expect("score of kings with joker and sly",big_text(score),"480")
-  dump_screen("boot_cleared")
+  expect("money after $3 blind, 3 hands, no interest",money,4+3+3)
+  dump_screen("boot_cashout")
  end
  if n==245 then expect_mode("play") expect("blind",blind,2) end
  if n==255 then expect("discards left",discards_left,2) expect("hand refilled",#hand,8) end
