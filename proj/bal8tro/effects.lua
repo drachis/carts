@@ -117,3 +117,7 @@ function draw_particles()
   fillp()
  end
 end
+
+function panel_at(y)
+ return {glide_x=0,glide_y=y,wait=0}
+end

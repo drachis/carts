@@ -85,7 +85,7 @@ function open_shop()
  for i=1,2 do shop_packs[i]=setmetatable({},rnd(pack_specs)) end
  reroll_cost=reroll_base
  shop_focus={row=2,columns={1,3}}
- mode,leaving,exiting,shop_panel,sign="shop",false,false,{glide_x=0,glide_y=110,wait=0},{glide_x=0,glide_y=-14,wait=0}
+ mode,leaving,exiting,shop_panel,sign="shop",false,false,panel_at(110),panel_at(-14)
 end
 
 function sell_price(joker)
@@ -204,8 +204,7 @@ function draw_shop()
  draw_swirl(3,1,0)
  draw_sidebar()
  draw_joker_row(shop_focus.row==1 and shop_focus.columns[1])
- local _,drop=glide(shop_panel,0,leaving and 110 or 0)
- camera(0,-drop)
+ slide(shop_panel)
  box(41,27,85,73,1,8)
  local focus=shop_focus.row==2 and shop_focus.columns[2]
  for i,label in ipairs{"next","roll"} do

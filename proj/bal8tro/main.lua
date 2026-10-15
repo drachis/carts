@@ -20,7 +20,7 @@ function open_select()
  goal=blind_goal(ante,blind)
  ante_label,round_number=ante.."/"..#ante_bases,(ante-1)*3+blind
  if skip_select then return start_blind() end
- mode,leaving,select_focus,select_panel="select",false,{row=2,columns={1,1}},{glide_x=0,glide_y=110,wait=0}
+ mode,leaving,select_focus,select_panel="select",false,{row=2,columns={1,1}},panel_at(110)
 end
 
 function update_select()
@@ -219,7 +219,7 @@ function finish_hand()
  else
   mode="play"
  end
- banner={glide_x=0,glide_y=110,wait=0}
+ banner=panel_at(110)
 end
 
 function cash_out()

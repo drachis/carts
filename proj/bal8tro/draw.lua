@@ -33,6 +33,11 @@ function is_active(thing)
  return active_step and (active_step.thing==thing or active_step.under==thing)
 end
 
+function slide(panel)
+ local _,drop=glide(panel,0,leaving and 110 or 0)
+ camera(0,-drop)
+end
+
 function glide(thing,x,y)
  if not thing.glide_x then thing.glide_x,thing.glide_y,thing.wait=x,y,0 end
  if thing.wait>0 then
@@ -213,8 +218,7 @@ function draw_table()
 end
 
 function draw_banner(title,line,colour,lines)
- local _,drop=glide(banner,0,leaving and 110 or 0)
- camera(0,-drop)
+ slide(banner)
  local bottom=70+#lines*8
  box(42,40,83,bottom-40,0,colour)
  print_centre(title,46,colour,table_centre)
@@ -230,8 +234,7 @@ function draw_select()
  draw_swirl(3,1,0)
  draw_sidebar()
  draw_joker_row(joker_focus)
- local _,drop=glide(select_panel,0,leaving and 110 or 0)
- camera(0,-drop)
+ slide(select_panel)
  for which=1,3 do
   local x,now,done=41+(which-1)*29,which==blind,which<blind
   box(x,27,26,77,done and 5 or 1,now and 9 or 6)

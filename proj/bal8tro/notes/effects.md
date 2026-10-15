@@ -48,3 +48,7 @@ Keep: the sidebar is drawn 8px past the screen's edges so a shake never shows th
 
 **effects.lua:107** `function draw_particles()`
 Each particle is a short streak along its motion, so it reads at 128x128, coloured down its preset's ramp as it ages (hottest last in the ramp). The flash is drawn here too, a dithered white over the right side, last of all.
+
+**effects.lua:121** `function panel_at(y)`
+A new sliding panel, resting at y until glide moves it (draw.lua slide). Here, not in draw.lua, because open_shop calls it and the rules carts have no draw.lua.
+Keep: tests/test_tarots.p8 and the other rules carts include no draw.lua.
