@@ -92,59 +92,62 @@ function sell_price(joker)
  return max(1,joker.cost\2)
 end
 
-function shop_message()
+function shop_offer()
  local row,column=shop_focus.row,shop_focus.columns[shop_focus.row]
- if row==1 then return jokers[column] and "🅾️ sell for $"..sell_price(jokers[column]) or "" end
- if row==3 then
-  local pack=shop_packs[column]
-  return money<pack.cost and "not enough money" or "🅾️ open "..pack.label.." $"..pack.cost
- end
- if column==1 then return "🅾️ next blind" end
- if column==2 then return money<reroll_cost and "not enough money" or "🅾️ reroll for $"..reroll_cost end
  local item=shop_items[column-2]
- if not item.hand and #jokers>=joker_slots then return "joker slots full" end
- return money<item.cost and "not enough money" or "🅾️ buy for $"..item.cost
+ if row==1 then
+  item=jokers[column]
+  return item and -sell_price(item),"sell for",function()
+   emit("coin",item.x+10,item.y+10)
+   deli(jokers,column)
+  end
+ end
+ if row==3 then
+  item=shop_packs[column]
+  return item.cost,"open "..item.label,function()
+   deli(shop_packs,column)
+   leaving=true
+   after(pack_wait,function() open_pack(item) end)
+  end
+ end
+ if column==1 then
+  return 0,"next blind",function()
+   leaving,exiting=true,true
+   after(exit_wait,function()
+    ante,blind=next_blind()
+    open_select()
+   end)
+  end
+ end
+ if column==2 then
+  return reroll_cost,"reroll for",function()
+   reroll_cost+=1
+   deal_shop()
+  end
+ end
+ if not item.hand and #jokers>=joker_slots then return nil,"joker slots full" end
+ return item.cost,"buy for",function()
+  take_choice(item)
+  deli(shop_items,column-2)
+ end
+end
+
+function shop_message()
+ local cost,words=shop_offer()
+ if not cost then return words end
+ return money<cost and "not enough money" or "🅾️ "..words..(cost==0 and "" or " $"..abs(cost))
 end
 
 function update_shop()
  if leaving then return end
  local row,column=steer(shop_focus,{#jokers,2+#shop_items,#shop_packs})
- if not btnp(4) then return end
- if row==3 then
-  local pack=shop_packs[column]
-  if money<pack.cost then return end
-  money-=pack.cost
-  deli(shop_packs,column)
-  shop_focus.columns[3]=1
+ local cost,_,act=shop_offer()
+ if btnp(4) and cost and money>=cost then
+  money-=cost
+  act()
   sfx(snd_pick)
-  leaving=true
-  after(pack_wait,function() open_pack(pack) end)
-  return
- elseif row==1 then
-  if not jokers[column] then return end
-  money+=sell_price(jokers[column])
-  emit("coin",jokers[column].x+10,jokers[column].y+10)
-  deli(jokers,column)
- elseif column==1 then
-  leaving,exiting=true,true
-  after(exit_wait,function()
-   ante,blind=next_blind()
-   open_select()
-  end)
-  return
- elseif column==2 then
-  if money<reroll_cost then return end
-  money-=reroll_cost
-  reroll_cost+=1
-  deal_shop()
- else
-  local item=shop_items[column-2]
-  if money<item.cost or not take_choice(item) then return end
-  money-=item.cost
-  deli(shop_items,column-2)
+  shop_focus.columns[row]=min(column,({#jokers,2+#shop_items,#shop_packs})[row])
  end
- sfx(snd_pick)
- shop_focus.columns[row]=min(column,row==1 and #jokers or 2+#shop_items)
 end
 
 function draw_mini_planet(item,x,y,focused)
@@ -169,6 +172,16 @@ function draw_booster(pack,x,y,focused)
  print_centre("pack",y+13,1,x+9)
 end
 
+function draw_item(item,x,y,focused)
+ if item.kind then draw_booster(item,x+1,y-1,focused)
+ elseif item.hand then draw_mini_planet(item,x,y,focused)
+ elseif item.act then draw_mini_tarot(item,x,y,focused)
+ elseif item.rank then
+  draw_card(item,x+2,y-(focused and 3 or 0))
+  if focused then outline(item) end
+ else draw_mini_joker(item,x,y,focused) end
+end
+
 function draw_pack()
  draw_swirl(pack_open.colour,1,0)
  draw_sidebar()
@@ -176,13 +189,7 @@ function draw_pack()
  draw_joker_row(row==1 and column)
  local total=#pack_choices
  for i,item in ipairs(pack_choices) do
-  local x,focused=table_centre-total*12+(i-1)*24+2,row==2 and column==i
-  if item.hand then draw_mini_planet(item,x,28,focused)
-  elseif item.act then draw_mini_tarot(item,x,28,focused)
-  elseif item.rank then
-   draw_card(item,x+2,28-(focused and 3 or 0))
-   if focused then outline(item) end
-  else draw_mini_joker(item,x,28,focused) end
+  draw_item(item,table_centre-total*12+(i-1)*24+2,28,row==2 and column==i)
  end
  rectfill(48,51,120,64,0)
  print_centre(pack_open.label.." pack",53,7,table_centre)
@@ -219,9 +226,7 @@ function draw_shop()
    local x,y,focused=72+(i-1)*26,row*33-36,shop_focus.row==row and shop_focus.columns[row]==i+6-row*2
    rectfill(x+3,y,x+16,y+6,0)
    print_centre("$"..item.cost,y+1,10,x+10)
-   if item.kind then draw_booster(item,x+1,y+8,focused)
-   elseif item.hand then draw_mini_planet(item,x,y+9,focused)
-   else draw_mini_joker(item,x,y+9,focused) end
+   draw_item(item,x,y+9,focused)
   end
  end
  local tip=shop_focus.row==1 and jokers[shop_focus.columns[1]] or focus and focus>2 and shop_items[focus-2]

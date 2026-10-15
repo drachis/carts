@@ -16,7 +16,7 @@ Applies a tarot to the picked cards of pack_hand, as Balatro does: refused (noth
 Keep: tests/test_shop.lua checks every act and a refusal.
 
 **shop.lua:52** `function take_choice(item)`
-Takes an item, from a pack or bought in the shop (update_shop calls it too, and charges only when it returns true): a planet levels its hand, a playing card joins run_deck for the rest of the run, a joker needs a free slot (returns nothing if refused, and the pack stays open).
+Takes an item, from a pack or bought in the shop (a shop buy calls it too, after shop_offer has checked the slot): a planet levels its hand, a playing card joins run_deck for the rest of the run, a joker needs a free slot (returns nothing if refused, and the pack stays open).
 Keep: tests/test_shop.lua checks all three kinds and the refusal.
 
 **shop.lua:82** `function open_shop()`
@@ -25,21 +25,21 @@ Opens after every cash-out, the bosses' included; only the last ante's boss ends
 **shop.lua:91** `function sell_price(joker)`
 Balatro's sell value: half the cost, at least $1.
 
-**shop.lua:109** `function update_shop()`
-While leaving is set (a pack opening, the next blind starting) input is ignored and the panel slides away; the action follows on a timer (after). Rows (steer): 1 owned jokers, O sells; 2 next, reroll, then the cards for sale; 3 the packs, O opens one. A planet is used the moment it is bought (Balatro puts it in a consumable slot first) and needs only the money; a joker needs a free slot and the money. A refused action does nothing and shop_message says why. After an action the row's column is clamped so the cursor stays on something.
+**shop.lua:141** `function update_shop()`
+While leaving is set (a pack opening, the next blind starting) input is ignored and the panel slides away; the action follows on a timer (after). Rows (steer): 1 owned jokers, O sells; 2 next, reroll, then the cards for sale; 3 the packs, O opens one. A planet is used the moment it is bought (Balatro puts it in a consumable slot first) and needs only the money; a joker needs a free slot and the money. Every target's offer comes from shop_offer: its cost (negative for a sale, 0 for next blind, nil when refused), its words for shop_message, and its action; update_shop charges the cost and runs the action only when there is money for it, so the message and the press can never disagree. After an action the row's column is clamped so the cursor stays on something.
 Keep: tests/test_boot.lua drives this with scripted presses and checks money, jokers and levels after each, and opens and skips a pack.
 
-**shop.lua:150** `function draw_mini_planet(item,x,y,focused)`
+**shop.lua:153** `function draw_mini_planet(item,x,y,focused)`
 A planet: a lavender card with a ringed planet (its colour from the hand) and the level it would bring.
 
-**shop.lua:158** `function draw_mini_tarot(tarot,x,y,focused)`
+**shop.lua:161** `function draw_mini_tarot(tarot,x,y,focused)`
 A tarot: a purple card with a star and the first four letters of its name; the tooltip gives the rest, its third line saying to pick cards in the dealt hand.
 
-**shop.lua:165** `function draw_booster(pack,x,y,focused)`
+**shop.lua:168** `function draw_booster(pack,x,y,focused)`
 A booster: a card-sized packet in the pack's colour with its name's first four letters.
 
-**shop.lua:172** `function draw_pack()`
+**shop.lua:185** `function draw_pack()`
 The open pack: the felt turns the pack's colour (Balatro does the same), the choices sit centred under the joker row, the pack's name and "choose 1" under them, then skip; the tooltip names a planet or joker, kept clear of the label.
 
-**shop.lua:203** `function draw_shop()`
+**shop.lua:210** `function draw_shop()`
 Draws the shop over the same felt and sidebar as the table, its panel, everything in it and the tooltip shifted by shop_panel's glide (so it slides up on opening and down when leaving, about 20 frames at the speed cap, as Balatro's does), then the tooltip for whatever the cursor is on (under the cards it may cover the packs, as Balatro's hover does), the deck pile, particles and the message line.
