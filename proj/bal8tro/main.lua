@@ -8,13 +8,13 @@ end
 function start_run()
  ante,blind=1,1
  money=start_money
- jokers={}
+ jokers,run_deck={},new_deck()
  reset_levels()
  start_blind()
 end
 
 function start_blind()
- deck=new_deck()
+ deck=shuffled(run_deck)
  hand,flying={},{}
  played,hand_label,chips,mult=nil,nil,0,0
  pops={}

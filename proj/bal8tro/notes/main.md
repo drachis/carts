@@ -4,7 +4,7 @@
 mode is title, play, score, cashout, won or lost. tests/test_boot.lua reads it.
 
 **main.lua:16** `function start_blind()`
-Each blind gets a fresh shuffled 52-card deck and full hands and discards; jokers last the whole run.
+Each blind shuffles the run's own deck (run_deck, made in start_run and kept all run, as Balatro's is, so a card changed by a tarot or added by a pack stays) and gives full hands and discards; jokers last the whole run too.
 
 **main.lua:35** `function draw_up()`
 Each card drawn starts on the deck pile, waiting deal_frames longer than the one before, so the hand is dealt one card at a time. The hand is sorted at once; the cards glide to their sorted places as they leave the deck.

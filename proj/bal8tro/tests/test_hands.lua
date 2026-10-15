@@ -132,7 +132,18 @@ function growing_cases()
  reset_levels()
 end
 
+function deck_cases()
+ local run=new_deck()
+ run[1].suit,run[1].picked=4,true
+ local first=shuffled(run)
+ local second=shuffled(run)
+ local found
+ for card in all(second) do if card==run[1] then found=card end end
+ expect("a shuffle holds the run's own cards, changes and all",#first..","..#second..","..found.suit..","..tostr(found.picked),"52,52,4,[nil]")
+end
+
 function run_cases()
+ deck_cases()
  vfx_cases()
  growing_cases()
  reset_levels()

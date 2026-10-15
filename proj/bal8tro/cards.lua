@@ -6,6 +6,15 @@ function new_deck()
  for suit=1,4 do
   for rank=2,14 do add(deck,{rank=rank,suit=suit}) end
  end
+ return deck
+end
+
+function shuffled(cards)
+ local deck={}
+ for card in all(cards) do
+  card.glide_x,card.picked,card.flip=nil
+  add(deck,card)
+ end
  for i=#deck,2,-1 do
   local j=flr(rnd(i))+1
   deck[i],deck[j]=deck[j],deck[i]
