@@ -16,12 +16,7 @@ function reset_levels()
 end
 
 function joker_scale(joker,spec,owned)
- local per=joker.per
- if per=="jokers" then return #owned end
- if per=="discards" then return discards_left end
- if per=="plays" then return spec and hand_plays[spec.name] or 1 end
- if per=="count" then return joker.count or 0 end
- return 1
+ return ({jokers=#owned,discards=discards_left,plays=spec and hand_plays[spec.name] or 1,count=joker.count or 0})[joker.per] or 1
 end
 
 function grow_jokers(event,scoring)
@@ -107,12 +102,11 @@ function hand_total(chips,mult)
 end
 
 function blind_goal(ante,which)
- local factor=which==#blind_specs and boss.factor or blind_specs[which].factor
- return (ante_bases[ante]>>16)*50*factor
+ return (ante_bases[ante]>>16)*50*blind_name(which,"factor")
 end
 
-function blind_name(which)
- return which==#blind_specs and boss.name or blind_specs[which].name
+function blind_name(which,field)
+ return (which==#blind_specs and boss or blind_specs[which])[field or "name"]
 end
 
 function next_blind()

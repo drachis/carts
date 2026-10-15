@@ -194,7 +194,7 @@ function update_score()
    roll=total/score_roll
   end)
   chips,mult=0,0
-  add(pops,{text=big_text(total),x=table_centre,y=50,colour=10,age=0,big=true})
+  pop(big_text(total),table_centre,50,10).big=true
   emit("shower",chips_x,boxes_y)
   emit("shower",mult_x,boxes_y)
   hitstop(min(4+total/goal*4,12))
@@ -269,7 +269,7 @@ function play_music(pattern)
 end
 
 function pop(text,x,y,colour)
- add(pops,{text=text,x=x,y=y,colour=colour,age=0})
+ return add(pops,{text=text,x=x,y=y,colour=colour,age=0})
 end
 
 function update_title()
