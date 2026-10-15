@@ -27,12 +27,12 @@ Keep: parse_table indexes rows by their name column, so every table needs one fi
 Balatro's four normal packs: kind is what pack_choices holds, choices how many are shown, colour the pack and its screen's felt. A shop's two pack slots are each a random row.
 
 **data.lua:165** `table_buttons=parse_table[[`
-The buttons under the hand, in cursor order; update_play acts by name, so a new button is a row here and a branch there.
+The buttons under the hand, in cursor order; update_play acts by name, so a new button is a row here and a branch there. Four buttons 17px wide fit between the hand's left edge and the deck pile (deck_x 113); info opens draw_info.
 
-**data.lua:172** `vfx_specs=parse_table[[`
+**data.lua:173** `vfx_specs=parse_table[[`
 The VFX engine's particle presets (emit in effects.lua): how many, how fast, how hard they rise, gravity, life in frames, a colour ramp from coldest to hottest ("/"-separated, split into a list just below), and the width they spawn across. spark: a scoring step's, in the step's colour. shower: the hand total's. flame: the boxes' embers. coin: the cash-out's. A new effect is a new row.
 
-**data.lua:183** `boss_specs=parse_table[[`
+**data.lua:184** `boss_specs=parse_table[[`
 Nine of Balatro's bosses, one drawn at random when an ante's small blind starts. factor is the goal in halves of the ante base (Balatro's 2x, the wall 4x, the needle 1x). debuff is a suit; hands and discards replace the blind's; must is the fewest cards a hand may have; halve halves the base chips and mult. text is shown on the panel when no cards are picked, at most 25 characters.
 
 **data.lua:119** `enhancement_specs=parse_table[[`

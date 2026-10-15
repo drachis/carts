@@ -133,6 +133,7 @@ function update_play()
   sfx(snd_pick)
   if button.name=="play" then play_hand()
   elseif button.name=="discard" then discard_hand()
+  elseif button.name=="info" then mode,info_tab="info",1
   else
    sort_by_suit=not sort_by_suit
    sort_cards(hand,sort_by_suit)
@@ -239,6 +240,12 @@ function _update60()
   update_shop()
  elseif mode=="pack" then
   update_pack()
+ elseif mode=="info" then
+  if btnp(0) or btnp(1) then
+   info_tab=3-info_tab
+   sfx(snd_move)
+  end
+  if btnp(4) or btnp(5) or btnp(3) then mode="play" end
  elseif btnp(4) then
   if mode=="cashout" then
    open_shop()

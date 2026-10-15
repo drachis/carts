@@ -145,9 +145,9 @@ end
 function draw_table_button(button,enabled,focused)
  local dx,dy=jiggle(button)
  local x,y=button.left+dx,104+dy-(focused and 1 or 0)
- rectfill(x,y,x+20,y+9,enabled and button.colour or 5)
- print_centre(button.label,y+3,enabled and 7 or 6,x+11)
- if focused then rect(x-1,y-1,x+21,y+10,10) end
+ rectfill(x,y,x+16,y+9,enabled and button.colour or 5)
+ print_centre(button.label,y+3,enabled and 7 or 6,x+9)
+ if focused then rect(x-1,y-1,x+17,y+10,10) end
 end
 
 function draw_table()
@@ -210,6 +210,49 @@ function draw_banner(title,line,colour,lines)
  print_centre(line,bottom-10,7,table_centre)
 end
 
+function draw_info()
+ rectfill(3,6,124,121,5)
+ rect(3,6,124,121,6)
+ for tab=1,2 do
+  local centre=tab*44-4
+  rectfill(centre-18,9,centre+18,17,info_tab==tab and 8 or 1)
+  print_centre(tab==1 and "hands" or "deck",11,7,centre)
+ end
+ if info_tab==1 then
+  for i=#hand_specs,1,-1 do
+   local spec,y=hand_specs[i],22+(#hand_specs-i)*10
+   local chips,mult=hand_base(spec)
+   print("l"..hand_levels[spec.name],8,y,7)
+   print(spec.short,22,y,7)
+   print_right(tostr(chips),78,y,12)
+   print("x"..mult,80,y,8)
+   print_right("#"..hand_plays[spec.name],121,y,10)
+  end
+ else
+  local totals={0,0,0,0}
+  for suit=1,4 do
+   local y=24+(suit-1)*13
+   spr(16+suit,7,y+2)
+   for rank=2,14 do
+    local x,found=17+(rank-2)*8
+    for card in all(run_deck) do
+     if card.suit==suit and card.rank==rank then found=card totals[suit]+=1 end
+    end
+    rectfill(x,y,x+6,y+10,found and 7 or 5)
+    print(sub("23456789tjqka",rank-1,rank-1),x+2,y+3,suit_colors[suit])
+    local boost=found and enhancement_specs[found.enhancement]
+    if boost then rect(x,y,x+6,y+10,boost.colour) end
+   end
+  end
+  for suit=1,4 do
+   spr(16+suit,suit*26-12,80)
+   print(totals[suit],suit*26-5,80,7)
+  end
+  print_centre(#run_deck.." cards",92,6)
+ end
+ print_centre("⬅️➡️ tab   🅾️ close",110,6)
+end
+
 function draw_title()
  draw_swirl(1,2,0)
  print("\^w\^tbal8tro",36,14,10)
@@ -227,6 +270,11 @@ function _draw()
  if mode=="title" then draw_title() return end
  if mode=="shop" then draw_shop() return end
  if mode=="pack" then draw_pack_screen() return end
+ if mode=="info" then
+  draw_table()
+  draw_info()
+  return
+ end
  shake_camera()
  draw_table()
  camera()

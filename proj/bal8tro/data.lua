@@ -38,7 +38,7 @@ planet_cost=3
 planet_chance=0.33
 step_frames=18
 deal_frames=4
-deck_x=111
+deck_x=113
 deck_y=105
 chips_x=2
 mult_x=20
@@ -164,9 +164,10 @@ standard,standard,card,3,4,6
 
 table_buttons=parse_table[[
 name,label,colour,left
-play,play,12,42
-discard,disc,8,64
-sort,sort,13,86
+play,play,12,41
+discard,disc,8,59
+sort,sort,13,77
+info,info,3,95
 ]]
 
 vfx_specs=parse_table[[

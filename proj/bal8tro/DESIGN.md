@@ -89,8 +89,11 @@ the layout); the challenge is fitting it in one cart.
 - **Layout** like Balatro's: a sidebar on the left (blind strip, goal,
   round score, hand and level, chips × mult, hands, discards, money,
   ante, round, deck), jokers across the top, played cards in the middle,
-  an overlapping hand with play, discard and sort buttons, deck bottom
-  right.
+  an overlapping hand with play, discard, sort and info buttons, deck
+  bottom right.
+- **Info** (the info button): Balatro's run info (each hand's level,
+  chips x mult, times played) and deck view (suits by ranks, enhanced
+  cards marked, counts), two tabs over the table.
 - **Controls**, one model on every screen (`steer`): up/down between rows,
   left/right along a row and wrap, O acts on what the cursor is on, X
   plays from anywhere; held arrows repeat quickly; moves tick.
@@ -111,14 +114,17 @@ the layout); the challenge is fitting it in one cart.
     py run_tests.py --no-comments
     py count_tokens.py bal8tro.p8
 
-- `test_boot` (the real, whole cart): the title, a scripted pair of
-  kings (480 with joker and sly), motion, dealing, kicks, flames and the
-  hitstop, the cash-out, the shop (buys, a refusal, a sale, a reroll),
-  the joker row and buttons, a discard, a lost blind, a boss leading
-  through the shop and an opened arcana pack to ante 2, a won run at ante
-  8, and a hand five times the goal setting the floor alight; dumps each
-  screen. Endings are reached by setting the ante, hands and score, not
-  by play.
+- `test_boot`, `test_mid`, `test_late` (each the real, whole cart,
+  replaying one scripted run from the title, `tests/boot_script.lua`;
+  the checks split by frame because game plus checks passed 8192): boot
+  has the title and deck choice, dealing, motion, the pair of kings (480
+  with joker and sly), kicks, flames, the hitstop; mid the cash-out, the
+  shop (buys, a refusal, a sale, a reroll), the joker row, the buttons,
+  the info overlay, a sort and a discard; late a lost blind, a boss, an
+  arcana pack, ante 2, a won run at ante 8 and a hand five times the goal
+  setting the floor alight. Each dumps its screens. Endings are reached
+  by setting the ante, hands and score, not by play. test_boot has about
+  125 tokens spare: any game growth needs a compaction or another split.
 - `test_hands` (rules, no drawing): every hand type and how many cards it
   scores, joker combinations, growing jokers, bosses, levels, 32-bit
   totals, sorts, blind goals.
@@ -134,5 +140,5 @@ the layout); the challenge is fitting it in one cart.
   controls, shop, packs and tarots have not been played or heard.
 - No vouchers, tags, skipping blinds, consumable slots, editions, seals,
   joker rarities, stone cards, spectral packs; nine of Balatro's bosses.
-- No deck view or run-info screen yet; no black, painted or other decks.
+- No black, painted or other decks; no blinds or vouchers tabs in info.
 - Whether the late antes are reachable is not measured with a bot.
