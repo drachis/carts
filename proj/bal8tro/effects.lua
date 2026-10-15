@@ -90,7 +90,7 @@ function update_effects()
 end
 
 function draw_swirl(base,stripes,top)
- cls(base)
+ rectfill(-9,-9,136,136,base)
  fillp(▒)
  local time=t()
  for y=top,127,2 do

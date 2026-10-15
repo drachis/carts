@@ -39,7 +39,7 @@ heat is how many times the blind's goal the hand on screen (chips x mult) is wor
 Keep: tests/test_boot.lua checks the scripted pair of kings has no flames at 30x6 and flames at 80x6 against a goal of 300, and that a hand of 5x the goal sets the floor alight.
 
 **effects.lua:92** `function draw_swirl(base,stripes,top)`
-The moving background, standing in for Balatro's swirl: cls to base, then from row top down, 16px dithered stripes every 32px, offset per row by a slow sine plus a drift, so they wave and slide. The table uses green with dark blue, the title dark blue with purple, the shop dark blue with black.
+The moving background, standing in for Balatro's swirl: a rectfill of base (not cls, which ignores pal, so the end screens' tint reaches the felt), then from row top down, 16px dithered stripes every 32px, offset per row by a slow sine plus a drift, so they wave and slide. The table uses green with dark blue, the title dark blue with purple, the shop dark blue with black.
 Keep: stripes is one colour. fillp(▒) leaves its other pixels transparent (observed; the manual documents the transparency bit, not the glyph patterns), so only the low digit of a two-colour value draws, and 0x13 on green drew nothing.
 
 **effects.lua:103** `function shake_camera()`

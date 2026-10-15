@@ -217,17 +217,31 @@ function draw_table()
  end
 end
 
-function draw_banner(title,line,colour,lines)
+function draw_banner(title,line,colour,lines,big)
  slide(banner)
- local bottom=70+#lines*8
- box(42,40,83,bottom-40,0,colour)
- print_centre(title,46,colour,table_centre)
+ local top=56-#lines*4
+ local bottom=top+30+#lines*8
+ box(42,top,83,bottom-top,0,colour)
+ if big then print("\^w\^t"..title,table_centre-#title*4,top+4,colour) else print_centre(title,top+6,colour,table_centre) end
  for i,entry in ipairs(lines) do
-  print(entry[1],46,50+i*8,7)
-  print_right("$"..entry[2],122,50+i*8,10)
+  print(entry[1],46,top+10+i*8,7)
+  print_right(tostr(entry[2]),122,top+10+i*8,entry[3] or 10)
  end
  print_centre(line,bottom-10,7,table_centre)
  camera()
+end
+
+function draw_jimbo()
+ local x,y=glide(jimbo,6,22)
+ sspr(0,32,15,21,x,y,26,36)
+ sspr(0,16,8,8,x+5,y+8,16,16)
+ jimbo.talk+=1
+ if jimbo.talk%8==0 and jimbo.talk<#quip*2 then
+  kick(jimbo,1)
+  sfx(snd_move)
+ end
+ box(0,y+40,38,20,7,0)
+ print(sub(quip,1,jimbo.talk\2),2,y+42,0)
 end
 
 function draw_select()
@@ -308,10 +322,15 @@ end
 function _draw()
  local screen=_ENV["draw_"..mode]
  if screen then return screen() end
+ local ending=end_specs[mode]
+ if ending then pal(split(ending.tint,"/")) end
  shake_camera()
  draw_table()
  camera()
- if mode=="cashout" then draw_banner("blind defeated!","🅾️ cash out $"..earned,11,earnings)
- elseif mode=="won" then draw_banner("you beat ante "..ante.."!","🅾️ play again",10,{})
- elseif mode=="lost" then draw_banner("game over","🅾️ try again",8,{}) end
+ pal()
+ if mode=="cashout" then draw_banner("blind defeated!","🅾️ cash out $"..earned,11,earnings) end
+ if ending then
+  draw_banner(ending.title,"🅾️ new run",ending.colour,end_lines,true)
+  draw_jimbo()
+ end
 end

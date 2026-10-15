@@ -33,14 +33,20 @@ Four mini joker slots across the top (x42, 21 apart), empty ones outlined. The b
 
 The card backs (draw_back) take the chosen deck's colour, on the table, the title's deck chooser and the shop's deck pile.
 
-**draw.lua:233** `function draw_select()`
+**draw.lua:247** `function draw_select()`
 Balatro's blind select (reference/blind_select.png): three tall panels across the right side for the ante's small, big and boss blinds, each with its state (select on the current one, done, next), its name, a chip in its colour, its goal and its reward in dollar signs; the whole slides with select_panel's glide.
 
-**draw.lua:254** `function draw_info()`
+**draw.lua:268** `function draw_info()`
 The info overlay, drawn over the table it draws first, from the info button: two tabs (left/right swap, O, X or down close). hands: like Balatro's run info, strongest first, each hand's level, short name, chips x mult at its level, and times played this run. deck: the run deck as a 4x13 grid of suit rows and rank columns, a white cell for each card held (grey if none, an enhancement's colour as its border), then each suit's count and the total. On dark grey (Balatro's panel), because the spade's dark blue vanished on dark blue.
 
-**draw.lua:310** `function _draw()`
+**draw.lua:322** `function _draw()`
 A mode with a draw_ function of its own name (title, shop, pack, select, info) is drawn by it alone; the rest (play, score, cashout, won, lost) are the shaken table and the banner. draw_pack is the pack screen; draw_booster is a pack's picture in the shop.
 
 **draw.lua:36** `function slide(panel)`
 The cash-out banner, select screen and shop panel slide the same way: up from 110px below to 0, and back down while leaving is set; camera shifts everything drawn after it until camera() (the tooltip rides along). panel_at (effects.lua) makes a fresh panel at a start height.
+
+**draw.lua:220** `function draw_banner(title,line,colour,lines,big)`
+One panel for the cash-out and the end screens, centred on its number of rows. Each row is a label, a value already a string or number, and an optional colour (default yellow). big prints the title wide and tall (8px a character, centred by that). cash_out turns its amounts into "$" strings after summing them.
+
+**draw.lua:234** `function draw_jimbo()`
+Jimbo, the joker who mocks the player on the game over and win screens (the user's idea; the quips are bal8tro's own, not Balatro's): the card face sprite and joker portrait 32 stretched with sspr, no new art, gliding in from the left over the sidebar, with the quip typed out a letter every 2 frames in a bubble under him, a jiggle and tick every 8 frames while he talks. _draw tints the table under the end screens by pal() with end_specs' tint (red for game over, green for a win), as Balatro washes its screen.

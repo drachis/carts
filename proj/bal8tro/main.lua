@@ -11,7 +11,7 @@ function start_run()
  deck_spec=deck_specs[deck_choice]
  money=start_money+deck_spec.money
  jokers,run_deck,hands_left,discards_left,score,chips,mult={},new_deck(deck_spec),0,0,0,0,0
- deck=run_deck
+ deck,best_hand,cards_played,cards_discarded=run_deck,0,0,0
  reset_levels()
  open_select()
 end
@@ -87,6 +87,7 @@ end
 function play_hand()
  hands_left-=1
  played=take_picked()
+ cards_played+=#played
  for i,card in ipairs(played) do card.hold=play_delay+(i-1)*play_stagger end
  local played_spec,played_scoring=evaluate(played)
  hand_plays[played_spec.name]+=1
@@ -102,7 +103,9 @@ end
 function discard_hand()
  discards_left-=1
  grow_jokers("discard")
- fly_away(take_picked())
+ local picked=take_picked()
+ cards_discarded+=#picked
+ fly_away(picked)
  draw_up()
 end
 
@@ -185,6 +188,7 @@ function update_score()
  elseif step_index==#steps+1 then
   active_step=nil
   local total=hand_total(chips,mult)
+  best_hand=max(best_hand,total)
   after(score_wait,function()
    score+=total
    roll=total/score_roll
@@ -197,7 +201,7 @@ function update_score()
   if score+total>=goal then flash(3) end
   shake=min(2+total/goal*4,8)
   sfx(snd_total)
-  step_timer=total_hold
+  step_timer=score+total<goal and hands_left==0 and lose_hold or total_hold
  else
   finish_hand()
  end
@@ -213,14 +217,30 @@ function finish_hand()
  fly_away(played)
  played,hand_label,chips,mult=nil,nil,0,0
  draw_up()
+ banner=panel_at(110)
  if score>=goal then
-  if next_blind()>#ante_bases then mode="won" else cash_out() end
+  if next_blind()>#ante_bases then end_run"won" else cash_out() end
  elseif hands_left==0 then
-  mode="lost"
+  end_run"lost"
  else
   mode="play"
  end
- banner=panel_at(110)
+end
+
+function end_run(result)
+ mode=result
+ local most,most_spec=0,hand_specs[1]
+ for spec in all(hand_specs) do
+  if hand_plays[spec.name]>most then most,most_spec=hand_plays[spec.name],spec end
+ end
+ end_lines={{"best hand",big_text(best_hand)},{"most played",most_spec.short.." "..most},{"cards played",cards_played,12},{"discarded",cards_discarded,8},{"ante",ante_label},{"round",round_number}}
+ if result=="lost" then add(end_lines,{"lost to",blind_name(blind),8}) end
+ local text=rnd(split(end_specs[result].quips,"/"))
+ quip,banner,jimbo="",panel_at(67),{glide_x=-30,glide_y=22,wait=0,talk=0}
+ for i=1,#text do
+  local letter=sub(text,i,i)
+  quip..=letter=="_" and "\n" or letter
+ end
 end
 
 function cash_out()
@@ -234,7 +254,10 @@ function cash_out()
   if card.enhancement=="gold" then earnings[4][2]+=3 end
  end
  earned=0
- for line in all(earnings) do earned+=line[2] end
+ for line in all(earnings) do
+  earned+=line[2]
+  line[2]="$"..line[2]
+ end
  money+=earned
  emit("coin",15,86)
  mode="cashout"

@@ -45,7 +45,10 @@ the layout); the challenge is fitting it in one cart.
 - **A run:** title, then Balatro's eight antes of three blinds each
   (small, big, boss at 1, 1.5 and 2 times the ante's base of 300, 800,
   2000, 5000, 11000, 20000, 35000, 50000). Clearing ante 8's boss
-  (100000) wins; running out of hands loses; O restarts.
+  (100000) wins; running out of hands loses; O restarts. The title deals
+  8 A J A T 9 Q (it reads BAL8TRO). The game over and win screens are
+  Balatro's: the run's stats on a panel over a red or green tinted table,
+  and Jimbo, the mocking joker, with his own quips.
 - **Decks** chosen on the title with left/right, Balatro's: red (+1
   discard), blue (+1 hand), yellow (+$10), abandoned (no face cards),
   checkered (spades and hearts only); card backs take its colour.

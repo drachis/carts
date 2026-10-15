@@ -41,6 +41,7 @@ joker_frames=59
 score_delay=110
 total_gap=98
 total_hold=237
+lose_hold=121
 shop_wait=220
 exit_wait=35
 pack_wait=22
@@ -187,6 +188,12 @@ play_hand,play,12,41
 discard_hand,disc,8,59
 sort_hand,sort,13,77
 open_info,info,3,95
+]]
+
+end_specs=parse_table[[
+name,title,colour,tint,quips
+lost,game over,8,2/2/2/2/2/8/14/8/8/14/8/8/8/14/14,folded_already?/the house_always_wins/nice try_pal/should've_kept the_pair/out of_chips.
+won,you win!,11,3/3/3/3/3/11/7/11/11/7/11/11/3/11/7,wait. you_actually_won?/rookie_luck!/the deck_likes you/fine. you_win. this_time.
 ]]
 
 vfx_specs=parse_table[[
