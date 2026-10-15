@@ -140,8 +140,9 @@ the layout); the challenge is fitting it in one cart.
     py count_tokens.py bal8tro.p8
 
 - `test_boot`: the one cart with the whole, real game and a tiny script
-  (the title, a press, the deal, both dumped), so it has room as the game
-  grows.
+  (the title, a press, the select screen, a press, the deal, checked at
+  frame 340; no screen dumps, so dump_screen's screen.lua stays out), so
+  it has room as the game grows.
 - Replay carts, each replaying one scripted run
   from the title (`tests/boot_script.lua`, which pins the older, faster
   pace and zero waits its frame-timed checks were written for), with the
