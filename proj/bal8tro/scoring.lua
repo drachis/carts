@@ -65,7 +65,7 @@ function hand_title(spec,label)
 end
 
 function joker_fires_on(joker,card)
- return joker.when=="card" and (joker.need==card.suit or joker.need=="face" and is_face(card))
+ return joker.when=="card" and (joker.need=="face" and is_face(card) or joker.need!="face" and is_suit(card,joker.need))
 end
 
 function score_steps(played,jokers)
@@ -73,13 +73,20 @@ function score_steps(played,jokers)
  local steps={}
  for card in all(scoring) do
   if not is_debuffed(card) then
-   add(steps,{thing=card,chips=card_chips(card)})
+   local boost=enhancement_specs[card.enhancement] or {}
+   add(steps,{thing=card,chips=card_chips(card)+(boost.chips or 0)})
+   if (boost.mult or boost.xmult) and (boost.name!="lucky" or rnd(5)<1) then
+    add(steps,{thing=card,mult=boost.mult,xmult=boost.xmult})
+   end
    for joker in all(jokers) do
     if joker_fires_on(joker,card) then
      add(steps,{thing=joker,under=card,chips=joker.chips,mult=joker.mult,xmult=joker.xmult})
     end
    end
   end
+ end
+ for card in all(hand) do
+  if card.enhancement=="steel" then add(steps,{thing=card,xmult=1.5}) end
  end
  contains.small,contains.nodisc=#played<=3,discards_left==0
  for joker in all(jokers) do

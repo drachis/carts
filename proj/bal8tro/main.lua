@@ -174,6 +174,12 @@ function update_score()
 end
 
 function finish_hand()
+ for card in all(played) do
+  if card.enhancement=="glass" and rnd(4)<1 then
+   del(run_deck,card)
+   emit("shower",card.x,card.y)
+  end
+ end
  fly_away(played)
  played,hand_label,chips,mult=nil,nil,0,0
  draw_up()
@@ -190,8 +196,12 @@ function cash_out()
  earnings={
   {blind_name(blind),blind_specs[blind].reward},
   {"hands left",hands_left},
-  {"interest",min(money\interest_step,interest_cap)}
+  {"interest",min(money\interest_step,interest_cap)},
+  {"gold cards",0}
  }
+ for card in all(hand) do
+  if card.enhancement=="gold" then earnings[4][2]+=3 end
+ end
  earned=0
  for line in all(earnings) do earned+=line[2] end
  money+=earned

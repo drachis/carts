@@ -111,6 +111,7 @@ function boot_frame()
   money=10
  end
  if n==308 then hands_left=1 end
+ if n==623 then shop_packs[1]=setmetatable({},pack_specs.arcana) end
  if n==500 or n==660 then
   ante=n==500 and 1 or #ante_bases
   blind=#blind_specs

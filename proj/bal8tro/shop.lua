@@ -11,12 +11,43 @@ function deal_shop()
 end
 
 function open_pack(pack)
- pack_open,pack_choices,pack_focus=pack,{},{row=2,columns={1,1}}
- if pack.kind=="joker" then pack_choices=deal_jokers(pack.choices,jokers) end
- for i=1,pack.kind!="joker" and pack.choices or 0 do
-  add(pack_choices,pack.kind=="planet" and planet_item() or {rank=2+flr(rnd(13)),suit=1+flr(rnd(4))})
+ pack_open,pack_choices,pack_hand,pack_focus=pack,{},{},{row=2,columns={1,1,1}}
+ local kind=pack.kind
+ if kind=="joker" then pack_choices=deal_jokers(pack.choices,jokers) end
+ for i=1,kind!="joker" and pack.choices or 0 do
+  add(pack_choices,kind=="planet" and planet_item() or kind=="tarot" and setmetatable({},rnd(tarot_specs)) or {rank=2+flr(rnd(13)),suit=1+flr(rnd(4))})
+ end
+ if kind=="tarot" then
+  local cards=shuffled(run_deck)
+  for i=1,hand_size do add(pack_hand,cards[i]) end
+  sort_cards(pack_hand)
  end
  mode="pack"
+end
+
+function use_tarot(tarot)
+ local picked={}
+ for card in all(pack_hand) do
+  if card.picked then add(picked,card) end
+ end
+ if tarot.act=="money" then
+  money+=min(money,20)
+  return true
+ end
+ if #picked<1 or #picked>tarot.most then return end
+ for card in all(picked) do
+  card.picked=false
+  kick(card,4)
+  local act=tarot.act
+  if act=="enhance" then card.enhancement=tarot.enhancement
+  elseif act=="suit" then card.suit=tarot.suit
+  elseif act=="rank" then card.rank=card.rank==14 and 2 or card.rank+1
+  else
+   del(run_deck,card)
+   del(pack_hand,card)
+  end
+ end
+ return true
 end
 
 function take_choice(index)
@@ -25,6 +56,8 @@ function take_choice(index)
   hand_levels[item.hand.name]+=1
  elseif item.rank then
   add(run_deck,item)
+ elseif item.act then
+  if not use_tarot(item) then return end
  else
   if #jokers>=joker_slots then return end
   kick(add(jokers,item),4)
@@ -34,8 +67,14 @@ function take_choice(index)
 end
 
 function update_pack()
- local row,column=steer(pack_focus,{#jokers,#pack_choices+1})
- if btnp(4) and row==2 and (column>#pack_choices or take_choice(column)) then
+ local row,column=steer(pack_focus,{#jokers,#pack_choices+1,#pack_hand})
+ if not btnp(4) then return end
+ local card=row==3 and pack_hand[column]
+ if card then
+  local picked=0
+  for other in all(pack_hand) do picked+=other.picked and 1 or 0 end
+  if card.picked or picked<3 then card.picked=not card.picked kick(card,1.5) end
+ elseif row==2 and (column>#pack_choices or take_choice(column)) then
   sfx(snd_pick)
   mode="shop"
  end
@@ -119,6 +158,14 @@ function draw_mini_planet(item,x,y,focused)
  print_centre("lv"..hand_levels[item.hand.name]+1,y+13,7,x+10)
 end
 
+function draw_mini_tarot(tarot,x,y,focused)
+ x,y=glide(tarot,x,y)
+ rectfill(x,y,x+19,y+19,2)
+ rect(x,y,x+19,y+19,focused and 10 or 14)
+ print_centre("★",y+3,10,x+10)
+ print_centre(sub(tarot.name,1,4),y+12,7,x+10)
+end
+
 function draw_pack(pack,x,y,focused)
  x,y=glide(pack,x,y)
  rectfill(x,y,x+17,y+23,pack.colour)
@@ -135,19 +182,26 @@ function draw_pack_screen()
  local total=#pack_choices
  for i,item in ipairs(pack_choices) do
   local x,focused=table_centre-total*12+(i-1)*24+2,row==2 and column==i
-  if item.hand then draw_mini_planet(item,x,40,focused)
+  if item.hand then draw_mini_planet(item,x,28,focused)
+  elseif item.act then draw_mini_tarot(item,x,28,focused)
   elseif item.rank then
-   draw_card(item,x+2,40-(focused and 3 or 0))
+   draw_card(item,x+2,28-(focused and 3 or 0))
    if focused then rect(item.x-1,item.y-1,item.x+15,item.y+21,10) end
-  else draw_mini_joker(item,x,40,focused) end
+  else draw_mini_joker(item,x,28,focused) end
  end
- rectfill(48,86,120,100,0)
- print_centre(pack_open.label.." pack",88,7,table_centre)
- print_centre("choose 1",94,6,table_centre)
- rectfill(72,106,96,115,row==2 and column>total and 10 or 5)
- print_centre("skip",109,0,table_centre)
+ rectfill(48,51,120,64,0)
+ print_centre(pack_open.label.." pack",53,7,table_centre)
+ print_centre("choose 1",59,6,table_centre)
+ rectfill(72,67,96,76,row==2 and column>total and 10 or 5)
+ print_centre("skip",70,0,table_centre)
+ for i,card in ipairs(pack_hand) do
+  local hovered=row==3 and column==i
+  draw_card(card,41+(i-1)*10,(card.picked and 94 or 101)-(hovered and 3 or 0))
+ end
+ local card=row==3 and pack_hand[column]
+ if card then rect(card.x-1,card.y-1,card.x+15,card.y+21,10) end
  local tip=row==1 and jokers[column] or row==2 and pack_choices[column]
- if tip and not tip.rank then draw_tooltip(tip,row==1 and 25 or 62) end
+ if tip and not tip.rank then draw_tooltip(tip,row==1 and 25 or 78) end
  draw_particles()
 end
 

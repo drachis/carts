@@ -30,6 +30,10 @@ function is_face(card)
  return card.rank>10 and card.rank<14
 end
 
+function is_suit(card,suit)
+ return card.suit==suit or card.enhancement=="wild"
+end
+
 function sort_cards(cards,by_suit)
  local function key(card)
   return by_suit and card.suit*16+card.rank or card.rank*4+card.suit
@@ -54,9 +58,11 @@ function evaluate(played)
   most=max(most,count)
   if count>=2 then pair_count+=1 end
  end
- local flush=#played==5
- for card in all(played) do
-  if card.suit!=played[1].suit then flush=false end
+ local flush
+ for suit=1,#played\5*4 do
+  local same=true
+  for card in all(played) do same=same and is_suit(card,suit) end
+  flush=flush or same
  end
  local straight=distinct==5 and (high-low==4 or counts[14] and counts[5] and low==2)
  local contains={

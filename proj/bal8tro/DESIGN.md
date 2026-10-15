@@ -4,19 +4,25 @@ A faithful demake of Balatro in PICO-8. You are dealt eight cards and play up
 to five as a poker hand; the hand scores chips × mult, built up card by card
 and joker by joker so the numbers visibly climb. Beat each blind's goal
 before your hands run out. Jokers bend the scoring, and the run snowballs
-from a few good ones. The fun is Balatro's; the challenge is fitting it in
-the cart.
+from a few good ones. The fun is Balatro's, and so is the feel (the juice,
+the layout); the challenge is fitting it in one cart.
 
 ## Rules of the build
 
 1. Tuning and content are data strings parsed at boot (`data.lua`): a new
-   joker or blind is a line of data, and a joker's behaviour is its `when`,
-   `need` and effect columns, not code.
-2. Scores are 32-bit integers stored as `n>>16` and printed with
+   joker, boss, pack, tarot, particle effect or sidebar box is a line of
+   data, and behaviour is named by columns (`when`, `need`, `per`, `act`),
+   not code. Every table has a `name` first column.
+2. Scores and goals are 32-bit integers stored as `n>>16` and printed with
    `tostr(n,2)`, so they can pass 32767 (PICO-8's number limit).
 3. No comments in the Lua; notes are in `notes/<module>.md` (see
    `CODE_NOTES.md`).
-4. PICO-8 is the only token counter (`py count_tokens.py bal8tro.p8`).
+4. PICO-8 is the only token counter: `py count_tokens.py bal8tro.p8`, and
+   `py function_tokens.py bal8tro.p8 40` per function.
+5. The game is one cart. Test carts may split, and the rules-only ones
+   leave out `draw.lua`.
+6. Rules, values and layout come from Balatro (the user's own copy:
+   `balatro_ref/`); the art and code are bal8tro's own.
 
 ## Memory map
 
@@ -24,104 +30,106 @@ the cart.
 |---|---|
 | Sprites 1..4 | big suits (spade, heart, club, diamond) |
 | Sprites 17..20 | small suits |
-| Sprites 32..52 | joker portraits, 8x8, in joker_specs order (gen_cart.py JOKER_ART; bal8tro's own art) |
+| Sprites 32..52 | joker portraits, 8x8, in joker_specs order (gen_cart.py JOKER_ART) |
 | SFX 0..1 | unused (the first chips and mult ticks) |
 | SFX 2..4 | pick card, hand total, card dealt |
 | SFX 5..12, 13..20 | chips and mult ticks, rising a major scale per scoring step |
 | SFX 21..26 | the tune: bass, pad and lead, two halves each (gen_cart.py) |
-| Music 0..1, 2..3 | calm loop (bass, pad: title, shop), table loop (with lead) |
+| SFX 27 | cursor move |
+| Music 0..1, 2..3 | calm loop (bass, pad: title, shop, packs), table loop (with lead) |
 | `cartdata` | unused |
 
 ## The game
 
-- Title screen, then a run: Balatro's eight antes of three blinds each
+- **A run:** title, then Balatro's eight antes of three blinds each
   (small, big, boss at 1, 1.5 and 2 times the ante's base of 300, 800,
   2000, 5000, 11000, 20000, 35000, 50000). Clearing ante 8's boss
-  (100000) wins. Goals are 32-bit like scores.
-- A run starts with $4 and no jokers, as in Balatro. There are four joker
-  slots (Balatro has five; four is what fits across the screen) and
-  twenty-one jokers, each with Balatro's price: flat, per-suit and
-  per-face, hand-type bonuses and x2s, and Balatro's growing and
+  (100000) wins; running out of hands loses; O restarts.
+- **The deck** lasts the whole run (`run_deck`): each blind shuffles the
+  same cards, so tarots and standard packs change it for good. Each blind
+  deals 8 cards, 4 hands, 3 discards.
+- **Bosses:** each ante's boss is one of nine Balatro bosses, named in the
+  shop beforehand: the club, goad, head and window debuff a suit (greyed,
+  struck through, still count towards the hand's type, score nothing);
+  the wall is 4x the base; the needle is 1x with one hand; the water has
+  no discards; the psychic needs five cards; the flint halves the base.
+- **Scoring** is Balatro's: the hand's base (with its planet level), then
+  each scoring card's chips and its enhancement, card jokers on their
+  cards, steel cards held in hand, then hand jokers left to right.
+- **Jokers:** a run starts with $4 and none. Four slots (Balatro has five;
+  four fit across the screen); twenty-one jokers at Balatro's prices: flat,
+  per-suit, per-face, hand-type bonuses and x2s, and the growing and
   situational ones (abstract, banner, mystic summit, half, supernova,
-  green joker, ride the bus).
-- Each blind: a fresh shuffled deck, 8-card hand, 4 hands, 3 discards.
-- The table is laid out like Balatro's: a sidebar on the left (blind,
-  goal, round score, hand and level, chips × mult, hands, discards,
-  money, ante, round, deck), small jokers across the top, played cards
-  in the middle, an overlapping hand with play and discard buttons
-  under it, and the deck bottom right.
-- Controls, one model on every screen: up/down move between rows
-  (jokers, hand, buttons), left/right move along a row and wrap, O acts
-  on what the cursor is on (pick a card, press play, discard or sort), X
-  plays from anywhere. Held arrows repeat quickly. The card under the
-  cursor lifts, buttons rise under it and jump when pressed, moves tick.
-  The joker row shows a tooltip. Picking shows the hand's short name,
-  level and base chips × mult.
-- A played hand scores like Balatro: base chips and mult for the hand
-  type, then each scoring card adds its chips, card jokers fire on their
-  cards, then hand jokers fire left to right. Each step pops its number
-  over its card or joker; the total rolls into the score.
-- Juice (Balatro's feel is half the game): cards and jokers glide
-  rather than jump; the hand sits in an arc and bobs; cards are dealt
-  one by one face down off a deck pile and flip as they fly in;
-  discarded and played cards fly off the right edge. Each scoring step
-  throws sparks, swells its box and ticks a note higher than the last;
-  the total pops up big, showers sparks and shakes the screen. While the
-  hand on screen alone is worth the blind's goal (Balatro's rule), the
-  chips and mult boxes burn; at twice the goal the sidebar's foot and
-  edge burn, at three times the whole bottom of the screen, at four
-  embers rise across the table.
-  The felt, title and shop have slowly waving dithered stripes.
-- The juice runs on a small VFX engine (effects.lua): particle presets
-  as data, kick for a shake on any card or joker, turn_over for a card
-  flip, timers, hitstop and flash. Scoring kicks each card and shakes
-  each joker as it fires; dealt cards turn over in flight; the total
-  holds the game for a beat and flashes when it beats the blind;
-  cashing out throws coins; a bought joker jumps.
-- Every ante's boss blind is one of nine Balatro bosses, drawn when
-  the ante starts and named in the shop beforehand: the club, goad, head
-  and window debuff a suit (greyed, struck through, still count towards
-  the hand's type, score nothing); the wall is 4x the base; the needle
-  is 1x with one hand; the water has no discards; the psychic needs five
-  cards; the flint halves base chips and mult.
-- Reaching the goal clears the blind; clearing ante 8's boss wins. Running out
-  of hands loses. O restarts.
-- Clearing a blind cashes out: the blind's $3/$4/$5, $1 per hand left, and
-  $1 interest per $5 held, at most $5.
-- Planets level up a hand type, with Balatro's nine planets and what each
-  level adds; the panel shows the hand's level ("pair lv2"). A planet
-  costs $3, needs no slot and is used as soon as it is bought (Balatro
-  keeps it in a consumable slot first).
-- Then the shop (after every blind, bosses included), laid out like
-  Balatro's: the sidebar (its strip reading "the shop") and the joker row
-  stay, and a panel holds next-blind and reroll ($5, +$1 a reroll) on
-  the left and two cards for sale with price tags: each a planet one
-  time in three, otherwise a joker never owned. Up to the joker row to
-  sell (half price); a tooltip names whatever the cursor is on.
-- Two booster packs in each shop, $4, from Balatro's celestial (3
-  planets), buffoon (2 jokers) and standard (3 playing cards) packs:
-  opening one turns the felt its colour; take one or skip. A playing
-  card from a pack joins the run's deck, which lasts the whole run.
-- `test_boot`: the real cart from the title through a scripted pair of
-  kings (checks 480 with joker and sly), the cash-out ($10), the shop
-  (a buy, a refused buy with the slots full, a sale, a reroll, next
-  blind), a discard, a lost blind, ante 1's boss paying $5 and leading
-  through the shop to ante 2 (goal 800), and a won run at ante 8,
-  dumping each screen. Endings are reached by setting the ante, hands
-  and score, not by play.
-- `test_hands`: every hand type and how many cards it scores, wheel and
-  wrap-around straights, royal flush label, six joker combinations,
-  scores past 32767, both sorts, the shop never offering an owned
-  joker, sell prices, blind goals from 300 to 100000.
+  green joker, ride the bus). Each has an 8x8 portrait and shows its
+  current worth.
+- **Enhancements** (Balatro's values): bonus +30 chips, mult +4 mult, wild
+  any suit, glass x2 mult (1 in 4 shatters), steel x1.5 held, gold $3
+  held at round end, lucky 1 in 5 +20 mult. Stone is left out.
+- **Cash out** after each blind: the blind's $3/$4/$5, $1 per hand left,
+  $1 interest per $5 held (at most $5), $3 per gold card held.
+- **The shop** (after every blind), laid out like Balatro's: the sidebar
+  (its strip reading "the shop") and the joker row stay; a red-edged
+  panel holds next blind and reroll ($5, +$1 a reroll), two cards for
+  sale with price tags (a planet one time in three, otherwise a joker
+  never owned), and two booster packs. Up to the joker row to sell for
+  half; a tooltip names whatever the cursor is on. Planets level a hand
+  and are used as soon as bought (Balatro keeps them in a slot first).
+- **Packs**, $4, Balatro's normal sizes, choose 1 or skip; the felt turns
+  the pack's colour. Arcana: 3 tarots, and a hand dealt from the deck to
+  pick their targets in. Celestial: 3 planets. Buffoon: 2 jokers.
+  Standard: 3 playing cards that join the deck.
+- **Tarots:** magician, empress, hierophant, lovers, chariot, justice,
+  devil enhance cards; star, moon, sun, world change up to 3 suits;
+  strength raises 2 ranks; the hanged man destroys 2; the hermit doubles
+  money up to $20. No tarots in the shop's card slots (Balatro keeps them
+  in consumable slots, which bal8tro does not have).
+- **Layout** like Balatro's: a sidebar on the left (blind strip, goal,
+  round score, hand and level, chips × mult, hands, discards, money,
+  ante, round, deck), jokers across the top, played cards in the middle,
+  an overlapping hand with play, discard and sort buttons, deck bottom
+  right.
+- **Controls**, one model on every screen (`steer`): up/down between rows,
+  left/right along a row and wrap, O acts on what the cursor is on, X
+  plays from anywhere; held arrows repeat quickly; moves tick.
+- **Juice** on a small VFX engine (`effects.lua`: particle presets as
+  data, kick, turn_over, timers, hitstop, flash): cards glide, sit in an
+  arc and bob; dealt one by one, face down, turning over in flight;
+  discards fly off; each scoring step pops, sparks, kicks its card or
+  joker, swells its box and ticks a note higher; the total pops big,
+  showers, shakes, holds the game for a beat and flashes on a win. While
+  the hand on screen is worth the goal the boxes burn (Balatro's rule);
+  at 2x the sidebar's foot and edge burn, at 3x the bottom of the screen,
+  at 4x embers rise across the table. The felt waves.
+- **Music:** an original slow lounge loop in A minor, calm without its
+  lead on the title, shop and packs.
+
+## Tests
+
+    py run_tests.py --no-comments
+    py count_tokens.py bal8tro.p8
+
+- `test_boot` (the real, whole cart): the title, a scripted pair of
+  kings (480 with joker and sly), motion, dealing, kicks, flames and the
+  hitstop, the cash-out, the shop (buys, a refusal, a sale, a reroll),
+  the joker row and buttons, a discard, a lost blind, a boss leading
+  through the shop and an opened arcana pack to ante 2, a won run at ante
+  8, and a hand five times the goal setting the floor alight; dumps each
+  screen. Endings are reached by setting the ante, hands and score, not
+  by play.
+- `test_hands` (rules, no drawing): every hand type and how many cards it
+  scores, joker combinations, growing jokers, bosses, levels, 32-bit
+  totals, sorts, blind goals.
+- `test_shop` (rules, no drawing): enhancements, every kind of tarot,
+  the three other packs, the run deck, the VFX engine, shop offers and
+  sell prices.
+- `balatro_ref/run_balatro_ref.py`: screenshots of the user's own Balatro
+  for reference (not a test).
 
 ## Not built yet, or not checked
 
-- The user has played up to the juice build ("feels more like
-  balatro"). Music and boss blinds have not been played or heard.
-- No tarot cards, booster packs, vouchers, consumable slots, skipping
-  blinds, joker rarities; only nine of Balatro's bosses.
-- The late antes may be out of reach: before planets, by
-  arithmetic, a flush with the four best jokers here scores a few
-  thousand, and ante 5's boss wants 22000 in four hands. Not measured
-  with a bot.
-- No deck view, no run info screen, no joker reorder.
+- The user played up to the juice build. Music, bosses, the new layout,
+  controls, shop, packs and tarots have not been played or heard.
+- No vouchers, tags, skipping blinds, consumable slots, editions, seals,
+  joker rarities, stone cards, spectral packs; nine of Balatro's bosses.
+- No deck choice, deck view or run-info screen yet.
+- Whether the late antes are reachable is not measured with a bot.

@@ -8,12 +8,12 @@ Read only the file for the module you are changing.
 
 | Notes | Module |
 |---|---|
-| [notes/data.md](notes/data.md) | tuning, hand values, jokers, blinds, parsers |
-| [notes/cards.md](notes/cards.md) | deck, sorting, poker hand evaluation |
-| [notes/scoring.md](notes/scoring.md) | jokers dealt, scoring steps, 32-bit scores |
+| [notes/data.md](notes/data.md) | tuning and every data table: hands, jokers, blinds, bosses, packs, tarots, enhancements, effects, layout |
+| [notes/cards.md](notes/cards.md) | deck, shuffling the run deck, wild suits, sorting, poker hand evaluation |
+| [notes/scoring.md](notes/scoring.md) | jokers dealt and grown, levels, bosses, scoring steps, enhancements, 32-bit scores and goals |
 | [notes/main.md](notes/main.md) | modes, input, playing out a hand, blinds, cash-out |
-| [notes/shop.md](notes/shop.md) | the shop between blinds: buy, sell, reroll |
-| [notes/effects.md](notes/effects.md) | sparks, screen shake, box bumps |
+| [notes/shop.md](notes/shop.md) | the shop, packs and tarots |
+| [notes/effects.md](notes/effects.md) | the VFX engine: particles, kick, flip, timers, hitstop, flash, fire, swirl |
 | [notes/draw.md](notes/draw.md) | table layout, card motion, dealing, pops, banners, title |
 
 **Format.** Each note is headed

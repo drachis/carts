@@ -10,8 +10,8 @@ log_name="log_hands"
 #include ../main.lua
 #include ../shop.lua
 #include ../effects.lua
-#include ../draw.lua
 #include dump.lua
+#include helpers.lua
 #include test_hands.lua
 __gfx__
 00000000000100000880880000333000000900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

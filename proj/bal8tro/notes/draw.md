@@ -10,20 +10,20 @@ Every card and joker eases a quarter of the way to where it is drawn each frame,
 Keep: the easing runs in the draw, once a frame at 60fps; tests/test_boot.lua checks a picked card is part-way after one frame.
 
 **draw.lua:43** `function draw_card(card,x,y)`
-Cards are 15x21. A card or joker in the current step is lifted 3px. A debuffed card is dimmed with a light ░ grey and struck through in red, light enough that its rank still reads (▒ hid it).
+Cards are 15x21. A card or joker in the current step is lifted 3px. An enhanced card has a border in its enhancement's colour and the first letter of its name top right. A debuffed card is dimmed with a light ░ grey and struck through in red, light enough that its rank still reads (▒ hid it).
 
-**draw.lua:73** `function draw_mini_joker(joker,x,y,focused)`
+**draw.lua:78** `function draw_mini_joker(joker,x,y,focused)`
 Every joker, on the table and in the shop, is this 20x20 card: its 8x8 portrait (joker.sprite, drawn by gen_cart.py) above its current worth in its colour (blue chips, red mult and xmult). The name and full text are in the tooltip, as Balatro shows them on hover.
 
-**draw.lua:83** `function draw_tooltip(thing,y)`
+**draw.lua:88** `function draw_tooltip(thing,y)`
 A white box at y under the focused joker or planet, kept on the right side. A joker: name, effect, condition, and its sell price if owned. A planet: name, the hand it levels, the level before and after.
 
-**draw.lua:99** `function draw_joker_row(focused)`
+**draw.lua:104** `function draw_joker_row(focused)`
 The owned jokers across the top, x42 and 21 apart, empty slots outlined: the table and the shop both draw it, so a joker keeps its place between them.
 
-**draw.lua:113** `function draw_sidebar()`
+**draw.lua:118** `function draw_sidebar()`
 Top to bottom: the blind on a strip coloured by kind (blue small, orange big, red boss), its name in two words; goal; round score; the hand's short name and level; chips and mult boxes (chips_x, mult_x, boxes_y, with flames behind them); hands and discards; money, double width; ante and round; deck count; the hint for the joker row.
 Keep: everything is at most 8 characters to fit 37px, which is why hands use their short names ("3 kind") and the level is its own line. The panel is drawn 8px past the screen's edges so a shake never shows the felt.
 
-**draw.lua:148** `function draw_table()`
+**draw.lua:153** `function draw_table()`
 Four mini joker slots across the top (x42, 21 apart), empty ones outlined. The boss's rule shows under them when there is no tooltip and nothing played. Played cards sit at y44 (scoring ones 4px higher), centred. The hand overlaps, 10px apart from x41, in a shallow arc, each card bobbing on its own phase; picked cards rise 7px and the card under the cursor 3px more; the cursor's frame is drawn after the whole hand so the next card does not cover it. Play, discard and sort buttons (table_buttons) under the hand grey out when they would do nothing, rise and frame in yellow under the cursor, and jump when pressed; the line under them says what O does on the cursor's row. The deck pile is bottom right; cards in flying glide off the right edge and are dropped past x127.

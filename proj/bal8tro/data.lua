@@ -116,8 +116,38 @@ round_number,20,97,36,rnd,9,
 
 for number,spec in ipairs(joker_specs) do spec.sprite=31+number end
 
+enhancement_specs=parse_table[[
+name,chips,mult,xmult,held_xmult,colour
+bonus,30,,,,12
+mult,,4,,,8
+wild,,,,,14
+glass,,,2,,6
+steel,,,,1.5,13
+gold,,,,,10
+lucky,,20,,,11
+]]
+
+tarot_specs=parse_table[[
+name,text,act,most,enhancement,suit,cond
+magician,2 to lucky,enhance,2,lucky,,pick in hand
+empress,2 to mult,enhance,2,mult,,pick in hand
+hierophant,2 to bonus,enhance,2,bonus,,pick in hand
+lovers,1 to wild,enhance,1,wild,,pick in hand
+chariot,1 to steel,enhance,1,steel,,pick in hand
+justice,1 to glass,enhance,1,glass,,pick in hand
+devil,1 to gold,enhance,1,gold,,pick in hand
+star,3 to diamonds,suit,3,,4,pick in hand
+moon,3 to clubs,suit,3,,3,pick in hand
+sun,3 to hearts,suit,3,,2,pick in hand
+world,3 to spades,suit,3,,1,pick in hand
+strength,2 rank up,rank,2,,,pick in hand
+hanged man,destroy 2,destroy,2,,,pick in hand
+hermit,double $ max 20,money,0,,,
+]]
+
 pack_specs=parse_table[[
 name,label,kind,choices,cost,colour
+arcana,arcana,tarot,3,4,2
 celestial,celest,planet,3,4,12
 buffoon,buffoon,joker,2,4,9
 standard,standard,card,3,4,6

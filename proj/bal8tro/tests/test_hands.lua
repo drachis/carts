@@ -1,32 +1,3 @@
-function index_of(text,letter)
- for i=1,#text do
-  if sub(text,i,i)==letter then return i end
- end
-end
-
-function cards_of(text)
- local cards={}
- for word in all(split(text," ",false)) do
-  add(cards,{
-   rank=1+index_of("23456789tjqka",sub(word,1,1)),
-   suit=index_of("shcd",sub(word,2,2))
-  })
- end
- return cards
-end
-
-function jokers_of(text)
- local jokers={}
- for name in all(split(text,",",false)) do
-  add(jokers,setmetatable({},joker_specs[name]))
- end
- return jokers
-end
-
-function expect(what,got,wanted)
- printh((got==wanted and "pass: " or "error: ")..what.." (got "..tostr(got)..", wanted "..tostr(wanted)..")")
-end
-
 hand_cases={
  {"ah","high",1},
  {"ah kh","high",1},
@@ -57,12 +28,10 @@ function boss_cases()
  mode="play"
  blind=#blind_specs
  boss=boss_specs["the club"]
- local spec,_,_,steps=score_steps(cards_of("kc kh"),{})
- local chips,mult=hand_base(spec)
- for step in all(steps) do chips,mult=apply_step(step,chips,mult) end
- expect("the club: a debuffed king still makes the pair but scores nothing",spec.name..","..chips*mult,"pair,40")
+ local spec=evaluate(cards_of("kc kh"))
+ expect("the club: a debuffed king still makes the pair but scores nothing",spec.name..","..score_of(cards_of("kc kh")),"pair,40")
  boss=boss_specs["the flint"]
- chips,mult=hand_base(hand_specs.pair)
+ local chips,mult=hand_base(hand_specs.pair)
  expect("the flint halves the pair's base",chips..","..mult,"5,1")
  boss=boss_specs["the psychic"]
  expect("the psychic refuses four cards",can_play(cards_of("2h 3h 4h 5h")),false)
@@ -73,38 +42,7 @@ function boss_cases()
  blind=1
  expect("small blinds are never debuffed",is_debuffed(cards_of("kc")[1]),false)
  expect("small blinds take one card",can_play(cards_of("kc")),true)
- boss=boss_specs["the club"]
-end
-
-function vfx_cases()
- particles={}
- emit("spark",10,10,8)
- emit("flame",10,10,nil,3)
- expect("a spark preset throws its count, a flame its amount",#particles,11)
- local fired
- after(3,function() fired=true end)
- update_effects()
- update_effects()
- expect("a timer has not fired after 2 of 3 frames",fired,nil)
- update_effects()
- expect("a timer fires on its frame",fired,true)
- local thing={}
- kick(thing,4)
- local _,lift=jiggle(thing)
- expect("a kick lifts by half its size",lift,-2)
- for i=1,20 do jiggle(thing) end
- expect("a kick settles",thing.kick,0)
- hitstop(5)
- hitstop(2)
- expect("a shorter hitstop does not cut a longer one",freeze,5)
- freeze,particles=0,{}
-end
-
-function total_of(cards,names)
- local spec,_,_,steps=score_steps(cards_of(cards),jokers_of(names))
- local chips,mult=hand_base(spec)
- for step in all(steps) do chips,mult=apply_step(step,chips,mult) end
- return chips*mult
+ boss,mode=boss_specs["the club"],"title"
 end
 
 function growing_cases()
@@ -133,38 +71,7 @@ function growing_cases()
  reset_levels()
 end
 
-function deck_cases()
- local run=new_deck()
- run[1].suit,run[1].picked=4,true
- local first=shuffled(run)
- local second=shuffled(run)
- local found
- for card in all(second) do if card==run[1] then found=card end end
- expect("a shuffle holds the run's own cards, changes and all",#first..","..#second..","..found.suit..","..tostr(found.picked),"52,52,4,[nil]")
-end
-
-function pack_cases()
- reset_levels()
- jokers,run_deck={},new_deck()
- open_pack(pack_specs.celestial)
- local planet=pack_choices[2]
- expect("a celestial pack offers three planets",mode..","..#pack_choices..","..tostr(planet.hand!=nil),"pack,3,true")
- take_choice(2)
- expect("taking a planet levels its hand",hand_levels[planet.hand.name],2)
- open_pack(pack_specs.standard)
- take_choice(1)
- expect("a standard pack's card joins the run deck",#run_deck..","..tostr(run_deck[53]==pack_choices[1]),"53,true")
- jokers=jokers_of("joker,sly,jolly,zany")
- open_pack(pack_specs.buffoon)
- expect("a buffoon pack offers two jokers, refused with the slots full",#pack_choices..","..tostr(take_choice(1) or false),"2,false")
- jokers,mode={},"title"
- reset_levels()
-end
-
 function run_cases()
- pack_cases()
- deck_cases()
- vfx_cases()
  growing_cases()
  reset_levels()
  boss_cases()
@@ -176,10 +83,7 @@ function run_cases()
  local _,_,_,label=evaluate(cards_of("ah kh qh jh th"))
  expect("royal flush label",label,"royal flush")
  for case in all(score_cases) do
-  local spec,_,_,steps=score_steps(cards_of(case[1]),jokers_of(case[2]))
-  local chips,mult=hand_base(spec)
-  for step in all(steps) do chips,mult=apply_step(step,chips,mult) end
-  expect(case[1].." with "..case[2],chips*mult,case[3])
+  expect(case[1].." with "..case[2],total_of(case[1],case[2]),case[3])
  end
  hand_levels.pair=3
  local chips,mult=hand_base(hand_specs.pair)
@@ -202,21 +106,4 @@ function run_cases()
   local values=split(case,",",false)
   expect("goal of ante "..values[1].." blind "..values[2],big_text(blind_goal(tonum(values[1]),tonum(values[2]))),values[3])
  end
- local owned={}
- for i=1,#joker_specs-2 do add(owned,setmetatable({},joker_specs[i])) end
- local offered=deal_jokers(3,owned)
- local last,second=joker_specs[#joker_specs],joker_specs[#joker_specs-1]
- local names=offered[1].name..offered[2].name
- expect("shop offers only jokers not owned",#offered..","..tostr(names==second.name..last.name or names==last.name..second.name),"2,true")
- expect("sell price is half the cost",sell_price(jokers_of("the duo")[1]),4)
- expect("a $2 joker sells for $1",sell_price(jokers_of("joker")[1]),1)
-end
-
-function _update60()
- run_frame(function()
-  run_cases()
-  printh("ok hands")
-  extcmd("shutdown")
-  _update60=function() end
- end)
 end

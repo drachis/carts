@@ -61,6 +61,11 @@ function draw_card(card,x,y)
  print(rank_names[card.rank-1],x+2,y+2,colour)
  spr(16+card.suit,x+2,y+8)
  spr(card.suit,x+7,y+12)
+ local boost=enhancement_specs[card.enhancement]
+ if boost then
+  rect(x,y,x+14,y+20,boost.colour)
+  print(sub(boost.name,1,1),x+11,y+2,boost.colour)
+ end
  if is_debuffed(card) then
   fillp(░)
   rectfill(x+1,y+1,x+13,y+19,5)
