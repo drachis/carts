@@ -158,8 +158,7 @@ end
 
 function draw_mini_planet(item,x,y,focused)
  x,y=glide(item,x,y)
- rectfill(x,y,x+19,y+19,13)
- rect(x,y,x+19,y+19,focused and 10 or 6)
+ box(x,y,19,19,13,focused and 10 or 6)
  circfill(x+10,y+7,4,item.hand.level_chips%7+8)
  line(x+3,y+8,x+17,y+6,7)
  print_centre("lv"..hand_levels[item.hand.name]+1,y+13,7,x+10)
@@ -167,16 +166,14 @@ end
 
 function draw_mini_tarot(tarot,x,y,focused)
  x,y=glide(tarot,x,y)
- rectfill(x,y,x+19,y+19,2)
- rect(x,y,x+19,y+19,focused and 10 or 14)
+ box(x,y,19,19,2,focused and 10 or 14)
  print_centre("★",y+3,10,x+10)
  print_centre(sub(tarot.name,1,4),y+12,7,x+10)
 end
 
 function draw_pack(pack,x,y,focused)
  x,y=glide(pack,x,y)
- rectfill(x,y,x+17,y+23,pack.colour)
- rect(x,y,x+17,y+23,focused and 10 or 7)
+ box(x,y,17,23,pack.colour,focused and 10 or 7)
  print_centre(sub(pack.label,1,4),y+6,1,x+9)
  print_centre("pack",y+13,1,x+9)
 end
@@ -193,7 +190,7 @@ function draw_pack_screen()
   elseif item.act then draw_mini_tarot(item,x,28,focused)
   elseif item.rank then
    draw_card(item,x+2,28-(focused and 3 or 0))
-   if focused then rect(item.x-1,item.y-1,item.x+15,item.y+21,10) end
+   if focused then outline(item) end
   else draw_mini_joker(item,x,28,focused) end
  end
  rectfill(48,51,120,64,0)
@@ -206,7 +203,7 @@ function draw_pack_screen()
   draw_card(card,41+(i-1)*10,(card.picked and 94 or 101)-(hovered and 3 or 0))
  end
  local card=row==3 and pack_hand[column]
- if card then rect(card.x-1,card.y-1,card.x+15,card.y+21,10) end
+ if card then outline(card) end
  local tip=row==1 and jokers[column] or row==2 and pack_choices[column]
  if tip and not tip.rank then draw_tooltip(tip,row==1 and 25 or 78) end
  draw_particles()
@@ -218,8 +215,7 @@ function draw_shop()
  draw_joker_row(shop_focus.row==1 and shop_focus.columns[1])
  local _,drop=glide(shop_panel,0,leaving and 110 or 0)
  camera(0,-drop)
- rectfill(41,27,126,100,1)
- rect(41,27,126,100,8)
+ box(41,27,85,73,1,8)
  local focus=shop_focus.row==2 and shop_focus.columns[2]
  for i,label in ipairs{"next","roll"} do
   local y=31+(i-1)*17

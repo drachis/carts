@@ -3,6 +3,15 @@ function thing_position(thing)
  return thing.x+10,thing.y+22
 end
 
+function box(x,y,width,height,fill,border)
+ rectfill(x,y,x+width,y+height,fill)
+ rect(x,y,x+width,y+height,border)
+end
+
+function outline(card)
+ rect(card.x-1,card.y-1,card.x+15,card.y+21,10)
+end
+
 function print_right(text,x,y,colour)
  print(text,x-#text*4,y,colour)
 end
@@ -39,11 +48,10 @@ function glide(thing,x,y)
 end
 
 function draw_back(x,y)
- rectfill(x,y,x+14,y+20,deck_spec.colour)
+ box(x,y,14,20,deck_spec.colour,7)
  fillp(░)
  rectfill(x+2,y+2,x+12,y+18,0x82)
  fillp()
- rect(x,y,x+14,y+20,7)
 end
 
 function draw_card(card,x,y)
@@ -61,8 +69,7 @@ function draw_card(card,x,y)
   return
  end
  local swell=flr(card.swell+.5)
- rectfill(x-swell,y-swell,x+14+swell,y+20+swell,7)
- rect(x-swell,y-swell,x+14+swell,y+20+swell,6)
+ box(x-swell,y-swell,14+swell*2,20+swell*2,7,6)
  pset(x,y,0) pset(x+14,y,0) pset(x,y+20,0) pset(x+14,y+20,0)
  local colour=suit_colors[card.suit]
  print(rank_names[card.rank-1],x+2,y+2,colour)
@@ -86,8 +93,7 @@ function draw_mini_joker(joker,x,y,focused)
  if is_active(joker) then y-=3 end
  x,y=glide(joker,x,y)
  local swell=flr(joker.swell+.5)
- rectfill(x-swell,y-swell,x+19+swell,y+19+swell,7)
- rect(x-swell,y-swell,x+19+swell,y+19+swell,focused and 10 or 13)
+ box(x-swell,y-swell,19+swell*2,19+swell*2,7,focused and 10 or 13)
  local effect=joker.xmult and "x"..joker.xmult or "+"..(joker.chips or joker.mult)*joker_scale(joker,nil,jokers)
  spr(joker.sprite,x+6,y+2)
  print_centre(effect,y+12,joker.chips and 12 or 8,x+10)
@@ -95,8 +101,7 @@ end
 
 function draw_tooltip(thing,y)
  local x,hand=mid(40,thing.x-20,66),thing.hand
- rectfill(x,y,x+60,y+19,7)
- rect(x,y,x+60,y+19,0)
+ box(x,y,60,19,7,0)
  print(thing.name..(hand and "\n\fc"..hand.label.."\n\f5lvl "..hand_levels[hand.name].." > "..hand_levels[hand.name]+1 or (thing.chips and "\n\fc" or "\n\f8")..thing.text.."\n\f5"..(thing.cond or "")),x+3,y+2,2)
  if thing.cond=="per" then spr(16+thing.need,x+17,y+14) end
  if count(jokers,thing)>0 then print_right("sell $"..sell_price(thing),x+59,y+14,5) end
@@ -180,7 +185,7 @@ function draw_table()
   draw_card(card,76+from_middle*10,(card.picked and 73 or 78)+from_middle*from_middle\6-(hovered and 2 or 0))
  end
  local card=hand[cursor]
- if mode=="play" and table_focus.row==2 and card and card.wait==0 then rect(card.x-1,card.y-1,card.x+15,card.y+21,10) end
+ if mode=="play" and table_focus.row==2 and card and card.wait==0 then outline(card) end
  local picked=picked_cards()
  for i,button in ipairs(table_buttons) do
   draw_table_button(button,mode=="play" and button_ready(button.name,picked),button_focus==i)
@@ -207,8 +212,7 @@ function draw_banner(title,line,colour,lines)
  local _,drop=glide(banner,0,leaving and 110 or 0)
  camera(0,-drop)
  local bottom=70+#lines*8
- rectfill(42,40,125,bottom,0)
- rect(42,40,125,bottom,colour)
+ box(42,40,83,bottom-40,0,colour)
  print_centre(title,46,colour,table_centre)
  for i,entry in ipairs(lines) do
   print(entry[1],46,50+i*8,7)
@@ -226,8 +230,7 @@ function draw_select()
  camera(0,-drop)
  for which=1,3 do
   local x,now,done=41+(which-1)*29,which==blind,which<blind
-  rectfill(x,27,x+26,104,done and 5 or 1)
-  rect(x,27,x+26,104,now and 9 or 6)
+  box(x,27,26,77,done and 5 or 1,now and 9 or 6)
   rectfill(x+2,29,x+24,37,now and 9 or 0)
   print_centre(now and "select" or done and "done" or "next",31,now and 7 or 5,x+13)
   if now and select_focus.row==2 then rect(x+1,28,x+25,38,10) end
@@ -244,8 +247,7 @@ function draw_select()
 end
 
 function draw_info()
- rectfill(3,6,124,121,5)
- rect(3,6,124,121,6)
+ box(3,6,121,115,5,6)
  for tab=1,2 do
   local centre=tab*44-4
   rectfill(centre-18,9,centre+18,17,info_tab==tab and 8 or 1)

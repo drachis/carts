@@ -32,14 +32,14 @@ Keep: tests/test_boot.lua drives this with scripted presses and checks money, jo
 **shop.lua:159** `function draw_mini_planet(item,x,y,focused)`
 A planet: a lavender card with a ringed planet (its colour from the hand) and the level it would bring.
 
-**shop.lua:168** `function draw_mini_tarot(tarot,x,y,focused)`
+**shop.lua:167** `function draw_mini_tarot(tarot,x,y,focused)`
 A tarot: a purple card with a star and the first four letters of its name; the tooltip gives the rest, its third line saying to pick cards in the dealt hand.
 
-**shop.lua:176** `function draw_pack(pack,x,y,focused)`
+**shop.lua:174** `function draw_pack(pack,x,y,focused)`
 A booster: a card-sized packet in the pack's colour with its name's first four letters.
 
-**shop.lua:184** `function draw_pack_screen()`
+**shop.lua:181** `function draw_pack_screen()`
 The open pack: the felt turns the pack's colour (Balatro does the same), the choices sit centred under the joker row, the pack's name and "choose 1" under them, then skip; the tooltip names a planet or joker, kept clear of the label.
 
-**shop.lua:215** `function draw_shop()`
+**shop.lua:212** `function draw_shop()`
 Draws the shop over the same felt and sidebar as the table, its panel, everything in it and the tooltip shifted by shop_panel's glide (so it slides up on opening and down when leaving, about 20 frames at the speed cap, as Balatro's does), then the tooltip for whatever the cursor is on (under the cards it may cover the packs, as Balatro's hover does), the deck pile, particles and the message line.
