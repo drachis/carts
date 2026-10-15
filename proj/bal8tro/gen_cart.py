@@ -144,6 +144,11 @@ SOUNDS += [
 ]
 BASS_A_SFX, BASS_B_SFX, PAD_A_SFX, PAD_B_SFX, LEAD_A_SFX, LEAD_B_SFX = range(TUNE_FIRST, TUNE_FIRST + 6)
 
+# after the tune, so the sound numbers above stay put
+SOUNDS += [
+    (1, [(46, 0, 2, 5)]),                                 # 27 cursor moves
+]
+
 
 def pattern(flags, *channels):
     sounds = list(channels) + [0x40] * (4 - len(channels))

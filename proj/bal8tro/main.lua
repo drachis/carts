@@ -1,6 +1,8 @@
 function _init()
  mode="title"
  shown_score=0
+ poke(0x5f5c,8)
+ poke(0x5f5d,2)
 end
 
 function start_run()
@@ -23,7 +25,8 @@ function start_blind()
  score,shown_score=0,0
  goal=blind_goal(ante,blind)
  ante_label,round_number=ante.."/"..#ante_bases,(ante-1)*3+blind
- cursor,joker_focus=1
+ cursor,joker_focus,button_focus=1
+ table_focus={row=2,columns={1,1,1}}
  sort_by_suit=false
  draw_up()
  mode="play"
@@ -53,7 +56,7 @@ function take_picked()
   del(hand,card)
   card.picked=false
  end
- cursor=mid(1,cursor,#hand)
+ table_focus.columns[2]=mid(1,cursor,#hand)
  return picked
 end
 
@@ -82,18 +85,34 @@ function discard_hand()
  draw_up()
 end
 
-function update_play()
- if joker_focus then
-  if btnp(0) then joker_focus=max(joker_focus-1,1) end
-  if btnp(1) then joker_focus=min(joker_focus+1,#jokers) end
-  if btnp(3) or #jokers==0 then joker_focus=nil end
-  return
+function steer(focus,sizes)
+ local row,moved=focus.row
+ for step=-1,1,2 do
+  if btnp(step<0 and 2 or 3) then
+   local next=row+step
+   while sizes[next]==0 do next+=step end
+   if sizes[next] then row,moved=next,true end
+  end
  end
- if btnp(0) then cursor=max(cursor-1,1) end
- if btnp(1) then cursor=min(cursor+1,#hand) end
- if btnp(2) and #jokers>0 then joker_focus=1 end
+ local size,column=sizes[row],focus.columns[row] or 1
+ if btnp(0) or btnp(1) then column+=btnp(0) and -1 or 1 moved=true end
+ column=size>0 and (column-1)%size+1 or 1
+ focus.row,focus.columns[row]=row,column
+ if moved then sfx(snd_move) end
+ return row,column
+end
+
+function button_ready(name,picked)
+ if name=="play" then return #picked>0 and can_play(picked) end
+ if name=="discard" then return #picked>0 and discards_left>0 end
+ return true
+end
+
+function update_play()
+ local row,column=steer(table_focus,{#jokers,#hand,#table_buttons})
+ cursor,joker_focus,button_focus=table_focus.columns[2],row==1 and column,row==3 and column
  local card=hand[cursor]
- if btnp(4) and card then
+ if btnp(4) and row==2 and card then
   if card.picked or #picked_cards()<max_picked then
    card.picked=not card.picked
    kick(card,1.5)
@@ -106,11 +125,17 @@ function update_play()
   local spec,_,_,label=evaluate(picked)
   hand_label,hand_level=hand_title(spec,label)
   chips,mult=hand_base(spec)
-  if btnp(5) and can_play(picked) then play_hand()
-  elseif btnp(3) and discards_left>0 then discard_hand() end
- elseif btnp(3) then
-  sort_by_suit=not sort_by_suit
-  sort_cards(hand,sort_by_suit)
+ end
+ local button=btnp(5) and table_buttons.play or btnp(4) and row==3 and table_buttons[column]
+ if button and button_ready(button.name,picked) then
+  kick(button,3)
+  sfx(snd_pick)
+  if button.name=="play" then play_hand()
+  elseif button.name=="discard" then discard_hand()
+  else
+   sort_by_suit=not sort_by_suit
+   sort_cards(hand,sort_by_suit)
+  end
  end
 end
 

@@ -135,9 +135,12 @@ function draw_sidebar()
  if #jokers>0 then print_centre(joker_focus and "⬇️hand" or "⬆️joker",121,5,21) end
 end
 
-function draw_table_button(text,x0,x1,colour,enabled)
- rectfill(x0,104,x1,113,enabled and colour or 5)
- print_centre(text,107,enabled and 7 or 6,(x0+x1+1)/2)
+function draw_table_button(button,enabled,focused)
+ local dx,dy=jiggle(button)
+ local x,y=button.left+dx,104+dy-(focused and 1 or 0)
+ rectfill(x,y,x+20,y+9,enabled and button.colour or 5)
+ print_centre(button.label,y+3,enabled and 7 or 6,x+11)
+ if focused then rect(x-1,y-1,x+21,y+10,10) end
 end
 
 function draw_table()
@@ -164,14 +167,17 @@ function draw_table()
  end
  for i,card in ipairs(hand) do
   local arc=(i-4.5)*(i-4.5)\6+sin(t()/3+i/8)*.8
-  draw_card(card,41+(i-1)*10,(card.picked and 71 or 78)+arc)
+  local hovered=mode=="play" and table_focus.row==2 and i==cursor
+  draw_card(card,41+(i-1)*10,(card.picked and 71 or 78)+arc-(hovered and 3 or 0))
  end
  local card=hand[cursor]
- if mode=="play" and not joker_focus and card and card.wait==0 then rect(card.x-1,card.y-1,card.x+15,card.y+21,10) end
+ if mode=="play" and table_focus.row==2 and card and card.wait==0 then rect(card.x-1,card.y-1,card.x+15,card.y+21,10) end
  local picked=picked_cards()
- draw_table_button("❎play",42,74,12,mode=="play" and #picked>0 and can_play(picked))
- draw_table_button("⬇️disc",77,107,8,mode=="play" and #picked>0 and discards_left>0)
- if #picked==0 then print_centre("⬇️ sort by "..(sort_by_suit and "rank" or "suit"),118,6,74) end
+ for i,button in ipairs(table_buttons) do
+  draw_table_button(button,mode=="play" and button_ready(button.name,picked),button_focus==i)
+ end
+ local hints=split"⬇️ back to hand,🅾️pick ❎play,🅾️ press"
+ if mode=="play" then print_centre(hints[table_focus.row],118,6,74) end
  if joker_focus then draw_tooltip(jokers[joker_focus]) end
  draw_particles()
  for p in all(pops) do

@@ -45,6 +45,7 @@ mult_x=20
 boxes_y=55
 table_centre=84
 snd_deal=4
+snd_move=27
 music_calm=0
 music_table=2
 start_money=4
@@ -111,6 +112,13 @@ hands_left,2,67,18,hand,12,
 discards_left,20,67,36,disc,8,
 ante_label,2,97,18,ante,9,
 round_number,20,97,36,rnd,9,
+]]
+
+table_buttons=parse_table[[
+name,label,colour,left
+play,play,12,42
+discard,disc,8,64
+sort,sort,13,86
 ]]
 
 vfx_specs=parse_table[[

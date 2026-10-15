@@ -70,8 +70,14 @@ local presses=parse_record[[
 282=1
 286=3
 288=3
+289=0
 290=4
-292=3
+292=2
+294=4
+296=3
+297=0
+298=4
+309=2
 310=4
 314=5
 490=4
@@ -130,13 +136,15 @@ function boot_frame()
   expect("a run starts with no jokers",#jokers,0)
   expect("a run starts with $4",money,4)
  end
- if n==51 then expect("a picked card glides, not jumps (y "..hand[1].y..")",hand[1].y>=75 and hand[1].y<=79,true) end
- if n==57 then expect("a picked card has risen (y "..hand[1].y..")",hand[1].y<=75,true) end
+ if n==51 then expect("a picked card glides, not jumps (y "..hand[1].y..")",hand[1].y>=72 and hand[1].y<=76,true) end
+ if n==57 then expect("a picked card has risen (y "..hand[1].y..")",hand[1].y<=74,true) end
  if n==57 then dump_screen("boot_pick") expect("hand picked",hand_label..hand_level,"pair1") end
  if n==281 then expect("up looks at the jokers",joker_focus,1) end
  if n==283 then dump_screen("boot_tooltip") end
- if n==287 then expect("down goes back to the hand",joker_focus,nil) end
- if n==289 then expect("down with nothing picked sorts by suit",sort_by_suit,true) end
+ if n==287 then expect("down goes back to the hand",table_focus.row,2) end
+ if n==289 then expect("left from the first button wraps to sort",button_focus,3) dump_screen("boot_buttons") end
+ if n==291 then expect("pressing sort sorts by suit",sort_by_suit,true) end
+ if n==298 then expect("the discard button remembers its row",button_focus,2) end
  if n==150 then
   printh("cpu while scoring with flames: "..stat(1).." at "..stat(7).." fps")
   dump_screen("boot_score")
@@ -180,9 +188,9 @@ function boot_frame()
  if n==263 then dump_screen("boot_shop_buttons") end
  if n==265 then expect("rerolled for $5",money..","..reroll_cost..","..#shop_items,"1,6,2") end
  if n==270 then expect_mode("play") expect("blind",blind,2) expect("jokers kept",#jokers,3) end
- if n==293 then expect("the discard flies off",#flying,1) dump_screen("boot_discard") end
- if n==295 then expect("discards left",discards_left,2) expect("hand refilled",#hand,8) end
- if n==320 then expect("the discard has left the screen",#flying,0) end
+ if n==299 then expect("the discard flies off",#flying,1) dump_screen("boot_discard") end
+ if n==301 then expect("discards left",discards_left,2) expect("hand refilled",#hand,8) end
+ if n==330 then expect("the discard has left the screen",#flying,0) end
  if n==480 then expect_mode("lost") dump_screen("boot_lost") end
  if n==492 then expect("restart clears jokers",#jokers,0) end
  if n==505 then expect("the needle gives one hand",hands_left,1) end
