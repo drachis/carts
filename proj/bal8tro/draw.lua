@@ -76,8 +76,7 @@ function draw_card(card,x,y)
   return
  end
  local swell=flr(card.swell+.5)
- box(x-swell,y-swell,14+swell*2,20+swell*2,7,6)
- pset(x,y,0) pset(x+14,y,0) pset(x,y+20,0) pset(x+14,y+20,0)
+ sspr(0,32,15,21,x-swell,y-swell,15+swell*2,21+swell*2)
  local colour=suit_colors[card.suit]
  print(rank_names[card.rank-1],x+2,y+2,colour)
  spr(16+card.suit,x+2,y+8)

@@ -230,6 +230,13 @@ a0aaa0a.
 ]
 for number, art in enumerate(JOKER_ART):
     SPRITES[32 + number] = art
+# a card's face, 15x21 at sprite 64: white with a grey edge and its corners
+# left transparent so they round over the felt; draw_card stretches it with
+# sspr when a card swells
+SPRITES[64] = "\n".join(
+    "".join("." if x in (0, 14) and y in (0, 20) else "6" if x in (0, 14) or y in (0, 20) else "7"
+            for x in range(15))
+    for y in range(21))
 # sprite number -> flag byte (1 is flag 0, 2 is flag 1, ...)
 FLAGS = {}
 
