@@ -39,7 +39,10 @@ the cart.
   (100000) wins. Goals are 32-bit like scores.
 - A run starts with $4 and no jokers, as in Balatro. There are four joker
   slots (Balatro has five; four is what fits across the screen) and
-  fourteen jokers, each with Balatro's price.
+  twenty-one jokers, each with Balatro's price: flat, per-suit and
+  per-face, hand-type bonuses and x2s, and Balatro's growing and
+  situational ones (abstract, banner, mystic summit, half, supernova,
+  green joker, ride the bus).
 - Each blind: a fresh shuffled deck, 8-card hand, 4 hands, 3 discards.
 - The table is laid out like Balatro's: a sidebar on the left (blind,
   goal, round score, hand and level, chips × mult, hands, discards,

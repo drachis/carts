@@ -11,8 +11,32 @@ function deal_jokers(count,owned)
 end
 
 function reset_levels()
- hand_levels={}
- for spec in all(hand_specs) do hand_levels[spec.name]=1 end
+ hand_levels,hand_plays={},{}
+ for spec in all(hand_specs) do hand_levels[spec.name],hand_plays[spec.name]=1,0 end
+end
+
+function joker_scale(joker,spec,owned)
+ local per=joker.per
+ if per=="jokers" then return #owned end
+ if per=="discards" then return discards_left end
+ if per=="plays" then return spec and hand_plays[spec.name] or 1 end
+ if per=="count" then return joker.count or 0 end
+ return 1
+end
+
+function grow_jokers(event,scoring)
+ local face
+ for card in all(scoring) do face=face or is_face(card) end
+ for joker in all(jokers) do
+  local before=joker.count or 0
+  if joker.grow=="green" then joker.count=max(before+(event=="play" and 1 or -1),0) end
+  if joker.grow=="bus" and event=="play" then joker.count=face and 0 or before+1 end
+  if joker.x and joker.count and joker.count!=before then
+   local x,y=thing_position(joker)
+   pop(joker.count>before and "+1" or "reset",x,y,joker.count>before and 8 or 6)
+   kick(joker,3)
+  end
+ end
 end
 
 function boss_on()
@@ -57,9 +81,11 @@ function score_steps(played,jokers)
    end
   end
  end
+ contains.small,contains.nodisc=#played<=3,discards_left==0
  for joker in all(jokers) do
-  if joker.when=="hand" and (not joker.need or contains[joker.need]) then
-   add(steps,{thing=joker,chips=joker.chips,mult=joker.mult,xmult=joker.xmult})
+  local scale=joker_scale(joker,spec,jokers)
+  if joker.when=="hand" and (not joker.need or contains[joker.need]) and scale>0 then
+   add(steps,{thing=joker,chips=joker.chips and joker.chips*scale,mult=joker.mult and joker.mult*scale,xmult=joker.xmult})
   end
  end
  return spec,label,scoring,steps

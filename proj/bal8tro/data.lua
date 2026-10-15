@@ -70,21 +70,28 @@ sflush,straight flush,100,8,neptune,str8 fl,40,4
 ]]
 
 joker_specs=parse_table[[
-name,text,cond,tag,when,need,chips,mult,xmult,cost
-joker,+4 mult,,,hand,,,4,,2
-greedy,+3 mult,per,,card,4,,3,,5
-lusty,+3 mult,per,,card,2,,3,,5
-wrath,+3 mult,per,,card,1,,3,,5
-glutton,+3 mult,per,,card,3,,3,,5
-jolly,+8 mult,pair,pair,hand,pair,,8,,3
-zany,+12mult,trips,3oak,hand,three,,12,,4
-mad,+10mult,2 pair,2pr,hand,two,,10,,4
-droll,+10mult,flush,flsh,hand,flush,,10,,4
-sly,+50chip,pair,pair,hand,pair,50,,,3
-clever,+80chip,2 pair,2pr,hand,two,80,,,4
-scary,+30chip,face,face,card,face,30,,,4
-the duo,x2 mult,pair,pair,hand,pair,,,2,8
-tribe,x2 mult,flush,flsh,hand,flush,,,2,8
+name,text,cond,tag,when,need,chips,mult,xmult,cost,per,grow
+joker,+4 mult,,,hand,,,4,,2,,
+greedy,+3 mult,per,,card,4,,3,,5,,
+lusty,+3 mult,per,,card,2,,3,,5,,
+wrath,+3 mult,per,,card,1,,3,,5,,
+glutton,+3 mult,per,,card,3,,3,,5,,
+jolly,+8 mult,pair,pair,hand,pair,,8,,3,,
+zany,+12mult,trips,3oak,hand,three,,12,,4,,
+mad,+10mult,2 pair,2pr,hand,two,,10,,4,,
+droll,+10mult,flush,flsh,hand,flush,,10,,4,,
+sly,+50chip,pair,pair,hand,pair,50,,,3,,
+clever,+80chip,2 pair,2pr,hand,two,80,,,4,,
+scary,+30chip,face,face,card,face,30,,,4,,
+the duo,x2 mult,pair,pair,hand,pair,,,2,8,,
+tribe,x2 mult,flush,flsh,hand,flush,,,2,8,,
+abstract,+3 mult,a joker,jkrs,hand,,,3,,4,jokers,
+banner,+30chip,a disc,disc,hand,,30,,,5,discards,
+summit,+15mult,0 discs,0dsc,hand,nodisc,,15,,5,,
+half,+20mult,<=3 crd,<=3,hand,small,,20,,5,,
+nova,+1 mult,a play,nova,hand,,,1,,5,plays,
+green,+1 mult,grows,grow,hand,,,1,,4,count,green
+bus,+1 mult,no face,bus,hand,,,1,,6,count,bus
 ]]
 
 blind_specs=parse_table[[

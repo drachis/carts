@@ -63,6 +63,9 @@ end
 function play_hand()
  hands_left-=1
  played=take_picked()
+ local played_spec,played_scoring=evaluate(played)
+ hand_plays[played_spec.name]+=1
+ grow_jokers("play",played_scoring)
  local spec,label
  spec,label,scoring_cards,steps=score_steps(played,jokers)
  hand_label,hand_level=hand_title(spec,label)
@@ -73,6 +76,7 @@ end
 
 function discard_hand()
  discards_left-=1
+ grow_jokers("discard")
  fly_away(take_picked())
  draw_up()
 end

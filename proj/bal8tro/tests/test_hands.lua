@@ -99,8 +99,42 @@ function vfx_cases()
  freeze,particles=0,{}
 end
 
+function total_of(cards,names)
+ local spec,_,_,steps=score_steps(cards_of(cards),jokers_of(names))
+ local chips,mult=hand_base(spec)
+ for step in all(steps) do chips,mult=apply_step(step,chips,mult) end
+ return chips*mult
+end
+
+function growing_cases()
+ reset_levels()
+ discards_left=2
+ expect("abstract: +3 mult for each of 3 jokers",total_of("kh ks","abstract,joker,sly"),(30+50)*(2+9+4))
+ expect("banner: +30 chips for each of 2 discards",total_of("kh ks","banner"),(30+60)*2)
+ expect("summit asleep with discards left",total_of("kh ks","summit"),30*2)
+ discards_left=0
+ expect("summit: +15 mult with no discards",total_of("kh ks","summit"),30*17)
+ expect("half: +20 mult on 2 cards",total_of("kh ks","half"),30*22)
+ expect("half asleep on 4 cards",total_of("kh ks 2c 3d","half"),30*2)
+ hand_plays.pair=3
+ expect("nova: +1 mult per pair played (3)",total_of("kh ks","nova"),30*5)
+ jokers=jokers_of("green,bus")
+ grow_jokers("play",cards_of("2h"))
+ grow_jokers("play",cards_of("3h"))
+ grow_jokers("discard")
+ expect("green: two plays and a discard",jokers[1].count,1)
+ expect("bus: two hands with no face card",jokers[2].count,2)
+ grow_jokers("play",cards_of("kh"))
+ expect("bus: a scoring face card resets it",jokers[2].count,0)
+ local spec,_,_,steps=score_steps(cards_of("kh ks"),jokers)
+ expect("green at 2 adds 2 mult; bus at 0 adds nothing",#steps..","..steps[3].mult,"3,2")
+ jokers={}
+ reset_levels()
+end
+
 function run_cases()
  vfx_cases()
+ growing_cases()
  reset_levels()
  boss_cases()
  for case in all(hand_cases) do
@@ -140,8 +174,10 @@ function run_cases()
  local owned={}
  for i=1,#joker_specs-2 do add(owned,setmetatable({},joker_specs[i])) end
  local offered=deal_jokers(3,owned)
- expect("shop offers only jokers not owned",#offered..","..offered[1].cost..","..offered[2].cost,"2,8,8")
- expect("sell price is half the cost",sell_price(offered[1]),4)
+ local last,second=joker_specs[#joker_specs],joker_specs[#joker_specs-1]
+ local names=offered[1].name..offered[2].name
+ expect("shop offers only jokers not owned",#offered..","..tostr(names==second.name..last.name or names==last.name..second.name),"2,true")
+ expect("sell price is half the cost",sell_price(jokers_of("the duo")[1]),4)
  expect("a $2 joker sells for $1",sell_price(jokers_of("joker")[1]),1)
 end
 

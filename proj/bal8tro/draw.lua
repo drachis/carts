@@ -86,7 +86,7 @@ function draw_mini_joker(joker,x,y,focused)
  x,y=glide(joker,x,y)
  rectfill(x,y,x+19,y+19,7)
  rect(x,y,x+19,y+19,focused and 10 or 13)
- local effect=joker.xmult and "x"..joker.xmult or "+"..(joker.chips or joker.mult)
+ local effect=joker.xmult and "x"..joker.xmult or "+"..(joker.chips or joker.mult)*joker_scale(joker,nil,jokers)
  print_centre(effect,y+3,joker.chips and 12 or 8,x+10)
  if joker.cond=="per" then spr(16+joker.need,x+8,y+11) else print_centre(joker.tag or "",y+11,5,x+10) end
 end
