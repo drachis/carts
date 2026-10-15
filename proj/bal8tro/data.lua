@@ -31,7 +31,9 @@ hand_size=8
 max_picked=5
 hands_per_blind=4
 discards_per_blind=3
-joker_count=3
+joker_slots=4
+shop_slots=2
+reroll_base=5
 step_frames=18
 start_money=4
 interest_step=5
@@ -56,18 +58,21 @@ sflush,straight flush,100,8
 ]]
 
 joker_specs=parse_table[[
-name,text,when,need,chips,mult,xmult
-joker,+4 mult,hand,,,4,
-greedy,+3m per,card,4,,3,
-lusty,+3m per,card,2,,3,
-wrathful,+3m per,card,1,,3,
-glutton,+3m per,card,3,,3,
-jolly,+8m pair,hand,pair,,8,
-zany,+12m trips,hand,three,,12,
-sly,+50c pair,hand,pair,50,,
-scary,+30c face,card,face,30,,
-the duo,x2 pair,hand,pair,,,2
-the tribe,x2 flush,hand,flush,,,2
+name,text,cond,when,need,chips,mult,xmult,cost
+joker,+4 mult,,hand,,,4,,2
+greedy,+3 mult,per,card,4,,3,,5
+lusty,+3 mult,per,card,2,,3,,5
+wrath,+3 mult,per,card,1,,3,,5
+glutton,+3 mult,per,card,3,,3,,5
+jolly,+8 mult,pair,hand,pair,,8,,3
+zany,+12mult,trips,hand,three,,12,,4
+mad,+10mult,2 pair,hand,two,,10,,4
+droll,+10mult,flush,hand,flush,,10,,4
+sly,+50chip,pair,hand,pair,50,,,3
+clever,+80chip,2 pair,hand,two,80,,,4
+scary,+30chip,face,card,face,30,,,4
+the duo,x2 mult,pair,hand,pair,,,2,8
+tribe,x2 mult,flush,hand,flush,,,2,8
 ]]
 
 blind_specs=parse_table[[

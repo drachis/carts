@@ -49,7 +49,8 @@ score_cases={
  {"kh ks","joker,the duo",360},
  {"kd kh","greedy",150},
  {"kd kh","scary",180},
- {"2h 7h 9h jh kh","the tribe,lusty",(35+38)*((4+15)*2)},
+ {"2h 7h 9h jh kh","tribe,lusty",(35+38)*((4+15)*2)},
+ {"kh ks 2c 2d 5s","mad,clever",(20+24+80)*(2+10)},
 }
 
 function run_cases()
@@ -73,6 +74,12 @@ function run_cases()
  expect("sorted by rank",hand[1].rank..","..hand[4].suit,"14,1")
  sort_cards(hand,true)
  expect("sorted by suit",hand[1].suit..","..hand[1].rank,"2,13")
+ local owned={}
+ for i=1,#joker_specs-2 do add(owned,setmetatable({},joker_specs[i])) end
+ local offered=deal_jokers(3,owned)
+ expect("shop offers only jokers not owned",#offered..","..offered[1].cost..","..offered[2].cost,"2,8,8")
+ expect("sell price is half the cost",sell_price(offered[1]),4)
+ expect("a $2 joker sells for $1",sell_price(jokers_of("joker")[1]),1)
 end
 
 function _update60()

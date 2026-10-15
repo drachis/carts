@@ -1,7 +1,8 @@
-function deal_jokers(count)
+function deal_jokers(count,owned)
  local pool,dealt={},{}
  for spec in all(joker_specs) do add(pool,spec) end
- for i=1,count do
+ for joker in all(owned) do del(pool,getmetatable(joker)) end
+ for i=1,min(count,#pool) do
   local spec=rnd(pool)
   del(pool,spec)
   add(dealt,setmetatable({},spec))

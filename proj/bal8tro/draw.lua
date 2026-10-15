@@ -1,6 +1,6 @@
 function thing_position(thing)
  if thing.rank then return thing.x+7,thing.y-7 end
- return thing.x+20,thing.y+20
+ return thing.x+15,thing.y+22
 end
 
 function print_right(text,x,y,colour)
@@ -27,14 +27,15 @@ function draw_card(card,x,y)
  spr(card.suit,x+7,y+12)
 end
 
-function draw_joker(joker,x,y)
+function draw_joker(joker,x,y,focused)
  if is_active(joker) then y-=3 end
  joker.x,joker.y=x,y
- rectfill(x,y,x+39,y+17,7)
- rect(x,y,x+39,y+17,13)
+ rectfill(x,y,x+30,y+19,7)
+ rect(x,y,x+30,y+19,focused and 10 or 13)
  print(joker.name,x+2,y+2,2)
- print(joker.text,x+2,y+10,joker.chips and 12 or 8)
- if joker.when=="card" and joker.need!="face" then spr(16+joker.need,x+31,y+10) end
+ print(joker.text,x+2,y+8,joker.chips and 12 or 8)
+ print(joker.cond or "",x+2,y+14,5)
+ if joker.cond=="per" then spr(16+joker.need,x+15,y+14) end
 end
 
 function draw_panel()
@@ -58,7 +59,10 @@ end
 function draw_table()
  cls(3)
  draw_panel()
- for i,joker in ipairs(jokers) do draw_joker(joker,2+(i-1)*42,45) end
+ for i=1,joker_slots do
+  local x,joker=1+(i-1)*32,jokers[i]
+  if joker then draw_joker(joker,x,44) else rect(x,44,x+30,63,11) end
+ end
  if played then
   local left=64-#played*8
   for i,card in ipairs(played) do
@@ -105,6 +109,7 @@ end
 
 function _draw()
  if mode=="title" then draw_title() return end
+ if mode=="shop" then draw_shop() return end
  draw_table()
  if mode=="cashout" then draw_banner("blind defeated!","🅾️ cash out $"..earned,11,earnings)
  elseif mode=="won" then draw_banner("you beat ante 1!","🅾️ play again",10,{})

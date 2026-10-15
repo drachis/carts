@@ -11,7 +11,8 @@ Read only the file for the module you are changing.
 | [notes/data.md](notes/data.md) | tuning, hand values, jokers, blinds, parsers |
 | [notes/cards.md](notes/cards.md) | deck, sorting, poker hand evaluation |
 | [notes/scoring.md](notes/scoring.md) | jokers dealt, scoring steps, 32-bit scores |
-| [notes/main.md](notes/main.md) | modes, input, playing out a hand, blinds |
+| [notes/main.md](notes/main.md) | modes, input, playing out a hand, blinds, cash-out |
+| [notes/shop.md](notes/shop.md) | the shop between blinds: buy, sell, reroll |
 | [notes/draw.md](notes/draw.md) | table layout, cards, jokers, pops, banners, title |
 
 **Format.** Each note is headed

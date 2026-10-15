@@ -8,6 +8,7 @@ log_name="log_boot"
 #include ../cards.lua
 #include ../scoring.lua
 #include ../main.lua
+#include ../shop.lua
 #include ../draw.lua
 #include dump.lua
 #include test_boot.lua

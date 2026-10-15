@@ -6,7 +6,7 @@ end
 function start_run()
  blind=1
  money=start_money
- jokers=deal_jokers(joker_count)
+ jokers={}
  start_blind()
 end
 
@@ -151,10 +151,11 @@ function _update60()
   update_play()
  elseif mode=="score" then
   update_score()
+ elseif mode=="shop" then
+  update_shop()
  elseif btnp(4) then
   if mode=="cashout" then
-   blind+=1
-   start_blind()
+   open_shop()
   else
    start_run()
   end
