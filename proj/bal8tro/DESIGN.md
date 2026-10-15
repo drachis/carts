@@ -31,6 +31,7 @@ the layout); the challenge is fitting it in one cart.
 | Sprites 1..4 | big suits (spade, heart, club, diamond) |
 | Sprites 17..20 | small suits |
 | Sprites 32..52 | joker portraits, 8x8, in joker_specs order (gen_cart.py JOKER_ART) |
+| Sprites 64..97 | a card face, 15x21 (white, grey edge, transparent corners), drawn with sspr so a swelling card stretches it |
 | SFX 0..1 | unused (the first chips and mult ticks) |
 | SFX 2..4 | pick card, hand total, card dealt |
 | SFX 5..12, 13..20 | chips and mult ticks, rising a major scale per scoring step |
