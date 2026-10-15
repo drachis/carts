@@ -103,6 +103,16 @@ the boss,4,5
 
 ante_bases=split"3,8,20,50,110,200,350,500"
 
+sidebar_boxes=parse_table[[
+name,left,top,right,heading,colour,big
+goal,2,15,36,goal,8,1
+shown_score,2,29,36,round,7,1
+hands_left,2,67,18,hand,12,
+discards_left,20,67,36,disc,8,
+ante_label,2,97,18,ante,9,
+round_number,20,97,36,rnd,9,
+]]
+
 vfx_specs=parse_table[[
 name,count,speed,rise,gravity,life,ramp,width
 spark,8,1.5,1,.08,30,,0

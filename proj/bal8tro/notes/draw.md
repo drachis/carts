@@ -21,9 +21,9 @@ The table's 20x20 joker: its effect in its colour (blue chips, red mult and xmul
 **draw.lua:94** `function draw_tooltip(joker)`
 Under the focused joker, kept on the right side: name, effect, condition and sell price.
 
-**draw.lua:111** `function draw_sidebar()`
+**draw.lua:112** `function draw_sidebar()`
 Top to bottom: the blind on a strip coloured by kind (blue small, orange big, red boss), its name in two words; goal; round score; the hand's short name and level; chips and mult boxes (chips_x, mult_x, boxes_y, with flames behind them); hands and discards; money, double width; ante and round; deck count; the hint for the joker row.
 Keep: everything is at most 8 characters to fit 37px, which is why hands use their short names ("3 kind") and the level is its own line. The panel is drawn 8px past the screen's edges so a shake never shows the felt.
 
-**draw.lua:147** `function draw_table()`
+**draw.lua:143** `function draw_table()`
 Four mini joker slots across the top (x42, 21 apart), empty ones outlined. The boss's rule shows under them when there is no tooltip and nothing played. Played cards sit at y44 (scoring ones 4px higher), centred. The hand overlaps, 10px apart from x41, in a shallow arc, each card bobbing on its own phase; picked cards rise 7px; the cursor's frame is drawn after the whole hand so the next card does not cover it. Play and discard buttons under the hand grey out when they would do nothing; the line under them says what ⬇️ does now. The deck pile is bottom right; cards in flying glide off the right edge and are dropped past x127.

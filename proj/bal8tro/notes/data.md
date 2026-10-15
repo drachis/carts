@@ -17,8 +17,12 @@ The three blinds of every ante, with Balatro's rewards ($3, $4, $5). factor is t
 **data.lua:104** `ante_bases=split"3,8,20,50,110,200,350,500"`
 Balatro's eight ante base scores, in hundreds, because 50000 is past PICO-8's 32767. A run is won by clearing the boss of the last ante.
 
-**data.lua:106** `vfx_specs=parse_table[[`
+**data.lua:106** `sidebar_boxes=parse_table[[`
+The sidebar's number boxes as data: name is the global the box shows (read through _ENV, so ante_label and round_number are kept as globals by start_blind), big prints it as a 32-bit score. Each box is 13px tall. A new number in the sidebar is a new row.
+Keep: parse_table indexes rows by their name column, so every table needs one first; without it the cart fails before its first frame.
+
+**data.lua:116** `vfx_specs=parse_table[[`
 The VFX engine's particle presets (emit in effects.lua): how many, how fast, how hard they rise, gravity, life in frames, a colour ramp from coldest to hottest ("/"-separated, split into a list just below), and the width they spawn across. spark: a scoring step's, in the step's colour. shower: the hand total's. flame: the boxes' embers. coin: the cash-out's. A new effect is a new row.
 
-**data.lua:117** `boss_specs=parse_table[[`
+**data.lua:127** `boss_specs=parse_table[[`
 Nine of Balatro's bosses, one drawn at random when an ante's small blind starts. factor is the goal in halves of the ante base (Balatro's 2x, the wall 4x, the needle 1x). debuff is a suit; hands and discards replace the blind's; must is the fewest cards a hand may have; halve halves the base chips and mult. text is shown on the panel when no cards are picked, at most 25 characters.

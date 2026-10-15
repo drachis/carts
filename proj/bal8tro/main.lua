@@ -22,6 +22,7 @@ function start_blind()
  discards_left=active and active.discards or discards_per_blind
  score,shown_score=0,0
  goal=blind_goal(ante,blind)
+ ante_label,round_number=ante.."/"..#ante_bases,(ante-1)*3+blind
  cursor,joker_focus=1
  sort_by_suit=false
  draw_up()

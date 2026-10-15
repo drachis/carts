@@ -102,10 +102,11 @@ function draw_tooltip(joker)
  print_right("sell $"..sell_price(joker),x+59,39,5)
 end
 
-function sidebar_box(x0,y0,x1,y1,heading,value,colour)
- rectfill(x0,y0,x1,y1,0)
- print_centre(heading,y0+1,6,(x0+x1+1)/2)
- print_centre(value,y0+7,colour,(x0+x1+1)/2)
+function sidebar_box(box)
+ local value,centre=_ENV[box.name],(box.left+box.right+1)/2
+ rectfill(box.left,box.top,box.right,box.top+12,0)
+ print_centre(box.heading,box.top+1,6,centre)
+ print_centre(box.big and big_text(value) or tostr(value),box.top+7,box.colour,centre)
 end
 
 function draw_sidebar()
@@ -115,8 +116,7 @@ function draw_sidebar()
  local words=split(blind_name(blind)," ")
  print_centre(words[1],2,7,19)
  print_centre(words[2],8,7,19)
- sidebar_box(2,15,36,27,"goal",big_text(goal),8)
- sidebar_box(2,29,36,41,"round",big_text(shown_score),7)
+ for box in all(sidebar_boxes) do sidebar_box(box) end
  draw_flames()
  rectfill(chips_x-chips_bump,boxes_y-chips_bump,chips_x+16+chips_bump,boxes_y+8+chips_bump,12)
  rectfill(mult_x-mult_bump,boxes_y-mult_bump,mult_x+16+mult_bump,boxes_y+8+mult_bump,8)
@@ -128,13 +128,9 @@ function draw_sidebar()
    print_centre(unpack(line))
   end
  end
- sidebar_box(2,67,18,80,"hand",tostr(hands_left),12)
- sidebar_box(20,67,36,80,"disc",tostr(discards_left),8)
  rectfill(2,83,36,94,0)
  local cash="$"..money
  print("\^w"..cash,20-#cash*4,86,10)
- sidebar_box(2,97,18,110,"ante",ante.."/"..#ante_bases,9)
- sidebar_box(20,97,36,110,"rnd",tostr((ante-1)*3+blind),9)
  print_centre("deck "..#deck,114,6,19)
  if #jokers>0 then print_centre(joker_focus and "⬇️hand" or "⬆️joker",121,5,21) end
 end
@@ -209,10 +205,7 @@ function draw_title()
  for i=1,5 do
   draw_card({rank=9+i,suit=i%4+1},24+(i-1)*16,36)
  end
- print("🅾️ pick card",34,68,7)
- print("❎ play hand",34,76,7)
- print("⬇️ discard, or sort",34,84,7)
- print("⬆️ look at jokers",34,92,7)
+ print("🅾️ pick card\n\n❎ play hand\n\n⬇️ discard, or sort\n\n⬆️ look at jokers",34,62,7)
  print_centre("press 🅾️ to start",112,10)
 end
 
