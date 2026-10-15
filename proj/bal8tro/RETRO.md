@@ -94,11 +94,14 @@ Tooling the project grew, all in the repository:
   where one P8SCII string would do, if-chains over modes, and layout
   numbers in code. Replacing them was most of compaction 1.
 - **Heredoc backslashes, again.** The rule is in memory and in two skills.
-  It still broke four times this session: `\\n` became a real newline in
-  main.lua, `\\2` became byte 0x02 in draw.lua, `\\60` became the digit 0,
-  and a search text with `\\6` never matched. Each time the content had
-  been written as an inline `py - <<'EOF'` script; each time a script file
-  written with the Write tool, or the Edit tool, worked first time.
+  It still broke four times this session. The scripts held `\\n`, `\\2`,
+  `\\60` and `\\6`, meant as Lua's `\n`, `\2`, `\60` and `\6`: the first
+  became a real newline in main.lua, the second byte 0x02 in draw.lua, the
+  third the digit 0, and the last search text never matched. Each time the
+  content had been written as an inline `py - <<'EOF'` script; each time a
+  script file written with the Write tool, or the Edit tool, worked first
+  time. It happened a fifth time while writing this retro's memory update
+  about it, through a heredoc, and was caught by reading the file back.
 - **Guessed units, twice, in the splash.** The cards were first drawn
   2-4 card widths wide and full size until 80% of their path, from a
   reading of the source; the log showed 2-2.8 at the ring shrinking
@@ -214,7 +217,9 @@ about 30 and saved 26; draw_item was expected to save about 15 and saved
 12. Group a golden run's differing frames by a recorded state field to
     show a difference is confined to where it was intended.
 13. A scripted edit carrying a backslash goes in a file written with the
-    Write tool, never an inline heredoc (recurred four times).
+    Write tool, never an inline heredoc (recurred four times, and a fifth
+    during this retro): the habit outlives the rule, so the check is to
+    read back every line with a backslash after any scripted write.
 
 ## Sorting the lessons
 
