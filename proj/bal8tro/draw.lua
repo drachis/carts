@@ -24,7 +24,8 @@ function glide(thing,x,y)
   thing.glide_x+=(x-thing.glide_x)/4
   thing.glide_y+=(y-thing.glide_y)/4
  end
- thing.x,thing.y=flr(thing.glide_x+.5),flr(thing.glide_y+.5)
+ local dx,dy=jiggle(thing)
+ thing.x,thing.y=flr(thing.glide_x+dx+.5),flr(thing.glide_y+dy+.5)
  return thing.x,thing.y
 end
 
@@ -39,7 +40,17 @@ end
 function draw_card(card,x,y)
  if is_active(card) then y-=3 end
  x,y=glide(card,x,y)
- if card.wait>0 then draw_back(x,y) return end
+ local turn=card.flip or 1
+ if turn<1 then
+  card.flip+=.0625
+  local width=abs(cos(turn/2))*7.5
+  clip(x+7.5-width,y,width*2+1,21)
+ end
+ if card.wait>0 or turn<.5 then
+  draw_back(x,y)
+  clip()
+  return
+ end
  rectfill(x,y,x+14,y+20,7)
  rect(x,y,x+14,y+20,6)
  pset(x,y,0) pset(x+14,y,0) pset(x,y+20,0) pset(x+14,y+20,0)
@@ -53,6 +64,7 @@ function draw_card(card,x,y)
   fillp()
   line(x+2,y+18,x+12,y+2,8)
  end
+ clip()
 end
 
 function draw_joker(joker,x,y,focused)
@@ -162,7 +174,7 @@ function draw_table()
  draw_table_button("⬇️disc",77,107,8,mode=="play" and #picked>0 and discards_left>0)
  if #picked==0 then print_centre("⬇️ sort by "..(sort_by_suit and "rank" or "suit"),118,6,74) end
  if joker_focus then draw_tooltip(jokers[joker_focus]) end
- draw_sparks()
+ draw_particles()
  for p in all(pops) do
   local y,half,tall=p.y-p.age\4,#p.text*2,5
   if p.big then

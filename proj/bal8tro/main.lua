@@ -119,7 +119,7 @@ function update_score()
   local x,y=thing_position(step.thing)
   local colour=step.chips and 12 or 8
   pop(step.xmult and "x"..step.xmult or "+"..(step.chips or step.mult),x,y,colour)
-  burst(x,y+4,colour,8)
+  emit("spark",x,y+4,colour)
   if step.chips then chips_bump=2 else mult_bump=2 end
   sfx((step.chips and snd_chips or snd_mult)+min(step_index-1,7))
   step_timer=step_frames
@@ -128,8 +128,8 @@ function update_score()
   local total=hand_total(chips,mult)
   score+=total
   add(pops,{text=big_text(total),x=table_centre,y=50,colour=10,age=0,big=true})
-  burst(19,boxes_y,10,24)
-  burst(19,boxes_y,9,16)
+  emit("shower",chips_x,boxes_y)
+  emit("shower",mult_x,boxes_y)
   shake=min(2+total/goal*4,8)
   sfx(snd_total)
   step_timer=45
@@ -173,6 +173,10 @@ function pop(text,x,y,colour)
 end
 
 function _update60()
+ if freeze>0 then
+  freeze-=1
+  return
+ end
  if mode=="title" then
   if btnp(4) then start_run() end
  elseif mode=="play" then

@@ -1,11 +1,42 @@
-sparks,shake,chips_bump,mult_bump,heat={},0,0,0,0
-flame_colours=split"2,8,8,9,10,7"
+particles,timers,shake,freeze,flash_frames,chips_bump,mult_bump,heat={},{},0,0,0,0,0,0
 
-function burst(x,y,colour,count)
- for i=1,count do
-  local angle,speed=rnd(),.5+rnd(1.5)
-  add(sparks,{x=x,y=y,vx=cos(angle)*speed,vy=sin(angle)*speed-1,colour=colour,life=15+rnd(15)})
+function emit(name,x,y,colour,amount)
+ local spec=vfx_specs[name]
+ for i=1,amount or spec.count do
+  local angle,speed=rnd(),rnd(spec.speed)
+  local life=spec.life*(.5+rnd(.5))
+  add(particles,{
+   x=x+rnd(spec.width),y=y,
+   vx=cos(angle)*speed,vy=sin(angle)*speed-spec.rise*(.5+rnd()),
+   life=life,full=life,spec=spec,colour=colour
+  })
  end
+end
+
+function kick(thing,amount)
+ thing.kick=max(thing.kick or 0,amount)
+end
+
+function turn_over(card)
+ card.flip=0
+end
+
+function after(frames,action)
+ add(timers,{frames=frames,action=action})
+end
+
+function hitstop(frames)
+ freeze=max(freeze,frames)
+end
+
+function flash(frames)
+ flash_frames=max(flash_frames,frames)
+end
+
+function jiggle(thing)
+ local amount=thing.kick or 0
+ thing.kick=amount>.3 and amount*.8 or 0
+ return rnd(amount)-amount/2,-amount/2
 end
 
 function draw_flames()
@@ -24,21 +55,24 @@ end
 function fan_flames()
  heat=mode=="score" and (score+hand_total(chips,mult))/goal or 0
  if heat<1 then return end
- for left=chips_x,mult_x,mult_x-chips_x do
-  for i=1,min(heat,4) do
-   add(sparks,{x=left+rnd(16),y=boxes_y,vx=rnd(.6)-.3,vy=-.4-rnd(.6*heat),life=6+rnd(12),flame=true})
-  end
- end
+ for left=chips_x,mult_x,mult_x-chips_x do emit("flame",left,boxes_y,nil,min(heat,4)) end
 end
 
 function update_effects()
+ for timer in all(timers) do
+  timer.frames-=1
+  if timer.frames<=0 then
+   del(timers,timer)
+   timer.action()
+  end
+ end
  fan_flames()
- for spark in all(sparks) do
-  spark.x+=spark.vx
-  spark.y+=spark.vy
-  if not spark.flame then spark.vy+=.08 end
-  spark.life-=1
-  if spark.life<0 then del(sparks,spark) end
+ for p in all(particles) do
+  p.x+=p.vx
+  p.y+=p.vy
+  p.vy+=p.spec.gravity
+  p.life-=1
+  if p.life<0 then del(particles,p) end
  end
  shake=shake>.5 and shake*.85 or 0
  chips_bump,mult_bump=max(chips_bump-.25,0),max(mult_bump-.25,0)
@@ -59,10 +93,16 @@ function shake_camera()
  camera(rnd(shake)-shake/2,rnd(shake)-shake/2)
 end
 
-function draw_sparks()
- for spark in all(sparks) do
-  local colour=spark.life<6 and 5 or spark.colour
-  if spark.flame then colour=flame_colours[min(spark.life\3+1,6)] end
-  line(spark.x,spark.y,spark.x-spark.vx*2,spark.y-spark.vy*2,colour)
+function draw_particles()
+ for p in all(particles) do
+  local ramp,colour=p.spec.ramp,p.life<6 and 5 or p.colour
+  if ramp then colour=ramp[ceil(p.life/p.full*#ramp)] end
+  line(p.x,p.y,p.x-p.vx*2,p.y-p.vy*2,colour)
+ end
+ if flash_frames>0 then
+  flash_frames-=1
+  fillp(▒)
+  rectfill(40,0,127,127,7)
+  fillp()
  end
 end

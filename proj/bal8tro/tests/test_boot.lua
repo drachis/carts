@@ -143,10 +143,10 @@ function boot_frame()
  end
  if n==120 or n==148 then
   local flames=0
-  for spark in all(sparks) do if spark.flame then flames+=1 end end
+  for p in all(particles) do if p.spec.name=="flame" then flames+=1 end end
   expect("flames at frame "..n.." (on once 80x6 beats 300)",flames>0,n==148)
  end
- if n==89 then expect("a scoring card throws sparks and bumps chips",#sparks>0 and chips_bump>0,true) end
+ if n==89 then expect("a scoring card throws sparks and bumps chips",#particles>0 and chips_bump>0,true) end
  if n==162 then
   local big
   for p in all(pops) do if p.big then big=p.text end end

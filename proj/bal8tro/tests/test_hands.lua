@@ -75,7 +75,32 @@ function boss_cases()
  boss=boss_specs["the club"]
 end
 
+function vfx_cases()
+ particles={}
+ emit("spark",10,10,8)
+ emit("flame",10,10,nil,3)
+ expect("a spark preset throws its count, a flame its amount",#particles,11)
+ local fired
+ after(3,function() fired=true end)
+ update_effects()
+ update_effects()
+ expect("a timer has not fired after 2 of 3 frames",fired,nil)
+ update_effects()
+ expect("a timer fires on its frame",fired,true)
+ local thing={}
+ kick(thing,4)
+ local _,lift=jiggle(thing)
+ expect("a kick lifts by half its size",lift,-2)
+ for i=1,20 do jiggle(thing) end
+ expect("a kick settles",thing.kick,0)
+ hitstop(5)
+ hitstop(2)
+ expect("a shorter hitstop does not cut a longer one",freeze,5)
+ freeze,particles=0,{}
+end
+
 function run_cases()
+ vfx_cases()
  reset_levels()
  boss_cases()
  for case in all(hand_cases) do

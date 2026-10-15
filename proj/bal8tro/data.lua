@@ -96,6 +96,17 @@ the boss,4,5
 
 ante_bases=split"3,8,20,50,110,200,350,500"
 
+vfx_specs=parse_table[[
+name,count,speed,rise,gravity,life,ramp,width
+spark,8,1.5,1,.08,30,,0
+shower,40,2.5,1.5,.08,30,9/10/10/7,16
+flame,1,.3,.9,0,18,2/8/8/9/10/7,16
+coin,10,1.5,2,.12,36,9/10/10/7,8
+]]
+for spec in all(vfx_specs) do
+ if spec.ramp then spec.ramp=split(spec.ramp,"/") end
+end
+
 boss_specs=parse_table[[
 name,text,factor,debuff,hands,discards,must,halve
 the club,clubs are debuffed,4,3,,,,
