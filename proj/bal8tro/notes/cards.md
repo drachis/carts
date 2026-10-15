@@ -3,8 +3,8 @@
 **cards.lua:1** `suit_colors=split"1,8,3,9"`
 Suits are 1 spade, 2 heart, 3 club, 4 diamond; four colours (Balatro's high-contrast deck) so suits read at a glance. Sprites 1..4 are big suits, 17..20 small.
 
-**cards.lua:2** `rank_names=split("2,3,4,5,6,7,8,9,10,j,q,k,a",",",false)`
-Ranks are 2..14, ace high; rank_names is indexed rank-1.
+**cards.lua:2** `rank_names="23456789tjqka"`
+Ranks are 2..14, ace high; a rank's letter is sub(rank_names,rank-1,rank-1), one character each (t for ten), shared by the cards and the info grid.
 
 **cards.lua:4** `function new_deck(spec)`
 A run's starting 52 cards, in order (shuffled draws from them each blind). Given a deck_specs row it leaves out face cards (abandoned) or folds the suits to spades and hearts (checkered, 26 of each).

@@ -1,5 +1,5 @@
 suit_colors=split"1,8,3,9"
-rank_names=split("2,3,4,5,6,7,8,9,10,j,q,k,a",",",false)
+rank_names="23456789tjqka"
 
 function new_deck(spec)
  local deck={}

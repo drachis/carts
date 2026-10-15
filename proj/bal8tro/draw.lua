@@ -83,7 +83,7 @@ function draw_card(card,x,y)
  local swell=flr(card.swell+.5)
  sspr(0,32,15,21,x-swell,y-swell,15+swell*2,21+swell*2)
  local colour=suit_colors[card.suit]
- print(rank_names[card.rank-1],x+2,y+2,colour)
+ print(sub(rank_names,card.rank-1,card.rank-1),x+2,y+2,colour)
  spr(16+card.suit,x+2,y+8)
  spr(card.suit,x+7,y+12)
  local boost=enhancement_specs[card.enhancement]
@@ -280,7 +280,7 @@ function draw_info()
      if card.suit==suit and card.rank==rank then found=card totals[suit]+=1 end
     end
     rectfill(x,y,x+6,y+10,found and 7 or 5)
-    print(sub("23456789tjqka",rank-1,rank-1),x+2,y+3,suit_colors[suit])
+    print(sub(rank_names,rank-1,rank-1),x+2,y+3,suit_colors[suit])
     local boost=found and enhancement_specs[found.enhancement]
     if boost then rect(x,y,x+6,y+10,boost.colour) end
    end
@@ -297,9 +297,7 @@ end
 function draw_title()
  draw_swirl(1,2,0)
  print("\^w\^tbal8tro",36,14,10)
- for i=1,5 do
-  draw_card({rank=9+i,suit=i%4+1},24+(i-1)*16,36)
- end
+ for i,card in ipairs(title_cards) do draw_card(card,8+(i-1)*16,36) end
  print("🅾️ pick, press   ❎ play\n⬆️⬇️ rows   ⬅️➡️ along",14,62,6)
  draw_back(16,78)
  print_centre("⬅️ "..deck_spec.name.." deck ➡️",82,7,68)
