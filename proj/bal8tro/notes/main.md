@@ -43,5 +43,5 @@ Balatro's payout: the blind's reward, $1 per hand left, and $1 interest per $5 h
 Starts a pattern only when it changes, fading in over 500ms (manual: FADE_LEN is in ms), on channels 0-2 (mask 7) so sound effects keep the fourth. _update60 asks every frame: music_calm (bass and pad) on the title and in the shop, music_table (with the lead) everywhere else.
 Keep: tests/test_boot.lua replaces music() and checks the pattern on the title, the table and the shop.
 
-**main.lua:248** `function _update60()`
-shown_score counts up an eighth of the gap a frame (at least 1) so a big hand rolls up.
+**main.lua:277** `function _update60()`
+Each mode has its own update, found by name: update_ plus the mode (update_won is update_lost). A new mode needs one, or _update60 errors. shown_score counts up an eighth of the gap a frame (at least 1) so a big hand rolls up.

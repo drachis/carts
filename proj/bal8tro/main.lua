@@ -245,44 +245,41 @@ function pop(text,x,y,colour)
  add(pops,{text=text,x=x,y=y,colour=colour,age=0})
 end
 
+function update_title()
+ if btnp(0) or btnp(1) then
+  deck_choice=(deck_choice+(btnp(1) and 0 or #deck_specs-2))%#deck_specs+1
+  deck_spec=deck_specs[deck_choice]
+  sfx(snd_move)
+ end
+ update_lost()
+end
+
+function update_info()
+ if btnp(0) or btnp(1) then
+  info_tab=3-info_tab
+  sfx(snd_move)
+ end
+ if btnp(4) or btnp(5) or btnp(3) then mode="play" end
+end
+
+function update_cashout()
+ if btnp(4) and not leaving then
+  leaving=true
+  after(shop_wait,open_shop)
+ end
+end
+
+function update_lost()
+ if btnp(4) then start_run() end
+end
+update_won=update_lost
+
 function _update60()
  if freeze>0 then
   freeze-=1
   return
  end
- if mode=="title" then
-  if btnp(0) or btnp(1) then
-   deck_choice=(deck_choice+(btnp(1) and 0 or #deck_specs-2))%#deck_specs+1
-   deck_spec=deck_specs[deck_choice]
-   sfx(snd_move)
-  end
-  if btnp(4) then start_run() end
- elseif mode=="play" then
-  update_play()
- elseif mode=="score" then
-  update_score()
- elseif mode=="shop" then
-  update_shop()
- elseif mode=="pack" then
-  update_pack()
- elseif mode=="select" then
-  update_select()
- elseif mode=="info" then
-  if btnp(0) or btnp(1) then
-   info_tab=3-info_tab
-   sfx(snd_move)
-  end
-  if btnp(4) or btnp(5) or btnp(3) then mode="play" end
- elseif btnp(4) then
-  if mode=="cashout" then
-   if not leaving then
-    leaving=true
-    after(shop_wait,open_shop)
-   end
-  else
-   start_run()
-  end
- end
+ _ENV["update_"..mode]()
  shown_score=min(score or 0,shown_score+max(roll or 0,0x.0001))
  for p in all(pops) do
   p.age+=1
