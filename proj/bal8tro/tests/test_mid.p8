@@ -10,6 +10,7 @@ log_name="log_mid"
 #include ../main.lua
 #include lite/mid/shop.lua
 #include ../effects.lua
+#include lite/mid/intro.lua
 #include lite/mid/draw.lua
 #include dump.lua
 #include screen.lua

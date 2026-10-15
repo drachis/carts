@@ -11,6 +11,7 @@ log_name="motion"
 #include lite/motion/shop.lua
 #include ../effects.lua
 #include lite/motion/draw.lua
+#include lite/motion/intro.lua
 #include dump.lua
 #include screen.lua
 #include motion.lua

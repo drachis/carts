@@ -1,0 +1,10 @@
+# intro.lua
+
+Balatro's splash, matched to its pacing and placement from balatro_ref (BAL8TRO_INTRO=1: reference/intro.log, one line a frame per card with its centre and width in card widths, and a screenshot a second). The user asked for it to look and pace like Balatro's, reusing the game's own systems: the swirl, emit, the card face and joker sprites stretched with sspr, box. mode is "intro" from _init unless skip_intro is set (every replay test cart, golden and motion set it; test_boot runs it).
+
+**intro.lua:1** `function update_intro()`
+intro_t is the frame from launch (Balatro's splash clock: its G.TIMERS.REAL times 60). A card is pulled in on each frame listed in intro_spawns (data.lua), i the card's number: Balatro's splash_screen in game.lua spawns 200 at delays 3s, then gaps of max(1/i, 0.2*(170-i)/500, 0.016)s, each on a ring at a random angle, size (2-i/300)*(1..2) card widths, taking max(2-i*.005,.001)s to reach the centre. intro_cards is never emptied: #intro_cards is the index of the next spawn, and a card past its life draws nothing. The Joker dissolves at 120 (Balatro's 0.2+1.8s) into white sparks; at intro_end (834, Balatro's menu at 13.9s) or a press of O, the title takes over.
+Keep: Balatro's measured counts on screen, 2 at 4s, 9 at 6s, 34 at 8s, 78 at 12s and none by 13s, come out of these numbers; change them only against reference/intro.log.
+
+**intro.lua:11** `function draw_intro()`
+Black, then the swirl's stripes dark blue from 120 and bright blue from 240 (Balatro's blue vortex fading in after the Joker); the Joker card (draw_joker_card at 1.2, Balatro's SC_scale) alone in the centre from 20 to 120 (Balatro's appears at 0.33s). Each pulled card travels in a straight line from (18+size)*6.4px out, 9/10 of its life to arrive, and shrinks in proportion to its life left (Balatro's log: about 2-2.8 card widths ten card widths out, nearly nothing at the centre). One in five shows its red back (Balatro's 20%), the rest a face with its suit. A small white centre from 180 blooms from 600 to fill the screen by 756 (Balatro's glow: small at 10.6s, about 30px across at 11.6s, white at 12.6s).

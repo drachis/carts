@@ -234,10 +234,14 @@ function draw_banner(title,line,colour,lines,big)
  camera()
 end
 
+function draw_joker_card(x,y,scale)
+ sspr(0,32,15,21,x,y,15*scale,21*scale)
+ sspr(0,16,8,8,x+3*scale,y+5*scale,9*scale,9*scale)
+end
+
 function draw_jimbo()
  local x,y=glide(jimbo,6,22)
- sspr(0,32,15,21,x,y,26,36)
- sspr(0,16,8,8,x+5,y+8,16,16)
+ draw_joker_card(x,y,1.75)
  jimbo.talk+=1
  if jimbo.talk%8==0 and jimbo.talk<#quip*2 then
   kick(jimbo,1)
@@ -320,6 +324,12 @@ function draw_title()
  print_centre("⬅️ "..deck_spec.name.." deck ➡️",82,7,68)
  print_centre(deck_spec.text,90,9,68)
  print_centre("press 🅾️ to start",112,10)
+ local fade=(intro_t-intro_end)\60
+ if fade<4 then
+  fillp(({0,▓,▒,░})[fade+1])
+  rectfill(0,0,127,127,7)
+  fillp()
+ end
 end
 
 function _draw()

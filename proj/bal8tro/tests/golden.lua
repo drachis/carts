@@ -12,6 +12,7 @@
 --   py golden_compare.py compare --run "py run_tests.py tests/golden.p8" --log tests/golden.p8l --base tests/golden.base
 
 local n,held=0,{}
+skip_intro=true
 function t() return n/60 end
 function btn(i) return held[i] or false end
 btnp=btn

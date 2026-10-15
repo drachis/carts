@@ -10,6 +10,7 @@ log_name="log_table"
 #include ../main.lua
 #include lite/table/shop.lua
 #include ../effects.lua
+#include lite/table/intro.lua
 #include lite/table/draw.lua
 #include dump.lua
 #include screen.lua

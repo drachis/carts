@@ -6,9 +6,10 @@ __lua__
 #include ../cards.lua
 #include ../scoring.lua
 #include ../main.lua
-#include ../shop.lua
+#include lite/golden/shop.lua
 #include ../effects.lua
-#include ../draw.lua
+#include lite/golden/draw.lua
+#include lite/golden/intro.lua
 #include golden.lua
 __gfx__
 00000000000100000880880000333000000900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

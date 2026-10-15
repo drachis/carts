@@ -1,7 +1,7 @@
 # main.lua
 
 **main.lua:1** `function _init()`
-mode is title, play, score, cashout, shop, pack, info, won or lost. tests/test_boot.lua reads it. deck_choice is the title's deck (left/right wrap through deck_specs; the arithmetic adds the count before % because % on negatives is not in the manual); start_run copies it to deck_spec, whose hands, discards and money start_run and start_blind add. title_cards is the title's hand, 8 A J A T 9 Q (it reads BAL8TRO, as the user asked), dealt face down from the deck pile one every deal_frames after 30 frames, turning over as each lands.
+The cart starts in the intro (intro.lua), or on the title when a test cart has set skip_intro. mode is intro, title, play, score, cashout, shop, pack, info, won or lost. tests/test_boot.lua reads it. deck_choice is the title's deck (left/right wrap through deck_specs; the arithmetic adds the count before % because % on negatives is not in the manual); start_run copies it to deck_spec, whose hands, discards and money start_run and start_blind add. title_cards is the title's hand, 8 A J A T 9 Q (it reads BAL8TRO, as the user asked), dealt face down from the deck pile one every deal_frames after 30 frames, turning over as each lands.
 Keep: tests/test_boot.lua presses start at frame 120, after the deal.
 
 **main.lua:19** `function open_select()`
@@ -44,7 +44,7 @@ Balatro's payout: the blind's reward, $1 per hand left, and $1 interest per $5 h
 Starts a pattern only when it changes, fading in over 500ms (manual: FADE_LEN is in ms), on channels 0-2 (mask 7) so sound effects keep the fourth. _update60 asks every frame: music_calm (bass and pad) on the title and in the shop, music_table (with the lead) everywhere else.
 Keep: tests/test_boot.lua replaces music() and checks the pattern on the title, the table and the shop.
 
-**main.lua:304** `function _update60()`
+**main.lua:305** `function _update60()`
 Each mode has its own update, found by name: update_ plus the mode (update_won is update_lost). A new mode needs one, or _update60 errors. shown_score counts up an eighth of the gap a frame (at least 1) so a big hand rolls up.
 
 **main.lua:230** `function end_run(result)`

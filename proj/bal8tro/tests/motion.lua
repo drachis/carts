@@ -9,6 +9,7 @@
 --   py run_tests.py tests/motion.p8
 
 local held,n,ids,next_id={},0,{},0
+skip_intro=true
 function btn(i) return held[i] or false end
 btnp=btn
 function sfx() end

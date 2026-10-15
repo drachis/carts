@@ -7,8 +7,10 @@ the game alone is past 7500 tokens, so a cart has little room left. Each
 replay cart that never shows a screen gets copies of draw.lua and shop.lua
 with that screen's functions emptied (`function f(...) end`, keeping the name
 so calls still work), written to tests/lite/<cart>/ and included instead of
-the real modules. test_boot is left out: it stays the one replay cart with
-the whole, real game. A cart keeps every screen it dumps a picture of.
+the real modules, and of intro.lua, emptied for every cart that sets
+skip_intro. test_boot (boot) keeps the real intro and empties only the screens
+its boot never reaches; golden empties only the intro. A cart keeps every
+screen it dumps a picture of.
 """
 import os
 import re
@@ -19,14 +21,16 @@ GAME = os.path.dirname(HERE)
 # cart -> functions it never needs (it never reaches those screens, or
 # reaches them without checking or dumping them)
 EMPTY = {
-    "deal": ["draw_select", "draw_info", "draw_pack", "draw_shop", "draw_mini_tarot", "draw_mini_planet", "draw_booster"],
-    "score": ["draw_select", "draw_info", "draw_pack", "draw_shop", "draw_mini_tarot", "draw_mini_planet", "draw_booster"],
-    "total": ["draw_select", "draw_info", "draw_pack", "draw_shop", "draw_mini_tarot", "draw_mini_planet", "draw_booster"],
-    "mid": ["draw_select", "draw_info", "draw_pack", "draw_mini_tarot"],
-    "table": ["draw_select", "draw_pack", "draw_mini_tarot"],
-    "late": ["draw_select", "draw_info"],
-    "finale": ["draw_select", "draw_info", "draw_pack", "draw_mini_tarot"],
-    "motion": ["draw_info", "draw_title", "draw_sidebar", "draw_tooltip"],
+    "deal": ["update_intro", "draw_intro", "draw_select", "draw_info", "draw_pack", "draw_shop", "draw_mini_tarot", "draw_mini_planet", "draw_booster"],
+    "score": ["update_intro", "draw_intro", "draw_select", "draw_info", "draw_pack", "draw_shop", "draw_mini_tarot", "draw_mini_planet", "draw_booster"],
+    "total": ["update_intro", "draw_intro", "draw_select", "draw_info", "draw_pack", "draw_shop", "draw_mini_tarot", "draw_mini_planet", "draw_booster"],
+    "mid": ["update_intro", "draw_intro", "draw_select", "draw_info", "draw_pack", "draw_mini_tarot"],
+    "table": ["update_intro", "draw_intro", "draw_select", "draw_pack", "draw_mini_tarot"],
+    "late": ["update_intro", "draw_intro", "draw_select", "draw_info"],
+    "finale": ["update_intro", "draw_intro", "draw_select", "draw_info", "draw_pack", "draw_mini_tarot"],
+    "golden": ["update_intro", "draw_intro"],
+    "boot": ["draw_info", "draw_pack", "draw_shop", "draw_item", "draw_mini_tarot", "draw_mini_planet", "draw_booster", "draw_banner", "draw_jimbo"],
+    "motion": ["update_intro", "draw_intro", "draw_info", "draw_title", "draw_sidebar", "draw_tooltip"],
 }
 
 
@@ -50,7 +54,7 @@ def main():
     for cart, names in EMPTY.items():
         folder = os.path.join(HERE, "lite", cart)
         os.makedirs(folder, exist_ok=True)
-        for module in ("draw.lua", "shop.lua"):
+        for module in ("draw.lua", "shop.lua", "intro.lua"):
             with open(os.path.join(GAME, module), encoding="utf-8") as handle:
                 text = emptied(handle.read(), names)
             path = os.path.join(folder, module)

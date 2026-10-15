@@ -1,5 +1,5 @@
 function _init()
- mode,deck_choice,deck_spec="title",1,deck_specs[1]
+ mode,deck_choice,deck_spec,intro_t,intro_cards=skip_intro and "title" or "intro",1,deck_specs[1],skip_intro and 2000 or 0,{}
  shown_score,title_cards=0,{}
  for i,rank in ipairs(split"8,14,11,14,10,9,12") do add(title_cards,{rank=rank,suit=i%4+1,glide_x=16,glide_y=78,wait=30+i*deal_frames}) end
  poke(0x5f5c,8)
@@ -273,6 +273,7 @@ function pop(text,x,y,colour)
 end
 
 function update_title()
+ intro_t=min(intro_t+1,2000)
  if btnp(0) or btnp(1) then
   deck_choice=(deck_choice+(btnp(1) and 0 or #deck_specs-2))%#deck_specs+1
   deck_spec=deck_specs[deck_choice]

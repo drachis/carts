@@ -10,6 +10,7 @@ log_name="log_late"
 #include ../main.lua
 #include lite/late/shop.lua
 #include ../effects.lua
+#include lite/late/intro.lua
 #include lite/late/draw.lua
 #include dump.lua
 #include screen.lua

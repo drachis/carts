@@ -10,6 +10,7 @@ log_name="log_finale"
 #include ../main.lua
 #include lite/finale/shop.lua
 #include ../effects.lua
+#include lite/finale/intro.lua
 #include lite/finale/draw.lua
 #include dump.lua
 #include screen.lua

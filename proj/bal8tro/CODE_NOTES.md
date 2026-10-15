@@ -15,6 +15,7 @@ Read only the file for the module you are changing.
 | [notes/shop.md](notes/shop.md) | the shop, packs and tarots |
 | [notes/effects.md](notes/effects.md) | the VFX engine: particles, kick, flip, timers, hitstop, flash, fire, swirl |
 | [notes/draw.md](notes/draw.md) | table layout, card motion, dealing, pops, banners, title |
+| [notes/intro.md](notes/intro.md) | Balatro's splash: the Joker, the cards pulled into the vortex, the white bloom |
 
 **Format.** Each note is headed
 

@@ -10,6 +10,7 @@ log_name="log_score"
 #include ../main.lua
 #include lite/score/shop.lua
 #include ../effects.lua
+#include lite/score/intro.lua
 #include lite/score/draw.lua
 #include dump.lua
 #include screen.lua

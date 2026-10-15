@@ -8,10 +8,12 @@ log_name="log_boot"
 #include ../cards.lua
 #include ../scoring.lua
 #include ../main.lua
-#include ../shop.lua
+#include lite/boot/shop.lua
 #include ../effects.lua
-#include ../draw.lua
+#include lite/boot/draw.lua
+#include ../intro.lua
 #include dump.lua
+#include screen.lua
 #include test_boot.lua
 __gfx__
 00000000000100000880880000333000000900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

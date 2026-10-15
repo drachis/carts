@@ -42,7 +42,8 @@ the layout); the challenge is fitting it in one cart.
 
 ## The game
 
-- **A run:** title, then Balatro's eight antes of three blinds each
+- **A run:** Balatro's splash (the Joker, cards pulled into a blue vortex,
+  a white bloom, 834 frames as Balatro's 13.9s; O skips), the title, then Balatro's eight antes of three blinds each
   (small, big, boss at 1, 1.5 and 2 times the ante's base of 300, 800,
   2000, 5000, 11000, 20000, 35000, 50000). Clearing ante 8's boss
   (100000) wins; running out of hands loses; O restarts. The title deals
@@ -139,10 +140,11 @@ the layout); the challenge is fitting it in one cart.
     py run_tests.py --no-comments
     py count_tokens.py bal8tro.p8
 
-- `test_boot`: the one cart with the whole, real game and a tiny script
-  (the title, a press, the select screen, a press, the deal, checked at
-  frame 340; no screen dumps, so dump_screen's screen.lua stays out), so
-  it has room as the game grows.
+- `test_boot`: the real game from its first frame with a tiny script (the
+  intro, the title, a press, the select screen, a press, the deal, checked
+  at frame 1180), dumping the intro at Balatro's screenshot moments; the
+  screens its boot never reaches are emptied (make_lite.py), so it has room.
+  Every other cart sets skip_intro and includes an emptied intro.lua.
 - Replay carts, each replaying one scripted run
   from the title (`tests/boot_script.lua`, which pins the older, faster
   pace and zero waits its frame-timed checks were written for), with the

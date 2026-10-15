@@ -10,6 +10,7 @@ log_name="log_deal"
 #include ../main.lua
 #include lite/deal/shop.lua
 #include ../effects.lua
+#include lite/deal/intro.lua
 #include lite/deal/draw.lua
 #include dump.lua
 #include screen.lua
