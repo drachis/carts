@@ -8,3 +8,4 @@ run.txt
 *.zip
 *.bin/
 function_tokens.txt
+reference/
