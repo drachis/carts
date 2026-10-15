@@ -12,7 +12,7 @@ Cards are 15x21, sixteen pixels apart so eight fill the screen. A card or joker 
 
 **draw.lua:63** `function draw_panel()`
 The panel is the top 42 rows: blind and goal, ante beside the score label, money left of the hand name, chips box (blue) x mult box (red), hands, discards, deck.
-Keep: the ante sits right of the blind name because centred it met a six-digit goal and "small blind"; the money's row leaves room for "three of a kind" centred.
+Keep: the ante sits right of the blind name because centred it met a six-digit goal and "small blind"; the money's row leaves room for "three of a kind" centred. The hand name is drawn after the flames and boxes, with a black shadow, because the flames covered it.
 
-**draw.lua:82** `function draw_table()`
+**draw.lua:86** `function draw_table()`
 Felt green table. Four joker slots across at y44, empty ones outlined. The deck pile is at deck_x,deck_y, one to four backs by how many cards are left. Cards in flying glide to (150,80), off the right edge, and are dropped once past x127. Played cards sit mid-screen, those that score 4px higher. The hand sits in a shallow arc (outer cards 3px lower) and each card bobs under a pixel on its own phase; picked cards rise 7px; the cursor is a yellow frame round the card as drawn.

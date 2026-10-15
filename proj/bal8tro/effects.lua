@@ -1,4 +1,5 @@
-sparks,shake,chips_bump,mult_bump={},0,0,0
+sparks,shake,chips_bump,mult_bump,heat={},0,0,0,0
+flame_colours=split"2,8,8,9,10,7"
 
 function burst(x,y,colour,count)
  for i=1,count do
@@ -7,11 +8,34 @@ function burst(x,y,colour,count)
  end
 end
 
+function draw_flames()
+ if heat<1 then return end
+ for left=27,67,40 do
+  for x=0,33,2 do
+   local height=1+rnd(2+min(heat,4)*2)
+   rectfill(left+x,23-height,left+x+1,23,8)
+   rectfill(left+x,23-height/2,left+x+1,23,9)
+   rectfill(left+x,22,left+x+1,23,10)
+  end
+ end
+end
+
+function fan_flames()
+ heat=mode=="score" and (score+hand_total(chips,mult))/goal or 0
+ if heat<1 then return end
+ for left=28,68,40 do
+  for i=1,min(heat,4) do
+   add(sparks,{x=left+rnd(32),y=24,vx=rnd(.6)-.3,vy=-.4-rnd(.6*heat),life=6+rnd(12),flame=true})
+  end
+ end
+end
+
 function update_effects()
+ fan_flames()
  for spark in all(sparks) do
   spark.x+=spark.vx
   spark.y+=spark.vy
-  spark.vy+=.08
+  if not spark.flame then spark.vy+=.08 end
   spark.life-=1
   if spark.life<0 then del(sparks,spark) end
  end
@@ -25,6 +49,8 @@ end
 
 function draw_sparks()
  for spark in all(sparks) do
-  line(spark.x,spark.y,spark.x-spark.vx*2,spark.y-spark.vy*2,spark.life<6 and 5 or spark.colour)
+  local colour=spark.life<6 and 5 or spark.colour
+  if spark.flame then colour=flame_colours[min(spark.life\3+1,6)] end
+  line(spark.x,spark.y,spark.x-spark.vx*2,spark.y-spark.vy*2,colour)
  end
 end

@@ -68,12 +68,16 @@ function draw_panel()
  print("$"..money,2,17,10)
  print_right("score",126,2,6)
  print_right(big_text(shown_score),126,9,7)
- if hand_label then print_centre(hand_label,17,7) end
+ draw_flames()
  rectfill(28-chips_bump,24-chips_bump,60+chips_bump,32+chips_bump,12)
  rectfill(68-mult_bump,24-mult_bump,100+mult_bump,32+mult_bump,8)
  print_right(tostr(chips),58,26,7)
  print("x",62,26,7)
  print(tostr(mult),70,26,7)
+ if hand_label then
+  print_centre(hand_label,18,0)
+  print_centre(hand_label,17,7)
+ end
  print("hands "..hands_left,2,35,12)
  print("discards "..discards_left,40,35,8)
  print_right("deck "..#deck,126,35,6)
