@@ -41,14 +41,14 @@ function pack_cases()
  open_pack(pack_specs.celestial)
  local planet=pack_choices[2]
  expect("a celestial pack offers three planets",mode..","..#pack_choices..","..tostr(planet.hand!=nil),"pack,3,true")
- take_choice(2)
+ take_choice(pack_choices[2])
  expect("taking a planet levels its hand",hand_levels[planet.hand.name],2)
  open_pack(pack_specs.standard)
- take_choice(1)
+ take_choice(pack_choices[1])
  expect("a standard pack's card joins the run deck",#run_deck..","..tostr(run_deck[53]==pack_choices[1]),"53,true")
  jokers=jokers_of("joker,sly,jolly,zany")
  open_pack(pack_specs.buffoon)
- expect("a buffoon pack offers two jokers, refused with the slots full",#pack_choices..","..tostr(take_choice(1) or false),"2,false")
+ expect("a buffoon pack offers two jokers, refused with the slots full",#pack_choices..","..tostr(take_choice(pack_choices[1]) or false),"2,false")
  jokers,mode={},"title"
  reset_levels()
 end

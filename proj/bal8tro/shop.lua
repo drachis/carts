@@ -51,8 +51,7 @@ function use_tarot(tarot)
  return true
 end
 
-function take_choice(index)
- local item=pack_choices[index]
+function take_choice(item)
  if item.hand then
   hand_levels[item.hand.name]+=1
  elseif item.rank then
@@ -75,7 +74,7 @@ function update_pack()
   local picked=0
   for other in all(pack_hand) do picked+=other.picked and 1 or 0 end
   if card.picked or picked<3 then card.picked=not card.picked kick(card,1.5) end
- elseif row==2 and (column>#pack_choices or take_choice(column)) then
+ elseif row==2 and (column>#pack_choices or take_choice(pack_choices[column])) then
   sfx(snd_pick)
   mode,leaving="shop"
   shop_panel.hold=shop_return
@@ -142,15 +141,9 @@ function update_shop()
   deal_shop()
  else
   local item=shop_items[column-2]
-  if money<item.cost or not item.hand and #jokers>=joker_slots then return end
+  if money<item.cost or not take_choice(item) then return end
   money-=item.cost
   deli(shop_items,column-2)
-  if item.hand then
-   hand_levels[item.hand.name]+=1
-   emit("shower",item.x,item.y)
-  else
-   kick(add(jokers,item),4)
-  end
  end
  sfx(snd_pick)
  shop_focus.columns[row]=min(column,row==1 and #jokers or 2+#shop_items)
