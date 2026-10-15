@@ -183,10 +183,10 @@ standard,standard,card,3,4,6
 
 table_buttons=parse_table[[
 name,label,colour,left
-play,play,12,41
-discard,disc,8,59
-sort,sort,13,77
-info,info,3,95
+play_hand,play,12,41
+discard_hand,disc,8,59
+sort_hand,sort,13,77
+open_info,info,3,95
 ]]
 
 vfx_specs=parse_table[[

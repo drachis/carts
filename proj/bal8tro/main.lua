@@ -123,9 +123,18 @@ function steer(focus,sizes)
 end
 
 function button_ready(name,picked)
- if name=="play" then return #picked>0 and can_play(picked) end
- if name=="discard" then return #picked>0 and discards_left>0 end
+ if name=="play_hand" then return #picked>0 and can_play(picked) end
+ if name=="discard_hand" then return #picked>0 and discards_left>0 end
  return true
+end
+
+function sort_hand()
+ sort_by_suit=not sort_by_suit
+ sort_cards(hand,sort_by_suit)
+end
+
+function open_info()
+ mode,info_tab="info",1
 end
 
 function update_play()
@@ -146,17 +155,11 @@ function update_play()
   hand_label,hand_level=hand_title(spec,label)
   chips,mult=hand_base(spec)
  end
- local button=btnp(5) and table_buttons.play or btnp(4) and row==3 and table_buttons[column]
+ local button=btnp(5) and table_buttons.play_hand or btnp(4) and row==3 and table_buttons[column]
  if button and button_ready(button.name,picked) then
   kick(button,3)
   sfx(snd_pick)
-  if button.name=="play" then play_hand()
-  elseif button.name=="discard" then discard_hand()
-  elseif button.name=="info" then mode,info_tab="info",1
-  else
-   sort_by_suit=not sort_by_suit
-   sort_cards(hand,sort_by_suit)
-  end
+  _ENV[button.name]()
  end
 end
 

@@ -28,7 +28,7 @@ Keep: parse_table indexes rows by their name column, so every table needs one fi
 Balatro's four normal packs: kind is what pack_choices holds, choices how many are shown, colour the pack and its screen's felt. A shop's two pack slots are each a random row.
 
 **data.lua:184** `table_buttons=parse_table[[`
-The buttons under the hand, in cursor order; update_play acts by name, so a new button is a row here and a branch there. Four buttons 17px wide fit between the hand's left edge and the deck pile (deck_x 113); info opens draw_info.
+The buttons under the hand, in cursor order; name is the function the button calls (update_play runs _ENV[name]), so a new button is a row here and a function in main.lua; button_ready checks play_hand and discard_hand by name. Four buttons 17px wide fit between the hand's left edge and the deck pile (deck_x 113); info opens draw_info.
 
 **data.lua:192** `vfx_specs=parse_table[[`
 The VFX engine's particle presets (emit in effects.lua): how many, how fast, how hard they rise, gravity, life in frames, a colour ramp from coldest to hottest ("/"-separated, split into a list just below), and the width they spawn across. spark: a scoring step's, in the step's colour. shower: the hand total's. flame: the boxes' embers. coin: the cash-out's. A new effect is a new row.
