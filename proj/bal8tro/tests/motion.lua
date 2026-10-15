@@ -68,6 +68,7 @@ local function motion_frame()
  if n==3159 then shop_focus.row,shop_focus.columns[2]=2,1 end
  game_update()
  game_draw()
+ if n==1605 or n==1640 or n==1700 or n==1800 then dump_screen("motion_cashout_"..n) end
  if n>=start then
   for card in all(hand) do if card.wait==0 then log_card(card,"hand") end end
   for card in all(played) do log_card(card,"play") end

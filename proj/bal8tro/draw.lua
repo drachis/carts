@@ -8,7 +8,7 @@ function print_right(text,x,y,colour)
 end
 
 function print_centre(text,y,colour,centre)
- print(text,(centre or 64)-print(text,0,-99)/2,y,colour)
+ print(text,(centre or 64)-print(text,0,-999)/2,y,colour)
 end
 
 function is_active(thing)

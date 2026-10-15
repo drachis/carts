@@ -12,4 +12,13 @@ function check(n)
  if n==307 then expect("the discard flies off",#flying,1) dump_screen("boot_discard") end
  if n==309 then expect("discards left (red deck: 4, one used)",discards_left,3) expect("hand refilled",#hand,8) end
  if n==338 then expect("the discard has left the screen",#flying,0) end
+ if n==339 then
+  cls(0)
+  camera(0,-110)
+  print_centre("blind defeated!",50,11,60)
+  camera()
+  local stray=0
+  for y=0,30 do for x=0,127 do stray+=pget(x,y)>0 and 1 or 0 end end
+  expect("centred text under a sliding panel leaves the top rows clean (the user saw cash-out text top left)",stray,0)
+ end
 end

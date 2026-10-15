@@ -5,6 +5,10 @@ The table follows Balatro's layout, at the user's request: a sidebar on the left
 **draw.lua:1** `function thing_position(thing)`
 Where a pop appears: above a card, below a mini joker.
 
+**draw.lua:10** `function print_centre(text,y,colour,centre)`
+Centres text on centre (default 64) by its real width, measured by printing it far off-screen first (print returns the right edge), so glyphs (8px) centre right.
+Keep: measure at y -999, out of reach of any camera shift. At -99 the measuring print showed on screen when the banner and shop slid away under camera(0,-110): the user saw the cash-out text garbled top left. tests/test_table.lua checks the top rows stay clean under that shift.
+
 **draw.lua:18** `function glide(thing,x,y)`
 Every card and joker moves to where it is drawn as a damped spring (velocity vx,vy; spring and damping in data.lua), its speed capped at glide_cap pixels a frame, so a pick snaps and a long move travels at Balatro's pace (measured: 0.4-0.5 card widths a frame, 6-7px at this size) then overshoots and settles (its played cards overshoot by a tenth to a third); a thing with hold>0 waits in place first (played cards set off play_stagger apart), so picking, sorting, playing, buying and selling all slide. The eased position lives on the thing (glide_x/y); x,y are the rounded pixel it was drawn at, which the pops and the cursor use. A thing seen for the first time appears where it is drawn. A thing with wait>0 holds still and counts down; the deal tick plays as it sets off. draw_card shows a waiting card face down (draw_back), so a dealt card sits on the deck, flips, and flies to the hand.
 Keep: the easing runs in the draw, once a frame at 60fps; tests/test_boot.lua checks a picked card is part-way after one frame.
