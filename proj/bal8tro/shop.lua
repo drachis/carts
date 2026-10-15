@@ -215,17 +215,15 @@ function draw_shop()
   print_centre(i==1 and "blind" or "$"..reroll_cost,y+8,i==1 and 7 or 10,55)
   if focus==i then rect(43,y-1,65,y+14,10) end
  end
- for i,item in ipairs(shop_items) do
-  local x=72+(i-1)*26
-  rectfill(x+3,30,x+16,36,0)
-  print_centre("$"..item.cost,31,10,x+10)
-  if item.hand then draw_mini_planet(item,x,39,focus==i+2) else draw_mini_joker(item,x,39,focus==i+2) end
- end
- for i,pack in ipairs(shop_packs) do
-  local x=72+(i-1)*26
-  rectfill(x+3,63,x+16,69,0)
-  print_centre("$"..pack.cost,64,10,x+10)
-  draw_booster(pack,x+1,71,shop_focus.row==3 and shop_focus.columns[3]==i)
+ for row=2,3 do
+  for i,item in ipairs(row==2 and shop_items or shop_packs) do
+   local x,y,focused=72+(i-1)*26,row*33-36,shop_focus.row==row and shop_focus.columns[row]==i+6-row*2
+   rectfill(x+3,y,x+16,y+6,0)
+   print_centre("$"..item.cost,y+1,10,x+10)
+   if item.kind then draw_booster(item,x+1,y+8,focused)
+   elseif item.hand then draw_mini_planet(item,x,y+9,focused)
+   else draw_mini_joker(item,x,y+9,focused) end
+  end
  end
  local tip=shop_focus.row==1 and jokers[shop_focus.columns[1]] or focus and focus>2 and shop_items[focus-2]
  if tip then draw_tooltip(tip,shop_focus.row==1 and 25 or 72) end
