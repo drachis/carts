@@ -27,6 +27,8 @@ the cart.
 | SFX 0..1 | unused (the first chips and mult ticks) |
 | SFX 2..4 | pick card, hand total, card dealt |
 | SFX 5..12, 13..20 | chips and mult ticks, rising a major scale per scoring step |
+| SFX 21..26 | the tune: bass, pad and lead, two halves each (gen_cart.py) |
+| Music 0..1, 2..3 | calm loop (bass, pad: title, shop), table loop (with lead) |
 | `cartdata` | unused |
 
 ## The game

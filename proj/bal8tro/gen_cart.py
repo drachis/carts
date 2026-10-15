@@ -111,9 +111,55 @@ SOUNDS = [
 SCALE = [0, 2, 4, 5, 7, 9, 11, 12]
 SOUNDS += [(4, [(36 + s, 1, 4, 0), (43 + s, 1, 2, 5)]) for s in SCALE]
 SOUNDS += [(4, [(29 + s, 2, 5, 0), (34 + s, 2, 3, 5)]) for s in SCALE]
+# the music: a slow lounge loop in a minor, in Balatro's spirit but its own
+# tune. a walking bass, a held pad, and a lazy organ lead with vibrato.
+# Am7 Dm7 Em7 Am7, then F Dm E7 E. each list is four bars of eight steps;
+# 0 is a rest; pitches count semitones from c0, so 57 is the a above
+# middle c.
+TUNE_SPEED = 16
+BASS_A = [33, 0, 40, 0, 45, 0, 40, 0,  38, 0, 45, 0, 50, 0, 45, 0,
+          40, 0, 47, 0, 52, 0, 47, 0,  33, 0, 40, 0, 43, 0, 44, 0]
+BASS_B = [29, 0, 36, 0, 41, 0, 36, 0,  38, 0, 45, 0, 41, 0, 45, 0,
+          40, 0, 47, 0, 44, 0, 50, 0,  40, 0, 0, 0, 40, 0, 44, 0]
+PAD_A = [48] * 8 + [53] * 8 + [55] * 8 + [52] * 8
+PAD_B = [45] * 8 + [53] * 8 + [56] * 16
+LEAD_A = [57, 57, 57, 60, 60, 60, 59, 59,  57, 57, 53, 53, 53, 53, 0, 0,
+          55, 55, 55, 59, 59, 59, 57, 57,  55, 55, 52, 52, 52, 52, 0, 0]
+LEAD_B = [53, 53, 53, 57, 57, 57, 60, 60,  62, 62, 60, 60, 57, 57, 57, 0,
+          56, 56, 56, 59, 59, 59, 62, 62,  64, 64, 64, 64, 59, 59, 56, 56]
+
+
+def voice(pitches, waveform, volume, effect):
+    return [(pitch, waveform, volume, effect) if pitch else (0, 0, 0, 0) for pitch in pitches]
+
+
+TUNE_FIRST = len(SOUNDS)
+SOUNDS += [
+    (TUNE_SPEED, voice(BASS_A, 1, 4, 5)),   # tilted saw, plucked
+    (TUNE_SPEED, voice(BASS_B, 1, 4, 5)),
+    (TUNE_SPEED, voice(PAD_A, 0, 2, 0)),    # triangle, held
+    (TUNE_SPEED, voice(PAD_B, 0, 2, 0)),
+    (TUNE_SPEED, voice(LEAD_A, 5, 3, 2)),   # organ with vibrato
+    (TUNE_SPEED, voice(LEAD_B, 5, 3, 2)),
+]
+BASS_A_SFX, BASS_B_SFX, PAD_A_SFX, PAD_B_SFX, LEAD_A_SFX, LEAD_B_SFX = range(TUNE_FIRST, TUNE_FIRST + 6)
+
+
+def pattern(flags, *channels):
+    sounds = list(channels) + [0x40] * (4 - len(channels))
+    return "%02x " % flags + "".join("%02x" % sound for sound in sounds)
+
+
 # a pattern is "FF AABBCCDD": flags (1 loop start, 2 loop end), then the
-# sfx on each of four channels, 0x40 and over meaning silent
-MUSIC = []
+# sfx on each of four channels, 0x40 and over meaning silent. three
+# channels only, so sound effects always have the fourth.
+# 0-1 the shop and title: bass and pad. 2-3 the table: with the lead.
+MUSIC = [
+    pattern(1, BASS_A_SFX, PAD_A_SFX),
+    pattern(2, BASS_B_SFX, PAD_B_SFX),
+    pattern(1, BASS_A_SFX, PAD_A_SFX, LEAD_A_SFX),
+    pattern(2, BASS_B_SFX, PAD_B_SFX, LEAD_B_SFX),
+]
 
 
 def rows_of(text, width):

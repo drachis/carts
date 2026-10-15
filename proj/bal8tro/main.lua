@@ -154,6 +154,11 @@ function cash_out()
  mode="cashout"
 end
 
+function play_music(pattern)
+ if pattern!=playing_music then music(pattern,500,7) end
+ playing_music=pattern
+end
+
 function pop(text,x,y,colour)
  add(pops,{text=text,x=x,y=y,colour=colour,age=0})
 end
@@ -180,4 +185,5 @@ function _update60()
   if p.age>40 then del(pops,p) end
  end
  update_effects()
+ play_music((mode=="title" or mode=="shop") and music_calm or music_table)
 end
