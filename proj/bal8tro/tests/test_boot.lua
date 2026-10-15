@@ -98,6 +98,8 @@ function boot_frame()
   expect("a run starts with no jokers",#jokers,0)
   expect("a run starts with $4",money,4)
  end
+ if n==51 then expect("a picked card glides, not jumps",hand[1].y>=100 and hand[1].y<=105,true) end
+ if n==56 then expect("a picked card has risen",hand[1].y<=100,true) end
  if n==57 then dump_screen("boot_pick") expect("hand picked",hand_label,"pair lv1") end
  if n==150 then dump_screen("boot_score") end
  if n==230 then

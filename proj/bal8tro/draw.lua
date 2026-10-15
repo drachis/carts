@@ -15,9 +15,17 @@ function is_active(thing)
  return active_step and (active_step.thing==thing or active_step.under==thing)
 end
 
+function glide(thing,x,y)
+ if not thing.glide_x then thing.glide_x,thing.glide_y=x,y end
+ thing.glide_x+=(x-thing.glide_x)/4
+ thing.glide_y+=(y-thing.glide_y)/4
+ thing.x,thing.y=flr(thing.glide_x+.5),flr(thing.glide_y+.5)
+ return thing.x,thing.y
+end
+
 function draw_card(card,x,y)
  if is_active(card) then y-=3 end
- card.x,card.y=x,y
+ x,y=glide(card,x,y)
  rectfill(x,y,x+14,y+20,7)
  rect(x,y,x+14,y+20,6)
  pset(x,y,0) pset(x+14,y,0) pset(x,y+20,0) pset(x+14,y+20,0)
@@ -29,7 +37,7 @@ end
 
 function draw_joker(joker,x,y,focused)
  if is_active(joker) then y-=3 end
- joker.x,joker.y=x,y
+ x,y=glide(joker,x,y)
  rectfill(x,y,x+30,y+19,7)
  rect(x,y,x+30,y+19,focused and 10 or 13)
  print(joker.name,x+2,y+2,2)
@@ -72,9 +80,9 @@ function draw_table()
   end
  end
  for i,card in ipairs(hand) do
-  local x,y=(i-1)*16,card.picked and 97 or 104
-  draw_card(card,x,y)
-  if mode=="play" and i==cursor then rect(x-1,y-1,x+15,y+21,10) end
+  local arc=(i-4.5)*(i-4.5)\4+sin(t()/3+i/8)*.8
+  draw_card(card,(i-1)*16,(card.picked and 96 or 103)+arc)
+  if mode=="play" and i==cursor then rect(card.x-1,card.y-1,card.x+15,card.y+21,10) end
  end
  for p in all(pops) do
   local y=p.y-p.age\4
