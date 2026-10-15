@@ -249,6 +249,7 @@ function draw_select()
 end
 
 function draw_info()
+ draw_table()
  box(3,6,121,115,5,6)
  for tab=1,2 do
   local centre=tab*44-4
@@ -304,15 +305,8 @@ function draw_title()
 end
 
 function _draw()
- if mode=="title" then draw_title() return end
- if mode=="shop" then draw_shop() return end
- if mode=="pack" then draw_pack_screen() return end
- if mode=="select" then draw_select() return end
- if mode=="info" then
-  draw_table()
-  draw_info()
-  return
- end
+ local screen=_ENV["draw_"..mode]
+ if screen then return screen() end
  shake_camera()
  draw_table()
  camera()

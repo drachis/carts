@@ -164,14 +164,14 @@ function draw_mini_tarot(tarot,x,y,focused)
  print_centre(sub(tarot.name,1,4),y+12,7,x+10)
 end
 
-function draw_pack(pack,x,y,focused)
+function draw_booster(pack,x,y,focused)
  x,y=glide(pack,x,y)
  box(x,y,17,23,pack.colour,focused and 10 or 7)
  print_centre(sub(pack.label,1,4),y+6,1,x+9)
  print_centre("pack",y+13,1,x+9)
 end
 
-function draw_pack_screen()
+function draw_pack()
  draw_swirl(pack_open.colour,1,0)
  draw_sidebar()
  local row,column=pack_focus.row,pack_focus.columns[pack_focus.row]
@@ -227,7 +227,7 @@ function draw_shop()
   local x=72+(i-1)*26
   rectfill(x+3,63,x+16,69,0)
   print_centre("$"..pack.cost,64,10,x+10)
-  draw_pack(pack,x+1,71,shop_focus.row==3 and shop_focus.columns[3]==i)
+  draw_booster(pack,x+1,71,shop_focus.row==3 and shop_focus.columns[3]==i)
  end
  local tip=shop_focus.row==1 and jokers[shop_focus.columns[1]] or focus and focus>2 and shop_items[focus-2]
  if tip then draw_tooltip(tip,shop_focus.row==1 and 25 or 72) end
