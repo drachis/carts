@@ -97,14 +97,7 @@ function draw_tooltip(thing,y)
  local x,hand=mid(40,thing.x-20,66),thing.hand
  rectfill(x,y,x+60,y+19,7)
  rect(x,y,x+60,y+19,0)
- print(thing.name,x+3,y+2,2)
- if hand then
-  print(hand.label,x+3,y+8,12)
-  print("lvl "..hand_levels[hand.name].." > "..hand_levels[hand.name]+1,x+3,y+14,5)
-  return
- end
- print(thing.text,x+3,y+8,thing.chips and 12 or 8)
- print(thing.cond or "",x+3,y+14,5)
+ print(thing.name..(hand and "\n\fc"..hand.label.."\n\f5lvl "..hand_levels[hand.name].." > "..hand_levels[hand.name]+1 or (thing.chips and "\n\fc" or "\n\f8")..thing.text.."\n\f5"..(thing.cond or "")),x+3,y+2,2)
  if thing.cond=="per" then spr(16+thing.need,x+17,y+14) end
  if count(jokers,thing)>0 then print_right("sell $"..sell_price(thing),x+59,y+14,5) end
 end
