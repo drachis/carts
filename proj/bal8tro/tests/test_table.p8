@@ -8,9 +8,9 @@ log_name="log_table"
 #include ../cards.lua
 #include ../scoring.lua
 #include ../main.lua
-#include ../shop.lua
+#include lite/table/shop.lua
 #include ../effects.lua
-#include ../draw.lua
+#include lite/table/draw.lua
 #include dump.lua
 #include boot_script.lua
 #include test_table.lua

@@ -8,9 +8,9 @@ log_name="log_total"
 #include ../cards.lua
 #include ../scoring.lua
 #include ../main.lua
-#include ../shop.lua
+#include lite/total/shop.lua
 #include ../effects.lua
-#include ../draw.lua
+#include lite/total/draw.lua
 #include dump.lua
 #include boot_script.lua
 #include test_total.lua

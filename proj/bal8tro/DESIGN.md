@@ -117,6 +117,11 @@ the layout); the challenge is fitting it in one cart.
   in size like Balatro's juice (24 frames, swinging three times, fading), the first score 110 frames after play, cards 47 apart,
   jokers 59, the boxes clearing 98 after the last, the score counting up
   evenly over 30 frames 52 later. Same dance, fewer dancers.
+- **Transitions** matched to Balatro's logged ones: the cash-out panel
+  slides up from below and drops away when pressed; the shop rises after
+  Balatro's pause and slides down to open a pack (whose cards come out
+  after its delay) or to leave for the next blind, and back up after a
+  pack.
 - **Music:** an original slow lounge loop in A minor, calm without its
   lead on the title, shop and packs.
 
@@ -125,12 +130,17 @@ the layout); the challenge is fitting it in one cart.
     py run_tests.py --no-comments
     py count_tokens.py bal8tro.p8
 
-- Replay carts, each the real, whole game replaying one scripted run
+- `test_boot`: the one cart with the whole, real game and a tiny script
+  (the title, a press, the deal, both dumped), so it has room as the game
+  grows.
+- Replay carts, each replaying one scripted run
   from the title (`tests/boot_script.lua`, which pins the older, faster
-  pace its frame-timed checks were written for); their checks are split
-  by frame, in halves, so each has 220-340 tokens of room for the game to
-  grow: `test_boot` (title, deck choice, music), `test_deal` (dealing, the
-  pick), `test_score` and `test_total` (the pair of kings, 480 with joker
+  pace and zero waits its frame-timed checks were written for), with the
+  game's drawing modules swapped for copies that empty the screens the
+  cart never needs (`tests/make_lite.py`, run by gen_cart.py, into
+  tests/lite/); their checks are split
+  by frame, in halves, so each has 378-1225 tokens of room for the game
+  to grow: `test_deal` (title, deck choice, music, dealing, the pick), `test_score` and `test_total` (the pair of kings, 480 with joker
   and sly, sparks, kicks, flames, the hitstop, the total), `test_mid`
   (cash-out, shop buys, refusal, sale, reroll) and `test_table` (joker
   row, buttons, info overlay, sort, discard), `test_late` (a lost blind, a

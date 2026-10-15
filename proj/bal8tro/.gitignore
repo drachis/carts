@@ -9,3 +9,4 @@ run.txt
 *.bin/
 function_tokens.txt
 reference/
+tests/lite/

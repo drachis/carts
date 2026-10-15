@@ -352,6 +352,11 @@ def write_cart(path, text):
 
 
 def main():
+    # per-cart lite copies of the drawing modules for the replay test carts
+    import sys
+    sys.path.insert(0, os.path.join(HERE, "tests"))
+    import make_lite
+    make_lite.main()
     gfx = build_gfx()
     write_png(os.path.join(HERE, "sheet.png"), gfx[:64])
     tail = "\n".join(["__gfx__"] + gfx + ["__gff__"] + build_flags()

@@ -1,15 +1,31 @@
-last_frame=83
+-- test_boot.lua : the one test cart with the whole, real game and nothing
+-- else, from its first frame: the title, a press to start, and the deal,
+-- drawn and dumped. Every other replay cart includes the shared scripted
+-- run (boot_script.lua) and, to fit, copies of the drawing modules with
+-- unused screens emptied (make_lite.py); this one keeps its script tiny so
+-- the game can grow.
 
-function check(n)
- if n==5 then dump_screen("boot_title") end
- if n==5 or n==41 then
-  expect("music at frame "..n,started_music,n==41 and music_table or music_calm)
- end
- if n==11 or n==13 or n==17 then expect("deck choice at frame "..n,deck_choice,n==11 and 5 or n==13 and 4 or 1) end
- if n==13 then dump_screen("boot_decks") end
- if n==41 or n==80 then
-  local waiting=0
-  for card in all(hand) do if card.wait>0 then waiting+=1 end end
-  expect("cards still on the deck at frame "..n,waiting,n==41 and 7 or 0)
- end
+local held,n={},0
+function btn(i) return held[i] or false end
+btnp=btn
+function sfx() end
+music=sfx
+
+local game_update,game_draw=_update60,_draw
+function _draw() end
+
+function _update60()
+ run_frame(function()
+  n+=1
+  held={[4]=n==40}
+  game_update()
+  game_draw()
+  if n==5 then dump_screen("boot_title") end
+  if n==120 then
+   if mode!="play" or #hand!=8 then printh("error: frame 120 is "..tostr(mode).." with "..#hand.." cards") end
+   dump_screen("boot_play")
+   printh("ok boot")
+   extcmd("shutdown")
+  end
+ end)
 end

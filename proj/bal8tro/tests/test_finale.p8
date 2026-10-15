@@ -8,9 +8,9 @@ log_name="log_finale"
 #include ../cards.lua
 #include ../scoring.lua
 #include ../main.lua
-#include ../shop.lua
+#include lite/finale/shop.lua
 #include ../effects.lua
-#include ../draw.lua
+#include lite/finale/draw.lua
 #include dump.lua
 #include boot_script.lua
 #include test_finale.lua

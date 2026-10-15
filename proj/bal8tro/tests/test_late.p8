@@ -8,9 +8,9 @@ log_name="log_late"
 #include ../cards.lua
 #include ../scoring.lua
 #include ../main.lua
-#include ../shop.lua
+#include lite/late/shop.lua
 #include ../effects.lua
-#include ../draw.lua
+#include lite/late/draw.lua
 #include dump.lua
 #include boot_script.lua
 #include test_late.lua

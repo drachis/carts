@@ -26,7 +26,7 @@ function start_blind()
  score,shown_score=0,0
  goal=blind_goal(ante,blind)
  ante_label,round_number=ante.."/"..#ante_bases,(ante-1)*3+blind
- cursor,joker_focus,button_focus=1
+ cursor,joker_focus,button_focus,leaving=1
  table_focus={row=2,columns={1,1,1}}
  sort_by_suit=false
  draw_up()
@@ -201,6 +201,7 @@ function finish_hand()
  else
   mode="play"
  end
+ banner={glide_x=0,glide_y=110,wait=0}
 end
 
 function cash_out()
@@ -257,7 +258,10 @@ function _update60()
   if btnp(4) or btnp(5) or btnp(3) then mode="play" end
  elseif btnp(4) then
   if mode=="cashout" then
-   open_shop()
+   if not leaving then
+    leaving=true
+    after(shop_wait,open_shop)
+   end
   else
    start_run()
   end

@@ -8,9 +8,9 @@ log_name="log_mid"
 #include ../cards.lua
 #include ../scoring.lua
 #include ../main.lua
-#include ../shop.lua
+#include lite/mid/shop.lua
 #include ../effects.lua
-#include ../draw.lua
+#include lite/mid/draw.lua
 #include dump.lua
 #include boot_script.lua
 #include test_mid.lua

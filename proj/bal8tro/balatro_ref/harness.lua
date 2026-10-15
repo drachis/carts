@@ -74,10 +74,6 @@ local steps = {
   {41, shot("cash_out")},
   {42, function() mark("cash_out")() G.FUNCS.cash_out({config = {}}) end},
   {49, shot("shop")},
-  {49.5, function()
-    logging = false
-    love.filesystem.write("motion.log", table.concat(motion, "\n") .. "\n")
-  end},
   {50, function() G.FUNCS.run_info() end},
   {52, shot("run_info")},
   {53, function() G.FUNCS.exit_overlay_menu() end},
@@ -85,22 +81,38 @@ local steps = {
   {56, shot("deck_info")},
   {57, function() G.FUNCS.exit_overlay_menu() end},
   {58, function()
+    mark("pack_open")()
     G.GAME.dollars = 50
     G.FUNCS.use_card({config = {ref_table = G.shop_booster.cards[1]}})
   end},
   {63, shot("pack")},
-  {65, function() love.event.quit() end},
+  {64, function() mark("pack_skip")() G.FUNCS.skip_booster() end},
+  {68, function() mark("shop_exit")() G.FUNCS.toggle_shop() end},
+  {72, shot("after_shop")},
+  {73, function()
+    logging = false
+    love.filesystem.write("motion.log", table.concat(motion, "\n") .. "\n")
+  end},
+  {74, function() love.event.quit() end},
 }
 
 local function log_motion()
   local now, hand = love.timer.getTime(), G.hand
   if not hand then return end
   local left, top = hand.T.x, hand.T.y
-  for name, area in pairs({hand = G.hand, play = G.play, jokers = G.jokers, discard = G.discard}) do
+  for name, area in pairs({hand = G.hand, play = G.play, jokers = G.jokers, discard = G.discard,
+      shop_jokers = G.shop_jokers, shop_booster = G.shop_booster, pack = G.pack_cards}) do
     for _, card in ipairs(area and area.cards or {}) do
       local seen = card.VT
       motion[#motion + 1] = string.format("card %.3f %d %s %.3f %.3f %.3f %.3f", now, card.sort_id,
         name, (seen.x - left) / G.CARD_W, (seen.y - top) / G.CARD_H, seen.scale or 1, seen.r or 0)
+    end
+  end
+  -- panels: ui <seconds> <name> <x> <y> in the same units, from their drawn top left
+  for name, box in pairs({cash_out = G.round_eval, shop = G.shop, sign = G.SHOP_SIGN, blind_select = G.blind_select}) do
+    if box and box.VT then
+      motion[#motion + 1] = string.format("ui %.3f %s %.3f %.3f", now, name,
+        (box.VT.x - left) / G.CARD_W, (box.VT.y - top) / G.CARD_H)
     end
   end
   local current = G.GAME.current_round.current_hand

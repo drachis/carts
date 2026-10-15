@@ -17,6 +17,7 @@ function open_pack(pack)
  for i=1,kind!="joker" and pack.choices or 0 do
   add(pack_choices,kind=="planet" and planet_item() or kind=="tarot" and setmetatable({},rnd(tarot_specs)) or {rank=2+flr(rnd(13)),suit=1+flr(rnd(4))})
  end
+ for i,item in ipairs(pack_choices) do item.glide_x,item.glide_y,item.wait,item.hold=table_centre-10,40,0,pack_hold+(i-1)*play_stagger end
  if kind=="tarot" then
   local cards=shuffled(run_deck)
   for i=1,hand_size do add(pack_hand,cards[i]) end
@@ -76,7 +77,8 @@ function update_pack()
   if card.picked or picked<3 then card.picked=not card.picked kick(card,1.5) end
  elseif row==2 and (column>#pack_choices or take_choice(column)) then
   sfx(snd_pick)
-  mode="shop"
+  mode,leaving="shop"
+  shop_panel.hold=shop_return
  end
 end
 
@@ -86,7 +88,7 @@ function open_shop()
  for i=1,2 do shop_packs[i]=setmetatable({},rnd(pack_specs)) end
  reroll_cost=reroll_base
  shop_focus={row=2,columns={1,3}}
- mode="shop"
+ mode,leaving,shop_panel="shop",false,{glide_x=0,glide_y=110,wait=0}
 end
 
 function sell_price(joker)
@@ -108,6 +110,7 @@ function shop_message()
 end
 
 function update_shop()
+ if leaving then return end
  local row,column=steer(shop_focus,{#jokers,2+#shop_items,#shop_packs})
  if not btnp(4) then return end
  if row==3 then
@@ -117,7 +120,8 @@ function update_shop()
   deli(shop_packs,column)
   shop_focus.columns[3]=1
   sfx(snd_pick)
-  open_pack(pack)
+  leaving=true
+  after(pack_wait,function() open_pack(pack) end)
   return
  elseif row==1 then
   if not jokers[column] then return end
@@ -125,8 +129,11 @@ function update_shop()
   emit("coin",jokers[column].x+10,jokers[column].y+10)
   deli(jokers,column)
  elseif column==1 then
-  ante,blind=next_blind()
-  start_blind()
+  leaving=true
+  after(exit_wait,function()
+   ante,blind=next_blind()
+   start_blind()
+  end)
   return
  elseif column==2 then
   if money<reroll_cost then return end
@@ -209,6 +216,8 @@ function draw_shop()
  draw_swirl(3,1,0)
  draw_sidebar()
  draw_joker_row(shop_focus.row==1 and shop_focus.columns[1])
+ local _,drop=glide(shop_panel,0,leaving and 110 or 0)
+ camera(0,-drop)
  rectfill(41,27,126,100,1)
  rect(41,27,126,100,8)
  local focus=shop_focus.row==2 and shop_focus.columns[2]
@@ -231,6 +240,7 @@ function draw_shop()
   print_centre("$"..pack.cost,64,10,x+10)
   draw_pack(pack,x+1,71,shop_focus.row==3 and shop_focus.columns[3]==i)
  end
+ camera()
  local tip=shop_focus.row==1 and jokers[shop_focus.columns[1]] or focus and focus>2 and shop_items[focus-2]
  if tip then draw_tooltip(tip,shop_focus.row==1 and 25 or 72) end
  for i=0,min(#run_deck\13,3) do draw_back(deck_x-i,deck_y-i) end

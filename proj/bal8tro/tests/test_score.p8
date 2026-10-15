@@ -8,9 +8,9 @@ log_name="log_score"
 #include ../cards.lua
 #include ../scoring.lua
 #include ../main.lua
-#include ../shop.lua
+#include lite/score/shop.lua
 #include ../effects.lua
-#include ../draw.lua
+#include lite/score/draw.lua
 #include dump.lua
 #include boot_script.lua
 #include test_score.lua

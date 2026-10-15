@@ -208,6 +208,8 @@ function draw_table()
 end
 
 function draw_banner(title,line,colour,lines)
+ local _,drop=glide(banner,0,leaving and 110 or 0)
+ camera(0,-drop)
  local bottom=70+#lines*8
  rectfill(42,40,125,bottom,0)
  rect(42,40,125,bottom,colour)
@@ -217,6 +219,7 @@ function draw_banner(title,line,colour,lines)
   print_right("$"..entry[2],122,50+i*8,10)
  end
  print_centre(line,bottom-10,7,table_centre)
+ camera()
 end
 
 function draw_info()

@@ -28,14 +28,14 @@ Plays out the steps at Balatro's measured pace (see data.md's tuning note): the 
 Keep: tests/test_boot.lua checks the card kick, the joker shake and the hitstop on the scripted pair of kings.
 
 **main.lua:187** `function finish_hand()`
-A blind is won the moment score reaches goal, checked after each hand; losing is running out of hands below it. A played glass card shatters one time in four: it leaves run_deck for good.
+Starts a new banner panel below the screen each hand (banner, a thing glide moves), so the cash-out, won or lost banner slides up as Balatro's does. A blind is won the moment score reaches goal, checked after each hand; losing is running out of hands below it. A played glass card shatters one time in four: it leaves run_deck for good.
 
-**main.lua:206** `function cash_out()`
+**main.lua:207** `function cash_out()`
 Balatro's payout: the blind's reward, $1 per hand left, and $1 interest per $5 held before the payout, at most $5. earnings is the list the banner draws. Coins fly from the sidebar's money box. Gold cards still in hand pay $3 each on a fourth line.
 
-**main.lua:223** `function play_music(pattern)`
+**main.lua:224** `function play_music(pattern)`
 Starts a pattern only when it changes, fading in over 500ms (manual: FADE_LEN is in ms), on channels 0-2 (mask 7) so sound effects keep the fourth. _update60 asks every frame: music_calm (bass and pad) on the title and in the shop, music_table (with the lead) everywhere else.
 Keep: tests/test_boot.lua replaces music() and checks the pattern on the title, the table and the shop.
 
-**main.lua:232** `function _update60()`
+**main.lua:233** `function _update60()`
 shown_score counts up an eighth of the gap a frame (at least 1) so a big hand rolls up.
