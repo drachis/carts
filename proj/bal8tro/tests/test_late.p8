@@ -12,6 +12,7 @@ log_name="log_late"
 #include ../effects.lua
 #include lite/late/draw.lua
 #include dump.lua
+#include screen.lua
 #include boot_script.lua
 #include test_late.lua
 __gfx__

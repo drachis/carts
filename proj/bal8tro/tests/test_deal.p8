@@ -12,6 +12,7 @@ log_name="log_deal"
 #include ../effects.lua
 #include lite/deal/draw.lua
 #include dump.lua
+#include screen.lua
 #include boot_script.lua
 #include test_deal.lua
 __gfx__

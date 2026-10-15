@@ -12,6 +12,7 @@ log_name="log_table"
 #include ../effects.lua
 #include lite/table/draw.lua
 #include dump.lua
+#include screen.lua
 #include boot_script.lua
 #include test_table.lua
 __gfx__

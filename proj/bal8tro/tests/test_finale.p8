@@ -12,6 +12,7 @@ log_name="log_finale"
 #include ../effects.lua
 #include lite/finale/draw.lua
 #include dump.lua
+#include screen.lua
 #include boot_script.lua
 #include test_finale.lua
 __gfx__

@@ -12,6 +12,7 @@ log_name="log_score"
 #include ../effects.lua
 #include lite/score/draw.lua
 #include dump.lua
+#include screen.lua
 #include boot_script.lua
 #include test_score.lua
 __gfx__

@@ -12,6 +12,7 @@ log_name="log_mid"
 #include ../effects.lua
 #include lite/mid/draw.lua
 #include dump.lua
+#include screen.lua
 #include boot_script.lua
 #include test_mid.lua
 __gfx__

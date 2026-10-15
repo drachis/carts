@@ -12,6 +12,7 @@ log_name="log_total"
 #include ../effects.lua
 #include lite/total/draw.lua
 #include dump.lua
+#include screen.lua
 #include boot_script.lua
 #include test_total.lua
 __gfx__

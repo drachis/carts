@@ -32,16 +32,3 @@ function run_frame(work)
   printh("error: "..tostr(message))
  end
 end
-
--- prints the screen as 128 lines of hex digits, one per pixel, each line
--- tagged with a name; run_tests.py collects them and writes <name>.png.
-function dump_screen(name)
- for y=0,127 do
-  local row=""
-  for x=0,127 do
-   local digit=pget(x,y)+1
-   row..=sub("0123456789abcdef",digit,digit)
-  end
-  printh(name.." "..row)
- end
-end
