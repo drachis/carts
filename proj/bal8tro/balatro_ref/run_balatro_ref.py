@@ -55,7 +55,7 @@ def build(folder):
 def main():
     if os.path.isdir(SAVE):
         for name in os.listdir(SAVE):
-            if name.endswith(".png") or name in ("harness.log", "motion.log"):
+            if name.endswith(".png") or name in ("harness.log", "motion.log", "intro.log"):
                 os.remove(os.path.join(SAVE, name))
     folder = tempfile.mkdtemp(prefix=NAME)
     build(folder)
@@ -71,7 +71,7 @@ def main():
         print("no save folder at %s: the copy never started (is Steam running?)" % SAVE)
         return 1
     for name in sorted(os.listdir(SAVE)):
-        if name.endswith(".png") or name == "motion.log":
+        if name.endswith(".png") or name in ("motion.log", "intro.log"):
             shutil.copy(os.path.join(SAVE, name), OUT)
             print("reference/" + name)
     log = os.path.join(SAVE, "harness.log")

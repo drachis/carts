@@ -51,6 +51,10 @@ local steps = {
     love.window.updateMode(960, 540, {fullscreen = false, borderless = false})
     if love.resize then love.resize(960, 540) end
   end},
+  {1.5, shot("intro_joker")},
+  {3.5, shot("intro_vortex")},
+  {5, shot("intro_cards")},
+  {6.5, shot("intro_flash")},
   {9, shot("menu")},
   {10, function()
     G.SETTINGS.tutorial_complete, G.SETTINGS.tutorial_progress = true, nil
@@ -133,10 +137,50 @@ local function log_motion()
   motion[#motion + 1] = string.format("hud %.3f %s %s %s", now, tostring(current.chips), tostring(current.mult), tostring(G.GAME.chips))
 end
 
+-- the splash and menu entrance, every frame of the first 12 seconds:
+--   splash <seconds> <state> <logo dissolve, 1 hidden to 0 shown> <cards>
+--   intro <seconds> <x> <y> <scale> <facing>
+-- x and y are each card's centre in card widths and heights from the
+-- screen's centre; scale is its drawn width in card widths.
+local function log_splash()
+  local now, room = love.timer.getTime(), G.ROOM and G.ROOM.T
+  if not room then return end
+  local cards = 0
+  for _, card in ipairs(G.I.CARD or {}) do
+    local seen = card.VT
+    if seen then
+      cards = cards + 1
+      motion[#motion + 1] = string.format("intro %.3f %.3f %.3f %.3f %s", now,
+        (seen.x + seen.w / 2 - room.w / 2) / G.CARD_W, (seen.y + seen.h / 2 - room.h / 2) / G.CARD_H,
+        seen.w * (seen.scale or 1) / G.CARD_W, tostring(card.facing))
+    end
+  end
+  motion[#motion + 1] = string.format("splash %.3f %s %s %d %.3f", now, tostring(G.STATE),
+    G.SPLASH_LOGO and string.format("%.3f", G.SPLASH_LOGO.dissolve or 0) or "-", cards, G.TIMERS and G.TIMERS.REAL or -1)
+end
+
+-- BAL8TRO_INTRO=1 runs only the splash and the menu's entrance: a
+-- screenshot a second and the splash log for 20 seconds, then quits.
+if os.getenv("BAL8TRO_INTRO") then
+  steps = {{1, function()
+    love.window.updateMode(960, 540, {fullscreen = false, borderless = false})
+    if love.resize then love.resize(960, 540) end
+  end}}
+  for second = 2, 18 do steps[#steps + 1] = {second, shot("intro_" .. second)} end
+  steps[#steps + 1] = {19, function()
+    love.filesystem.write("intro.log", table.concat(motion, "\n") .. "\n")
+  end}
+  steps[#steps + 1] = {20, function() love.event.quit() end}
+end
+
 local started, next_step = love.timer.getTime(), 1
 local game_update = love.update
 function love.update(dt)
   game_update(dt)
+  if love.timer.getTime() - started < 19 then
+    local ok, message = pcall(log_splash)
+    if not ok then log("splash failed: " .. tostring(message)) end
+  end
   if logging then
     local ok, message = pcall(log_motion)
     if not ok then log("motion failed: " .. tostring(message)) logging = false end
