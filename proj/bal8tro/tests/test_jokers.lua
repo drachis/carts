@@ -16,6 +16,9 @@ function boss_cases()
  blind=1
  expect("small blinds are never debuffed",is_debuffed(cards_of("kc")[1]),false)
  expect("small blinds take one card",can_play(cards_of("kc")),true)
+ mode,ante,blind,boss,deck_spec,run_deck="shop",1,3,boss_specs["the needle"],deck_specs[1],new_deck()
+ start_blind()
+ expect("the needle's one hand applies when its blind starts from the shop",hands_left,1)
  boss,mode=boss_specs["the club"],"title"
 end
 

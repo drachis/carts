@@ -46,6 +46,7 @@ exit_wait=35
 pack_wait=22
 pack_hold=111
 shop_return=41
+select_wait=108
 score_wait=52
 score_roll=30
 spring=0.3

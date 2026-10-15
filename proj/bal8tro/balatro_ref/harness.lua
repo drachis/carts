@@ -88,12 +88,26 @@ local steps = {
   {63, shot("pack")},
   {64, function() mark("pack_skip")() G.FUNCS.skip_booster() end},
   {68, function() mark("shop_exit")() G.FUNCS.toggle_shop() end},
-  {72, shot("after_shop")},
-  {73, function()
+  {72, shot("blind_select")},
+  {74, function() mark("select_blind")() G.FUNCS.select_blind(G.blind_select_opts.big:get_UIE_by_ID("select_blind_button")) end},
+  {80, function()
+    mark("lose_play")()
+    G.GAME.current_round.hands_left = 1
+    highlight(1, 1)
+    G.FUNCS.play_cards_from_highlighted()
+  end},
+  {92, shot("game_over")},
+  {95, function()
+    mark("new_run")()
+    G.FUNCS.start_run(nil, {stake = 1, seed = "BAL8TRO"})
+  end},
+  {101, function() mark("win")() win_game() end},
+  {108, shot("win")},
+  {111, function()
     logging = false
     love.filesystem.write("motion.log", table.concat(motion, "\n") .. "\n")
   end},
-  {74, function() love.event.quit() end},
+  {112, function() love.event.quit() end},
 }
 
 local function log_motion()
@@ -109,7 +123,7 @@ local function log_motion()
     end
   end
   -- panels: ui <seconds> <name> <x> <y> in the same units, from their drawn top left
-  for name, box in pairs({cash_out = G.round_eval, shop = G.shop, sign = G.SHOP_SIGN, blind_select = G.blind_select}) do
+  for name, box in pairs({cash_out = G.round_eval, shop = G.shop, sign = G.SHOP_SIGN, blind_select = G.blind_select, overlay = G.OVERLAY_MENU}) do
     if box and box.VT then
       motion[#motion + 1] = string.format("ui %.3f %s %.3f %.3f", now, name,
         (box.VT.x - left) / G.CARD_W, (box.VT.y - top) / G.CARD_H)

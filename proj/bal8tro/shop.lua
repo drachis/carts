@@ -132,7 +132,7 @@ function update_shop()
   leaving,exiting=true,true
   after(exit_wait,function()
    ante,blind=next_blind()
-   start_blind()
+   open_select()
   end)
   return
  elseif column==2 then

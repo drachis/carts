@@ -19,14 +19,14 @@ GAME = os.path.dirname(HERE)
 # cart -> functions it never needs (it never reaches those screens, or
 # reaches them without checking or dumping them)
 EMPTY = {
-    "deal": ["draw_info", "draw_pack_screen", "draw_shop", "draw_mini_tarot", "draw_mini_planet", "draw_pack"],
-    "score": ["draw_info", "draw_pack_screen", "draw_shop", "draw_mini_tarot", "draw_mini_planet", "draw_pack"],
-    "total": ["draw_info", "draw_pack_screen", "draw_shop", "draw_mini_tarot", "draw_mini_planet", "draw_pack"],
-    "mid": ["draw_info", "draw_pack_screen", "draw_mini_tarot"],
-    "table": ["draw_pack_screen", "draw_mini_tarot"],
-    "late": ["draw_info"],
-    "finale": ["draw_info", "draw_pack_screen", "draw_mini_tarot"],
-    "motion": ["draw_info", "draw_title"],
+    "deal": ["draw_select", "draw_info", "draw_pack_screen", "draw_shop", "draw_mini_tarot", "draw_mini_planet", "draw_pack"],
+    "score": ["draw_select", "draw_info", "draw_pack_screen", "draw_shop", "draw_mini_tarot", "draw_mini_planet", "draw_pack"],
+    "total": ["draw_select", "draw_info", "draw_pack_screen", "draw_shop", "draw_mini_tarot", "draw_mini_planet", "draw_pack"],
+    "mid": ["draw_select", "draw_info", "draw_pack_screen", "draw_mini_tarot"],
+    "table": ["draw_select", "draw_pack_screen", "draw_mini_tarot"],
+    "late": ["draw_select", "draw_info"],
+    "finale": ["draw_select", "draw_info", "draw_pack_screen", "draw_mini_tarot"],
+    "motion": ["draw_info", "draw_title", "draw_sidebar", "draw_tooltip"],
 }
 
 

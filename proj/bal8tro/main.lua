@@ -9,28 +9,43 @@ function start_run()
  ante,blind=1,1
  deck_spec=deck_specs[deck_choice]
  money=start_money+deck_spec.money
- jokers,run_deck={},new_deck(deck_spec)
+ jokers,run_deck,hands_left,discards_left,score,chips,mult={},new_deck(deck_spec),0,0,0,0,0
+ deck=run_deck
  reset_levels()
- start_blind()
+ open_select()
+end
+
+function open_select()
+ if blind==1 then boss=rnd(boss_specs) end
+ goal=blind_goal(ante,blind)
+ ante_label,round_number=ante.."/"..#ante_bases,(ante-1)*3+blind
+ if skip_select then return start_blind() end
+ mode,leaving,select_focus,select_panel="select",false,{row=2,columns={1,1}},{glide_x=0,glide_y=110,wait=0}
+end
+
+function update_select()
+ local row=steer(select_focus,{#jokers,1})
+ joker_focus=row==1 and select_focus.columns[1]
+ if btnp(4) and row==2 and not leaving then
+  leaving=true
+  sfx(snd_pick)
+  after(select_wait,start_blind)
+ end
 end
 
 function start_blind()
  deck=shuffled(run_deck)
  hand,flying={},{}
  played,hand_label,chips,mult=nil,nil,0,0
- pops={}
- if blind==1 then boss=rnd(boss_specs) end
+ pops,mode={},"play"
  local active=boss_on()
  hands_left=active and active.hands or hands_per_blind+deck_spec.hands
  discards_left=active and active.discards or discards_per_blind+deck_spec.discards
  score,shown_score=0,0
- goal=blind_goal(ante,blind)
- ante_label,round_number=ante.."/"..#ante_bases,(ante-1)*3+blind
  cursor,joker_focus,button_focus,leaving=1
  table_focus={row=2,columns={1,1,1}}
  sort_by_suit=false
  draw_up()
- mode="play"
 end
 
 function draw_up()
@@ -250,6 +265,8 @@ function _update60()
   update_shop()
  elseif mode=="pack" then
   update_pack()
+ elseif mode=="select" then
+  update_select()
  elseif mode=="info" then
   if btnp(0) or btnp(1) then
    info_tab=3-info_tab

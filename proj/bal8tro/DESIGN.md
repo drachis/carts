@@ -48,6 +48,10 @@ the layout); the challenge is fitting it in one cart.
 - **Decks** chosen on the title with left/right, Balatro's: red (+1
   discard), blue (+1 hand), yellow (+$10), abandoned (no face cards),
   checkered (spades and hearts only); card backs take its colour.
+- **Blind select** before every blind, Balatro's: the ante's three
+  blinds side by side (done, select, next), each with its goal and
+  reward, the boss named ahead of time; select slides it away and the
+  deal starts on Balatro's beat. No skipping (no tags).
 - **The deck** lasts the whole run (`run_deck`): each blind shuffles the
   same cards, so tarots and standard packs change it for good. Each blind
   deals 8 cards, 4 hands, 3 discards.

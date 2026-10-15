@@ -34,5 +34,8 @@ Four mini joker slots across the top (x42, 21 apart), empty ones outlined. The b
 
 The card backs (draw_back) take the chosen deck's colour, on the table, the title's deck chooser and the shop's deck pile.
 
-**draw.lua:226** `function draw_info()`
+**draw.lua:226** `function draw_select()`
+Balatro's blind select (reference/blind_select.png): three tall panels across the right side for the ante's small, big and boss blinds, each with its state (select on the current one, done, next), its name, a chip in its colour, its goal and its reward in dollar signs; the whole slides with select_panel's glide.
+
+**draw.lua:251** `function draw_info()`
 The info overlay, over the table, from the info button: two tabs (left/right swap, O, X or down close). hands: like Balatro's run info, strongest first, each hand's level, short name, chips x mult at its level, and times played this run. deck: the run deck as a 4x13 grid of suit rows and rank columns, a white cell for each card held (grey if none, an enhancement's colour as its border), then each suit's count and the total. On dark grey (Balatro's panel), because the spade's dark blue vanished on dark blue.

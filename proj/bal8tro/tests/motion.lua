@@ -17,6 +17,7 @@ music=sfx
 local start=40
 local presses=parse_record[[
 40=4
+60=4
 1600=4
 2560=4
 2920=4
@@ -24,7 +25,8 @@ local presses=parse_record[[
 ]]
 
 local events=parse_record[[
-40=deal
+60=deal
+3196=select_shown
 370=joker
 430=pick_discard
 470=discard
@@ -81,6 +83,7 @@ local function motion_frame()
    for item in all(shop_items) do log_card(item,"shop_jokers") end
    for pack in all(shop_packs) do log_card(pack,"shop_booster") end
   end
+  if mode=="select" and select_panel.y then printh("ui "..(n/60).." blind_select 0 "..((27+select_panel.y-78)/21)) end
   if mode=="pack" then
    for item in all(pack_choices) do log_card(item,"pack") end
   end

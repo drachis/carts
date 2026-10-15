@@ -28,7 +28,7 @@ INSTALL = sys.argv[1] if len(sys.argv) > 1 else r"O:\Games\SteamLibrary\steamapp
 NAME = "bal8tro_ref"
 SAVE = os.path.join(os.environ["APPDATA"], NAME)
 OUT = os.path.join(PROJECT, "reference")
-RUN_SECONDS = 100
+RUN_SECONDS = 140
 
 
 def build(folder):

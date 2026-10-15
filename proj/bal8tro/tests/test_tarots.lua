@@ -45,9 +45,11 @@ function deck_choice_cases()
  expect("abandoned has no face cards, checkered only spades and hearts",#abandoned..","..suits[1]..","..suits[2]..","..suits[3]+suits[4],"40,26,26,0")
  deck_choice=2
  start_run()
+ start_blind()
  expect("the blue deck plays 5 hands",hands_left..","..discards_left,"5,3")
  deck_choice=3
  start_run()
+ start_blind()
  expect("the yellow deck starts with $14",money,14)
  deck_choice,mode=1,"title"
 end

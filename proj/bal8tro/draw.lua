@@ -223,6 +223,31 @@ function draw_banner(title,line,colour,lines)
  camera()
 end
 
+function draw_select()
+ draw_swirl(3,1,0)
+ draw_sidebar()
+ draw_joker_row(joker_focus)
+ local _,drop=glide(select_panel,0,leaving and 110 or 0)
+ camera(0,-drop)
+ for which=1,3 do
+  local x,now,done=41+(which-1)*29,which==blind,which<blind
+  rectfill(x,27,x+26,104,done and 5 or 1)
+  rect(x,27,x+26,104,now and 9 or 6)
+  rectfill(x+2,29,x+24,37,now and 9 or 0)
+  print_centre(now and "select" or done and "done" or "next",31,now and 7 or 5,x+13)
+  if now and select_focus.row==2 then rect(x+1,28,x+25,38,10) end
+  local words=split(blind_name(which)," ")
+  print_centre(words[1],42,7,x+13)
+  print_centre(words[2],48,7,x+13)
+  circfill(x+13,64,7,split"12,9,8"[which])
+  print_centre("goal",76,6,x+13)
+  print_centre(big_text(blind_goal(ante,which)),83,8,x+13)
+  print_centre(sub("$$$$$",1,blind_specs[which].reward),93,10,x+13)
+ end
+ camera()
+ draw_particles()
+end
+
 function draw_info()
  rectfill(3,6,124,121,5)
  rect(3,6,124,121,6)
@@ -283,6 +308,7 @@ function _draw()
  if mode=="title" then draw_title() return end
  if mode=="shop" then draw_shop() return end
  if mode=="pack" then draw_pack_screen() return end
+ if mode=="select" then draw_select() return end
  if mode=="info" then
   draw_table()
   draw_info()
