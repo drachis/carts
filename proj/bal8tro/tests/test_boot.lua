@@ -66,6 +66,10 @@ local presses=parse_record[[
 264=4
 266=1
 268=4
+280=2
+282=1
+286=3
+288=3
 290=4
 292=3
 310=4
@@ -126,9 +130,13 @@ function boot_frame()
   expect("a run starts with no jokers",#jokers,0)
   expect("a run starts with $4",money,4)
  end
- if n==51 then expect("a picked card glides, not jumps",hand[1].y>=100 and hand[1].y<=105,true) end
- if n==56 then expect("a picked card has risen",hand[1].y<=100,true) end
- if n==57 then dump_screen("boot_pick") expect("hand picked",hand_label,"pair lv1") end
+ if n==51 then expect("a picked card glides, not jumps (y "..hand[1].y..")",hand[1].y>=75 and hand[1].y<=79,true) end
+ if n==57 then expect("a picked card has risen (y "..hand[1].y..")",hand[1].y<=75,true) end
+ if n==57 then dump_screen("boot_pick") expect("hand picked",hand_label..hand_level,"pair1") end
+ if n==281 then expect("up looks at the jokers",joker_focus,1) end
+ if n==283 then dump_screen("boot_tooltip") end
+ if n==287 then expect("down goes back to the hand",joker_focus,nil) end
+ if n==289 then expect("down with nothing picked sorts by suit",sort_by_suit,true) end
  if n==150 then
   printh("cpu while scoring with flames: "..stat(1).." at "..stat(7).." fps")
   dump_screen("boot_score")

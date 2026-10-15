@@ -22,7 +22,7 @@ function start_blind()
  discards_left=active and active.discards or discards_per_blind
  score,shown_score=0,0
  goal=blind_goal(ante,blind)
- cursor=1
+ cursor,joker_focus=1
  sort_by_suit=false
  draw_up()
  mode="play"
@@ -65,7 +65,7 @@ function play_hand()
  played=take_picked()
  local spec,label
  spec,label,scoring_cards,steps=score_steps(played,jokers)
- hand_label=hand_title(spec,label)
+ hand_label,hand_level=hand_title(spec,label)
  chips,mult=hand_base(spec)
  step_index,step_timer,active_step=0,30
  mode="score"
@@ -78,8 +78,15 @@ function discard_hand()
 end
 
 function update_play()
+ if joker_focus then
+  if btnp(0) then joker_focus=max(joker_focus-1,1) end
+  if btnp(1) then joker_focus=min(joker_focus+1,#jokers) end
+  if btnp(3) or #jokers==0 then joker_focus=nil end
+  return
+ end
  if btnp(0) then cursor=max(cursor-1,1) end
  if btnp(1) then cursor=min(cursor+1,#hand) end
+ if btnp(2) and #jokers>0 then joker_focus=1 end
  local card=hand[cursor]
  if btnp(4) and card then
   if card.picked or #picked_cards()<max_picked then
@@ -87,18 +94,17 @@ function update_play()
    sfx(snd_pick)
   end
  end
- if btnp(2) then
-  sort_by_suit=not sort_by_suit
-  sort_cards(hand,sort_by_suit)
- end
  local picked=picked_cards()
  hand_label,chips,mult=nil,0,0
  if #picked>0 then
   local spec,_,_,label=evaluate(picked)
-  hand_label=hand_title(spec,label)
+  hand_label,hand_level=hand_title(spec,label)
   chips,mult=hand_base(spec)
   if btnp(5) and can_play(picked) then play_hand()
   elseif btnp(3) and discards_left>0 then discard_hand() end
+ elseif btnp(3) then
+  sort_by_suit=not sort_by_suit
+  sort_cards(hand,sort_by_suit)
  end
 end
 
@@ -121,9 +127,9 @@ function update_score()
   active_step=nil
   local total=hand_total(chips,mult)
   score+=total
-  add(pops,{text=big_text(total),x=64,y=78,colour=10,age=0,big=true})
-  burst(64,28,10,24)
-  burst(64,28,9,16)
+  add(pops,{text=big_text(total),x=table_centre,y=50,colour=10,age=0,big=true})
+  burst(19,boxes_y,10,24)
+  burst(19,boxes_y,9,16)
   shake=min(2+total/goal*4,8)
   sfx(snd_total)
   step_timer=45

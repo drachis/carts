@@ -39,7 +39,11 @@ planet_chance=0.33
 step_frames=18
 deal_frames=4
 deck_x=111
-deck_y=70
+deck_y=105
+chips_x=2
+mult_x=20
+boxes_y=55
+table_centre=84
 snd_deal=4
 music_calm=0
 music_table=2
@@ -66,21 +70,21 @@ sflush,straight flush,100,8,neptune,str8 fl,40,4
 ]]
 
 joker_specs=parse_table[[
-name,text,cond,when,need,chips,mult,xmult,cost
-joker,+4 mult,,hand,,,4,,2
-greedy,+3 mult,per,card,4,,3,,5
-lusty,+3 mult,per,card,2,,3,,5
-wrath,+3 mult,per,card,1,,3,,5
-glutton,+3 mult,per,card,3,,3,,5
-jolly,+8 mult,pair,hand,pair,,8,,3
-zany,+12mult,trips,hand,three,,12,,4
-mad,+10mult,2 pair,hand,two,,10,,4
-droll,+10mult,flush,hand,flush,,10,,4
-sly,+50chip,pair,hand,pair,50,,,3
-clever,+80chip,2 pair,hand,two,80,,,4
-scary,+30chip,face,card,face,30,,,4
-the duo,x2 mult,pair,hand,pair,,,2,8
-tribe,x2 mult,flush,hand,flush,,,2,8
+name,text,cond,tag,when,need,chips,mult,xmult,cost
+joker,+4 mult,,,hand,,,4,,2
+greedy,+3 mult,per,,card,4,,3,,5
+lusty,+3 mult,per,,card,2,,3,,5
+wrath,+3 mult,per,,card,1,,3,,5
+glutton,+3 mult,per,,card,3,,3,,5
+jolly,+8 mult,pair,pair,hand,pair,,8,,3
+zany,+12mult,trips,3oak,hand,three,,12,,4
+mad,+10mult,2 pair,2pr,hand,two,,10,,4
+droll,+10mult,flush,flsh,hand,flush,,10,,4
+sly,+50chip,pair,pair,hand,pair,50,,,3
+clever,+80chip,2 pair,2pr,hand,two,80,,,4
+scary,+30chip,face,face,card,face,30,,,4
+the duo,x2 mult,pair,pair,hand,pair,,,2,8
+tribe,x2 mult,flush,flsh,hand,flush,,,2,8
 ]]
 
 blind_specs=parse_table[[
@@ -102,5 +106,5 @@ the wall,extra large blind,8,,,,,
 the needle,play only 1 hand,2,,1,,,
 the water,start with 0 discards,4,,,0,,
 the psychic,must play 5 cards,4,,,,5,
-the flint,base chips+mult halved,4,,,,,1
+the flint,base hand is halved,4,,,,,1
 ]]

@@ -94,7 +94,9 @@ function run_cases()
  hand_levels.pair=3
  local chips,mult=hand_base(hand_specs.pair)
  expect("pair at level 3 (mercury twice)",chips..","..mult,"40,4")
- expect("pair's title at level 3",hand_title(hand_specs.pair,"pair"),"pair lv3")
+ local title,level=hand_title(hand_specs.pair,"pair")
+ expect("pair's title at level 3",title.." "..level,"pair 3")
+ expect("a royal flush's title",hand_title(hand_specs.sflush,"royal flush"),"royal")
  hand_levels.sflush=2
  chips,mult=hand_base(hand_specs.sflush)
  expect("straight flush at level 2 (neptune)",chips..","..mult,"140,12")

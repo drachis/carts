@@ -16,18 +16,18 @@ Discarded cards, and played cards once scored, go into flying, which the table d
 **main.lua:80** `function update_play()`
 Controls: left/right cursor, O pick (up to max_picked), X play, down discard, up toggle sort. While cards are picked, hand_label/chips/mult preview the base hand like Balatro.
 
-**main.lua:105** `function update_score()`
+**main.lua:111** `function update_score()`
 Plays out steps one every step_frames, after a 30-frame pause; then one step of 45 frames adds chips*mult to score; then finish_hand. Each step pops its number, bursts sparks, swells its box and plays a tick one note higher than the last (sfx snd_chips+k or snd_mult+k, k up to 7). The total pops big mid-table and shakes the screen by 2 plus 4 per goal it is worth, at most 8.
 
-**main.lua:135** `function finish_hand()`
+**main.lua:141** `function finish_hand()`
 A blind is won the moment score reaches goal, checked after each hand; losing is running out of hands below it.
 
-**main.lua:148** `function cash_out()`
+**main.lua:154** `function cash_out()`
 Balatro's payout: the blind's reward, $1 per hand left, and $1 interest per $5 held before the payout, at most $5. earnings is the list the banner draws.
 
-**main.lua:160** `function play_music(pattern)`
+**main.lua:166** `function play_music(pattern)`
 Starts a pattern only when it changes, fading in over 500ms (manual: FADE_LEN is in ms), on channels 0-2 (mask 7) so sound effects keep the fourth. _update60 asks every frame: music_calm (bass and pad) on the title and in the shop, music_table (with the lead) everywhere else.
 Keep: tests/test_boot.lua replaces music() and checks the pattern on the title, the table and the shop.
 
-**main.lua:169** `function _update60()`
+**main.lua:175** `function _update60()`
 shown_score counts up an eighth of the gap a frame (at least 1) so a big hand rolls up.

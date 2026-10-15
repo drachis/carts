@@ -41,9 +41,16 @@ the cart.
   slots (Balatro has five; four is what fits across the screen) and
   fourteen jokers, each with Balatro's price.
 - Each blind: a fresh shuffled deck, 8-card hand, 4 hands, 3 discards.
+- The table is laid out like Balatro's: a sidebar on the left (blind,
+  goal, round score, hand and level, chips × mult, hands, discards,
+  money, ante, round, deck), small jokers across the top, played cards
+  in the middle, an overlapping hand with play and discard buttons
+  under it, and the deck bottom right.
 - Left/right moves the cursor, O picks a card (up to five), X plays,
-  down discards, up sorts by rank or suit. Picking shows the hand's name
-  and base chips × mult.
+  down discards, or with nothing picked sorts by rank or suit. Up moves
+  onto the jokers, where left/right picks one and a tooltip gives its
+  name, effect and sell price; down goes back. Picking shows the hand's
+  short name, level and base chips × mult.
 - A played hand scores like Balatro: base chips and mult for the hand
   type, then each scoring card adds its chips, card jokers fire on their
   cards, then hand jokers fire left to right. Each step pops its number

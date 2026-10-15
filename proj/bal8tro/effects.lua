@@ -10,12 +10,13 @@ end
 
 function draw_flames()
  if heat<1 then return end
- for left=27,67,40 do
-  for x=0,33,2 do
+ local base=boxes_y-1
+ for left=chips_x-1,mult_x-1,mult_x-chips_x do
+  for x=0,17,2 do
    local height=1+rnd(2+min(heat,4)*2)
-   rectfill(left+x,23-height,left+x+1,23,8)
-   rectfill(left+x,23-height/2,left+x+1,23,9)
-   rectfill(left+x,22,left+x+1,23,10)
+   rectfill(left+x,base-height,left+x+1,base,8)
+   rectfill(left+x,base-height/2,left+x+1,base,9)
+   rectfill(left+x,base-1,left+x+1,base,10)
   end
  end
 end
@@ -23,9 +24,9 @@ end
 function fan_flames()
  heat=mode=="score" and (score+hand_total(chips,mult))/goal or 0
  if heat<1 then return end
- for left=28,68,40 do
+ for left=chips_x,mult_x,mult_x-chips_x do
   for i=1,min(heat,4) do
-   add(sparks,{x=left+rnd(32),y=24,vx=rnd(.6)-.3,vy=-.4-rnd(.6*heat),life=6+rnd(12),flame=true})
+   add(sparks,{x=left+rnd(16),y=boxes_y,vx=rnd(.6)-.3,vy=-.4-rnd(.6*heat),life=6+rnd(12),flame=true})
   end
  end
 end

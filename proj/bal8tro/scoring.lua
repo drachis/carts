@@ -37,7 +37,7 @@ function hand_base(spec)
 end
 
 function hand_title(spec,label)
- return label.." lv"..hand_levels[spec.name]
+ return label=="royal flush" and "royal" or spec.short,hand_levels[spec.name]
 end
 
 function joker_fires_on(joker,card)
