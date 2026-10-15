@@ -33,7 +33,7 @@ function glide(thing,x,y)
 end
 
 function draw_back(x,y)
- rectfill(x,y,x+14,y+20,8)
+ rectfill(x,y,x+14,y+20,deck_spec.colour)
  fillp(░)
  rectfill(x+2,y+2,x+12,y+18,0x82)
  fillp()
@@ -216,7 +216,10 @@ function draw_title()
  for i=1,5 do
   draw_card({rank=9+i,suit=i%4+1},24+(i-1)*16,36)
  end
- print("🅾️ pick card\n\n❎ play hand\n\n⬇️ discard, or sort\n\n⬆️ look at jokers",34,62,7)
+ print("🅾️ pick, press   ❎ play\n⬆️⬇️ rows   ⬅️➡️ along",14,62,6)
+ draw_back(16,78)
+ print_centre("⬅️ "..deck_spec.name.." deck ➡️",82,7,68)
+ print_centre(deck_spec.text,90,9,68)
  print_centre("press 🅾️ to start",112,10)
 end
 

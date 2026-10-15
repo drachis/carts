@@ -91,7 +91,21 @@ function tarot_cases()
  mode,pack_hand="title",{}
 end
 
+function deck_choice_cases()
+ local abandoned,checkered,suits=new_deck(deck_specs.abandoned),new_deck(deck_specs.checkered),{0,0,0,0}
+ for card in all(checkered) do suits[card.suit]+=1 end
+ expect("abandoned has no face cards, checkered only spades and hearts",#abandoned..","..suits[1]..","..suits[2]..","..suits[3]+suits[4],"40,26,26,0")
+ deck_choice=2
+ start_run()
+ expect("the blue deck plays 5 hands",hands_left..","..discards_left,"5,3")
+ deck_choice=3
+ start_run()
+ expect("the yellow deck starts with $14",money,14)
+ deck_choice,mode=1,"title"
+end
+
 function run_cases()
+ deck_choice_cases()
  tarot_cases()
  pack_cases()
  deck_cases()

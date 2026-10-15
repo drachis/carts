@@ -6,16 +6,20 @@ Suits are 1 spade, 2 heart, 3 club, 4 diamond; four colours (Balatro's high-cont
 **cards.lua:2** `rank_names=split("2,3,4,5,6,7,8,9,10,j,q,k,a",",",false)`
 Ranks are 2..14, ace high; rank_names is indexed rank-1.
 
-**cards.lua:12** `function shuffled(cards)`
+**cards.lua:4** `function new_deck(spec)`
+A run's starting 52 cards, in order (shuffled draws from them each blind). Given a deck_specs row it leaves out face cards (abandoned) or folds the suits to spades and hearts (checkered, 26 of each).
+Keep: tests/test_shop.lua checks both.
+
+**cards.lua:15** `function shuffled(cards)`
 A shuffled list of the same card tables (not copies), with each one's place on screen, pick and flip cleared, so it is dealt from the deck again. Anything else on a card (its suit, rank, an enhancement) lasts.
 Keep: tests/test_shop.lua checks a changed card survives two shuffles.
 
-**cards.lua:33** `function is_suit(card,suit)`
+**cards.lua:36** `function is_suit(card,suit)`
 A card counts as a suit when it is that suit or a wild card: flushes (in evaluate, a flush is five cards that all count as one suit) and per-suit jokers both ask this.
 
-**cards.lua:37** `function sort_cards(cards,by_suit)`
+**cards.lua:40** `function sort_cards(cards,by_suit)`
 Insertion sort, highest first, by rank (suit breaks ties) or by suit then rank.
 
-**cards.lua:50** `function evaluate(played)`
+**cards.lua:53** `function evaluate(played)`
 Takes 1..5 cards; returns the hand spec, the cards that score, the contains table and the label. Straights and flushes need five cards; A-2-3-4-5 is a straight, Q-K-A-2-3 is not. High card scores only its highest card; pair/two/three/four score the cards in groups; straight, flush, full house and straight flush score all five.
 Keep: tests/test_hands.lua checks every hand type and its scoring count.

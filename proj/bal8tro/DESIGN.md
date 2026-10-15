@@ -45,6 +45,9 @@ the layout); the challenge is fitting it in one cart.
   (small, big, boss at 1, 1.5 and 2 times the ante's base of 300, 800,
   2000, 5000, 11000, 20000, 35000, 50000). Clearing ante 8's boss
   (100000) wins; running out of hands loses; O restarts.
+- **Decks** chosen on the title with left/right, Balatro's: red (+1
+  discard), blue (+1 hand), yellow (+$10), abandoned (no face cards),
+  checkered (spades and hearts only); card backs take its colour.
 - **The deck** lasts the whole run (`run_deck`): each blind shuffles the
   same cards, so tarots and standard packs change it for good. Each blind
   deals 8 cards, 4 hands, 3 discards.
@@ -131,5 +134,5 @@ the layout); the challenge is fitting it in one cart.
   controls, shop, packs and tarots have not been played or heard.
 - No vouchers, tags, skipping blinds, consumable slots, editions, seals,
   joker rarities, stone cards, spectral packs; nine of Balatro's bosses.
-- No deck choice, deck view or run-info screen yet.
+- No deck view or run-info screen yet; no black, painted or other decks.
 - Whether the late antes are reachable is not measured with a bot.

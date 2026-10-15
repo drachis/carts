@@ -27,3 +27,5 @@ Keep: everything is at most 8 characters to fit 37px, which is why hands use the
 
 **draw.lua:153** `function draw_table()`
 Four mini joker slots across the top (x42, 21 apart), empty ones outlined. The boss's rule shows under them when there is no tooltip and nothing played. Played cards sit at y44 (scoring ones 4px higher), centred. The hand overlaps, 10px apart from x41, in a shallow arc, each card bobbing on its own phase; picked cards rise 7px and the card under the cursor 3px more; the cursor's frame is drawn after the whole hand so the next card does not cover it. Play, discard and sort buttons (table_buttons) under the hand grey out when they would do nothing, rise and frame in yellow under the cursor, and jump when pressed; the line under them says what O does on the cursor's row. The deck pile is bottom right; cards in flying glide off the right edge and are dropped past x127.
+
+The card backs (draw_back) take the chosen deck's colour, on the table, the title's deck chooser and the shop's deck pile.

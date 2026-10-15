@@ -145,6 +145,15 @@ hanged man,destroy 2,destroy,2,,,pick in hand
 hermit,double $ max 20,money,0,,,
 ]]
 
+deck_specs=parse_table[[
+name,text,hands,discards,money,faces,suits,colour
+red,+1 discard,0,1,0,1,4,8
+blue,+1 hand,1,0,0,1,4,12
+yellow,+$10,0,0,10,1,4,9
+abandoned,no face cards,0,0,0,0,4,3
+checkered,spades+hearts only,0,0,0,1,2,13
+]]
+
 pack_specs=parse_table[[
 name,label,kind,choices,cost,colour
 arcana,arcana,tarot,3,4,2

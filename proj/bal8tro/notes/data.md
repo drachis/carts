@@ -23,16 +23,16 @@ The sidebar's number boxes as data: name is the global the box shows (read throu
 Keep: parse_table indexes rows by their name column, so every table needs one first; without it the cart fails before its first frame.
 
 
-**data.lua:148** `pack_specs=parse_table[[`
+**data.lua:157** `pack_specs=parse_table[[`
 Balatro's four normal packs: kind is what pack_choices holds, choices how many are shown, colour the pack and its screen's felt. A shop's two pack slots are each a random row.
 
-**data.lua:156** `table_buttons=parse_table[[`
+**data.lua:165** `table_buttons=parse_table[[`
 The buttons under the hand, in cursor order; update_play acts by name, so a new button is a row here and a branch there.
 
-**data.lua:163** `vfx_specs=parse_table[[`
+**data.lua:172** `vfx_specs=parse_table[[`
 The VFX engine's particle presets (emit in effects.lua): how many, how fast, how hard they rise, gravity, life in frames, a colour ramp from coldest to hottest ("/"-separated, split into a list just below), and the width they spawn across. spark: a scoring step's, in the step's colour. shower: the hand total's. flame: the boxes' embers. coin: the cash-out's. A new effect is a new row.
 
-**data.lua:174** `boss_specs=parse_table[[`
+**data.lua:183** `boss_specs=parse_table[[`
 Nine of Balatro's bosses, one drawn at random when an ante's small blind starts. factor is the goal in halves of the ante base (Balatro's 2x, the wall 4x, the needle 1x). debuff is a suit; hands and discards replace the blind's; must is the fewest cards a hand may have; halve halves the base chips and mult. text is shown on the panel when no cards are picked, at most 25 characters.
 
 **data.lua:119** `enhancement_specs=parse_table[[`
@@ -40,3 +40,6 @@ Balatro's enhancements with its values (game.lua m_bonus..m_lucky): chips and mu
 
 **data.lua:130** `tarot_specs=parse_table[[`
 Fourteen of Balatro's tarots. act names what use_tarot does: enhance (to enhancement), suit (to suit), rank (+1, ace to 2), destroy, money (hermit: double, at most +$20). most is how many picked cards it takes (0: none). text and cond are the tooltip's lines.
+
+**data.lua:148** `deck_specs=parse_table[[`
+Five of Balatro's starting decks (its source: b_red discards 1, b_blue hands 1, b_yellow dollars 10, b_abandoned remove_faces, b_checkered), chosen on the title. hands, discards and money add to a run's; faces 0 leaves out jacks, queens and kings; suits 2 makes every card a spade or a heart; colour is the card backs'. Black and painted are left out: an extra joker slot or two more cards in hand do not fit across 128 pixels as laid out.

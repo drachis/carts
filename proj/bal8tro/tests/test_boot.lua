@@ -49,6 +49,10 @@ local function known_hand()
 end
 
 local presses=parse_record[[
+10=0
+12=0
+14=1
+16=1
 40=4
 50=4
 52=1
@@ -126,6 +130,8 @@ function boot_frame()
  game_update()
  game_draw()
  if n==5 then dump_screen("boot_title") end
+ if n==11 or n==13 or n==17 then expect("deck choice at frame "..n,deck_choice,n==11 and 5 or n==13 and 4 or 1) end
+ if n==13 then dump_screen("boot_decks") end
  if n==5 or n==41 or n==242 then
   expect("music at frame "..n,started_music,n==41 and music_table or music_calm)
  end
@@ -192,7 +198,7 @@ function boot_frame()
  if n==265 then expect("rerolled for $5",money..","..reroll_cost..","..#shop_items,"1,6,2") end
  if n==270 then expect_mode("play") expect("blind",blind,2) expect("jokers kept",#jokers,3) end
  if n==299 then expect("the discard flies off",#flying,1) dump_screen("boot_discard") end
- if n==301 then expect("discards left",discards_left,2) expect("hand refilled",#hand,8) end
+ if n==301 then expect("discards left (red deck: 4, one used)",discards_left,3) expect("hand refilled",#hand,8) end
  if n==330 then expect("the discard has left the screen",#flying,0) end
  if n==480 then expect_mode("lost") dump_screen("boot_lost") end
  if n==492 then expect("restart clears jokers",#jokers,0) end

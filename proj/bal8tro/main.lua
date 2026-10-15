@@ -1,5 +1,5 @@
 function _init()
- mode="title"
+ mode,deck_choice,deck_spec="title",1,deck_specs[1]
  shown_score=0
  poke(0x5f5c,8)
  poke(0x5f5d,2)
@@ -7,8 +7,9 @@ end
 
 function start_run()
  ante,blind=1,1
- money=start_money
- jokers,run_deck={},new_deck()
+ deck_spec=deck_specs[deck_choice]
+ money=start_money+deck_spec.money
+ jokers,run_deck={},new_deck(deck_spec)
  reset_levels()
  start_blind()
 end
@@ -20,8 +21,8 @@ function start_blind()
  pops={}
  if blind==1 then boss=rnd(boss_specs) end
  local active=boss_on()
- hands_left=active and active.hands or hands_per_blind
- discards_left=active and active.discards or discards_per_blind
+ hands_left=active and active.hands or hands_per_blind+deck_spec.hands
+ discards_left=active and active.discards or discards_per_blind+deck_spec.discards
  score,shown_score=0,0
  goal=blind_goal(ante,blind)
  ante_label,round_number=ante.."/"..#ante_bases,(ante-1)*3+blind
@@ -224,6 +225,11 @@ function _update60()
   return
  end
  if mode=="title" then
+  if btnp(0) or btnp(1) then
+   deck_choice=(deck_choice+(btnp(1) and 0 or #deck_specs-2))%#deck_specs+1
+   deck_spec=deck_specs[deck_choice]
+   sfx(snd_move)
+  end
   if btnp(4) then start_run() end
  elseif mode=="play" then
   update_play()

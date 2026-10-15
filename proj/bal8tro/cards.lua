@@ -1,10 +1,13 @@
 suit_colors=split"1,8,3,9"
 rank_names=split("2,3,4,5,6,7,8,9,10,j,q,k,a",",",false)
 
-function new_deck()
+function new_deck(spec)
  local deck={}
  for suit=1,4 do
-  for rank=2,14 do add(deck,{rank=rank,suit=suit}) end
+  for rank=2,14 do
+   local card={rank=rank,suit=spec and spec.suits==2 and (suit-1)%2+1 or suit}
+   if not (spec and spec.faces==0 and is_face(card)) then add(deck,card) end
+  end
  end
  return deck
 end
