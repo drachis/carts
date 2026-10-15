@@ -115,10 +115,10 @@ bus,+1 mult,no face,bus,hand,,,1,,6,count,bus
 ]]
 
 blind_specs=parse_table[[
-name,factor,reward
-small blind,2,3
-big blind,3,4
-the boss,4,5
+name,factor,reward,colour
+small blind,2,3,12
+big blind,3,4,9
+the boss,4,5,8
 ]]
 
 ante_bases=split"3,8,20,50,110,200,350,500"

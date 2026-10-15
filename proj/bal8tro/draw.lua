@@ -16,6 +16,13 @@ function print_right(text,x,y,colour)
  print(text,x-#text*4,y,colour)
 end
 
+function print_words(text,y,colour,centre)
+ for word in all(split(text," ",false)) do
+  print_centre(word,y,colour,centre)
+  y+=6
+ end
+end
+
 function print_centre(text,y,colour,centre)
  local width=0
  for i=1,#text do width+=ord(text,i)>127 and 8 or 4 end
@@ -126,10 +133,8 @@ function draw_sidebar()
  line(39,-8,39,135,heat>=2 and rnd(split"8,9,10") or 0)
  local in_shop,top=mode=="shop" or mode=="pack",0
  if in_shop then _,top=glide(sign,0,exiting and -14 or 0) end
- rectfill(1,1+top,37,13+top,in_shop and 10 or boss_on() and 8 or blind==2 and 9 or 12)
- local words=split(in_shop and "the shop" or blind_name(blind)," ")
- print_centre(words[1],2+top,in_shop and 8 or 7,19)
- print_centre(words[2],8+top,in_shop and 8 or 7,19)
+ rectfill(1,1+top,37,13+top,in_shop and 10 or blind_specs[blind].colour)
+ print_words(in_shop and "the shop" or blind_name(blind),2+top,in_shop and 8 or 7,19)
  for box in all(sidebar_boxes) do sidebar_box(box) end
  draw_flames()
  rectfill(chips_x-chips_bump,boxes_y-chips_bump,chips_x+16+chips_bump,boxes_y+8+chips_bump,12)
@@ -234,10 +239,8 @@ function draw_select()
   rectfill(x+2,29,x+24,37,now and 9 or 0)
   print_centre(now and "select" or done and "done" or "next",31,now and 7 or 5,x+13)
   if now and select_focus.row==2 then rect(x+1,28,x+25,38,10) end
-  local words=split(blind_name(which)," ")
-  print_centre(words[1],42,7,x+13)
-  print_centre(words[2],48,7,x+13)
-  circfill(x+13,64,7,split"12,9,8"[which])
+  print_words(blind_name(which),42,7,x+13)
+  circfill(x+13,64,7,blind_specs[which].colour)
   print_centre("goal",76,6,x+13)
   print_centre(big_text(blind_goal(ante,which)),83,8,x+13)
   print_centre(sub("$$$$$",1,blind_specs[which].reward),93,10,x+13)
