@@ -176,7 +176,7 @@ function draw_table()
   if card.x>127 then del(flying,card) end
  end
  for i,card in ipairs(hand) do
-  local arc=(i-4.5)*(i-4.5)\6+sin(t()/3+i/8)*.8
+  local arc=(i-4.5)*(i-4.5)\6
   local hovered=mode=="play" and table_focus.row==2 and i==cursor
   draw_card(card,41+(i-1)*10,(card.picked and 73 or 78)+arc-(hovered and 2 or 0))
  end
