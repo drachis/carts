@@ -40,6 +40,7 @@ end
 
 function glide(thing,x,y)
  if not thing.glide_x then thing.glide_x,thing.glide_y,thing.wait=x,y,0 end
+ if is_active(thing) then y-=3 end
  if thing.wait>0 then
   thing.wait-=1
   if thing.wait==0 then
@@ -67,7 +68,6 @@ function draw_back(x,y)
 end
 
 function draw_card(card,x,y)
- if is_active(card) then y-=3 end
  x,y=glide(card,x,y)
  local turn=card.flip or 1
  if turn<1 then
@@ -101,7 +101,6 @@ function draw_card(card,x,y)
 end
 
 function draw_mini_joker(joker,x,y,focused)
- if is_active(joker) then y-=3 end
  x,y=glide(joker,x,y)
  local swell=flr(joker.swell+.5)
  box(x-swell,y-swell,19+swell*2,19+swell*2,7,focused and 10 or 13)
