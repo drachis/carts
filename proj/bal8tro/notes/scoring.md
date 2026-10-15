@@ -14,7 +14,7 @@ Balatro's growing jokers, on "play" (before the hand scores, so the hand counts)
 Keep: tests/test_hands.lua checks every per and grow rule.
 
 **scoring.lua:42** `function boss_on()`
-The current boss while the boss blind is being played, else false. is_debuffed: a card of the boss's debuffed suit; it still counts towards the hand's type but adds no chips and sets off no card jokers (Balatro's rule). can_play: the psychic wants five cards, every other blind one.
+The current boss while the boss blind is being played (mode play or score), else false, so the shop and packs after a boss show nothing debuffed. is_debuffed: a card of the boss's debuffed suit; it still counts towards the hand's type but adds no chips and sets off no card jokers (Balatro's rule). can_play: the psychic wants five cards, every other blind one.
 Keep: tests/test_hands.lua checks the club, the flint, the psychic and the wall.
 
 **scoring.lua:71** `function score_steps(played,jokers)`

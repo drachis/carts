@@ -116,6 +116,13 @@ round_number,20,97,36,rnd,9,
 
 for number,spec in ipairs(joker_specs) do spec.sprite=31+number end
 
+pack_specs=parse_table[[
+name,label,kind,choices,cost,colour
+celestial,celest,planet,3,4,12
+buffoon,buffoon,joker,2,4,9
+standard,standard,card,3,4,6
+]]
+
 table_buttons=parse_table[[
 name,label,colour,left
 play,play,12,42

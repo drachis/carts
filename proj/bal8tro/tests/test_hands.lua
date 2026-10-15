@@ -54,6 +54,7 @@ score_cases={
 }
 
 function boss_cases()
+ mode="play"
  blind=#blind_specs
  boss=boss_specs["the club"]
  local spec,_,_,steps=score_steps(cards_of("kc kh"),{})
@@ -142,7 +143,26 @@ function deck_cases()
  expect("a shuffle holds the run's own cards, changes and all",#first..","..#second..","..found.suit..","..tostr(found.picked),"52,52,4,[nil]")
 end
 
+function pack_cases()
+ reset_levels()
+ jokers,run_deck={},new_deck()
+ open_pack(pack_specs.celestial)
+ local planet=pack_choices[2]
+ expect("a celestial pack offers three planets",mode..","..#pack_choices..","..tostr(planet.hand!=nil),"pack,3,true")
+ take_choice(2)
+ expect("taking a planet levels its hand",hand_levels[planet.hand.name],2)
+ open_pack(pack_specs.standard)
+ take_choice(1)
+ expect("a standard pack's card joins the run deck",#run_deck..","..tostr(run_deck[53]==pack_choices[1]),"53,true")
+ jokers=jokers_of("joker,sly,jolly,zany")
+ open_pack(pack_specs.buffoon)
+ expect("a buffoon pack offers two jokers, refused with the slots full",#pack_choices..","..tostr(take_choice(1) or false),"2,false")
+ jokers,mode={},"title"
+ reset_levels()
+end
+
 function run_cases()
+ pack_cases()
  deck_cases()
  vfx_cases()
  growing_cases()

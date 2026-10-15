@@ -40,7 +40,7 @@ function grow_jokers(event,scoring)
 end
 
 function boss_on()
- return blind==#blind_specs and boss
+ return blind==#blind_specs and (mode=="play" or mode=="score") and boss
 end
 
 function is_debuffed(card)

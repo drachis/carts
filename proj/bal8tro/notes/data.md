@@ -22,11 +22,15 @@ Balatro's eight ante base scores, in hundreds, because 50000 is past PICO-8's 32
 The sidebar's number boxes as data: name is the global the box shows (read through _ENV, so ante_label and round_number are kept as globals by start_blind), big prints it as a 32-bit score. Each box is 13px tall. A new number in the sidebar is a new row.
 Keep: parse_table indexes rows by their name column, so every table needs one first; without it the cart fails before its first frame.
 
-**data.lua:119** `table_buttons=parse_table[[`
+
+**data.lua:119** `pack_specs=parse_table[[`
+Balatro's three normal packs other than arcana: kind is what pack_choices holds, choices how many are shown, colour the pack and its screen's felt. A shop's two pack slots are each a random row.
+
+**data.lua:126** `table_buttons=parse_table[[`
 The buttons under the hand, in cursor order; update_play acts by name, so a new button is a row here and a branch there.
 
-**data.lua:126** `vfx_specs=parse_table[[`
+**data.lua:133** `vfx_specs=parse_table[[`
 The VFX engine's particle presets (emit in effects.lua): how many, how fast, how hard they rise, gravity, life in frames, a colour ramp from coldest to hottest ("/"-separated, split into a list just below), and the width they spawn across. spark: a scoring step's, in the step's colour. shower: the hand total's. flame: the boxes' embers. coin: the cash-out's. A new effect is a new row.
 
-**data.lua:137** `boss_specs=parse_table[[`
+**data.lua:144** `boss_specs=parse_table[[`
 Nine of Balatro's bosses, one drawn at random when an ante's small blind starts. factor is the goal in halves of the ante base (Balatro's 2x, the wall 4x, the needle 1x). debuff is a suit; hands and discards replace the blind's; must is the fewest cards a hand may have; halve halves the base chips and mult. text is shown on the panel when no cards are picked, at most 25 characters.

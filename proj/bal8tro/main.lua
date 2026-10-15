@@ -221,6 +221,8 @@ function _update60()
   update_score()
  elseif mode=="shop" then
   update_shop()
+ elseif mode=="pack" then
+  update_pack()
  elseif btnp(4) then
   if mode=="cashout" then
    open_shop()
@@ -234,5 +236,5 @@ function _update60()
   if p.age>40 then del(pops,p) end
  end
  update_effects()
- play_music((mode=="title" or mode=="shop") and music_calm or music_table)
+ play_music((mode=="title" or mode=="shop" or mode=="pack") and music_calm or music_table)
 end

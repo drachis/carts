@@ -113,7 +113,7 @@ end
 function draw_sidebar()
  rectfill(-8,-8,38,135,1)
  line(39,-8,39,135,heat>=2 and rnd(split"8,9,10") or 0)
- local in_shop=mode=="shop"
+ local in_shop=mode=="shop" or mode=="pack"
  rectfill(1,1,37,13,in_shop and 10 or boss_on() and 8 or blind==2 and 9 or 12)
  local words=split(in_shop and "the shop" or blind_name(blind)," ")
  print_centre(words[1],2,in_shop and 8 or 7,19)
@@ -218,6 +218,7 @@ end
 function _draw()
  if mode=="title" then draw_title() return end
  if mode=="shop" then draw_shop() return end
+ if mode=="pack" then draw_pack_screen() return end
  shake_camera()
  draw_table()
  camera()

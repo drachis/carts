@@ -98,6 +98,10 @@ the cart.
   the left and two cards for sale with price tags: each a planet one
   time in three, otherwise a joker never owned. Up to the joker row to
   sell (half price); a tooltip names whatever the cursor is on.
+- Two booster packs in each shop, $4, from Balatro's celestial (3
+  planets), buffoon (2 jokers) and standard (3 playing cards) packs:
+  opening one turns the felt its colour; take one or skip. A playing
+  card from a pack joins the run's deck, which lasts the whole run.
 - `test_boot`: the real cart from the title through a scripted pair of
   kings (checks 480 with joker and sly), the cash-out ($10), the shop
   (a buy, a refused buy with the slots full, a sale, a reroll, next

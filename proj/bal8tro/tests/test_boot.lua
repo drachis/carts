@@ -61,7 +61,6 @@ local presses=parse_record[[
 254=1
 256=4
 258=3
-260=3
 264=4
 266=0
 268=4
@@ -83,11 +82,16 @@ local presses=parse_record[[
 510=4
 512=5
 620=4
-622=0
-624=0
-628=4
-650=4
-652=5
+622=3
+624=4
+628=0
+630=4
+632=2
+634=0
+636=0
+638=4
+670=4
+672=5
 ]]
 
 function _draw() end
@@ -107,13 +111,13 @@ function boot_frame()
   money=10
  end
  if n==308 then hands_left=1 end
- if n==500 or n==640 then
+ if n==500 or n==660 then
   ante=n==500 and 1 or #ante_bases
   blind=#blind_specs
   boss=boss_specs[n==500 and "the needle" or "the club"]
   start_blind()
   score=goal
-  if n==640 then
+  if n==660 then
    hand=cards_named"kc|9c|9h|5d|3s|2c|2h|2d"
    jokers=jokers_named"scary,glutton"
   end
@@ -192,24 +196,26 @@ function boot_frame()
  if n==480 then expect_mode("lost") dump_screen("boot_lost") end
  if n==492 then expect("restart clears jokers",#jokers,0) end
  if n==505 then expect("the needle gives one hand",hands_left,1) end
- if n==648 then dump_screen("boot_boss") end
+ if n==668 then dump_screen("boot_boss") end
  if n==615 then expect_mode("cashout") expect("the boss pays $5",earnings[1][2],5) end
  if n==621 then dump_screen("boot_shop_ante") end
- if n==630 then
+ if n==626 then expect_mode("pack") dump_screen("boot_pack") end
+ if n==631 then expect_mode("shop") end
+ if n==645 then
   expect_mode("play")
   expect("after the boss",ante..","..blind..","..big_text(goal),"2,1,800")
   dump_screen("boot_ante_2")
  end
- if n==790 then
+ if n==810 then
   expect_mode("won") dump_screen("boot_won")
   chips,mult,step_timer,score=1000,500,999,0
   mode="score"
  end
- if n==797 then
+ if n==817 then
   expect("a hand of 5x the goal sets the floor alight",heat>=4,true)
   dump_screen("boot_inferno")
  end
- if n==800 then
+ if n==820 then
   printh("ok boot")
   extcmd("shutdown")
  end
