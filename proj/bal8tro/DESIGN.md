@@ -112,7 +112,8 @@ the layout); the challenge is fitting it in one cart.
   `motion_metrics.py` and `compare_motion.py` compare them as data): 7
   frames between dealt cards, a 5px pick that snaps, cards that move on
   a spring and overshoot, played cards waiting 28 frames then flying in 8
-  apart, the scoring ones lifting at frame 72, the first score 110 frames after play, cards 47 apart,
+  apart, the scoring ones lifting at frame 72, a card or joker that fires pulsing
+  in size like Balatro's juice (24 frames, swinging three times, fading), the first score 110 frames after play, cards 47 apart,
   jokers 59, the boxes clearing 98 after the last, the score counting up
   evenly over 30 frames 52 later. Same dance, fewer dancers.
 - **Music:** an original slow lounge loop in A minor, calm without its

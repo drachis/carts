@@ -10,12 +10,15 @@ function vfx_cases()
  expect("a timer has not fired after 2 of 3 frames",fired,nil)
  update_effects()
  expect("a timer fires on its frame",fired,true)
- local thing={}
+ local thing,biggest,smallest={},0,0
  kick(thing,4)
- local _,lift=jiggle(thing)
- expect("a kick lifts by half its size",lift,-2)
- for i=1,20 do jiggle(thing) end
- expect("a kick settles",thing.kick,0)
+ for i=1,juice_frames do
+  jiggle(thing)
+  biggest,smallest=max(biggest,thing.swell),min(smallest,thing.swell)
+ end
+ expect("a kick swells past 2px and shrinks back past -1px, like Balatro's juice",biggest>2 and smallest<-1,true)
+ jiggle(thing)
+ expect("a kick settles after juice_frames",thing.swell,0)
  hitstop(5)
  hitstop(2)
  expect("a shorter hitstop does not cut a longer one",freeze,5)

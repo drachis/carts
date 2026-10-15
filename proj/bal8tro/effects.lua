@@ -14,7 +14,7 @@ function emit(name,x,y,colour,amount)
 end
 
 function kick(thing,amount)
- thing.kick=max(thing.kick or 0,amount)
+ thing.kick,thing.juice=amount,0
 end
 
 function turn_over(card)
@@ -34,9 +34,13 @@ function flash(frames)
 end
 
 function jiggle(thing)
- local amount=thing.kick or 0
- thing.kick=amount>.3 and amount*.8 or 0
- return rnd(amount)-amount/2,-amount/2
+ local age=thing.juice or juice_frames
+ thing.swell=0
+ if age>=juice_frames then return 0,0 end
+ thing.juice+=1
+ local left=1-age/juice_frames
+ thing.swell=-thing.kick*sin(age*.135)*left*left*left
+ return thing.kick*sin(age*.108)*left*left/2,0
 end
 
 function flame_band(left,right,base,height)

@@ -48,6 +48,7 @@ damping=0.6
 play_delay=28
 play_stagger=8
 lift_wait=38
+juice_frames=24
 deal_frames=7
 deck_x=113
 deck_y=105

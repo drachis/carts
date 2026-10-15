@@ -58,8 +58,9 @@ function draw_card(card,x,y)
   clip()
   return
  end
- rectfill(x,y,x+14,y+20,7)
- rect(x,y,x+14,y+20,6)
+ local swell=flr(card.swell+.5)
+ rectfill(x-swell,y-swell,x+14+swell,y+20+swell,7)
+ rect(x-swell,y-swell,x+14+swell,y+20+swell,6)
  pset(x,y,0) pset(x+14,y,0) pset(x,y+20,0) pset(x+14,y+20,0)
  local colour=suit_colors[card.suit]
  print(rank_names[card.rank-1],x+2,y+2,colour)
@@ -82,8 +83,9 @@ end
 function draw_mini_joker(joker,x,y,focused)
  if is_active(joker) then y-=3 end
  x,y=glide(joker,x,y)
- rectfill(x,y,x+19,y+19,7)
- rect(x,y,x+19,y+19,focused and 10 or 13)
+ local swell=flr(joker.swell+.5)
+ rectfill(x-swell,y-swell,x+19+swell,y+19+swell,7)
+ rect(x-swell,y-swell,x+19+swell,y+19+swell,focused and 10 or 13)
  local effect=joker.xmult and "x"..joker.xmult or "+"..(joker.chips or joker.mult)*joker_scale(joker,nil,jokers)
  spr(joker.sprite,x+6,y+2)
  print_centre(effect,y+12,joker.chips and 12 or 8,x+10)

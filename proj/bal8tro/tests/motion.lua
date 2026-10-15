@@ -5,7 +5,7 @@
 -- compare_motion.py can set the two games side by side:
 --   card <seconds> <id> <area> <x> <y> <scale> <rotation>
 -- x and y in card widths (15) and heights (21) from the hand's top left
--- (41,78); a kick stands in for Balatro's scale pulse. Run it by name:
+-- (41,78); a card's swell (in card heights) stands in for Balatro's scale. Run it by name:
 --   py run_tests.py tests/motion.p8
 
 local held,n,ids,next_id={},0,{},0
@@ -39,7 +39,7 @@ local function log_card(card,area)
   next_id+=1
   ids[card]=next_id
  end
- printh("card "..(n/60).." "..ids[card].." "..area.." "..((card.x-41)/15).." "..((card.y-78)/21).." "..(1+(card.kick or 0)/10).." 0")
+ printh("card "..(n/60).." "..ids[card].." "..area.." "..((card.x-41)/15).." "..((card.y-78)/21).." "..(1+(card.swell or 0)/21).." 0")
 end
 
 local function motion_frame()
