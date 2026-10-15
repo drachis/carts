@@ -1,0 +1,9 @@
+*.png
+__pycache__/
+tests/*.p8l
+build/
+run.txt
+*.html
+*.js
+*.zip
+*.bin/

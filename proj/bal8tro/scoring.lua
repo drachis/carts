@@ -1,0 +1,45 @@
+function deal_jokers(count)
+ local pool,dealt={},{}
+ for spec in all(joker_specs) do add(pool,spec) end
+ for i=1,count do
+  local spec=rnd(pool)
+  del(pool,spec)
+  add(dealt,setmetatable({},spec))
+ end
+ return dealt
+end
+
+function joker_fires_on(joker,card)
+ return joker.when=="card" and (joker.need==card.suit or joker.need=="face" and is_face(card))
+end
+
+function score_steps(played,jokers)
+ local spec,scoring,contains,label=evaluate(played)
+ local steps={}
+ for card in all(scoring) do
+  add(steps,{thing=card,chips=card_chips(card)})
+  for joker in all(jokers) do
+   if joker_fires_on(joker,card) then
+    add(steps,{thing=joker,under=card,chips=joker.chips,mult=joker.mult,xmult=joker.xmult})
+   end
+  end
+ end
+ for joker in all(jokers) do
+  if joker.when=="hand" and (not joker.need or contains[joker.need]) then
+   add(steps,{thing=joker,chips=joker.chips,mult=joker.mult,xmult=joker.xmult})
+  end
+ end
+ return spec,label,scoring,steps
+end
+
+function apply_step(step,chips,mult)
+ return chips+(step.chips or 0),(mult+(step.mult or 0))*(step.xmult or 1)
+end
+
+function hand_total(chips,mult)
+ return (chips>>16)*mult
+end
+
+function big_text(number)
+ return tostr(number,2)
+end
