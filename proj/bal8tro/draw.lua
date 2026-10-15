@@ -61,7 +61,7 @@ function draw_joker(joker,x,y,focused)
 end
 
 function draw_panel()
- rectfill(0,0,127,41,1)
+ rectfill(-8,-8,135,41,1)
  print(blind_specs[blind].name,2,2,7)
  print("goal "..big_text(goal),2,9,9)
  print_right("ante "..ante.."/"..#ante_bases,102,2,13)
@@ -69,8 +69,8 @@ function draw_panel()
  print_right("score",126,2,6)
  print_right(big_text(shown_score),126,9,7)
  if hand_label then print_centre(hand_label,17,7) end
- rectfill(28,24,60,32,12)
- rectfill(68,24,100,32,8)
+ rectfill(28-chips_bump,24-chips_bump,60+chips_bump,32+chips_bump,12)
+ rectfill(68-mult_bump,24-mult_bump,100+mult_bump,32+mult_bump,8)
  print_right(tostr(chips),58,26,7)
  print("x",62,26,7)
  print(tostr(mult),70,26,7)
@@ -103,10 +103,17 @@ function draw_table()
   draw_card(card,(i-1)*16,(card.picked and 96 or 103)+arc)
   if mode=="play" and i==cursor then rect(card.x-1,card.y-1,card.x+15,card.y+21,10) end
  end
+ draw_sparks()
  for p in all(pops) do
-  local y=p.y-p.age\4
-  rectfill(p.x-#p.text*2-1,y-1,p.x+#p.text*2-1,y+5,0)
-  print(p.text,p.x-#p.text*2,y,p.colour)
+  local y,half,tall=p.y-p.age\4,#p.text*2,5
+  if p.big then
+   half,tall,y=#p.text*4,10,p.y
+   rectfill(p.x-half-2,y-2,p.x+half,y+tall+1,0)
+   print("\^w\^t"..p.text,p.x-half,y,p.age%8<4 and 10 or 7)
+  else
+   rectfill(p.x-half-1,y-1,p.x+half-1,y+tall,0)
+   print(p.text,p.x-half,y,p.colour)
+  end
  end
 end
 
@@ -138,7 +145,9 @@ end
 function _draw()
  if mode=="title" then draw_title() return end
  if mode=="shop" then draw_shop() return end
+ shake_camera()
  draw_table()
+ camera()
  if mode=="cashout" then draw_banner("blind defeated!","🅾️ cash out $"..earned,11,earnings)
  elseif mode=="won" then draw_banner("you beat ante "..ante.."!","🅾️ play again",10,{})
  elseif mode=="lost" then draw_banner("game over","🅾️ try again",8,{}) end

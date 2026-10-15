@@ -24,7 +24,9 @@ the cart.
 |---|---|
 | Sprites 1..4 | big suits (spade, heart, club, diamond) |
 | Sprites 17..20 | small suits |
-| SFX 0..3 | chips tick, mult tick, pick card, hand total |
+| SFX 0..1 | unused (the first chips and mult ticks) |
+| SFX 2..4 | pick card, hand total, card dealt |
+| SFX 5..12, 13..20 | chips and mult ticks, rising a major scale per scoring step |
 | `cartdata` | unused |
 
 ## The game

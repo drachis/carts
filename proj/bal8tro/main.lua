@@ -108,18 +108,20 @@ function update_score()
   chips,mult=apply_step(step,chips,mult)
   active_step=step
   local x,y=thing_position(step.thing)
-  if step.xmult then
-   pop("x"..step.xmult,x,y,8)
-  elseif step.mult then
-   pop("+"..step.mult,x,y,8)
-  else
-   pop("+"..step.chips,x,y,12)
-  end
-  sfx(step.chips and snd_chips or snd_mult)
+  local colour=step.chips and 12 or 8
+  pop(step.xmult and "x"..step.xmult or "+"..(step.chips or step.mult),x,y,colour)
+  burst(x,y+4,colour,8)
+  if step.chips then chips_bump=2 else mult_bump=2 end
+  sfx((step.chips and snd_chips or snd_mult)+min(step_index-1,7))
   step_timer=step_frames
  elseif step_index==#steps+1 then
   active_step=nil
-  score+=hand_total(chips,mult)
+  local total=hand_total(chips,mult)
+  score+=total
+  add(pops,{text=big_text(total),x=64,y=78,colour=10,age=0,big=true})
+  burst(64,28,10,24)
+  burst(64,28,9,16)
+  shake=min(2+total/goal*4,8)
   sfx(snd_total)
   step_timer=45
  else
@@ -177,4 +179,5 @@ function _update60()
   p.age+=1
   if p.age>40 then del(pops,p) end
  end
+ update_effects()
 end

@@ -17,13 +17,13 @@ Discarded cards, and played cards once scored, go into flying, which the table d
 Controls: left/right cursor, O pick (up to max_picked), X play, down discard, up toggle sort. While cards are picked, hand_label/chips/mult preview the base hand like Balatro.
 
 **main.lua:102** `function update_score()`
-Plays out steps one every step_frames, after a 30-frame pause; then one step of 45 frames adds chips*mult to score; then finish_hand.
+Plays out steps one every step_frames, after a 30-frame pause; then one step of 45 frames adds chips*mult to score; then finish_hand. Each step pops its number, bursts sparks, swells its box and plays a tick one note higher than the last (sfx snd_chips+k or snd_mult+k, k up to 7). The total pops big mid-table and shakes the screen by 2 plus 4 per goal it is worth, at most 8.
 
-**main.lua:130** `function finish_hand()`
+**main.lua:132** `function finish_hand()`
 A blind is won the moment score reaches goal, checked after each hand; losing is running out of hands below it.
 
-**main.lua:143** `function cash_out()`
+**main.lua:145** `function cash_out()`
 Balatro's payout: the blind's reward, $1 per hand left, and $1 interest per $5 held before the payout, at most $5. earnings is the list the banner draws.
 
-**main.lua:159** `function _update60()`
+**main.lua:161** `function _update60()`
 shown_score counts up an eighth of the gap a frame (at least 1) so a big hand rolls up.

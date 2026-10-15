@@ -107,6 +107,14 @@ function boot_frame()
  if n==56 then expect("a picked card has risen",hand[1].y<=100,true) end
  if n==57 then dump_screen("boot_pick") expect("hand picked",hand_label,"pair lv1") end
  if n==150 then dump_screen("boot_score") end
+ if n==89 then expect("a scoring card throws sparks and bumps chips",#sparks>0 and chips_bump>0,true) end
+ if n==162 then
+  local big
+  for p in all(pops) do if p.big then big=p.text end end
+  expect("the total pops up big",big,"480")
+  expect("the total shakes the screen",shake>1,true)
+  dump_screen("boot_total")
+ end
  if n==230 then
   expect_mode("cashout")
   expect("score of kings with joker and sly",big_text(score),"480")

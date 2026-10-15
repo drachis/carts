@@ -106,6 +106,11 @@ SOUNDS = [
          (43, 3, 4, 5)]),                                 # 3 hand total
     (1, [(40, 6, 2, 0), (34, 6, 1, 5)]),                  # 4 card dealt
 ]
+# 5..12 chips ticks and 13..20 mult ticks, each a step up a major scale, so
+# a long run of scoring steps climbs
+SCALE = [0, 2, 4, 5, 7, 9, 11, 12]
+SOUNDS += [(4, [(36 + s, 1, 4, 0), (43 + s, 1, 2, 5)]) for s in SCALE]
+SOUNDS += [(4, [(29 + s, 2, 5, 0), (34 + s, 2, 3, 5)]) for s in SCALE]
 # a pattern is "FF AABBCCDD": flags (1 loop start, 2 loop end), then the
 # sfx on each of four channels, 0x40 and over meaning silent
 MUSIC = []

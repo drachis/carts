@@ -44,8 +44,8 @@ snd_deal=4
 start_money=4
 interest_step=5
 interest_cap=5
-snd_chips=0
-snd_mult=1
+snd_chips=5
+snd_mult=13
 snd_pick=2
 snd_total=3
 ]],nil,_ENV)

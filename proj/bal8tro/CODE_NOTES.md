@@ -13,7 +13,8 @@ Read only the file for the module you are changing.
 | [notes/scoring.md](notes/scoring.md) | jokers dealt, scoring steps, 32-bit scores |
 | [notes/main.md](notes/main.md) | modes, input, playing out a hand, blinds, cash-out |
 | [notes/shop.md](notes/shop.md) | the shop between blinds: buy, sell, reroll |
-| [notes/draw.md](notes/draw.md) | table layout, cards, jokers, pops, banners, title |
+| [notes/effects.md](notes/effects.md) | sparks, screen shake, box bumps |
+| [notes/draw.md](notes/draw.md) | table layout, card motion, dealing, pops, banners, title |
 
 **Format.** Each note is headed
 
