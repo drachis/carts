@@ -165,6 +165,16 @@ function draw_table_button(button,enabled,focused)
  if focused then rect(x-1,y-1,x+17,y+10,10) end
 end
 
+function draw_hand(cards,centre,y,hovered)
+ local arrived,slot=0,0
+ for card in all(cards) do arrived+=card.wait==0 and 1 or 0 end
+ for i,card in ipairs(cards) do
+  slot+=card.wait==0 and 1 or 0
+  local from_middle=slot-(arrived+1)/2
+  draw_card(card,centre+from_middle*10,(card.picked and y-5 or y)+from_middle*from_middle\6-(i==hovered and 2 or 0))
+ end
+end
+
 function draw_table()
  draw_swirl(3,1,0)
  draw_sidebar()
@@ -184,14 +194,7 @@ function draw_table()
   draw_card(card,150,60)
   if card.x>127 then del(flying,card) end
  end
- local arrived,slot=0,0
- for card in all(hand) do arrived+=card.wait==0 and 1 or 0 end
- for i,card in ipairs(hand) do
-  slot+=card.wait==0 and 1 or 0
-  local from_middle=slot-(arrived+1)/2
-  local hovered=mode=="play" and table_focus.row==2 and i==cursor
-  draw_card(card,76+from_middle*10,(card.picked and 73 or 78)+from_middle*from_middle\6-(hovered and 2 or 0))
- end
+ draw_hand(hand,76,78,mode=="play" and table_focus.row==2 and cursor)
  local card=hand[cursor]
  if mode=="play" and table_focus.row==2 and card and card.wait==0 then outline(card) end
  local picked=picked_cards()
@@ -310,7 +313,7 @@ end
 function draw_title()
  draw_swirl(1,2,0)
  print("\^w\^tbal8tro",36,14,10)
- for i,card in ipairs(title_cards) do draw_card(card,8+(i-1)*16,36) end
+ draw_hand(title_cards,57,36)
  print("🅾️ pick, press   ❎ play\n⬆️⬇️ rows   ⬅️➡️ along",14,62,6)
  draw_back(16,78)
  print_centre("⬅️ "..deck_spec.name.." deck ➡️",82,7,68)
