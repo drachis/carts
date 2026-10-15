@@ -23,9 +23,11 @@ function glide(thing,x,y)
    sfx(snd_deal)
    turn_over(thing)
   end
+ elseif (thing.hold or 0)>0 then
+  thing.hold-=1
  else
-  thing.glide_x+=(x-thing.glide_x)/4
-  thing.glide_y+=(y-thing.glide_y)/4
+  thing.glide_x+=mid(-glide_speed,(x-thing.glide_x)*glide_rate,glide_speed)
+  thing.glide_y+=mid(-glide_speed,(y-thing.glide_y)*glide_rate,glide_speed)
  end
  local dx,dy=jiggle(thing)
  thing.x,thing.y=flr(thing.glide_x+dx+.5),flr(thing.glide_y+dy+.5)
@@ -172,7 +174,7 @@ function draw_table()
  for i,card in ipairs(hand) do
   local arc=(i-4.5)*(i-4.5)\6+sin(t()/3+i/8)*.8
   local hovered=mode=="play" and table_focus.row==2 and i==cursor
-  draw_card(card,41+(i-1)*10,(card.picked and 71 or 78)+arc-(hovered and 3 or 0))
+  draw_card(card,41+(i-1)*10,(card.picked and 73 or 78)+arc-(hovered and 2 or 0))
  end
  local card=hand[cursor]
  if mode=="play" and table_focus.row==2 and card and card.wait==0 then rect(card.x-1,card.y-1,card.x+15,card.y+21,10) end

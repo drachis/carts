@@ -68,6 +68,7 @@ end
 function play_hand()
  hands_left-=1
  played=take_picked()
+ for i,card in ipairs(played) do card.hold=(i-1)*play_stagger end
  local played_spec,played_scoring=evaluate(played)
  hand_plays[played_spec.name]+=1
  grow_jokers("play",played_scoring)
@@ -75,7 +76,7 @@ function play_hand()
  spec,label,scoring_cards,steps=score_steps(played,jokers)
  hand_label,hand_level=hand_title(spec,label)
  chips,mult=hand_base(spec)
- step_index,step_timer,active_step=0,30
+ step_index,step_timer,active_step=0,score_delay
  mode="score"
 end
 
@@ -157,19 +158,24 @@ function update_score()
   if step.under then kick(step.under,1.5) end
   if step.chips then chips_bump=2 else mult_bump=2 end
   sfx((step.chips and snd_chips or snd_mult)+min(step_index-1,7))
-  step_timer=step_frames
+  local next=steps[step_index+1]
+  step_timer=not next and total_gap or next.thing.rank and step_frames or joker_frames
  elseif step_index==#steps+1 then
   active_step=nil
   local total=hand_total(chips,mult)
-  score+=total
+  after(score_wait,function()
+   score+=total
+   roll=total/score_roll
+  end)
+  chips,mult=0,0
   add(pops,{text=big_text(total),x=table_centre,y=50,colour=10,age=0,big=true})
   emit("shower",chips_x,boxes_y)
   emit("shower",mult_x,boxes_y)
   hitstop(min(4+total/goal*4,12))
-  if score>=goal then flash(3) end
+  if score+total>=goal then flash(3) end
   shake=min(2+total/goal*4,8)
   sfx(snd_total)
-  step_timer=45
+  step_timer=total_hold
  else
   finish_hand()
  end
@@ -253,7 +259,7 @@ function _update60()
    start_run()
   end
  end
- shown_score=min(score or 0,shown_score+max(((score or 0)-shown_score)>>3,0x.0001))
+ shown_score=min(score or 0,shown_score+max(roll or 0,0x.0001))
  for p in all(pops) do
   p.age+=1
   if p.age>40 then del(pops,p) end

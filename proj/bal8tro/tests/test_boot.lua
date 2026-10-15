@@ -23,9 +23,9 @@ function check(n)
   expect("a dealt card turns over as it flies",turning>0,true)
   dump_screen("boot_deal")
  end
- if n==51 then expect("a picked card glides, not jumps (y "..hand[1].y..")",hand[1].y>=72 and hand[1].y<=76,true) end
+ if n==51 then expect("a picked card glides, not jumps (y "..hand[1].y..")",hand[1].y>=74 and hand[1].y<=78,true) end
  if n==57 then
-  expect("a picked card has risen (y "..hand[1].y..")",hand[1].y<=74,true)
+  expect("a picked card has risen (y "..hand[1].y..")",hand[1].y<=76,true)
   dump_screen("boot_pick")
   expect("hand picked",hand_label..hand_level,"pair1")
  end

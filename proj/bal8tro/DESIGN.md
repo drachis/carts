@@ -106,6 +106,14 @@ the layout); the challenge is fitting it in one cart.
   the hand on screen is worth the goal the boxes burn (Balatro's rule);
   at 2x the sidebar's foot and edge burn, at 3x the bottom of the screen,
   at 4x embers rise across the table. The felt waves.
+- **Rhythm** matched to Balatro's at its default speed, from logs of the
+  user's own copy (`balatro_ref/`: the harness logs every card every
+  frame; `tests/motion.p8` plays bal8tro through the same sequence;
+  `motion_metrics.py` and `compare_motion.py` compare them as data): 7
+  frames between dealt cards, a 5px pick that snaps, played cards setting
+  off 8 apart, the first score 110 frames after play, cards 47 apart,
+  jokers 59, the boxes clearing 98 after the last, the score counting up
+  evenly over 30 frames 52 later. Same dance, fewer dancers.
 - **Music:** an original slow lounge loop in A minor, calm without its
   lead on the title, shop and packs.
 
