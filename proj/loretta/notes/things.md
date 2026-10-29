@@ -18,3 +18,6 @@ The observatory, drawn at the gate's cell; the gate box itself is what she touch
 
 **things.lua:225** `function puff(x,y,count,colour)`
 Puffs spread by an angle worked out from their index, not rnd, so tests replay.
+
+**things.lua:23** `function draw_prop(prop)`
+Draws a prop from its shape. Things without a draw_<name> function fall through to this.

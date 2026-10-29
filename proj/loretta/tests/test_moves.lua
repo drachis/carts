@@ -52,7 +52,43 @@ local function backdrop_row(cam_x,shift)
  return row
 end
 
+local function feet()
+ local placed={}
+ for i=1,#loretta_legs,5 do
+  local hip,phase=loretta_legs[i],loretta_legs[i+1]
+  local dx,lift=leg_pose(hero,hip,phase)
+  add(placed,{x=hero.x-4+hip+dx,down=lift==0,phase=phase})
+ end
+ return placed
+end
+
 cases={
+ {
+  name="her paws stay planted while she trots, in diagonal pairs",buttons={1},frames=120,
+  setup=function() arena(16) result.slip,result.last,result.steps=0,nil,0 end,
+  each=function()
+   local now=feet()
+   if result.last and abs(hero.vx)>=0.4 then
+    for i,foot in ipairs(now) do
+     local before=result.last[i]
+     if foot.down and before.down then result.slip=max(result.slip,abs(foot.x-before.x)) end
+     if foot.down and not before.down then result.steps+=1 end
+    end
+   end
+   result.last=now
+   result.pairs=now[2].down==now[3].down and now[1].down==now[4].down and now[1].down!=now[2].down
+  end,
+  check=function() return result.slip<0.1 and result.pairs,"largest slip of a planted paw "..result.slip.."px, "..result.steps.." paws put down in 2 seconds, pairs together "..tostr(result.pairs) end,
+ },
+ {
+  name="a film strip of her trot",buttons={1},frames=44,every_frame=true,
+  setup=function() arena(16) result.frame=0 end,
+  each=function()
+   result.frame+=1
+   if result.frame>=32 and result.frame%3==2 then dump_screen("gait_"..(result.frame-29)\3) end
+  end,
+  check=function() return true,"gait_1..4 dumped" end,
+ },
  {
   name="runs up to top speed and holds it",buttons={1},frames=60,
   setup=function() arena(16) end,

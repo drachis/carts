@@ -225,6 +225,25 @@ CORGI_PADDLE_A = corgi((3, NEAR_BACK, 0), (9, FAR_BACK, 2), (19, NEAR_FRONT, 2),
 CORGI_PADDLE_B = corgi((6, NEAR_BACK, 2), (8, FAR_BACK, 0), (16, NEAR_FRONT, 0), (22, FAR_FRONT, 2))
 # the bark: her jaw drops open
 CORGI_BARK = edit(CORGI_STAND, [(29, 8, "00."), (28, 9, "8ee."), (27, 10, "76e..")])
+
+
+def part(text, left, width, height, size):
+    """A piece of a picture from its top, padded out to a sprite's size."""
+    rows = [row[left:left + width].ljust(size[0], ".") for row in text.strip().split("\n")[:height]]
+    return "\n".join(rows + ["." * size[0]] * (size[1] - height))
+
+
+# running, jumping and barking, she is drawn in parts by loretta.lua: a
+# torso (columns 0..20, without legs), a head (columns 19..31) that bobs
+# on its own, and legs drawn as lines that trot under her
+TORSO = part(CORGI_STAND, 0, 21, 13, (24, 16))
+TORSO_WAG = part(CORGI_WAG, 0, 21, 13, (24, 16))
+HEAD = part(CORGI_STAND, 19, 13, 12, (16, 16))
+HEAD_EARS_BACK = edit(HEAD, [(0, 0, "." * 13), (0, 1, "..44.....44.."), (0, 2, "..499e4.49e4.")])
+HEAD_TONGUE = edit(HEAD, [(10, 10, ".e"), (11, 11, "e")])
+HEAD_EARS_BACK_TONGUE = edit(HEAD_EARS_BACK, [(10, 10, ".e"), (11, 11, "e")])
+HEAD_BARK = part(CORGI_BARK, 19, 13, 12, (16, 16))
+HEAD_BLINK = edit(HEAD, [(7, 5, "99"), (7, 6, "44")])
 SIT_LEFT = ["." * 19] * 5 + [
     "." * 14 + "4" * 5,
     "." * 11 + "444" + "9" * 5,
@@ -398,8 +417,10 @@ def squash(text, width):
 
 
 # sprite number -> rows. a sprite wider or taller than 8 just has more.
-# Loretta's poses are 4x2 sprites: 32 stand, 36 wag, 40 and 44 run,
-# 64 jump, 68 and 72 paddle, 76 sit, 96 bark, 100 nap.
+# Loretta's parts: 32 torso, 35 torso with its tail flicked (3x2 sprites);
+# heads 40 perked, 42 ears back, 44 tongue flapping, 46 barking, 64
+# blinking, 66 ears back and tongue flapping (2x2); whole poses 76 sit and
+# 100 nap (4x2).
 SPRITES = {
     1: GRASS, 2: DIRT, 3: VINE_DIRT, 4: BRANCH, 5: WATER_TOP, 6: WATER,
     7: FLOWERS, 8: TUFT, 9: sloped(True), 10: sloped(False),
@@ -407,9 +428,8 @@ SPRITES = {
     16: mark("9"), 17: mark("4"), 18: mark("d"), 19: mark("a"), 20: mark("7"),
     21: mark("2"), 22: mark("8"), 23: mark("f"),
     24: mark("6"), 25: mark("6"), 26: mark("6"),
-    32: CORGI_STAND, 36: CORGI_WAG, 40: CORGI_RUN_A, 44: CORGI_RUN_B,
-    64: CORGI_JUMP, 68: CORGI_PADDLE_A, 72: CORGI_PADDLE_B, 76: CORGI_SIT,
-    96: CORGI_BARK, 100: CORGI_NAP,
+    32: TORSO, 35: TORSO_WAG, 40: HEAD, 42: HEAD_EARS_BACK, 44: HEAD_TONGUE,
+    46: HEAD_BARK, 64: HEAD_BLINK, 66: HEAD_EARS_BACK_TONGUE, 76: CORGI_SIT, 100: CORGI_NAP,
     104: SQUIRREL_A, 106: SQUIRREL_B, 108: SQUIRREL_SPOOKED, 110: HYDRANT,
     128: HYDRANT_LIT, 130: COIN, 132: squash(COIN, 8), 134: squash(COIN, 3),
     136: BONE, 138: HEART, 139: HEART_EMPTY, 140: SPARKLE, 141: HAND,

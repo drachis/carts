@@ -1,5 +1,5 @@
 function new_loretta(x,y)
- return {x=x,y=y,w=hero_w,h=hero_h,vx=0,vy=0,facing=1,coyote=0,buffer=0,held=63,paddle=0,drop=0,idle=0,bark=0,cool=0,hurt=0,chain=0,squash=0,stride=0,state="stand"}
+ return {x=x,y=y,w=hero_w,h=hero_h,vx=0,vy=0,facing=1,coyote=0,buffer=0,held=63,paddle=0,drop=0,idle=0,bark=0,cool=0,hurt=0,chain=0,squash=0,gait=0,state="stand"}
 end
 
 function read_input()
@@ -88,7 +88,7 @@ function update_loretta(hero,input)
  if ground and hero.vy>=0 and area_has(hero.x,hero.y+3,hero_w,hero_h,0) then hero.vy=3 end
  if slide(hero,0,hero.vy) then hero.vy=0 end
  hero.drop,hero.hurt,hero.squash=max(hero.drop-1),max(hero.hurt-1),toward(hero.squash,0,1)
- hero.stride+=abs(hero.vx)
+ hero.gait=(hero.gait+(ground and abs(hero.vx)/(2*leg_stride) or paddling and paddle_gait or 0))%1
  hero.state=sitting and "sit" or hero.bark>0 and "bark" or not ground and (paddling and "paddle" or "jump") or abs(hero.vx)>0.1 and "run" or "stand"
 end
 
@@ -108,24 +108,48 @@ function fall_in(hero)
  puff(hero.x+12,min(hero.y,120),12,12)
 end
 
-loretta_sprites=parse_record[[
-stand=32
-sit=76
-bark=96
-jump=64
-nap=100
-]]
+loretta_legs=split"9,0.5,2,4,6,22,0,2,6,6,4,0,3,9,7,17,0.5,3,7,7"
+
+function gait_amp(hero)
+ return hero.air and 1 or min(1,abs(hero.vx)/0.4)
+end
+
+function leg_pose(hero,hip,phase)
+ if hero.state=="jump" then return hip>12 and 2 or -2,1 end
+ local amp,cycle=gait_amp(hero),(hero.gait+phase)%1
+ if cycle<0.5 then return leg_stride*(0.5-2*cycle)*amp,0 end
+ local swing=cycle*2-1
+ return leg_stride*(swing-0.5)*amp,-sin(swing/2)*2*amp
+end
 
 function draw_loretta(hero)
  if hero.hurt%8>3 then return end
- local sprite=loretta_sprites[hero.state]
- if hero.state=="run" then
-  sprite=({40,32,44,32})[hero.stride\8%4+1]
- elseif hero.state=="paddle" then
-  sprite=t()*12%2<1 and 68 or 72
- elseif hero.state=="stand" and t()*3%2<1 then
-  sprite=36
+ local ox,oy,flip=hero.x-4,hero.y-2,hero.facing<0
+ local function place(x,w) return flip and ox+32-x-w or ox+x end
+ if hero.state=="sit" or hero.state=="nap" then
+  spr(hero.state=="sit" and 76 or 100,ox,oy,4,2,flip)
+  return
  end
- local w,h=32+hero.squash,16-hero.squash/2
- sspr(sprite%16*8,sprite\16*8,32,16,hero.x+12-w/2,hero.y+14-h,w,h,hero.facing<0)
+ local amp,wave=gait_amp(hero),sin(hero.gait*2)
+ local body=(hero.squash>2 and 1 or 0)-(wave*amp>0.5 and 1 or 0)
+ local function legs(first)
+  for i=first,first+5,5 do
+   local hip,phase,width,colour,paw=unpack(loretta_legs,i,i+4)
+   local dx,lift=leg_pose(hero,hip,phase)
+   for column=-1,width do
+    local x0,x1=place(hip+column,1),place(hip+column+dx,1)
+    local edge=column<0 or column==width
+    line(x0,oy+12+body,x1,oy+15-lift,edge and 4 or colour)
+    if not edge then pset(x1,oy+15-lift,paw) end
+   end
+  end
+ end
+ legs(1)
+ local tail=hero.state=="stand" and t()*3%2<1 and 24 or 0
+ sspr(tail,16,11,13,place(0,11),oy+body+flr(sin(hero.gait)*amp+0.5),11,13,flip)
+ sspr(tail+11,16,10,13,place(11,10),oy+body,10,13,flip)
+ legs(11)
+ local ears,tongue=hero.air or abs(hero.vx)>1.1 or hero.squash>2,amp>0 and hero.gait%0.5<0.25
+ local head=hero.bark>0 and 46 or ears and (tongue and 66 or 42) or tongue and 44 or t()%3<0.1 and 64 or 40
+ spr(head,place(19,16),oy+body-(hero.bark>0 and 1 or sin(hero.gait*2+0.2)*amp>0.5 and 1 or 0),2,2,flip)
 end
