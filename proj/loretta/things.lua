@@ -29,6 +29,8 @@ function draw_prop(prop)
   elseif kind=="l" then line(x,y,prop.x+c,prop.y+d,e)
   elseif kind=="c" then circfill(x,y,c,d)
   elseif kind=="t" then print(d,x,y,c)
+  elseif kind=="p" then
+   for petal=1,8 do pset(x+(petal*13+t()*6)%c,y+(petal*29+t()*10)%d,e) end
   end
  end
 end
