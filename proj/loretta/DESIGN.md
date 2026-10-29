@@ -71,8 +71,11 @@ little dog doing it. Short legs, big ears, a wagging nub of a tail.
   landing and flops to the ground when she lies down; ears whose bases
   are fixed to her head and whose tips are springy points that lag,
   flop on landing, lean back at speed and droop lying down; a tongue
-  of five hanging links that waggles as she trots. Only her face is a
-  sprite.
+  of five hanging links that waggles as she trots. Her head is 2.5D, after
+  witchcap's hut: a skull turned by an angle, the eyes, blaze, muzzle, nose
+  and ear roots placed round it and projected, so she turns her head
+  through a front view and faces you when sitting. No part of her is a
+  sprite in play.
 - The title follows the picture's layout: logo above, a small menu left,
   a narrow player card right (her face made from the game's own parts),
   and Loretta hopping in the middle.
@@ -138,10 +141,11 @@ little dog doing it. Short legs, big ears, a wagging nub of a tail.
 - test_things: stomp, being hurt, bark reach, coin, bone, petting, water
   and respawn, the win.
 - test_body: her paws planted while she trots in diagonal pairs (a slip of
-  0.1px a frame fails), ears standing and keeping their length, leaning
-  back and the tongue trailing when she runs, ears flopping and the belly
-  bouncing on landing, the sploot with her belly down, sitting pretty, and
-  pictures of each (gait_1..6, pose_sploot, pose_sit, ears_landing).
+  0.1px a frame fails), her ears leaning back and the tongue trailing when
+  she runs, ears flopping and the belly bouncing on landing (ears_landing).
+- test_poses: her ears standing at rest at their length, the sploot with
+  her belly down, sitting pretty facing the camera, and pictures of each
+  (pose_sploot, pose_sit, gait_1..6).
 - test_motion: Loretta drawn every frame through standing, trotting,
   stopping and a landing, a line logged each frame (py motion_report.py
   sums it up); fails if, trotting, her place on screen goes back and
