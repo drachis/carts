@@ -28,7 +28,7 @@ import zipfile
 from run_tests import PICO8, stripped
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-GAME = "game.p8"
+GAME = "loretta.p8"
 LABEL_LOG = os.path.join("tests", "log_boot.p8l")
 LABEL_SCREEN = "boot_start"
 INCLUDE = re.compile(r"^#include (\S+)$")
