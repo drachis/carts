@@ -18,8 +18,9 @@ gait is where she is in her trot (0..1). On the ground it advances by distance, 
 **loretta.lua:99** `function hurt_loretta(hero,from_x)`
 Knockback away from what hurt her; at 0 hearts, game over at once.
 
-**loretta.lua:115** `loretta_legs=split"0,3,0.5,4,6,1,2,0,6,6,0,0,0,9,7,1,0,0.5,7`
+**loretta.lua:115** `loretta_legs=split"0,-1,0.5,4,6,1,5,0,6,6,0,-3,0,9,7,1,3,0.5`
 Four legs, five numbers each: hips (0) or chest (1), x from that joint, phase, upper colour, lower colour. Far legs first (drawn behind the body), then near. Phases make a trot: near back with far front, far back with near front.
+**Keep:** the user asked for the legs at the front and back of the body, not from the middle: hind legs sit behind the pelvis, under the butt; front legs ahead of the chest point.
 loretta_poses: her skeleton per state, nine numbers, x from the box's left and y from the ground: pelvis x, y; chest x, y; the face's top left from the chest; the belly's sag; where hind and front paws reach. animate_loretta eases hero.pose toward her state's. stand; sit (pelvis low, chest high: sitting pretty); sploot (idle long: everything low, belly to the ground, hind legs out behind, a corgi habit); nap (the same, eyes shut); jump and paddle (stretched long, legs reaching).
 **Keep:** the user asked for her proportions and markings to follow their title picture (measured: about 36x26 px at PICO-8 scale, the head nearly half her length, a tricolour coat), for her to be thought of as character traits and body elements, and for her motion to be modelled "from the skeleton on up".
 
