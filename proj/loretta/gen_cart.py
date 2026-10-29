@@ -428,7 +428,8 @@ SPRITES = {
     16: mark("9"), 17: mark("4"), 18: mark("d"), 19: mark("a"), 20: mark("7"),
     21: mark("2"), 22: mark("8"), 23: mark("f"),
     24: mark("6"), 25: mark("6"), 26: mark("6"), 27: mark("6"), 28: mark("6"),
-    29: mark("6"), 30: mark("6"), 31: mark("6"), 68: mark("6"),
+    29: mark("6"), 30: mark("6"), 31: mark("6"), 68: mark("6"), 69: mark("6"),
+    70: mark("6"), 71: mark("6"),
     32: TORSO, 35: TORSO_WAG, 40: HEAD, 42: HEAD_EARS_BACK, 44: HEAD_TONGUE,
     46: HEAD_BARK, 64: HEAD_BLINK, 66: HEAD_EARS_BACK_TONGUE, 76: CORGI_SIT, 100: CORGI_NAP,
     104: SQUIRREL_A, 106: SQUIRREL_B, 108: SQUIRREL_SPOOKED, 110: HYDRANT,
@@ -480,12 +481,14 @@ STREAM = [EMPTY] * 6 + [
     "." * 6 + "=" * 6 + "." * 9 + "=" * 6 + "." * 5,
     ".FW" + "." * 25 + "F.T.",
 ] + ["####" + "." * 24 + "####"] * 2 + ["####" + "~" * 24 + "####"] * 2
+# a yard: a picket fence (P), a mailbox (X), the neighbour, and a
+# Craftsman bungalow (H) whose porch roof is the plank she can stand on
 YARD = [EMPTY] * 7 + [
     "." * 18 + "oooooo" + "." * 8,
     "." * 17 + "=" * 8 + "." * 7,
     EMPTY,
     EMPTY,
-    "..h...ff....n.......s.....f..s..",
+    "P.h...ff.X..n..H....s.....f..s..",
 ] + [GROUND] * 4
 TRAILHEAD = [EMPTY] * 7 + [
     "." * 18 + "o.o.o.o" + "." + "s" + "." * 5,
@@ -511,7 +514,7 @@ LEVEL_SECTIONS = [STREET, LAWNS, STREAM, YARD, TRAILHEAD, RAVINE, SWITCHBACK, LA
 LETTER_TILES = {".": 0, "=": 4, "f": 7, ",": 8, "/": 9, "\\": 10, "-": 11, "^": 12, "_": 13,
                 "L": 16, "S": 17, "G": 18, "o": 19, "b": 20, "s": 21, "h": 22, "n": 23,
                 "M": 24, "B": 25, "Y": 26, "K": 27, "J": 28, "F": 29, "R": 30, "T": 31,
-                "W": 68}
+                "W": 68, "H": 69, "P": 70, "X": 71}
 
 
 def level_rows():

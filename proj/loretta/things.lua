@@ -149,6 +149,7 @@ function draw_neighbour(neighbour)
  for leg=1,9,8 do
   rectfill(x+leg,0,x+leg+5,feet+4,13)
   line(x+leg+5,0,x+leg+5,feet+4,5)
+  rectfill(x+leg-1,feet-2,x+leg+6,feet,2)
  end
  spr(160,x,feet+1,2,1)
  if neighbour.petting>0 then
