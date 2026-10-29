@@ -429,7 +429,7 @@ SPRITES = {
     21: mark("2"), 22: mark("8"), 23: mark("f"),
     24: mark("6"), 25: mark("6"), 26: mark("6"), 27: mark("6"), 28: mark("6"),
     29: mark("6"), 30: mark("6"), 31: mark("6"), 68: mark("6"), 69: mark("6"),
-    70: mark("6"), 71: mark("6"),
+    70: mark("6"), 71: mark("6"), 72: mark("6"), 73: mark("6"), 74: mark("6"),
     32: TORSO, 35: TORSO_WAG, 40: HEAD, 42: HEAD_EARS_BACK, 44: HEAD_TONGUE,
     46: HEAD_BARK, 64: HEAD_BLINK, 66: HEAD_EARS_BACK_TONGUE, 76: CORGI_SIT, 100: CORGI_NAP,
     104: SQUIRREL_A, 106: SQUIRREL_B, 108: SQUIRREL_SPOOKED, 110: HYDRANT,
@@ -490,16 +490,19 @@ YARD = [EMPTY] * 7 + [
     EMPTY,
     "P.h...ff.X..n..H....s.....f..s..",
 ] + [GROUND] * 4
+# Griffith Park's trailhead: its wooden sign (U) and chaparral (Q) up the
+# slopes; the Hollywood sign is on the far hills (scenery.lua)
 TRAILHEAD = [EMPTY] * 7 + [
-    "." * 18 + "o.o.o.o" + "." + "s" + "." * 5,
+    "." * 18 + "o.o.o.o" + "." + "s" + ".." + "Q" + "..",
     "." * 15 + "/" + "#" * 16,
-    "." * 10 + "o.o" + "." + "/" + "#" * 17,
+    "." * 9 + "Q" + "o.o" + "." + "/" + "#" * 17,
     "." * 7 + "/" + "#" * 24,
-    "." * 6 + "/" + "#" * 25,
+    ".U..Q." + "/" + "#" * 25,
 ] + [GROUND] * 4
+# a ravine, and over it the old zoo's stone enclosures (Z)
 RAVINE = [EMPTY] * 6 + [
     "." * 11 + "oooooo" + "." * 15,
-    "..h" + "." * 21 + "s" + "." * 7,
+    "..h" + "..." + "Q" + "." * 13 + "Z" + "..." + "s" + "." * 7,
     "#" * 10 + ".." + "====" + ".." + "#" * 14,
 ] + ["#" * 10 + "." * 8 + "#" * 14] * 5 + ["#" * 10 + "~" * 8 + "#" * 14] * 2
 SWITCHBACK = [EMPTY] * 7 + [
@@ -514,7 +517,7 @@ LEVEL_SECTIONS = [STREET, LAWNS, STREAM, YARD, TRAILHEAD, RAVINE, SWITCHBACK, LA
 LETTER_TILES = {".": 0, "=": 4, "f": 7, ",": 8, "/": 9, "\\": 10, "-": 11, "^": 12, "_": 13,
                 "L": 16, "S": 17, "G": 18, "o": 19, "b": 20, "s": 21, "h": 22, "n": 23,
                 "M": 24, "B": 25, "Y": 26, "K": 27, "J": 28, "F": 29, "R": 30, "T": 31,
-                "W": 68, "H": 69, "P": 70, "X": 71}
+                "W": 68, "H": 69, "P": 70, "X": 71, "U": 72, "Q": 73, "Z": 74}
 
 
 def level_rows():

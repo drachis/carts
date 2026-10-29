@@ -57,6 +57,11 @@ function draw_backdrop(cam_x)
  end
  local far=haze_fill(3,far_hill,0.1,cam_x)
  draw_far_observatory(cam_x,far)
+ local sign_x=246-cam_x*0.1
+ for dx=-34,34 do
+  line(sign_x+dx,38+abs(dx)*0.7,sign_x+dx,90,far)
+ end
+ print("hollywood",sign_x-17,45,6)
  haze_fill(4,near_hill,0.25,cam_x)
  for x=0,127,3 do
   local world_x=flr(x+cam_x*0.25)

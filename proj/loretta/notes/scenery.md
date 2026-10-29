@@ -14,5 +14,5 @@ Every fill pattern is drawn with the camera at 0, so the checkerboard is fixed t
 **scenery.lua:37** `function draw_backdrop(cam_x)`
 Dusk deepens with progress: the sky bands slide down, stars come out, the sun sets.
 
-**scenery.lua:70** `function draw_far_observatory(cam_x,colour)`
+**scenery.lua:75** `function draw_far_observatory(cam_x,colour)`
 The observatory far off on the hills, growing as she nears it; a light comes on past halfway.
