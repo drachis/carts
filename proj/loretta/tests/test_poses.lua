@@ -4,6 +4,16 @@
 
 cases={
  {
+  name="turning round, her head swings through facing the camera",buttons={},frames=12,every_frame=true,
+  setup=function() arena(40) hero.facing,result.frame,result.front=-1,0,false end,
+  each=function()
+   result.frame+=1
+   if abs(hero.turn)<0.02 then result.front=true end
+   if result.frame%3==0 then dump_screen("turn_"..result.frame\3) end
+  end,
+  check=function() return result.front and hero.turn<0,"passed the front "..tostr(result.front)..", turn "..hero.turn end,
+ },
+ {
   name="her ears stand up at rest, sweep back running and stay their length",buttons={},frames=60,
   setup=function() arena(16) end,
   each=function()
