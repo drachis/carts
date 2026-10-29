@@ -112,7 +112,7 @@ function fall_in(hero)
  puff(hero.x+12,min(hero.y,120),12,12)
 end
 
-loretta_legs=split"0,3,0.5,4,6,1,2,0,6,6,0,0,0,9,7,1,0,0.5,7,7"
+loretta_legs=split"0,-1,0.5,4,6,1,5,0,6,6,0,-3,0,9,7,1,3,0.5,7,7"
 loretta_poses={stand=split"5,-10,19,-10,-4,-16,0.5,0,0",sit=split"7,-5,14,-12,-4,-16,0,3,0",sploot=split"4,-5,19,-5,-2,-13,4,-9,6",nap=split"4,-5,19,-5,-1,-11,4,-7,6",jump=split"4,-10,20,-11,-4,-16,0,-3,3"}
 loretta_poses.paddle=loretta_poses.jump
 
