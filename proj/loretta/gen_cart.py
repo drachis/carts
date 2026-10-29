@@ -430,6 +430,7 @@ SPRITES = {
     24: mark("6"), 25: mark("6"), 26: mark("6"), 27: mark("6"), 28: mark("6"),
     29: mark("6"), 30: mark("6"), 31: mark("6"), 68: mark("6"), 69: mark("6"),
     70: mark("6"), 71: mark("6"), 72: mark("6"), 73: mark("6"), 74: mark("6"),
+    75: mark("6"), 84: mark("6"), 85: mark("6"), 86: mark("6"),
     32: TORSO, 35: TORSO_WAG, 40: HEAD, 42: HEAD_EARS_BACK, 44: HEAD_TONGUE,
     46: HEAD_BARK, 64: HEAD_BLINK, 66: HEAD_EARS_BACK_TONGUE, 76: CORGI_SIT, 100: CORGI_NAP,
     104: SQUIRREL_A, 106: SQUIRREL_B, 108: SQUIRREL_SPOOKED, 110: HYDRANT,
@@ -505,19 +506,24 @@ RAVINE = [EMPTY] * 6 + [
     "..h" + "..." + "Q" + "." * 13 + "Z" + "..." + "s" + "." * 7,
     "#" * 10 + ".." + "====" + ".." + "#" * 14,
 ] + ["#" * 10 + "." * 8 + "#" * 14] * 5 + ["#" * 10 + "~" * 8 + "#" * 14] * 2
+# a switchback: a split-rail fence (V), a hiker resting by a bench (E) in
+# the dip, a sycamore
 SWITCHBACK = [EMPTY] * 7 + [
-    "." * 26 + "o.o.o" + ".",
+    "V" + "." * 24 + "T" + "o.o.o" + ".",
     "#" * 8 + "\\" + "." * 14 + "/" + "#" * 8,
-    "#" * 9 + "\\" + "..." + "n" + "." * 8 + "/" + "#" * 9,
+    "#" * 9 + "\\" + "..." + "n" + ".." + "E" + "." * 5 + "/" + "#" * 9,
 ] + [GROUND] * 6
+# the observatory lawn: the Astronomers Monument (A), lamps, the
+# observatory itself (G) and a coin-op viewer (C) looking out over the city
 LAWN_TOP = [EMPTY] * 7 + [
-    "....f.....s.......G.......f.....",
+    "....f..A..sY......G.......Y.C.f.",
 ] + [GROUND] * 8
 LEVEL_SECTIONS = [STREET, LAWNS, STREAM, YARD, TRAILHEAD, RAVINE, SWITCHBACK, LAWN_TOP]
 LETTER_TILES = {".": 0, "=": 4, "f": 7, ",": 8, "/": 9, "\\": 10, "-": 11, "^": 12, "_": 13,
                 "L": 16, "S": 17, "G": 18, "o": 19, "b": 20, "s": 21, "h": 22, "n": 23,
                 "M": 24, "B": 25, "Y": 26, "K": 27, "J": 28, "F": 29, "R": 30, "T": 31,
-                "W": 68, "H": 69, "P": 70, "X": 71, "U": 72, "Q": 73, "Z": 74}
+                "W": 68, "H": 69, "P": 70, "X": 71, "U": 72, "Q": 73, "Z": 74,
+                "V": 75, "E": 84, "A": 85, "C": 86}
 
 
 def level_rows():
