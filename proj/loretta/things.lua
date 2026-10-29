@@ -35,8 +35,8 @@ function draw_prop(prop)
  end
 end
 
-function touch_coin(coin)
- coin.gone=true
+function touch_coin(coin,hero)
+ coin.gone,hero.happy=true,30
  coins+=1
  add_score(coin_points)
  sfx(snd_coin)
@@ -131,6 +131,7 @@ end
 function update_neighbour(neighbour,hero)
  if neighbour.petting>0 then
   neighbour.petting-=1
+  hero.happy=30
   if neighbour.petting%15==0 then float_text("\135",hero.x+8+neighbour.petting%8,hero.y-8,14) end
   if neighbour.petting==0 then
    neighbour.petted=true
@@ -138,7 +139,7 @@ function update_neighbour(neighbour,hero)
    add_score(pet_points)
    float_text("good girl!",neighbour.x-12,neighbour.y-16,7)
   end
- elseif not neighbour.petted and hero.state=="sit" and abs(hero.x+12-neighbour.x-8)<pet_range then
+ elseif not neighbour.petted and hero.resting and abs(hero.x+12-neighbour.x-8)<pet_range then
   neighbour.petting=pet_frames
   sfx(snd_pet)
  end

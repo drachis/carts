@@ -41,7 +41,7 @@ function boot_frame()
  if n>500 and n<520 then held[1]=true end
  game_update()
  game_draw()
- if n==5 then dump_screen("boot_title") expect_mode("title") end
+ if n==20 then dump_screen("boot_title") expect_mode("title") end
  if n==120 then dump_screen("boot_start") expect_mode("play") end
  if n==300 then dump_screen("boot_play") end
  if n==462 then dump_screen("boot_bark") end

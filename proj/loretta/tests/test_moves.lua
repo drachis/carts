@@ -80,6 +80,15 @@ cases={
   check=function() return result.slip<0.1 and result.pairs,"largest slip of a planted paw "..result.slip.."px, "..result.steps.." paws put down in 2 seconds, pairs together "..tostr(result.pairs) end,
  },
  {
+  name="left alone she sploots, hind legs out behind",buttons={},frames=idle_sit+40,
+  setup=function() arena(40) end,
+  check=function()
+   _draw()
+   dump_screen("pose_sploot")
+   return hero.state=="sploot","state "..hero.state
+  end,
+ },
+ {
   name="a film strip of her trot",buttons={1},frames=44,every_frame=true,
   setup=function() arena(16) result.frame=0 end,
   each=function()

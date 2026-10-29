@@ -52,12 +52,23 @@ little dog doing it. Short legs, big ears, a wagging nub of a tail.
   the ground and set pieces are finer than she is.
 - She trots: 1.3 pixels a frame, a screen in about 98 frames. The user:
   "it's about charm, not really about platforming excellence".
+- Loretta follows the user's title picture, measured: about 36x26 px, the
+  head nearly half her length with ears as tall as her face, a tricolour
+  coat (dark saddle, tan, white chest, belly, socks and butt fluff), one
+  black outline. She is designed as a corgi's traits, each given to a
+  body element (corgi_art.py): long and low on stubby legs that scurry;
+  huge ears that perk, sweep back and flop; the fluffy butt that bounces
+  as she trots and wiggles when she is happy; a fox face that smiles,
+  pants with its tongue out, squints happily and barks; she sploots when
+  left alone and sits pretty to be petted.
 - Her body moves like a corgi, built from parts after witchcap's hut (the
-  user: the body movement "will be really important"): four drawn legs
-  trotting in diagonal pairs with paws planted on the ground, a rump that
-  rocks against her chest, a bobbing body and a head that bobs after it,
-  ears back at speed, a flapping tongue, blinks; front paws reach in a
-  jump. Sitting and napping are whole pictures.
+  user: the body movement "will be really important"): four legs of two
+  bones each by IK, trotting in diagonal pairs with paws planted, the body
+  cut into a rear and a front piece with no line between them, the head on
+  the front.
+- The title follows the picture's layout: logo above, a small menu left,
+  a narrow player card right (her face made from the game's own parts),
+  and Loretta hopping in the middle.
 - Neighbours are seen from a corgi's height: shoes and trouser legs that go
   up off the screen, and a hand that comes down to pat her.
 - The palette swaps slots 1, 2, 5 and 15 for navy, plum, mauve and salmon.

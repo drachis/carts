@@ -14,6 +14,7 @@ import glob
 import os
 import time
 
+import corgi_art
 from png import write_png
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -232,6 +233,29 @@ def part(text, left, width, height, size):
     rows = [row[left:left + width].ljust(size[0], ".") for row in text.strip().split("\n")[:height]]
     return "\n".join(rows + ["." * size[0]] * (size[1] - height))
 
+
+def her(text, width, height, colours=None):
+    """One of Loretta's parts from corgi_art.py, padded to its sprites.
+    Her outline and eyes are black, colour 0, so her parts mark empty
+    pixels with blue, 12, which she never uses; loretta.lua draws her
+    with 12 transparent instead of 0."""
+    rows = [row.ljust(width, ".") for row in text.split("\n")]
+    rows += ["." * width] * (height - len(rows))
+    text = "\n".join(rows)
+    for old, new in (colours or {}).items():
+        text = text.replace(old, new)
+    return text.replace(".", "c")
+
+
+FAR = {"9": "4", "e": "f"}
+LORETTA_PARTS = {
+    176: her(corgi_art.ear(0, True), 16, 16), 178: her(corgi_art.ear(-3, True), 16, 16),
+    180: her(corgi_art.ear(-5.5, True), 16, 16),
+    182: her(corgi_art.ear(0, False), 16, 16, FAR), 184: her(corgi_art.ear(-3, False), 16, 16, FAR),
+    186: her(corgi_art.ear(-5.5, False), 16, 16, FAR),
+    224: her(corgi_art.body(), 32, 16), 228: her(corgi_art.face(), 24, 16),
+    231: her(corgi_art.sit_body(), 24, 16),
+}
 
 # her body is drawn by loretta.lua: a spine of round segments and four
 # legs worked out by IK. her head is a sprite, after the user's picture: big
@@ -456,6 +480,7 @@ SPRITES = {
     136: BONE, 138: HEART, 139: HEART_EMPTY, 140: SPARKLE, 141: HAND,
     142: CORGI_FACE, 160: SHOES,
 }
+SPRITES.update(LORETTA_PARTS)
 # flag 0 solid, 1 semisolid (its top row only), 2 water, 3 a slope rising
 # to the right, 4 a slope rising to the left (solid only below the diagonal)
 FLAGS = {1: 1, 2: 1, 3: 1, 4: 2, 5: 4, 6: 4, 9: 1 | 8, 10: 1 | 16, 11: 2, 12: 2, 13: 1}

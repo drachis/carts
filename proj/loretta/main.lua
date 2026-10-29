@@ -27,7 +27,7 @@ end
 
 function go_title()
  start_level()
- mode="title"
+ mode,hero.x,hero.held="title",50,0
  play_music(0)
 end
 
@@ -58,7 +58,8 @@ function win()
 end
 
 function update_title()
- update_loretta(hero,mode_frames%90<10 and 16 or 0)
+ hero.drop=2
+ update_loretta(hero,mode_frames%100<8 and 16 or 0)
  if btnp(4) then start_game() end
 end
 
@@ -80,6 +81,7 @@ end
 
 function update_win()
  update_loretta(hero,0)
+ hero.happy=2
  hero.state=mode_frames%60<40 and "sit" or "bark"
  if mode_frames%60==40 then float_text("aroo!",hero.x,hero.y-10,7) end
  if mode_frames>=60 and mode_frames%20==0 and hearts>0 then
@@ -142,28 +144,37 @@ function draw_logo(text,x,y)
 end
 
 function draw_title()
- draw_logo("loretta",36,8+sin(t()/3)*1.5)
- outlined("\135 corgi quest \135",30,26,7)
+ draw_logo("loretta",36,6+sin(t()/3)*1.5)
+ outlined("\135 corgi quest \135",30,24,7)
  for sparkle=1,6 do
-  if (t()*1.5+sparkle/6)%1<0.5 then spr(140,sparkle*41%120,8+sparkle*13%30) end
+  if (t()*1.5+sparkle/6)%1<0.5 then spr(140,sparkle*41%120,8+sparkle*13%40) end
  end
- rectfill(3,44,58,74,0)
- rect(3,44,58,74,14)
- if t()%1<0.6 then print("\145",6,48,14) end
- print("start",15,48,7)
- print("high score",7,58,6)
- print(score_text(best),15,66,10)
- rectfill(66,40,125,119,0)
- rect(66,40,125,119,14)
- print("player 1",80,43,7)
- rect(79,50,112,83,13)
- sspr(112,64,16,16,80,51,32,32)
- print("loretta",82,86,9)
+ rectfill(1,36,44,62,0)
+ rect(1,36,44,62,14)
+ if t()%1<0.6 then print("\145",3,40,14) end
+ print("start",13,40,7)
+ print("best",4,48,6)
+ print(score_text(best),4,55,10)
+ rectfill(86,32,126,101,0)
+ rect(86,32,126,101,14)
+ print("player 1",90,35,7)
+ rect(96,42,119,68,13)
+ palt(0,false)
+ palt(12,true)
+ spr(182,97,44,2,2)
+ spr(228,98,53,3,2)
+ spr(176,105,44,2,2)
+ palt()
+ rectfill(110,59,111,61,0)
+ pset(110,59,7)
+ rectfill(112,64,116,65,0)
+ rectfill(113,65,115,66,14)
+ print("loretta",92,70,9)
  for row,name in ipairs(stat_names) do
-  local y=88+row*6
-  print(name,69,y,6)
+  local y=71+row*6
+  print(name,88,y,6)
   for bar=0,4 do
-   rectfill(98+bar*5,y,101+bar*5,y+3,bar<stats[name] and stat_colours[row] or 1)
+   rectfill(110+bar*3,y,111+bar*3,y+3,bar<stats[name] and stat_colours[row] or 1)
   end
  end
  outlined("\142 jump \151 bark \131 sit",8,121,7)
