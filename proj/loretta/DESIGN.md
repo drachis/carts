@@ -45,41 +45,67 @@ little dog doing it. Short legs, big ears, a wagging nub of a tail.
    The backdrop uses dark blue 1, dark purple 2, pink 14, orange 9 only
    as large sky bands far behind, and black 0 for silhouettes.
 
+## Scale and look
+
+- The view is close, as in the picture: Loretta is 32x16 (a fifth of the
+  screen's width), squirrels, coins and hydrants 16x16. Tiles stay 8x8, so
+  the ground and set pieces are finer than she is.
+- She trots: 1.3 pixels a frame, a screen in about 98 frames. The user:
+  "it's about charm, not really about platforming excellence".
+- Neighbours are seen from a corgi's height: shoes and trouser legs that go
+  up off the screen, and a hand that comes down to pat her.
+- The palette swaps slots 1, 2, 5 and 15 for navy, plum, mauve and salmon.
+  Hills are layers of haze that clear (salmon, pink, lavender towards plum
+  and navy) as she nears the observatory, while dusk falls: the sky slides
+  down, stars come out, the sun sets, the far observatory grows and lights
+  up. Every dither is screen-locked.
+
 ## Memory map
 
 | Where | Holds |
 |---|---|
-| Map rows 0..15 | the level, 128 tiles wide at most |
-| Sprite flags | 0 solid, 1 semisolid (stand on its top row only), 2 water |
-| Sprites | written by gen_cart.py; its SPRITES dict names each |
+| Map rows 0..15 | level columns 0..127 (sections 1-4) |
+| Map rows 16..31 | level columns 128..255 (sections 5-8) |
+| Sprite flags | 0 solid, 1 semisolid (stand on its top row only), 2 water, 3 slope rising right, 4 slope rising left |
+| Sprites 0..255 | written by gen_cart.py; its SPRITES dict names each (the lower half is free: the map uses only rows 0..31) |
 | `cartdata` | 0: the high score (in tens) |
 
 ## The game
 
-- Title: the level's sunset backdrop, the LORETTA logo, a menu (START,
+- Title: the level's first screen, the LORETTA logo, a menu (START,
   HIGH SCORE) and Loretta's player card with her four stats. O starts.
 - Controls: left and right run; O jumps (hold for higher; hold while
   falling to paddle); X barks; down sits (down+O drops through a branch).
-- One level for now: from the "Los Feliz" sign to the observatory.
+- One level, eight sections from the "Los Feliz" sign: the street, a lawn
+  with a grassy hill, a stream with branches, a yard with a neighbour, the
+  trailhead's slopes, a ravine, a switchback with a hiker, the observatory
+  lawn. Squirrels, coins, bones, three hydrants.
 - HUD: three hearts, the paw coin count, and the score in seven digits.
 - Loses: every heart gone, she lies down for a nap: game over, back to the
-  title. Wins: at the observatory, a howl, the score counted, the title.
+  title. Wins: at the observatory she sits and howls, the hearts left are
+  counted into the score, O goes back to the title.
 
 ## Tests
 
     py run_tests.py --no-comments
     py count_tokens.py loretta.p8
 
-- test_boot: the real cart from the title, through a start, play, a win and
-  a game over, each dumped as a picture.
-- test_moves: each verb alone in a cleared arena, with its measurement
-  printed.
-- test_level: a bot that cannot be hurt runs the level from the start and
-  must reach the observatory.
+- test_boot: the real cart from the title, through a start, play, a bark, a
+  win and a game over, each dumped as a picture.
+- test_moves: each verb alone on the real level with its measurement
+  printed: run speed, tap, held and paddled jumps, the lawn's slopes without
+  leaving the ground, up through and down through an awning, stomp, being
+  hurt, bark reach, coin, bone, petting, water and respawn, the win, and
+  the backdrop's dither holding still as the camera moves.
+- test_level: a bot that cannot be hurt runs right, jumping at walls and
+  gaps, and must reach the observatory. It proves the level can be
+  crossed, not that it is fair or fun.
 
 ## Not built yet, or not checked
 
-- Nobody has played it.
+- Nobody has played it. No one has heard the sounds or music.
+- The sections are placeholders in shape: the Los Feliz and Griffith
+  landmarks the user asked for (storefronts, a movie palace, jacarandas,
+  bungalows, Fern Dell, the Hollywood sign, the observatory lawn) are next.
 - Upgrading stats (golden bones as the currency, chosen after a level).
-- More levels (Griffith Park trails, the observatory's lawn at night).
 - Acorn-throwing squirrels on branches.
