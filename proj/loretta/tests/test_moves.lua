@@ -1,6 +1,6 @@
 -- test_moves.lua : each of Loretta's verbs alone, on the real level: the
--- street (flat ground at y 96, an awning at x 112..175 with its top at
--- y 72), the lawn's slopes, the stream and the observatory lawn, with what
+-- street (a sidewalk at y 96, the bookshop's awning at x 168..231 with
+-- its top at y 72), the lawn's slopes, the stream and the observatory lawn, with what
 -- each measured printed.
 
 local ground_y,result=82,{}
@@ -77,19 +77,19 @@ cases={
  },
  {
   name="jumps up through an awning from below and lands on it",buttons={4},frames=200,
-  setup=function() arena(128) end,
-  check=function() return hero.y==58 and not hero.air,"y "..hero.y.." (the awning's top is 58)" end,
+  setup=function() arena(184) end,
+  check=function() return hero.y==58 and not hero.air,"y "..hero.y.." (the bookshop awning's top is 58)" end,
  },
  {
   name="down and jump on an awning drops through it to the ground",buttons={3,4},frames=60,
-  setup=function() arena(128,58) end,
+  setup=function() arena(184,58) end,
   check=function() return hero.y==ground_y,"y "..hero.y end,
  },
  {
   name="landing on a squirrel bonks it, scores and bounces",buttons={},frames=50,
   setup=function()
-   arena(56,40)
-   result.squirrel,result.bounce=squirrel_at(64),0
+   arena(236,40)
+   result.squirrel,result.bounce=squirrel_at(244),0
   end,
   each=function() result.bounce=min(result.bounce,hero.vy) end,
   check=function() return result.squirrel.state=="bonked" and score==stomp_points and result.bounce<-1 and hearts==max_hearts,"score "..score..", bounce "..result.bounce..", hearts "..hearts end,

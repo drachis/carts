@@ -107,6 +107,40 @@ b3b3bb3b
 """
 
 
+# the movie palace's marquee top: she can stand on it, like a branch
+LEDGE = """
+66666666
+55555555
+........
+........
+........
+........
+........
+........
+"""
+# a shop's striped awning, also stood on from above
+AWNING = """
+88778877
+88778877
+88778877
+8.7.8.7.
+........
+........
+........
+........
+"""
+SIDEWALK = """
+66666666
+6d666666
+66666d66
+66666666
+dddddddd
+44424444
+44444444
+42444444
+"""
+
+
 def sloped(rising_right):
     """A grassy 45 degree slope: dirt cut along the diagonal, grass on the
     cut. Solid on and below the diagonal, as world.lua's flag_at tests."""
@@ -369,8 +403,10 @@ def squash(text, width):
 SPRITES = {
     1: GRASS, 2: DIRT, 3: VINE_DIRT, 4: BRANCH, 5: WATER_TOP, 6: WATER,
     7: FLOWERS, 8: TUFT, 9: sloped(True), 10: sloped(False),
+    11: LEDGE, 12: AWNING, 13: SIDEWALK,
     16: mark("9"), 17: mark("4"), 18: mark("d"), 19: mark("a"), 20: mark("7"),
     21: mark("2"), 22: mark("8"), 23: mark("f"),
+    24: mark("6"), 25: mark("6"), 26: mark("6"),
     32: CORGI_STAND, 36: CORGI_WAG, 40: CORGI_RUN_A, 44: CORGI_RUN_B,
     64: CORGI_JUMP, 68: CORGI_PADDLE_A, 72: CORGI_PADDLE_B, 76: CORGI_SIT,
     96: CORGI_BARK, 100: CORGI_NAP,
@@ -381,7 +417,7 @@ SPRITES = {
 }
 # flag 0 solid, 1 semisolid (its top row only), 2 water, 3 a slope rising
 # to the right, 4 a slope rising to the left (solid only below the diagonal)
-FLAGS = {1: 1, 2: 1, 3: 1, 4: 2, 5: 4, 6: 4, 9: 1 | 8, 10: 1 | 16}
+FLAGS = {1: 1, 2: 1, 3: 1, 4: 2, 5: 4, 6: 4, 9: 1 | 8, 10: 1 | 16, 11: 2, 12: 2, 13: 1}
 
 # the level: eight sections of 32 by 16 tiles, side by side. the first four
 # are map rows 0..15, the last four map rows 16..31 (world.lua joins them).
@@ -393,12 +429,18 @@ FLAGS = {1: 1, 2: 1, 3: 1, 4: 2, 5: 4, 6: 4, 9: 1 | 8, 10: 1 | 16}
 # a thing's letter goes in the cell it stands in.
 GROUND = "#" * 32
 EMPTY = "." * 32
-STREET = [EMPTY] * 8 + [
-    "." * 16 + "oooo" + "." * 12,
-    "." * 14 + "=" * 8 + "." * 10,
+# Vermont and Hillhurst: a movie palace (M) whose marquee she can stand
+# on, a bookshop (B) under a striped awning, street lamps (Y), a sidewalk
+STREET = [EMPTY] * 5 + [
+    "." * 10 + "o.o.o.o" + "." * 15,
     EMPTY,
-    ".L....S.....o.o.o.....f...s.....",
-] + [GROUND] * 4
+    "." * 8 + "-" * 11 + "." * 13,
+    "." * 22 + "oooo" + "." * 6,
+    "." * 21 + "^" * 8 + "." * 3,
+    EMPTY,
+    ".L....SYM..........sYB..........",
+    "_" * 32,
+] + [GROUND] * 3
 LAWNS = [EMPTY] * 10 + [
     "." * 9 + "/" + "#" * 8 + "\\" + "." * 13,
     "." * 8 + "/" + "#" * 10 + "\\" + "..." + "h" + "...." + "s" + "...",
@@ -440,8 +482,9 @@ LAWN_TOP = [EMPTY] * 7 + [
     "....f.....s.......G.......f.....",
 ] + [GROUND] * 8
 LEVEL_SECTIONS = [STREET, LAWNS, STREAM, YARD, TRAILHEAD, RAVINE, SWITCHBACK, LAWN_TOP]
-LETTER_TILES = {".": 0, "=": 4, "f": 7, ",": 8, "/": 9, "\\": 10,
-                "L": 16, "S": 17, "G": 18, "o": 19, "b": 20, "s": 21, "h": 22, "n": 23}
+LETTER_TILES = {".": 0, "=": 4, "f": 7, ",": 8, "/": 9, "\\": 10, "-": 11, "^": 12, "_": 13,
+                "L": 16, "S": 17, "G": 18, "o": 19, "b": 20, "s": 21, "h": 22, "n": 23,
+                "M": 24, "B": 25, "Y": 26}
 
 
 def level_rows():
@@ -461,7 +504,7 @@ def level_tiles(rows):
         for x, letter in enumerate(row):
             above = rows[y - 1][x] if y > 0 else "."
             if letter == "#":
-                tile = 1 if above not in "#/\\" else (3 if (x * 7 + y * 3) % 11 == 0 else 2)
+                tile = 1 if above not in "#/\\_" else (3 if (x * 7 + y * 3) % 11 == 0 else 2)
             elif letter == "~":
                 tile = 5 if above != "~" else 6
             else:

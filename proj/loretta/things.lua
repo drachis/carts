@@ -15,8 +15,21 @@ end
 
 function draw_things(back)
  for thing in all(things) do
-  local draw=_ENV["draw_"..thing.name]
-  if draw and thing.back==back then draw(thing) end
+  local draw=_ENV["draw_"..thing.name] or draw_prop
+  if thing.back==back then draw(thing) end
+ end
+end
+
+function draw_prop(prop)
+ for op in all(shapes[prop.name]) do
+  local kind,a,b,c,d,e=unpack(op)
+  local x,y=prop.x+a,prop.y+b
+  if kind=="r" then rectfill(x,y,prop.x+c,prop.y+d,e)
+  elseif kind=="b" then rect(x,y,prop.x+c,prop.y+d,e)
+  elseif kind=="l" then line(x,y,prop.x+c,prop.y+d,e)
+  elseif kind=="c" then circfill(x,y,c,d)
+  elseif kind=="t" then print(d,x,y,c)
+  end
  end
 end
 
