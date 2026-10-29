@@ -154,8 +154,9 @@ function draw_neighbour(neighbour)
  spr(160,x,feet+1,2,1)
  if neighbour.petting>0 then
   local reach=min(1,(pet_frames-neighbour.petting)/15)
-  local hand_x,hand_y=hero.x+8+hero.facing*8,(hero.y-2)*reach-8+(t()*4%1<0.5 and 2 or 0)
-  rectfill(hand_x+2,0,hand_x+5,hand_y,13)
+  local hand_x,hand_y=hero.x+8+hero.facing*8,(hero.y-10)*reach-8+(t()*4%1<0.5 and 2 or 0)
+  rectfill(hand_x+1,0,hand_x+6,hand_y,5)
+  rectfill(hand_x+2,0,hand_x+5,hand_y,6)
   spr(141,hand_x,hand_y)
  elseif not neighbour.petted and abs(hero.x-x)<48 then
   print("\135?",x+4,feet-12+sin(t()),14)

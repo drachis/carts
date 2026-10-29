@@ -1,5 +1,5 @@
 function new_loretta(x,y)
- return {x=x,y=y,w=hero_w,h=hero_h,vx=0,vy=0,facing=1,coyote=0,buffer=0,held=63,paddle=0,drop=0,idle=0,bark=0,cool=0,hurt=0,chain=0,squash=0,gait=0,state="stand"}
+ return {x=x,y=y,w=hero_w,h=hero_h,vx=0,vy=0,facing=1,coyote=0,buffer=0,held=63,paddle=0,drop=0,idle=0,bark=0,cool=0,hurt=0,chain=0,squash=0,gait=0,state="stand",body=split"8,6,20,6,0"}
 end
 
 function read_input()
@@ -108,48 +108,77 @@ function fall_in(hero)
  puff(hero.x+12,min(hero.y,120),12,12)
 end
 
-loretta_legs=split"9,0.5,2,4,6,22,0,2,6,6,4,0,3,9,7,17,0.5,3,7,7"
+loretta_legs=split"0,3,0.5,4,6,1,3,0,4,6,0,0,0,9,7,1,0,0.5,7,7"
+body_poses={stand=split"8,6,20,6,0",sit=split"11,9,18,3,-1",nap=split"9,9,21,9,3"}
 
 function gait_amp(hero)
  return hero.air and 1 or min(1,abs(hero.vx)/0.4)
 end
 
-function leg_pose(hero,hip,phase)
- if hero.state=="jump" then return hip>12 and 2 or -2,1 end
+function leg_pose(hero,front,phase)
+ if hero.state=="nap" then return front and 6 or -3,0 end
+ if hero.state=="jump" then return front and 2 or -2,1 end
  local amp,cycle=gait_amp(hero),(hero.gait+phase)%1
  if cycle<0.5 then return leg_stride*(0.5-2*cycle)*amp,0 end
  local swing=cycle*2-1
  return leg_stride*(swing-0.5)*amp,-sin(swing/2)*2*amp
 end
 
+function leg_place(hero,i)
+ local base,offset,phase=unpack(loretta_legs,i,i+2)
+ local dx,lift=leg_pose(hero,base>0,phase)
+ return hero.body[base*2+1]+offset,hero.body[base*2+2]+3,dx,lift
+end
+
 function draw_loretta(hero)
  if hero.hurt%8>3 then return end
- local ox,oy,flip=hero.x-4,hero.y-2,hero.facing<0
- local function place(x,w) return flip and ox+32-x-w or ox+x end
- if hero.state=="sit" or hero.state=="nap" then
-  spr(hero.state=="sit" and 76 or 100,ox,oy,4,2,flip)
-  return
+ local ox,oy,flip,body,target=hero.x-4,hero.y-2,hero.facing<0,hero.body,body_poses[hero.state] or body_poses.stand
+ for i=1,5 do body[i]+=(target[i]-body[i])/5 end
+ local function px(x) return flip and ox+31-x or ox+x end
+ local amp=gait_amp(hero)
+ local bob=(hero.squash>2 and 1 or 0)-(sin(hero.gait*2)*amp>0.5 and 1 or 0)
+ local rump=flr(sin(hero.gait)*amp+0.5)
+ local hx,hy,sx,sy=body[1],body[2]+bob+rump,body[3],body[4]+bob
+ local function bone(x0,y0,x1,y1,radius,colour)
+  for share=0,1,0.25 do circfill(px(x0+(x1-x0)*share),oy+y0+(y1-y0)*share,radius,colour) end
  end
- local amp,wave=gait_amp(hero),sin(hero.gait*2)
- local body=(hero.squash>2 and 1 or 0)-(wave*amp>0.5 and 1 or 0)
- local function legs(first)
-  for i=first,first+5,5 do
-   local hip,phase,width,colour,paw=unpack(loretta_legs,i,i+4)
-   local dx,lift=leg_pose(hero,hip,phase)
-   for column=-1,width do
-    local x0,x1=place(hip+column,1),place(hip+column+dx,1)
-    local edge=column<0 or column==width
-    line(x0,oy+12+body,x1,oy+15-lift,edge and 4 or colour)
-    if not edge then pset(x1,oy+15-lift,paw) end
-   end
-  end
+ local limbs={}
+ for i=1,16,5 do
+  local jx,jy,dx,lift=leg_place(hero,i)
+  local front=loretta_legs[i]>0
+  jy+=front and bob or bob+rump
+  local fx,fy=jx+dx,15-lift
+  local vx,vy=fx-jx,fy-jy
+  local reach=max(sqrt(vx*vx+vy*vy),0.1)
+  local half=min(reach/2,leg_bone)
+  local bend=sqrt(leg_bone*leg_bone-half*half)*(front and 1 or -1)
+  add(limbs,{jx,jy,jx+vx/2-vy/reach*bend,jy+vy/2+vx/reach*bend,fx,fy,loretta_legs[i+3],loretta_legs[i+4]})
  end
- legs(1)
- local tail=hero.state=="stand" and t()*3%2<1 and 24 or 0
- sspr(tail,16,11,13,place(0,11),oy+body+flr(sin(hero.gait)*amp+0.5),11,13,flip)
- sspr(tail+11,16,10,13,place(11,10),oy+body,10,13,flip)
- legs(11)
+ local function limb(which,pass)
+  local jx,jy,kx,ky,fx,fy,upper,lower=unpack(limbs[which])
+  bone(jx,jy,kx,ky,pass,pass>1 and 4 or upper)
+  bone(kx,ky,fx,fy,pass,pass>1 and 4 or lower)
+ end
+ for which=1,2 do
+  limb(which,2)
+  limb(which,1)
+ end
+ local butt,middle,shoulder={hx-2,hy+1,4},{(hx+sx)/2,(hy+sy)/2,5},{sx,sy,4}
+ local spine={butt,middle,shoulder}
+ for pair=1,2 do
+  local a,b=spine[pair],spine[pair+1]
+  add(spine,{(a[1]+b[1])/2,(a[2]+b[2])/2,(a[3]+b[3])/2})
+ end
+ for part in all(spine) do circfill(px(part[1]),oy+part[2]-1,part[3]+1,4) end
+ limb(3,2)
+ limb(4,2)
+ for part in all(spine) do circfill(px(part[1]),oy+part[2]+1,part[3],7) end
+ for part in all(spine) do circfill(px(part[1]),oy+part[2]-1,part[3],9) end
+ line(px(butt[1]),oy+butt[2]-4,px(shoulder[1]),oy+shoulder[2]-4,15)
+ circfill(px(sx+3),oy+sy+2,3,7)
+ limb(3,1)
+ limb(4,1)
  local ears,tongue=hero.air or abs(hero.vx)>1.1 or hero.squash>2,amp>0 and hero.gait%0.5<0.25
- local head=hero.bark>0 and 46 or ears and (tongue and 66 or 42) or tongue and 44 or t()%3<0.1 and 64 or 40
- spr(head,place(19,16),oy+body-(hero.bark>0 and 1 or sin(hero.gait*2+0.2)*amp>0.5 and 1 or 0),2,2,flip)
+ local head=hero.bark>0 and 46 or hero.state=="nap" and 64 or ears and (tongue and 66 or 42) or tongue and 44 or t()%3<0.1 and 64 or 40
+ spr(head,flip and ox+19-sx or ox+sx-3,oy+sy-11+body[5]-(hero.bark>0 and 1 or sin(hero.gait*2+0.2)*amp>0.5 and 1 or 0),2,2,flip)
 end

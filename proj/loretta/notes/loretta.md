@@ -18,12 +18,18 @@ gait is where she is in her trot (0..1). On the ground it advances by distance, 
 **loretta.lua:95** `function hurt_loretta(hero,from_x)`
 Knockback away from what hurt her; at 0 hearts, game over at once.
 
-**loretta.lua:111** `loretta_legs=split"9,0.5,2,4,6,22,0,2,6,6,4,0,3,9,7,17,0.5,3`
-Four legs, five numbers each: hip column in the 32px picture, phase, width, colour, paw colour. Far back and far front first (drawn behind the torso), then near back and near front. Phases make a trot: near back with far front, far back with near front.
+**loretta.lua:111** `loretta_legs=split"0,3,0.5,4,6,1,3,0,4,6,0,0,0,9,7,1,0,0.5,7`
+Four legs, five numbers each: which end of the spine (0 hips, 1 shoulders), an x offset from it, phase, upper colour, lower (sock) colour. Far legs first (drawn behind the body), then near. Phases make a trot: near back with far front, far back with near front.
+body_poses: where the hips and shoulders sit (x, y in the 32x16 box) and how far the head drops, standing, sitting and napping. The drawing eases hero.body toward the pose of her state, so she sits down and lies down rather than snapping.
+**Keep:** the user asked for her proportions to follow their title picture: a big head about two fifths of her length on a round loaf of a body, short thick legs.
 
-**loretta.lua:117** `function leg_pose(hero,hip,phase)`
-A paw's offset from under its hip and how high it is lifted. Half the cycle it is planted, moving back exactly as fast as she moves forward; half it swings forward in an arc 2px high. The swing shrinks to nothing as she slows (gait_amp), so standing, her legs are straight. Jumping: front paws reach forward, back legs stretch behind.
+**loretta.lua:118** `function leg_pose(hero,front,phase)`
+A paw's offset from under its joint and how high it is lifted. Half the cycle it is planted, moving back exactly as fast as she moves forward; half it swings forward in an arc 2px high. The swing shrinks to nothing as she slows (gait_amp), so standing, her legs are straight. Jumping: front paws reach forward, back legs stretch behind. Napping: front paws out ahead.
 
-**loretta.lua:125** `function draw_loretta(hero)`
-She is built from parts, after witchcap's hut: far legs, the torso in two halves (the rump half rocks up and down against the chest once a cycle, the corgi-butt bounce), near legs, then the head. The body bobs up a pixel at mid-stride; the head bobs a little after it. Heads: ears back in the air, fast or on landing; tongue flapping in time with the trot; barking; a blink every three seconds standing. Sitting and napping are whole pictures.
+**loretta.lua:127** `function leg_place(hero,i)`
+Where a leg's joint is (on the hips or shoulders) and its paw's pose. The test of planted paws uses this too, so it measures what is drawn.
+
+**loretta.lua:133** `function draw_loretta(hero)`
+A quadruped rig, as the user asked ("multi segment like a long dog body ... in quadruped ik"), after witchcap's hut: a butt, a body and a shoulder (round segments, with a blended circle between each pair so the back is one smooth line), a white chest, and the head; four legs, each two bones of leg_bone (arm and forearm, thigh and shank) worked out by IK from its joint to its paw (hind knees bend back, front ones forward), drawn solid as rows of circles. Every outline (the segments' and the near legs') is drawn before any fill, and the head has no outline where it sits on the shoulder, so no line shows between her parts.
+**Keep:** the user asked for "butt, body, shoulder, head, arms, forearms, no lines between the shoulder and the body". The rump end of the spine rocks against the shoulders once a cycle and the body bobs at mid-stride, so the body bends. The head sprite rides on the shoulders and bobs a little after them. Heads: ears back in the air, fast or on landing; tongue flapping in time; barking; eyes shut napping; a blink every three seconds.
 **Keep:** the user called her body motion one of the most important things in the game; change it by watching the gait film strip (test_moves dumps gait_1..4).

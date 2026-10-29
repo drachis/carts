@@ -233,17 +233,37 @@ def part(text, left, width, height, size):
     return "\n".join(rows + ["." * size[0]] * (size[1] - height))
 
 
-# running, jumping and barking, she is drawn in parts by loretta.lua: a
-# torso (columns 0..20, without legs), a head (columns 19..31) that bobs
-# on its own, and legs drawn as lines that trot under her
-TORSO = part(CORGI_STAND, 0, 21, 13, (24, 16))
-TORSO_WAG = part(CORGI_WAG, 0, 21, 13, (24, 16))
-HEAD = part(CORGI_STAND, 19, 13, 12, (16, 16))
-HEAD_EARS_BACK = edit(HEAD, [(0, 0, "." * 13), (0, 1, "..44.....44.."), (0, 2, "..499e4.49e4.")])
-HEAD_TONGUE = edit(HEAD, [(10, 10, ".e"), (11, 11, "e")])
-HEAD_EARS_BACK_TONGUE = edit(HEAD_EARS_BACK, [(10, 10, ".e"), (11, 11, "e")])
-HEAD_BARK = part(CORGI_BARK, 19, 13, 12, (16, 16))
-HEAD_BLINK = edit(HEAD, [(7, 5, "99"), (7, 6, "44")])
+# her body is drawn by loretta.lua: a spine of round segments and four
+# legs worked out by IK. her head is a sprite, after the user's picture: big
+# ears with pink insides, a white blaze between two eyes, a broad white
+# muzzle, a black nose, an open smile with a pink tongue, her green collar
+# with its gold tag. three quarters on, looking right; the collar's left
+# end sits on her shoulders.
+HEAD = """
+...4......4.....
+..494....494....
+..4e94..49e94...
+.49ee9449ee94...
+.4999977999994..
+49999977999994..
+4990997799099994
+4999977777777770
+4999777777777760
+.4997777770880..
+.4977777770ee0..
+..47777777.ee...
+...bbbbba..e....
+....bbbb........
+................
+................
+"""
+# no outline where the back of her head sits on her shoulder
+HEAD = edit(HEAD, [(0, 6, "9"), (0, 7, "9"), (0, 8, "9"), (1, 9, "9"), (1, 10, "9"), (2, 11, "7")])
+HEAD_EARS_BACK = edit(HEAD,[(0, 0, "." * 16), (0, 1, ".44.....44......"), (0, 2, ".4994..4994.....")])
+HEAD_TONGUE = edit(HEAD, [(10, 11, "ee."), (10, 12, "e..")])
+HEAD_EARS_BACK_TONGUE = edit(HEAD_EARS_BACK, [(10, 11, "ee."), (10, 12, "e..")])
+HEAD_BARK = edit(HEAD, [(10, 8, "00"), (9, 9, "0000"), (9, 10, "0880"), (10, 11, "ee")])
+HEAD_BLINK = edit(HEAD, [(3, 6, "4"), (10, 6, "4")])
 SIT_LEFT = ["." * 19] * 5 + [
     "." * 14 + "4" * 5,
     "." * 11 + "444" + "9" * 5,
@@ -417,10 +437,8 @@ def squash(text, width):
 
 
 # sprite number -> rows. a sprite wider or taller than 8 just has more.
-# Loretta's parts: 32 torso, 35 torso with its tail flicked (3x2 sprites);
-# heads 40 perked, 42 ears back, 44 tongue flapping, 46 barking, 64
-# blinking, 66 ears back and tongue flapping (2x2); whole poses 76 sit and
-# 100 nap (4x2).
+# Loretta's heads (2x2): 40 perked, 42 ears back, 44 tongue flapping, 46
+# barking, 64 blinking, 66 ears back and tongue flapping.
 SPRITES = {
     1: GRASS, 2: DIRT, 3: VINE_DIRT, 4: BRANCH, 5: WATER_TOP, 6: WATER,
     7: FLOWERS, 8: TUFT, 9: sloped(True), 10: sloped(False),
@@ -431,8 +449,8 @@ SPRITES = {
     29: mark("6"), 30: mark("6"), 31: mark("6"), 68: mark("6"), 69: mark("6"),
     70: mark("6"), 71: mark("6"), 72: mark("6"), 73: mark("6"), 74: mark("6"),
     75: mark("6"), 84: mark("6"), 85: mark("6"), 86: mark("6"),
-    32: TORSO, 35: TORSO_WAG, 40: HEAD, 42: HEAD_EARS_BACK, 44: HEAD_TONGUE,
-    46: HEAD_BARK, 64: HEAD_BLINK, 66: HEAD_EARS_BACK_TONGUE, 76: CORGI_SIT, 100: CORGI_NAP,
+    40: HEAD, 42: HEAD_EARS_BACK, 44: HEAD_TONGUE,
+    46: HEAD_BARK, 64: HEAD_BLINK, 66: HEAD_EARS_BACK_TONGUE,
     104: SQUIRREL_A, 106: SQUIRREL_B, 108: SQUIRREL_SPOOKED, 110: HYDRANT,
     128: HYDRANT_LIT, 130: COIN, 132: squash(COIN, 8), 134: squash(COIN, 3),
     136: BONE, 138: HEART, 139: HEART_EMPTY, 140: SPARKLE, 141: HAND,

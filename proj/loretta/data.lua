@@ -21,6 +21,7 @@ coyote_frames=8
 paddle_lift=0.25
 paddle_rise=-0.1
 leg_stride=5
+leg_bone=3.5
 paddle_gait=0.09
 stomp_bounce=2.4
 hurt_frames=90

@@ -55,9 +55,8 @@ end
 local function feet()
  local placed={}
  for i=1,#loretta_legs,5 do
-  local hip,phase=loretta_legs[i],loretta_legs[i+1]
-  local dx,lift=leg_pose(hero,hip,phase)
-  add(placed,{x=hero.x-4+hip+dx,down=lift==0,phase=phase})
+  local joint_x,joint_y,dx,lift=leg_place(hero,i)
+  add(placed,{x=hero.x-4+joint_x+dx,down=lift==0})
  end
  return placed
 end
@@ -159,6 +158,11 @@ cases={
    arena(40)
    hearts=1
    result.neighbour=thing_at("neighbour",60,88)
+   result.frame=0
+  end,
+  each=function()
+   result.frame+=1
+   if result.frame==60 then dump_screen("pose_sit") end
   end,
   check=function() return hearts==min(1+pet_hearts,max_hearts) and result.neighbour.petted,"hearts "..hearts..", petted "..tostr(result.neighbour.petted) end,
  },
