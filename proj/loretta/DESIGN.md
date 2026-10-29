@@ -142,6 +142,11 @@ little dog doing it. Short legs, big ears, a wagging nub of a tail.
   back and the tongue trailing when she runs, ears flopping and the belly
   bouncing on landing, the sploot with her belly down, sitting pretty, and
   pictures of each (gait_1..6, pose_sploot, pose_sit, ears_landing).
+- test_motion: Loretta drawn every frame through standing, trotting,
+  stopping and a landing, a line logged each frame (py motion_report.py
+  sums it up); fails if, trotting, her place on screen goes back and
+  forth, her chest bobs, or her ear or tongue tip turns back more than a
+  swing would. The jitter the user saw came from each of those.
 - test_scenes: two pictures of every section (scene_1..16), to look at the
   set pieces (it checks only that each draws), and the backdrop's dither
   holding still as the camera moves.

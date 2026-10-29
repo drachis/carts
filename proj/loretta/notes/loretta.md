@@ -29,16 +29,23 @@ A paw's offset from under its joint and how high it is lifted. Half the cycle it
 **loretta.lua:131** `function leg_place(hero,i)`
 Where a leg's joint is (on the hips or shoulders) and its paw's pose. The test of planted paws uses this too, so it measures what is drawn.
 
-**loretta.lua:151** `function follow(point,x,y,length,damp,gravity,pull_x,pull_y,pull)`
+**loretta.lua:156** `function follow(point,x,y,length,damp,gravity,pull_x,pull_y,pull)`
 One verlet point hung from (x,y) at a fixed length: it keeps its own speed (damped), falls by gravity, is pulled toward a rest point, then is put back at its length. Ear tips and the tongue's links are these, so they lag behind her head, swing and settle.
 
-**loretta.lua:162** `function animate_loretta(hero)`
+**loretta.lua:167** `function animate_loretta(hero)`
 Runs at the end of every update (and once in new_loretta), so drawing only reads. Eases the skeleton; the belly is a spring (belly_spring, belly_damp) toward the pose's sag, kicked by belly_bounce on landing; the head's bob follows the body's a little late. Ears: each base is fixed to the face, each tip a follow point pulled to stand up (rest), lean back when fast or in the air, and droop when lying or for ear_flop frames after landing. The tongue: five links from the mouth, the first held at the mouth (which shifts with the trot, so it waggles), the rest hanging by follow.
 **Keep:** the user asked for "floppy ears and a waggling tongue and a belly that flops to the ground when she lays down", ears' edges linked to the head.
 
-**loretta.lua:196** `function draw_ear(hero,ear,colour,inner,outline)`
+**loretta.lua:201** `function draw_ear(hero,ear,colour,inner,outline)`
 An ear is a triangle from two base points on the head to its tip, with a pink one inside; the outline is the triangle drawn four times a pixel off in black. The near ear's outline is drawn before the face and its fill after, so no line crosses the face where the ear joins it.
 
-**loretta.lua:211** `function draw_loretta(hero)`
+**loretta.lua:216** `function draw_loretta(hero)`
 Her body is a soft skin round the skeleton: the butt, the torso along the spine, the sagging belly, chest and neck, and each near leg's two bones (a fat thigh or upper arm, a slim shank or forearm, by IK to the paw), all drawn as circles in one black outline pass and then one fill pass, so they merge into one silhouette and the skin seems to stretch round each leg as it swings. Far legs are drawn first, alone. Then the saddle, the butt fluff, the far ear, the face sprite (from corgi_art.py, drawn with 12 transparent), the near ear, eyes, mouth and tongue. The butt rocks once a trot cycle and wiggles while she is happy. Eyes: open with a glint, blinking, happy squint after a coin or a pat, shut napping. Mouth: smile at rest, panting with the tongue out moving or happy, open wide barking.
 **Keep:** the user asked for legs "with 2 segments that look like they stretch the soft body around", "butt, body, shoulder, head, arms, forearms, no lines between", and called her body motion one of the most important things in the game; change it by watching test_body's pictures (gait_1..6, pose_sploot, pose_sit, ears_landing).
+
+**loretta.lua:137** `function body_bob(hero)`
+The chest stays level while she trots (her legs scurry, her body glides); the butt lifts a pixel once a stride; landing drops the chest a pixel; taking off (squash below -2) lifts the chest and drops the butt, so she launches from her haunches. Two bobs a stride and a separate rump and head bob each toggled a pixel at up to 15 times a second, which read as jitter (test_motion).
+**Keep:** at pixel scale, few slow coordinated moves; test_motion fails if her chest bobs while she trots.
+
+**loretta.lua:147** `function wx(hero,x)`
+Drawing positions: her parts in whole pixels, rounded from ex. Physics (ear tips, the tongue) runs in ex's unrounded positions: running it on rounded roots made the tips chase each pixel snap and turn back nearly every frame.

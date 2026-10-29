@@ -1,5 +1,5 @@
 function new_loretta(x,y)
- local hero={x=x,y=y,w=hero_w,h=hero_h,vx=0,vy=0,facing=1,coyote=0,buffer=0,held=63,paddle=0,drop=0,idle=0,bark=0,cool=0,hurt=0,chain=0,squash=0,gait=0,happy=0,state="stand",pose=split"5,-9,19,-9,-4,-16,1,0,0",sag=1,sag_v=0,head_bob=0,flop=0,ears={{},{}},tongue={{},{},{},{},{}}}
+ local hero={x=x,y=y,w=hero_w,h=hero_h,vx=0,vy=0,facing=1,coyote=0,buffer=0,held=63,paddle=0,drop=0,idle=0,bark=0,cool=0,hurt=0,chain=0,squash=0,gait=0,happy=0,state="stand",pose=split"5,-10,19,-10,-4,-16,0.5,0,0",sag=0.5,sag_v=0,head_bob=0,flop=0,ears={{},{}},tongue={{},{},{},{},{}}}
  animate_loretta(hero)
  return hero
 end
@@ -113,7 +113,7 @@ function fall_in(hero)
 end
 
 loretta_legs=split"0,3,0.5,4,6,1,2,0,6,6,0,0,0,9,7,1,0,0.5,7,7"
-loretta_poses={stand=split"5,-9,19,-9,-4,-16,1,0,0",sit=split"7,-5,14,-12,-4,-16,0,3,0",sploot=split"4,-5,19,-5,-2,-13,4,-9,6",nap=split"4,-5,19,-5,-1,-11,4,-7,6",jump=split"4,-9,20,-10,-4,-16,0,-3,3"}
+loretta_poses={stand=split"5,-10,19,-10,-4,-16,0.5,0,0",sit=split"7,-5,14,-12,-4,-16,0,3,0",sploot=split"4,-5,19,-5,-2,-13,4,-9,6",nap=split"4,-5,19,-5,-1,-11,4,-7,6",jump=split"4,-10,20,-11,-4,-16,0,-3,3"}
 loretta_poses.paddle=loretta_poses.jump
 
 function gait_amp(hero)
@@ -136,11 +136,16 @@ end
 
 function body_bob(hero)
  local amp=gait_amp(hero)
- return (hero.squash>2 and 1 or 0)-(sin(hero.gait*2)*amp>0.5 and 1 or 0),flr(sin(hero.gait)*amp+0.5)
+ local launch=hero.squash<-2
+ return hero.squash>2 and 1 or launch and -1 or 0,launch and 2 or sin(hero.gait)*amp>0.5 and -1 or 0
+end
+
+function ex(hero,x)
+ return hero.facing<0 and hero.x+24-x or hero.x+x
 end
 
 function wx(hero,x)
- return hero.facing<0 and hero.x+24-x or hero.x+x
+ return flr(ex(hero,x)+0.5)
 end
 
 function face_origin(hero)
@@ -170,10 +175,10 @@ function animate_loretta(hero)
  local ox,oy=face_origin(hero)
  local lying,fast=pose[7]>2 or hero.flop>0,hero.air or abs(hero.vx)>1
  for i,ear in ipairs(hero.ears) do
-  ear.bx,ear.by=wx(hero,ox+i*6-1),oy+2
+  ear.bx,ear.by=ex(hero,ox+i*4+1),oy+2
   follow(ear,ear.bx,ear.by,ear_length,ear_damp,ear_gravity,ear.bx-hero.facing*(lying and 9 or fast and 4 or 1),ear.by-(lying and 4 or fast and 9 or 10),ear_spring)
  end
- local x,y=wx(hero,ox+16+(hero.gait*4%2\1)),oy+12
+ local x,y=ex(hero,ox+16),oy+12
  for i,link in ipairs(hero.tongue) do
   if i>1 then follow(link,x,y,tongue_link,tongue_damp,tongue_weight,x,y+1,0) end
   link.x,link.y=link.x or x,link.y or y
@@ -194,17 +199,17 @@ function tri(x0,y0,x1,y1,x2,y2,colour)
 end
 
 function draw_ear(hero,ear,colour,inner,outline)
- local f=hero.facing
- local ax,ay,bx,by=ear.bx-4*f,ear.by+1,ear.bx+4*f,ear.by
+ local f,tip_x,tip_y,base_x=hero.facing,flr(ear.x+0.5),flr(ear.y+0.5),flr(ear.bx+0.5)
+ local ax,ay,bx,by=base_x-4*f,ear.by+1,base_x+4*f,ear.by
  if outline then
   for side=0,3 do
    local dx,dy=side\2*2-1,0
    if side%2==1 then dx,dy=0,side\2*2-1 end
-   tri(ax+dx,ay+dy,bx+dx,by+dy,ear.x+dx,ear.y+dy,0)
+   tri(ax+dx,ay+dy,bx+dx,by+dy,tip_x+dx,tip_y+dy,0)
   end
  else
-  tri(ax,ay,bx,by,ear.x,ear.y,colour)
-  tri(ax+2*f,ay,bx-2*f,by,ear.bx+(ear.x-ear.bx)*0.65,ear.by+(ear.y-ear.by)*0.65,inner)
+  tri(ax,ay,bx,by,tip_x,tip_y,colour)
+  tri(ax+2*f,ay,bx-2*f,by,flr(base_x+(tip_x-base_x)*0.65),flr(ear.by+(tip_y-ear.by)*0.65),inner)
  end
 end
 
@@ -212,7 +217,7 @@ function draw_loretta(hero)
  if hero.hurt%8>3 then return end
  local pose,flip,g=hero.pose,hero.facing<0,hero.y+13
  local bob,rump=body_bob(hero)
- local px,py,cx,cy=pose[1],g+pose[2]+bob+rump,pose[3],g+pose[4]+bob
+ local px,py,cx,cy=flr(pose[1]+0.5),g+flr(pose[2]+0.5)+bob+rump,flr(pose[3]+0.5),g+flr(pose[4]+0.5)+bob
  local near,far={},{}
  local function capsule(list,x0,y0,x1,y1,r0,r1,colour)
   for share=0,1,0.25 do add(list,{x0+(x1-x0)*share,y0+(y1-y0)*share,r0+(r1-r0)*share,colour}) end
@@ -220,7 +225,7 @@ function draw_loretta(hero)
  local belly=min(hero.sag,g-max(py,cy)-5.5)
  add(near,{px-2-(hero.happy>0 and t()*12%2\1 or 0),py,5,9})
  capsule(near,px,py,cx,cy,5,5.5,9)
- capsule(near,px+2,py+2+belly,cx-2,cy+2+belly,3.5,3.5,7)
+ capsule(near,px+2,py+2+belly,cx-2,cy+2+belly,3,3,7)
  add(near,{cx+3,cy+1,4.5,7})
  add(near,{cx+2,cy-4,3.5,9})
  for i=1,16,5 do
@@ -234,12 +239,12 @@ function draw_loretta(hero)
   local bend=sqrt(leg_bone*leg_bone-half*half)*(front and 1 or -1)
   local kx,ky=jx+vx/2-vy/reach*bend,jy+vy/2+vx/reach*bend
   local list=i<11 and far or near
-  capsule(list,jx,jy,kx,ky,3,2,loretta_legs[i+3])
+  capsule(list,jx,jy,kx,ky,2.5,2,loretta_legs[i+3])
   capsule(list,kx,ky,fx,fy,1.5,1,loretta_legs[i+4])
  end
  local function blob(list)
   for pass=1,2 do
-   for part in all(list) do circfill(wx(hero,part[1]),part[2],part[3]+(pass==1 and 1 or 0),pass==1 and 0 or part[4]) end
+   for part in all(list) do circfill(wx(hero,part[1]+0.5),flr(part[2]+0.5),flr(part[3]+0.5)+(pass==1 and 1 or 0),pass==1 and 0 or part[4]) end
   end
  end
  local ox,oy=face_origin(hero)
@@ -269,8 +274,9 @@ function draw_loretta(hero)
   dot(16,13,14)
  elseif gait_amp(hero)>0 or hero.happy>0 or hero.air then
   rectfill(wx(hero,ox+14),oy+11,wx(hero,ox+18),oy+12,0)
-  for link in all(hero.tongue) do circfill(link.x,link.y,1,14) end
-  for link in all(hero.tongue) do pset(link.x,link.y,8) end
+  for colour in all{14,8} do
+   for link in all(hero.tongue) do circfill(link.x+0.5,link.y+0.5,colour==14 and 1 or 0,colour) end
+  end
  else
   dot(15,12,0) dot(16,13,0) dot(17,13,0) dot(18,12,0)
  end

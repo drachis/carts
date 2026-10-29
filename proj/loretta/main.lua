@@ -190,8 +190,9 @@ end
 
 function _draw()
  cls()
- draw_backdrop(view.x)
- camera(view.x+(shake%4<2 and 0 or shake/4),0)
+ local cam=camera_x()
+ draw_backdrop(cam)
+ camera(cam+(shake%4<2 and 0 or shake\4),0)
  draw_things(1)
  draw_level()
  draw_things()

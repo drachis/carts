@@ -8,6 +8,10 @@ function focus_x(hero,view)
  return mid(0,hero.x+hero_w/2-64+view.look,level_w-128)
 end
 
+function camera_x()
+ return flr(hero.x+0.5)-flr(hero.x-view.x+0.5)
+end
+
 function update_camera(view,hero)
  local speed=abs(hero.vx)/run_max
  view.look+=(sgn(hero.vx)*camera_lookahead*min(speed,1)*(speed>0.1 and 1 or 0)-view.look)*camera_lookahead_speed
