@@ -47,9 +47,9 @@ little dog doing it. Short legs, big ears, a wagging nub of a tail.
 
 ## Scale and look
 
-- The view is close, as in the picture: Loretta is 32x16 (a fifth of the
-  screen's width), squirrels, coins and hydrants 16x16. Tiles stay 8x8, so
-  the ground and set pieces are finer than she is.
+- The view is close, as in the picture: Loretta is drawn about 37x33
+  (ears included) round a 24x14 box, squirrels, coins and hydrants 16x16.
+  Tiles stay 8x8, so the ground and set pieces are finer than she is.
 - She trots: 1.3 pixels a frame, a screen in about 98 frames. The user:
   "it's about charm, not really about platforming excellence".
 - Loretta follows the user's title picture, measured: about 36x26 px, the
@@ -61,11 +61,18 @@ little dog doing it. Short legs, big ears, a wagging nub of a tail.
   as she trots and wiggles when she is happy; a fox face that smiles,
   pants with its tongue out, squints happily and barks; she sploots when
   left alone and sits pretty to be petted.
-- Her body moves like a corgi, built from parts after witchcap's hut (the
-  user: the body movement "will be really important"): four legs of two
-  bones each by IK, trotting in diagonal pairs with paws planted, the body
-  cut into a rear and a front piece with no line between them, the head on
-  the front.
+- Her body is modelled from the skeleton up (the user: the body movement
+  "will be really important", and may take "most of the cart"): a pelvis,
+  chest and head eased between poses per state; a soft skin of circles
+  round them (butt, torso, a sagging belly, chest, neck, and each near
+  leg's fat upper bone) in one outline and one fill, so it stretches
+  round her legs as they swing; legs of two bones by IK trotting in
+  diagonal pairs with paws planted; a belly on a spring that bounces on
+  landing and flops to the ground when she lies down; ears whose bases
+  are fixed to her head and whose tips are springy points that lag,
+  flop on landing, lean back at speed and droop lying down; a tongue
+  of five hanging links that waggles as she trots. Only her face is a
+  sprite.
 - The title follows the picture's layout: logo above, a small menu left,
   a narrow player card right (her face made from the game's own parts),
   and Loretta hopping in the middle.
@@ -123,15 +130,21 @@ little dog doing it. Short legs, big ears, a wagging nub of a tail.
 
 - test_boot: the real cart from the title, through a start, play, a bark, a
   win and a game over, each dumped as a picture.
-- test_moves: each verb alone on the real level with its measurement
-  printed: run speed, tap, held and paddled jumps, the lawn's slopes without
-  leaving the ground, up through and down through an awning, stomp, being
-  hurt, bark reach, coin, bone, petting, water and respawn, the win, and
-  the backdrop's dither holding still as the camera moves, her paws
-  planted while she trots in diagonal pairs (a slip of 0.1px a frame
-  fails), and a film strip of her trot (gait_1..4).
+- The game plus a test must fit 8192 tokens, so the cases are split over
+  carts that share tests/arena.lua:
+- test_moves: movement with its measurements: run speed, tap, held and
+  paddled jumps, the lawn's slopes without leaving the ground, up through
+  and down through an awning.
+- test_things: stomp, being hurt, bark reach, coin, bone, petting, water
+  and respawn, the win.
+- test_body: her paws planted while she trots in diagonal pairs (a slip of
+  0.1px a frame fails), ears standing and keeping their length, leaning
+  back and the tongue trailing when she runs, ears flopping and the belly
+  bouncing on landing, the sploot with her belly down, sitting pretty, and
+  pictures of each (gait_1..6, pose_sploot, pose_sit, ears_landing).
 - test_scenes: two pictures of every section (scene_1..16), to look at the
-  set pieces; it checks only that each draws.
+  set pieces (it checks only that each draws), and the backdrop's dither
+  holding still as the camera moves.
 - test_level: a bot that cannot be hurt runs right, jumping at walls and
   gaps, and must reach the observatory. It proves the level can be
   crossed, not that it is fair or fun.

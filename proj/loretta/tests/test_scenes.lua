@@ -1,6 +1,8 @@
 -- test_scenes.lua : two pictures of each of the level's eight sections
--- (scene_1 and scene_2 are the first), with Loretta standing in each, for looking at the set pieces. it checks nothing
--- but that each draws without an error.
+-- (scene_1 and scene_2 are the first), with Loretta standing in each, for
+-- looking at the set pieces; of those it checks only that each draws.
+-- then it checks that the backdrop's dither stays put on the screen as
+-- the camera moves (test_body had no room for it).
 
 function sfx() end
 music=sfx
@@ -22,6 +24,18 @@ function _update60()
    section+=1
    dump_screen("scene_"..section)
   else
+   local function backdrop_row(cam_x,shift)
+    view.x=cam_x
+    camera()
+    draw_backdrop(cam_x)
+    local row=""
+    for y in all{25,122} do
+     for x=8,23 do row..=pget(x+shift,y) end
+    end
+    return row
+   end
+   local still,moved,shifted=backdrop_row(300,0),backdrop_row(301,0),backdrop_row(300,1)
+   printh((still==moved and still!=shifted and "pass: " or "error: ").."the backdrop's dither stays put on the screen as the camera moves (same at camera 300 and 301: "..tostr(still==moved)..", the rows are dithered: "..tostr(still!=shifted)..")")
    printh("ok scenes")
    extcmd("shutdown")
   end

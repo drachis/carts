@@ -1,20 +1,7 @@
 -- test_moves.lua : each of Loretta's verbs alone, on the real level: the
--- street (a sidewalk at y 96, the bookshop's awning at x 168..231 with
--- its top at y 72), the lawn's slopes, the stream and the observatory lawn, with what
--- each measured printed.
-
-local ground_y,result=82,{}
-
-local function arena(x,y)
- start_level()
- mode,things,hero="play",{},new_loretta(x,y or ground_y)
- hero.held=0
- view=new_camera(hero)
-end
-
-local function thing_at(name,x,y)
- return add(things,setmetatable({x=x,y=y,vx=0,vy=0,age=0,petting=0},thing_specs[name]))
-end
+-- street (the bookshop's awning at x 168..231 with its top at y 72), the
+-- lawn's slopes, the stream and the observatory lawn, with what each
+-- measured printed. arena.lua sets the scene; her body is in test_body.
 
 local function squirrel_at(x)
  return thing_at("squirrel",x,84)
@@ -41,62 +28,7 @@ local function jump_case(name,buttons,each)
  }
 end
 
-local function backdrop_row(cam_x,shift)
- view.x=cam_x
- camera()
- draw_backdrop(cam_x)
- local row=""
- for y in all{25,122} do
-  for x=8,23 do row..=pget(x+shift,y) end
- end
- return row
-end
-
-local function feet()
- local placed={}
- for i=1,#loretta_legs,5 do
-  local joint_x,joint_y,dx,lift=leg_place(hero,i)
-  add(placed,{x=hero.x-4+joint_x+dx,down=lift==0})
- end
- return placed
-end
-
 cases={
- {
-  name="her paws stay planted while she trots, in diagonal pairs",buttons={1},frames=120,
-  setup=function() arena(16) result.slip,result.last,result.steps=0,nil,0 end,
-  each=function()
-   local now=feet()
-   if result.last and abs(hero.vx)>=0.4 then
-    for i,foot in ipairs(now) do
-     local before=result.last[i]
-     if foot.down and before.down then result.slip=max(result.slip,abs(foot.x-before.x)) end
-     if foot.down and not before.down then result.steps+=1 end
-    end
-   end
-   result.last=now
-   result.pairs=now[2].down==now[3].down and now[1].down==now[4].down and now[1].down!=now[2].down
-  end,
-  check=function() return result.slip<0.1 and result.pairs,"largest slip of a planted paw "..result.slip.."px, "..result.steps.." paws put down in 2 seconds, pairs together "..tostr(result.pairs) end,
- },
- {
-  name="left alone she sploots, hind legs out behind",buttons={},frames=idle_sit+40,
-  setup=function() arena(40) end,
-  check=function()
-   _draw()
-   dump_screen("pose_sploot")
-   return hero.state=="sploot","state "..hero.state
-  end,
- },
- {
-  name="a film strip of her trot",buttons={1},frames=44,every_frame=true,
-  setup=function() arena(16) result.frame=0 end,
-  each=function()
-   result.frame+=1
-   if result.frame>=32 and result.frame%3==2 then dump_screen("gait_"..(result.frame-29)\3) end
-  end,
-  check=function() return true,"gait_1..4 dumped" end,
- },
  {
   name="runs up to top speed and holds it",buttons={1},frames=60,
   setup=function() arena(16) end,
@@ -128,78 +60,5 @@ cases={
   name="down and jump on an awning drops through it to the ground",buttons={3,4},frames=60,
   setup=function() arena(184,58) end,
   check=function() return hero.y==ground_y,"y "..hero.y end,
- },
- {
-  name="landing on a squirrel bonks it, scores and bounces",buttons={},frames=50,
-  setup=function()
-   arena(236,40)
-   result.squirrel,result.bounce=squirrel_at(244),0
-  end,
-  each=function() result.bounce=min(result.bounce,hero.vy) end,
-  check=function() return result.squirrel.state=="bonked" and score==stomp_points and result.bounce<-1 and hearts==max_hearts,"score "..score..", bounce "..result.bounce..", hearts "..hearts end,
- },
- {
-  name="running into a squirrel costs a heart, knocks her back and she blinks",buttons={1},frames=50,
-  setup=function() arena(40) squirrel_at(90) end,
-  check=function() return hearts==max_hearts-1 and hero.hurt>0 and hero.x<62,"hearts "..hearts..", x "..hero.x..", blinking "..hero.hurt end,
- },
- {
-  name="a bark spooks a squirrel in reach and not one beyond it",buttons={5},frames=50,
-  setup=function()
-   arena(16)
-   result.near,result.far=squirrel_at(16+hero_w+bark_reach-14),squirrel_at(16+hero_w+bark_reach+30)
-  end,
-  check=function() return result.near.state=="spooked" and not result.far.state,"reach "..bark_reach..", near "..tostr(result.near.state)..", far "..tostr(result.far.state) end,
- },
- {
-  name="a coin counts and scores",buttons={1},frames=40,
-  setup=function() arena(16) thing_at("coin",60,84) end,
-  check=function() return coins==1 and score==coin_points,"coins "..coins..", score "..score end,
- },
- {
-  name="a bone gives back a heart",buttons={1},frames=40,
-  setup=function() arena(16) hearts=2 thing_at("bone",60,90) end,
-  check=function() return hearts==3,"hearts "..hearts end,
- },
- {
-  name="sitting beside a neighbour fills her hearts",buttons={3},frames=100,
-  setup=function()
-   arena(40)
-   hearts=1
-   result.neighbour=thing_at("neighbour",60,88)
-   result.frame=0
-  end,
-  each=function()
-   result.frame+=1
-   if result.frame==60 then dump_screen("pose_sit") end
-  end,
-  check=function() return hearts==min(1+pet_hearts,max_hearts) and result.neighbour.petted,"hearts "..hearts..", petted "..tostr(result.neighbour.petted) end,
- },
- {
-  name="the water costs a heart and she comes back at the last hydrant",buttons={},frames=90,
-  setup=function()
-   arena(600,100)
-   respawn_x,respawn_y=500,ground_y
-  end,
-  check=function() return hearts==max_hearts-1 and hero.x==500 and respawn==0,"hearts "..hearts..", back at x "..hero.x end,
- },
- {
-  name="running into the observatory wins",buttons={1},frames=60,
-  setup=function()
-   arena(1890,50)
-   load_level()
-   for thing in all(things) do
-    if thing.name!="gate" then del(things,thing) end
-   end
-  end,
-  check=function() return mode=="win","mode "..mode end,
- },
- {
-  name="the backdrop's dither stays put on the screen as the camera moves",buttons={},frames=1,
-  setup=function() arena(16) end,
-  check=function()
-   local still,moved,shifted=backdrop_row(300,0),backdrop_row(301,0),backdrop_row(300,1)
-   return still==moved and still!=shifted,"same at camera 300 and 301: "..tostr(still==moved)..", the rows are dithered (differ a pixel over): "..tostr(still!=shifted)
-  end,
  },
 }

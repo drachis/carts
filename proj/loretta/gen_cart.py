@@ -248,13 +248,11 @@ def her(text, width, height, colours=None):
 
 
 FAR = {"9": "4", "e": "f"}
+# in play her body and ears are drawn by loretta.lua from her skeleton;
+# only the face is a sprite. the ears here are for the title's player card.
 LORETTA_PARTS = {
-    176: her(corgi_art.ear(0, True), 16, 16), 178: her(corgi_art.ear(-3, True), 16, 16),
-    180: her(corgi_art.ear(-5.5, True), 16, 16),
-    182: her(corgi_art.ear(0, False), 16, 16, FAR), 184: her(corgi_art.ear(-3, False), 16, 16, FAR),
-    186: her(corgi_art.ear(-5.5, False), 16, 16, FAR),
-    224: her(corgi_art.body(), 32, 16), 228: her(corgi_art.face(), 24, 16),
-    231: her(corgi_art.sit_body(), 24, 16),
+    176: her(corgi_art.ear(0, True), 16, 16), 182: her(corgi_art.ear(0, False), 16, 16, FAR),
+    228: her(corgi_art.face(), 24, 16),
 }
 
 # her body is drawn by loretta.lua: a spine of round segments and four
