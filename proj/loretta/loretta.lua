@@ -14,12 +14,13 @@ function toward(value,target,step)
  return value<target and min(value+step,target) or max(value-step,target)
 end
 
-function slide(hero,dx,dy)
+function slide(hero,dx,dy,climb)
  local amount=dx+dy
  while amount!=0 do
   local part=mid(-1,amount,1)
   amount-=part
   local x,y=hero.x+(dx!=0 and part or 0),hero.y+(dy!=0 and part or 0)
+  if climb and area_has(x,y,hero_w,hero_h,0) and not area_has(x,y-1,hero_w,hero_h,0) then y-=1 end
   local feet=flr(y)+hero_h-1
   if area_has(x,y,hero_w,hero_h,0) or dy>0 and hero.drop==0 and feet>flr(hero.y)+hero_h-1 and feet%8==0 and area_has(x,feet,hero_w,1,1) then
    if dx!=0 then hero.x=flr(hero.x) else hero.y=flr(hero.y) end
@@ -40,7 +41,7 @@ function update_loretta(hero,input)
   if hero.air then
    sfx(snd_land)
    hero.squash=6
-   puff(hero.x+6,hero.y+7,4,7)
+   puff(hero.x+12,hero.y+14,6,7)
   end
   hero.coyote,hero.paddle,hero.chain,hero.y=coyote_frames,paddle_frames,0,flr(hero.y)
  else
@@ -83,7 +84,8 @@ function update_loretta(hero,input)
   sfx(snd_bark)
   start_bark(hero)
  end
- if slide(hero,hero.vx,0) then hero.vx=0 end
+ if slide(hero,hero.vx,0,ground) then hero.vx=0 end
+ if ground and hero.vy>=0 and area_has(hero.x,hero.y+3,hero_w,hero_h,0) then hero.vy=3 end
  if slide(hero,0,hero.vy) then hero.vy=0 end
  hero.drop,hero.hurt,hero.squash=max(hero.drop-1),max(hero.hurt-1),toward(hero.squash,0,1)
  hero.stride+=abs(hero.vx)
@@ -93,7 +95,7 @@ end
 function hurt_loretta(hero,from_x)
  if hero.hurt>0 then return end
  hearts-=1
- hero.hurt,hero.vx,hero.vy=hurt_frames,sgn(hero.x+6-from_x)*knock_x,-knock_y
+ hero.hurt,hero.vx,hero.vy=hurt_frames,sgn(hero.x+12-from_x)*knock_x,-knock_y
  shake=8
  sfx(snd_hurt)
  if hearts<=0 then game_over() end
@@ -103,28 +105,27 @@ function fall_in(hero)
  hearts-=1
  respawn=respawn_frames
  sfx(snd_splash)
- puff(hero.x+6,min(hero.y,120),12,12)
+ puff(hero.x+12,min(hero.y,120),12,12)
 end
 
 loretta_sprites=parse_record[[
-stand=16
-sit=30
-bark=32
-jump=24
-nap=34
+stand=32
+sit=76
+bark=96
+jump=64
+nap=100
 ]]
 
 function draw_loretta(hero)
  if hero.hurt%8>3 then return end
  local sprite=loretta_sprites[hero.state]
  if hero.state=="run" then
-  sprite=({20,16,22,16})[hero.stride\6%4+1]
+  sprite=({40,32,44,32})[hero.stride\8%4+1]
  elseif hero.state=="paddle" then
-  sprite=t()*16%2<1 and 26 or 28
+  sprite=t()*12%2<1 and 68 or 72
  elseif hero.state=="stand" and t()*3%2<1 then
-  sprite=18
+  sprite=36
  end
- local squash=hero.squash/2
- local w,h=16+squash,8-squash
- sspr(sprite%16*8,sprite\16*8,16,8,hero.x+6-w/2,hero.y+7-h,w,h,hero.facing<0)
+ local w,h=32+hero.squash,16-hero.squash/2
+ sspr(sprite%16*8,sprite\16*8,32,16,hero.x+12-w/2,hero.y+14-h,w,h,hero.facing<0)
 end

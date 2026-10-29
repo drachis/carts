@@ -49,7 +49,7 @@ function draw_backdrop(cam_x)
   end
  end
  local sun_x,sun_y=92-cam_x*0.02,48+dusk*30
- circfill(sun_x,sun_y,14,10)
+ circfill(sun_x,sun_y,14,9)
  circfill(sun_x,sun_y,12,15)
  for y=sun_y+2,sun_y+14,3 do
   local half=sqrt(max(196-(y-sun_y)*(y-sun_y)))

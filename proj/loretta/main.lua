@@ -120,9 +120,9 @@ end
 
 function draw_hud()
  for heart=1,max_hearts do
-  spr(heart<=hearts and 45 or 46,2+(heart-1)*9,2)
+  spr(heart<=hearts and 138 or 139,2+(heart-1)*9,2)
  end
- spr(36,32,2)
+ sspr(16,64,16,16,32,2,8,8)
  outlined("x"..coins,41,3,7)
  outlined("score "..score_text(score),75,3,7)
 end
@@ -145,7 +145,7 @@ function draw_title()
  draw_logo("loretta",36,8+sin(t()/3)*1.5)
  outlined("\135 corgi quest \135",30,26,7)
  for sparkle=1,6 do
-  if (t()*1.5+sparkle/6)%1<0.5 then spr(47,sparkle*41%120,8+sparkle*13%30) end
+  if (t()*1.5+sparkle/6)%1<0.5 then spr(140,sparkle*41%120,8+sparkle*13%30) end
  end
  rectfill(3,44,58,74,0)
  rect(3,44,58,74,14)
@@ -157,7 +157,7 @@ function draw_title()
  rect(66,40,125,119,14)
  print("player 1",80,43,7)
  rect(79,50,112,83,13)
- sspr(16,24,16,16,80,51,32,32)
+ sspr(112,64,16,16,80,51,32,32)
  print("loretta",82,86,9)
  for row,name in ipairs(stat_names) do
   local y=88+row*6
@@ -182,7 +182,7 @@ function _draw()
  draw_backdrop(view.x)
  camera(view.x+(shake%4<2 and 0 or shake/4),0)
  draw_things(1)
- map(0,0,0,0,128,16)
+ draw_level()
  draw_things()
  draw_barks()
  if respawn==0 then draw_loretta(hero) end

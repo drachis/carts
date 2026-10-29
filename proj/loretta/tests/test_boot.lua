@@ -33,9 +33,8 @@ function boot_frame()
  if n>=400 and n<440 then held[3]=true end
  if n==460 then held[5]=true end
  if n==500 then
-  hero.x,hero.y=1000-150,40
   for thing in all(things) do
-   if thing.name=="gate" then hero.x,hero.y=thing.x-14,thing.y+thing.h-7 end
+   if thing.name=="gate" then hero.x,hero.y=thing.x-30,thing.y+thing.h-hero_h end
   end
   view.x=focus_x(hero,view)
  end

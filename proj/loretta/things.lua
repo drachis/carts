@@ -25,11 +25,11 @@ function touch_coin(coin)
  coins+=1
  add_score(coin_points)
  sfx(snd_coin)
- puff(coin.x+3,coin.y+3,6,10)
+ puff(coin.x+6,coin.y+6,8,10)
 end
 
 function draw_coin(coin)
- spr(({36,36,36,36,36,37,38,37})[(t()*8+coin.x/16)\1%8+1],coin.x-1,coin.y-1+sin(t()/2+coin.x/40))
+ spr(({130,130,130,130,130,132,134,132})[(t()*8+coin.x/16)\1%8+1],coin.x-2,coin.y-2+sin(t()/2+coin.x/40),2,2)
 end
 
 function touch_bone(bone,hero)
@@ -37,30 +37,30 @@ function touch_bone(bone,hero)
  sfx(snd_munch)
  if hearts<max_hearts then
   hearts+=1
-  float_text("\135",hero.x+2,hero.y-6,8)
+  float_text("\135",hero.x+10,hero.y-8,8)
  else
   add_score(bone_points)
-  float_text("munch!",hero.x-4,hero.y-6,7)
+  float_text("munch!",hero.x,hero.y-8,7)
  end
 end
 
 function draw_bone(bone)
- spr(39,bone.x,bone.y-2+sin(t()/2+bone.x/30))
+ spr(136,bone.x-1,bone.y-1+sin(t()/2+bone.x/30),2,1)
 end
 
 function touch_hydrant(hydrant)
  if not hydrant.lit then
   hydrant.lit=true
-  respawn_x,respawn_y=hydrant.x,hydrant.y+1
+  respawn_x,respawn_y=hydrant.x-7,hydrant.y+hydrant.h-hero_h
   sfx(snd_check)
-  puff(hydrant.x+4,hydrant.y,8,10)
-  float_text("sniff!",hydrant.x-6,hydrant.y-8,7)
+  puff(hydrant.x+5,hydrant.y,10,10)
+  float_text("sniff!",hydrant.x-6,hydrant.y-10,7)
  end
 end
 
 function draw_hydrant(hydrant)
- spr(hydrant.lit and 44 or 43,hydrant.x,hydrant.y)
- if hydrant.lit and t()%1<0.5 then spr(47,hydrant.x+3,hydrant.y-7) end
+ spr(hydrant.lit and 128 or 110,hydrant.x-3,hydrant.y-2,2,2)
+ if hydrant.lit and t()%1<0.5 then spr(140,hydrant.x+1,hydrant.y-10) end
 end
 
 function update_squirrel(squirrel)
@@ -75,7 +75,7 @@ function update_squirrel(squirrel)
  if squirrel.age%90<60 then
   local ahead=squirrel.vx<0 and squirrel.x-1 or squirrel.x+squirrel.w
   local below=squirrel.y+squirrel.h
-  if flag_at(ahead,squirrel.y+3,0) or not (flag_at(ahead,below,0) or flag_at(ahead,below,1)) then
+  if flag_at(ahead,squirrel.y+6,0) or not (flag_at(ahead,below,0) or flag_at(ahead,below,1)) then
    squirrel.vx=-squirrel.vx
   else
    squirrel.x+=squirrel.vx
@@ -85,54 +85,64 @@ end
 
 function touch_squirrel(squirrel,hero)
  if squirrel.state then return end
- if hero.vy>0 and hero.y+hero_h-1<squirrel.y+4 then
+ if hero.vy>0 and hero.y+hero_h-1<squirrel.y+6 then
   squirrel.state,squirrel.vx,squirrel.vy="bonked",hero.facing*0.5,-1.5
   hero.vy=hero.held&16>0 and -jump_a or -stomp_bounce
   hero.chain+=1
   hero.paddle=paddle_frames
   local points=stomp_points*(1<<min(hero.chain-1,3))
   add_score(points)
-  float_text(points.."0",squirrel.x-2,squirrel.y-6,10)
-  puff(squirrel.x+3,squirrel.y,6,7)
+  float_text(points.."0",squirrel.x,squirrel.y-8,10)
+  puff(squirrel.x+6,squirrel.y,8,7)
   sfx(snd_stomp)
  else
-  hurt_loretta(hero,squirrel.x+3)
+  hurt_loretta(hero,squirrel.x+6)
  end
 end
 
 function spook(squirrel,direction)
  squirrel.state,squirrel.vx,squirrel.vy="spooked",direction*1.4,-1.2
  add_score(spook_points)
- float_text(spook_points.."0",squirrel.x-2,squirrel.y-6,10)
+ float_text(spook_points.."0",squirrel.x,squirrel.y-8,10)
  sfx(snd_chitter)
 end
 
 function draw_squirrel(squirrel)
- local sprite=squirrel.state=="spooked" and 42 or squirrel.age%90<60 and 40+squirrel.age\6%2 or 40
- spr(sprite,squirrel.x,squirrel.y-1,1,1,squirrel.vx<0,squirrel.state=="bonked")
- if squirrel.state=="spooked" then print("!",squirrel.x+3,squirrel.y-8,7) end
+ local sprite=squirrel.state=="spooked" and 108 or squirrel.age%90<60 and 104+squirrel.age\8%2*2 or 104
+ spr(sprite,squirrel.x-2,squirrel.y-4,2,2,squirrel.vx<0,squirrel.state=="bonked")
+ if squirrel.state=="spooked" then print("!",squirrel.x+5,squirrel.y-12,7) end
 end
 
 function update_neighbour(neighbour,hero)
  if neighbour.petting>0 then
   neighbour.petting-=1
-  if neighbour.petting%15==0 then float_text("\135",hero.x+2+neighbour.petting%4,hero.y-6,14) end
+  if neighbour.petting%15==0 then float_text("\135",hero.x+8+neighbour.petting%8,hero.y-8,14) end
   if neighbour.petting==0 then
    neighbour.petted=true
    hearts=min(hearts+pet_hearts,max_hearts)
    add_score(pet_points)
-   float_text("good girl!",neighbour.x-16,neighbour.y-8,7)
+   float_text("good girl!",neighbour.x-12,neighbour.y-16,7)
   end
- elseif not neighbour.petted and hero.state=="sit" and abs(hero.x+6-neighbour.x-4)<pet_range then
+ elseif not neighbour.petted and hero.state=="sit" and abs(hero.x+12-neighbour.x-8)<pet_range then
   neighbour.petting=pet_frames
   sfx(snd_pet)
  end
 end
 
 function draw_neighbour(neighbour)
- spr(neighbour.petting>0 and t()*4%2<1 and 49 or 48,neighbour.x,neighbour.y,1,2)
- if not neighbour.petted and neighbour.petting==0 and abs(hero.x-neighbour.x)<40 then
-  print("\135?",neighbour.x-2,neighbour.y-9+sin(t()),14)
+ local x,feet=neighbour.x,neighbour.y
+ for leg=1,9,8 do
+  rectfill(x+leg,0,x+leg+5,feet+4,13)
+  line(x+leg+5,0,x+leg+5,feet+4,5)
+ end
+ spr(160,x,feet+1,2,1)
+ if neighbour.petting>0 then
+  local reach=min(1,(pet_frames-neighbour.petting)/15)
+  local hand_x,hand_y=hero.x+8+hero.facing*8,(hero.y-2)*reach-8+(t()*4%1<0.5 and 2 or 0)
+  rectfill(hand_x+2,0,hand_x+5,hand_y,13)
+  spr(141,hand_x,hand_y)
+ elseif not neighbour.petted and abs(hero.x-x)<48 then
+  print("\135?",x+4,feet-12+sin(t()),14)
  end
 end
 
@@ -142,20 +152,20 @@ end
 
 function draw_gate(gate)
  local x,base=gate.x+4,gate.y+gate.h
- circfill(x-22,base-14,6,5)
- circfill(x+22,base-14,6,5)
- circfill(x,base-22,11,5)
- circ(x,base-22,11,13)
- rectfill(x-11,base-22,x+11,base-14,6)
- rectfill(x-28,base-14,x+28,base-1,6)
- rectfill(x-28,base-3,x+28,base-1,13)
- for column=-24,24,6 do
-  line(x+column,base-12,x+column,base-4,13)
+ circfill(x-35,base-22,9,5)
+ circfill(x+35,base-22,9,5)
+ circfill(x,base-35,17,5)
+ circ(x,base-35,17,13)
+ rectfill(x-18,base-35,x+18,base-22,6)
+ rectfill(x-45,base-22,x+45,base-1,6)
+ rectfill(x-45,base-4,x+45,base-1,13)
+ for column=-40,40,9 do
+  line(x+column,base-19,x+column,base-5,13)
  end
- circfill(x,base-8,3,1)
- rectfill(x-3,base-8,x+3,base-1,1)
+ circfill(x,base-12,5,1)
+ rectfill(x-5,base-12,x+5,base-1,1)
  for window=-1,1,2 do
-  pset(x+window*6,base-18,10)
+  rectfill(x+window*10,base-30,x+window*10+1,base-27,10)
  end
 end
 
@@ -169,8 +179,8 @@ function draw_sign(sign)
 end
 
 function start_bark(hero)
- add(barks,{x=hero.x+6+hero.facing*6,y=hero.y+3,direction=hero.facing,distance=0})
- float_text("woof!",hero.x+(hero.facing>0 and 10 or -16),hero.y-8,7)
+ add(barks,{x=hero.x+12+hero.facing*14,y=hero.y+6,direction=hero.facing,distance=0})
+ float_text("woof!",hero.x+(hero.facing>0 and 26 or -18),hero.y-8,7)
 end
 
 function update_barks()
@@ -178,7 +188,7 @@ function update_barks()
   bark.distance+=bark_speed
   local front=bark.x+bark.direction*bark.distance
   for thing in all(things) do
-   if thing.name=="squirrel" and not thing.state and abs(thing.x+3.5-front)<6 and abs(thing.y+3.5-bark.y)<10 then
+   if thing.name=="squirrel" and not thing.state and abs(thing.x+6-front)<8 and abs(thing.y+6-bark.y)<12 then
     spook(thing,bark.direction)
    end
   end
@@ -189,9 +199,9 @@ end
 function draw_barks()
  for bark in all(barks) do
   for ring=0,2 do
-   local radius=bark.distance-ring*5
+   local radius=bark.distance-ring*6
    if radius>0 then
-    for angle=-0.12,0.12,0.03 do
+    for angle=-0.12,0.12,0.02 do
      pset(bark.x+bark.direction*cos(angle)*radius,bark.y+sin(angle)*radius,ring==0 and 7 or 6)
     end
    end
