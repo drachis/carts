@@ -35,12 +35,10 @@ function boot_frame()
  if n==500 then
   level=#levels
   start_game()
-  for thing in all(things) do
-   if thing.name=="gate" then hero.x,hero.y=thing.x-30,thing.y+thing.h-hero_h end
-  end
+  hero.x,hero.y=level_w-150,40
   view.x=focus_x(hero,view)
  end
- if n>500 and n<520 then held[1]=true end
+ if n>500 and n<580 then held[1]=true end
  game_update()
  game_draw()
  if n==20 then dump_screen("boot_title") expect_mode("title") end

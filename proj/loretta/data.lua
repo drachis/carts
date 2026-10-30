@@ -46,6 +46,7 @@ bark_speed=2
 drop_frames=10
 idle_sit=240
 pet_frames=120
+pet_again=150
 view_drop=16
 pet_range=28
 respawn_frames=50
@@ -183,7 +184,7 @@ end
 levels={split"9,0,1,0,10,1,0,3,1,0,10,1,0,3,0,1,13",split"1,3,1,0,10,1,3,1,2,1,10,3,1,0,1,14",split"1,2,10,2,1,3,2,1,10,2,2,1,3,2,1,12",split"1,3,4,5,8,10,1,2,4,6,8,3,10,1,11",split"1,4,5,6,5,8,10,4,6,5,6,5,15",split"4,5,6,5,6,5,6,6,5,7"}
 level_names=split"hillhurst,barnsdall park,fern dell,griffith park,the trail,the observatory"
 landmarks=split"dog bowl,olive lawn,trails cafe,dog park,water stop"
-slot_kinds={house=split"bungalow,craftsman,cafe,bookshop",tree=split"jacaranda,sycamore,palm,orange",decor=split"birdbath,agave,pot,roses,flamingo"}
+slot_kinds={house=split"bungalow,craftsman,cafe,bungalow,bookshop,craftsman",tree=split"jacaranda,sycamore,palm,orange",decor=split"birdbath,agave,pot,roses,flamingo"}
 walls,roofs,shirts,skins=split"15,14,6,13",split"8,4,2,3",split"14,12,8,10",split"15,4,9"
 praises=split"who's a sweet pup!,best dog on the block!,what a little loaf!,treat earned!,tail wags all round!,such a fine corgi!"
 

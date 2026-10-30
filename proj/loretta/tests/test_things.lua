@@ -53,6 +53,17 @@ cases={
   check=function() return hearts==min(1+pet_hearts,max_hearts) and result.neighbour.petted,"hearts "..hearts..", petted "..tostr(result.neighbour.petted) end,
  },
  {
+  name="once the treat is given, staying by the neighbour gets more pats but no more hearts",buttons={3},frames=600,every_frame=true,
+  setup=function()
+   arena(40)
+   hearts,result.pats=1,0
+   result.neighbour=thing_at("neighbour",60,88)
+   result.neighbour.petted=true
+  end,
+  each=function() if result.neighbour.petting==pet_frames then result.pats+=1 end end,
+  check=function() return hearts==1 and result.pats>0,"hearts "..hearts..", pats "..result.pats end,
+ },
+ {
   name="the water costs a heart and she comes back at the last hydrant",buttons={},frames=90,
   setup=function()
    arena(600,100)

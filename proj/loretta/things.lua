@@ -21,10 +21,10 @@ function draw_things(back)
 end
 
 function draw_slot(slot)
- local kinds,tint=slot_kinds[slot.name],(slot.x\8+level)%4+1
- pal(15,walls[tint])
- pal(8,roofs[tint])
- draw_prop(slot,kinds[(slot.x\8*7+level*3)%#kinds+1])
+ local kinds,seed=slot_kinds[slot.name],slot.x\8+slot.x\256*5+level*3
+ pal(15,walls[seed%4+1])
+ pal(8,roofs[seed*3%4+1])
+ draw_prop(slot,kinds[seed*7%#kinds+1])
  pal(15,15)
  pal(8,8)
 end
@@ -167,12 +167,14 @@ function update_neighbour(neighbour,hero)
    float_text("\135",hero.hx-3+beat%3,hero.hy-24,14)
   end
   if neighbour.petting==0 then
+   if not neighbour.petted then
+    hearts=min(hearts+pet_hearts,max_hearts)
+    add_score(pet_points)
+   end
    neighbour.petted=true
-   hearts=min(hearts+pet_hearts,max_hearts)
-   add_score(pet_points)
    praise(neighbour.x-24,neighbour.y-16)
   end
- elseif not neighbour.petted and hero.resting and abs(hero.x+12-neighbour.x-8)<pet_range then
+ elseif (not neighbour.petted or rnd(pet_again)<1) and hero.resting and abs(hero.x+12-neighbour.x-8)<pet_range then
   neighbour.petting=pet_frames
   sfx(snd_pet)
  end
@@ -194,6 +196,7 @@ function draw_neighbour(neighbour)
  end
  for side=0,3 do line(x+arm+side,-24,hand_x+5+side,hand_y+2,shirt) end
  sspr(104,16,8,8,hand_x,hand_y,16,16)
+ if not neighbour.petted then spr(40,hand_x,hand_y+12,2,1) end
  pal(15,15)
 end
 
