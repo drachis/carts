@@ -141,6 +141,12 @@ def comments_in_modules():
 def main(argv):
     if "--no-comments" in argv:
         argv.remove("--no-comments")
+        # test carts may use stand-ins, so only this proves the real cart fits
+        for cart in glob.glob(os.path.join(HERE, "*.p8")):
+            count = subprocess.run([sys.executable, "count_tokens.py", cart], cwd=HERE, text=True, capture_output=True).stdout
+            if count.count(" free)") and "-" in count.split("free)")[0].split("(")[-1]:
+                print("FAIL: over the token limit: " + count.split("\n")[0])
+                return 1
         commented = comments_in_modules()
         if commented:
             print("FAIL: comments in the Lua; they belong in notes/<module>.md: " + ", ".join(commented))

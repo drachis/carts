@@ -45,9 +45,6 @@ end
 function draw_night(pan)
  camera()
  rectfill(0,0,127,pan*2,1)
- fillp(0x5a5a.8)
- rectfill(0,pan*2,127,pan*2+8,1)
- fillp()
  draw_stars(60,pan*2+1)
  local moon=130-pan*1.25
  circfill(96,moon,9,7)
