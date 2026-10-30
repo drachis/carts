@@ -69,6 +69,11 @@ cases={
   check=function() return hearts==1 and result.pats>0,"hearts "..hearts..", pats "..result.pats end,
  },
  {
+  name="a coin at her head is collected, once, though it misses her body",buttons={},frames=6,
+  setup=function() arena(40) thing_at("coin",hero.hx-3,hero.hy-8) end,
+  check=function() return coins==1 and #things==0,"coins "..coins end,
+ },
+ {
   name="losing the last heart is a game over",buttons={},frames=90,
   setup=function() arena(40) hearts=1 hurt_loretta(hero,hero.x+20) end,
   check=function() _draw() dump_screen("over") return mode=="over","mode "..mode end,

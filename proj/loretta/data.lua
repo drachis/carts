@@ -60,6 +60,7 @@ squirrel_patrol=40
 squirrel_flee=1.2
 squirrel_run=120
 squirrel_arc=40
+grab_reach=11
 camera_speed_change=0.12
 camera_lookahead=32
 camera_lookahead_speed=0.04

@@ -8,7 +8,7 @@ function update_things(hero)
   local act=_ENV["update_"..thing.name]
   if act then act(thing,hero) end
   local touch=_ENV["touch_"..thing.name]
-  if touch and respawn==0 and overlaps(hero,thing) then touch(thing,hero) end
+  if touch and not thing.gone and respawn==0 and overlaps(hero,thing) then touch(thing,hero) end
   if thing.gone then del(things,thing) end
  end
 end
@@ -57,8 +57,14 @@ function touch_coin(coin,hero)
  puff(coin.x+3,coin.y+3,6,10)
 end
 
-function update_coin(coin)
+function grab(thing,hero)
+ if respawn==0 and abs(thing.x+3-hero.hx)<grab_reach and abs(thing.y+3-hero.hy)<grab_reach then _ENV["touch_"..thing.name](thing,hero) end
+end
+update_bone=grab
+
+function update_coin(coin,hero)
  coin.y=min(coin.y+1,coin.land or coin.y)
+ grab(coin,hero)
 end
 
 function draw_coin(coin)
