@@ -1,7 +1,6 @@
 function _init()
  cartdata("loretta_corgi_quest")
  best=dget(0)
- apply_stats()
  set_palette()
  go_title()
 end
@@ -157,13 +156,7 @@ function draw_title()
  rect(86,36,126,76,14)
  print("player 1",90,39,7)
  print("loretta",92,46,9)
- for row,name in ipairs(stat_names) do
-  local y=47+row*6
-  print(name,88,y,6)
-  for bar=0,4 do
-   rectfill(110+bar*3,y,111+bar*3,y+3,bar<stats[name] and stat_colours[row] or 1)
-  end
- end
+ print("\f6speed \fe\16\16\16\f1\16\16\n\f6jump  \f9\16\16\16\f1\16\16\n\f6bark  \fb\16\16\f1\16\16\16\n\f6charm \fd\16\16\16\16\f1\16",88,53)
  outlined("\142 jump \151 bark \131 sit",8,121,7)
 end
 

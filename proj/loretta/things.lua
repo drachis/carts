@@ -52,6 +52,7 @@ end
 function touch_coin(coin,hero)
  coin.gone,hero.happy=true,30
  coins+=1
+ if coins%50==0 then new_thing(thing_specs.bone,view.x+36,-14,1) end
  add_score(coin_points)
  sfx(snd_coin)
  puff(coin.x+3,coin.y+3,6,10)
@@ -60,7 +61,14 @@ end
 function grab(thing,hero)
  if respawn==0 and abs(thing.x+3-hero.hx)<grab_reach and abs(thing.y+3-hero.hy)<grab_reach then _ENV["touch_"..thing.name](thing,hero) end
 end
-update_bone=grab
+
+function update_bone(bone,hero)
+ if bone.land then
+  bone.x+=(hero.hx-bone.x)/12
+  bone.y+=(hero.hy-bone.y)/12
+ end
+ grab(bone,hero)
+end
 
 function update_coin(coin,hero)
  coin.y=min(coin.y+1,coin.land or coin.y)
@@ -104,55 +112,49 @@ function draw_hydrant(hydrant)
 end
 
 function update_squirrel(squirrel,hero)
- if squirrel.state then
-  squirrel.x+=squirrel.vx
-  squirrel.y+=squirrel.vy
-  if squirrel.tree then
-   for step=1,8 do
-    if flag_at(squirrel.x+6,squirrel.y+11,0) then squirrel.y-=1 end
-   end
-   if not on_ledge(squirrel) and flag_at(squirrel.x+6,squirrel.y+40,0) then squirrel.y+=2 end
-   local gap=abs(squirrel.x-hero.x)
-   squirrel.vx=sgn(squirrel.vx)*(gap<48 and squirrel_dash or squirrel_flee)
-   if gap<100 then
-    chase+=1
-    hero.happy=30
-    if chase%30==0 then
-     add_score(chase\60+1)
-     float_text((chase\60+1).."0",hero.x+8,hero.y-16,chase>300 and 8 or chase>120 and 10 or 7)
-     puff(hero.x+4,hero.y+14,2+chase\60,7)
-    end
-   end
-  end
-  if squirrel.tree and (squirrel.x-squirrel.tree)*squirrel.vx>=0 then
-   squirrel.trunk,squirrel.vy,squirrel.tree,squirrel.top=squirrel.tree-6,-squirrel_climb,nil,squirrel.y-squirrel_height
-   sfx(snd_chitter)
-   squirrel.gone=squirrel.dive
-   if squirrel.dive then puff(squirrel.x+6,squirrel.y+6,12,11) end
-   for drop=0,min(2+chase\120,6) do
-    new_thing(thing_specs[19],squirrel.x+drop*7-4,squirrel.y-30-drop*9,squirrel.y)
-   end
-   chase=0
-  end
-  if squirrel.top then
-   squirrel.x,squirrel.vx=squirrel.trunk+sin(squirrel.age/squirrel_wind)*3,cos(squirrel.age/squirrel_wind)
-   if squirrel.y<squirrel.top then
-    squirrel.gone=true
-    puff(squirrel.x+6,squirrel.y,10,11)
-   end
+ if not squirrel.state and abs(hero.x-squirrel.x)>squirrel_wake then return end
+ if squirrel.top then
+  squirrel.y-=squirrel_climb
+  squirrel.x,squirrel.vx=squirrel.trunk+sin(squirrel.age/squirrel_wind)*3,cos(squirrel.age/squirrel_wind)
+  if squirrel.y<squirrel.top then
+   squirrel.gone=true
+   puff(squirrel.x+6,squirrel.y,10,11)
   end
   return
  end
- if abs(hero.x-squirrel.x)>squirrel_wake then return end
  if squirrel.vx==0 then squirrel.vx,squirrel.home=-squirrel_speed-squirrel_ramp*squirrel.x/level_w,squirrel.x end
- if squirrel.age%90<60 then
-  local ahead=squirrel.vx<0 and squirrel.x-1 or squirrel.x+squirrel.w
-  local below=squirrel.y+squirrel.h
-  if flag_at(ahead,squirrel.y+6,0) or not (flag_at(ahead,below,0) or flag_at(ahead,below,1)) or abs(squirrel.x+squirrel.vx-squirrel.home)>squirrel_patrol then
-   squirrel.vx=-squirrel.vx
-  else
-   squirrel.x+=squirrel.vx
+ squirrel.x+=squirrel.vx
+ for step=1,8 do
+  if flag_at(squirrel.x+6,squirrel.y+11,0) then squirrel.y-=1 end
+ end
+ if not on_ledge(squirrel) and flag_at(squirrel.x+6,squirrel.y+40,0) then squirrel.y+=2 end
+ local dir=sgn(squirrel.vx)
+ if not squirrel.tree then
+  if abs(squirrel.x-squirrel.home)>squirrel_patrol then squirrel.vx=-squirrel.vx end
+  return
+ end
+ local gap=(squirrel.x-hero.x)*dir
+ squirrel.vx=dir*mid(squirrel_flee,abs(hero.vx)+(squirrel_gap-gap)*0.04,squirrel_dash)
+ squirrel.leap=flag_at(squirrel.x+6+dir*20,squirrel.y+6,0) and 1 or squirrel.leap*0.96
+ chase_x=squirrel.x+6
+ if abs(gap)<100 then
+  chase+=1
+  hero.happy=30
+  if chase%30==0 then
+   pot+=1+max(80-abs(gap))\20
+   puff(hero.x+4,hero.y+14,2+chase\60,7)
   end
+ end
+ if (squirrel.x-squirrel.tree)*dir>=0 then
+  squirrel.trunk,squirrel.tree,squirrel.top=squirrel.tree-6,nil,squirrel.y-squirrel_height
+  sfx(snd_chitter)
+  squirrel.gone=squirrel.dive
+  if squirrel.dive then puff(squirrel.x+6,squirrel.y+6,12,11) end
+  for drop=0,min(2+chase\120,6) do
+   new_thing(thing_specs[19],squirrel.x+drop*7-4,squirrel.y-30-drop*9,squirrel.y)
+  end
+  add(floaters,{text=pot.."0",x=(squirrel.x+hero.x)/2,y=hero.y-16,life=40,colour=10,fly=pot})
+  chase,pot=0,0
  end
 end
 
@@ -171,13 +173,13 @@ function spook(squirrel,direction)
    if gap<best then tree,best,squirrel.dive=thing.x+4,gap,thing.name=="decor" end
   end
  end
- squirrel.state,squirrel.vx,squirrel.vy,squirrel.tree="spooked",sgn(tree-squirrel.x)*squirrel_flee,0,tree
+ squirrel.state,squirrel.vx,squirrel.tree,squirrel.leap="spooked",sgn(tree-squirrel.x)*squirrel_flee,tree,0
  sfx(snd_chitter)
 end
 
 function draw_squirrel(squirrel)
  local dir,links=sgn(squirrel.vx),squirrel.links or {}
- local hop,height=squirrel.x/squirrel_arc/2,squirrel.tree and 20 or 6
+ local hop,height=squirrel.x/squirrel_arc/2,squirrel.tree and 20+squirrel.leap*24 or 6
  local air=abs(sin(hop))
  local reach,mid_x,base=1.5+air*4,squirrel.x+6,squirrel.y+6
  local front_x,front_y,back_x,back_y=mid_x+dir*reach,base-air*height,mid_x-dir*reach,base-abs(sin(hop-dir*squirrel_lag))*height
@@ -204,6 +206,7 @@ function draw_squirrel(squirrel)
  end
  circfill(mid_x,mid_y+1,2,7)
  pset(head_x+dir,head_y,0)
+ if squirrel.tree and pot>0 then outlined(pot.."0",(mid_x+hero.x)/2+8,hero.y-16,10) end
 end
 
 function update_neighbour(neighbour,hero)
@@ -319,6 +322,11 @@ function update_effects()
  end
  for floater in all(floaters) do
   floater.y-=0.4
+  if floater.fly then
+   floater.x+=(view.x+100-floater.x)/8
+   floater.y+=(-14-floater.y)/8
+   if floater.life==0 then add_score(floater.fly) end
+  end
   floater.life-=1
   if floater.life<0 then del(floaters,floater) end
  end

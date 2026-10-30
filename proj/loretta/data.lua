@@ -54,17 +54,24 @@ squirrel_speed=0.35
 squirrel_ramp=0.4
 squirrel_wake=150
 squirrel_patrol=40
-squirrel_flee=1.2
+squirrel_flee=0.6
 squirrel_run=120
 squirrel_arc=40
+squirrel_gap=56
+pot=0
+run_max=1.3
+jump_a=2.85
+bark_reach=56
+pet_hearts=3
+pet_points=20
 squirrel_lag=0.07
-squirrel_dash=1.9
+squirrel_dash=3
 chase=0
 slide_speed=2.2
 slide_fric=0.02
 squirrel_far=200
 squirrel_climb=0.8
-squirrel_height=36
+squirrel_height=58
 squirrel_wind=24
 grab_reach=11
 ear_rise=4
@@ -151,7 +158,7 @@ theatre=r 0 -64 87 0 13/r 0 -64 3 0 5/r 84 -64 87 0 5/r 0 -66 87 -64 6/r 9 -57 1
 bookshop=r 0 -48 79 0 5/r 0 -50 79 -48 2/r 16 -46 63 -38 2/t 30 -44 7 books/r 6 -22 50 -4 1/l 7 -13 49 -13 6/l 7 -5 49 -5 6/r 9 -20 10 -14 8/r 12 -19 13 -14 11/r 15 -21 17 -14 14/r 20 -18 21 -14 9/r 24 -20 26 -14 13/r 30 -19 31 -14 7/r 9 -12 11 -6 13/r 14 -11 15 -6 9/r 18 -12 19 -6 8/r 23 -10 25 -6 11/r 28 -12 29 -6 14/r 58 -26 71 0 1/r 61 -23 68 -14 9
 lamp=r 3 -38 4 0 1/r 2 -2 5 0 1/c 4 -42 3 9/c 4 -42 2 15/c 4 -42 1 7
 bungalow=r 50 -46 55 -32 15/r 0 -32 63 0 15/r 0 -3 63 0 5/r -4 -38 67 -32 8/l -4 -35 67 -35 2/l -4 -38 67 -38 2/c 31 -18 6 4/r 25 -18 37 0 4/c 33 -9 0 10/c 12 -20 6 1/r 6 -20 18 -8 1/c 12 -20 4 9/r 8 -20 16 -10 9/l 12 -24 12 -10 1/c 51 -20 6 1/r 45 -20 57 -8 1/c 51 -20 4 9/r 47 -20 55 -10 9/l 51 -24 51 -10 1/c 41 -20 1 10
-jacaranda=r 10 -30 13 0 4/l 11 -30 3 -40 4/l 12 -30 21 -42 4/c 4 -40 9 13/c 19 -44 10 13/c 10 -50 9 13/c 27 -38 7 13/c 7 -44 4 14/c 20 -49 3 14/c 25 -40 2 14/c 12 -52 2 14/p -8 -56 44 56 14
+jacaranda=r 3 -34 6 0 4/l 4 -34 -4 -46 4/l 5 -34 14 -48 4/c -3 -46 9 13/c 12 -51 10 13/c 3 -57 9 13/c 20 -44 7 13/c 0 -51 4 14/c 13 -56 3 14/c 18 -46 2 14/c 5 -60 2 14/p -15 -64 44 56 14
 fern=l 4 0 -6 -5 3/l 4 0 -3 -11 11/l 4 0 2 -14 3/l 4 0 7 -14 11/l 4 0 12 -11 3/l 4 0 15 -5 11/l 4 0 -4 -9 11/l 4 0 13 -8 3
 footbridge=l 0 -10 47 -10 4/l 0 -9 47 -9 2/l 1 -10 1 0 4/l 23 -10 23 0 4/l 46 -10 46 0 4
 sycamore=r 6 -56 9 0 6/l 7 -40 -2 -52 6/l 8 -44 18 -58 6/r 6 -30 7 -22 13/r 8 -48 9 -40 13/c -2 -58 9 3/c 16 -62 11 3/c 6 -70 9 3/c 24 -52 7 3/c 2 -60 3 11/c 18 -66 3 11/c 22 -54 2 11
@@ -173,8 +180,8 @@ cafe=r 0 -28 39 0 4/r -3 -32 42 -28 2/r 4 -40 36 -33 4/t 12 -38 15 cafe/r 6 -22 
 petshop=r 0 -40 47 0 13/r 0 -42 47 -40 2/r 6 -38 41 -30 2/t 9 -36 7 pet/t 23 -36 7 shop/r 4 -24 30 -6 1/c 12 -15 2 7/c 9 -19 1 7/c 12 -20 1 7/c 15 -19 1 7/r 34 -26 44 0 4/r 18 -3 26 0 6/r 19 -3 25 -2 12
 hollyhock=r 20 -36 43 -32 13/r -2 -32 65 -28 13/r 0 -28 63 0 15/l 0 -26 63 -26 5/l 0 -24 63 -24 5/r 8 -20 11 -6 1/r 20 -20 23 -6 1/r 40 -20 43 -6 1/r 52 -20 55 -6 1/r 28 -18 35 0 4
 fountain=r 0 -14 7 0 6/r -1 -16 8 -14 5/l 4 -16 4 -19 6/l 5 -19 7 -18 12/r 9 -3 15 0 6/r 10 -3 14 -2 12
-palm=r 4 -38 5 0 4/l 4 -38 -7 -33 3/l 5 -38 16 -33 3/l 4 -39 -4 -45 11/l 5 -39 13 -45 11/l 4 -40 4 -47 3/l 4 -38 -8 -37 11/l 5 -38 17 -37 11
-orange=r 3 -14 5 0 4/c 4 -21 8 3/c -1 -18 4 3/c 9 -19 4 3/c 4 -26 4 11/c 1 -22 1 9/c 7 -16 1 9/c 4 -25 1 9/c 10 -21 1 9/c -1 -16 1 9
+palm=r 4 -57 5 0 4/l 4 -57 -7 -50 3/l 5 -57 16 -50 3/l 4 -58 -4 -68 11/l 5 -58 13 -68 11/l 4 -60 4 -70 3/l 4 -57 -8 -56 11/l 5 -57 17 -56 11
+orange=r 3 -32 5 0 4/c 4 -48 8 3/c -1 -41 4 3/c 9 -44 4 3/c 4 -60 4 11/c 1 -51 1 9/c 7 -37 1 9/c 4 -57 1 9/c 10 -48 1 9/c -1 -37 1 9
 birdbath=r 2 -10 5 0 6/r -2 -12 9 -10 6/r -1 -12 8 -11 13/c 6 -14 1 4
 agave=l 3 0 -3 -8 3/l 3 0 0 -10 11/l 4 0 4 -11 3/l 4 0 8 -10 11/l 4 0 11 -7 3/l 3 0 -5 -4 11
 pot=r 0 -6 7 0 4/r -1 -7 8 -6 9/c 3 -11 4 11/c 1 -13 1 14/c 6 -12 1 14/c 3 -15 1 14
@@ -193,19 +200,4 @@ slot_kinds={house=split"bungalow,craftsman,cafe,bungalow,bookshop,craftsman",tre
 walls,roofs,cloths,skins,coin_frames=split"15,14,6,13",split"8,4,2,3",split"14,12,3,10,8,13",split"15,4,9",split"34,34,34,34,34,36,38,36"
 praises=split"who's a sweet pup!,best dog on the block!,what a little loaf!,treat earned!,tail wags all round!,such a fine corgi!"
 
-stat_names=split"speed,jump,bark,charm"
-stat_colours=split"14,9,11,13"
-stats=parse_record[[
-speed=3
-jump=3
-bark=2
-charm=4
-]]
 
-function apply_stats()
- run_max=0.85+stats.speed*0.15
- jump_a=2.4+stats.jump*0.15
- bark_reach=32+stats.bark*12
- pet_hearts=1+stats.charm\2
- pet_points=stats.charm*5
-end

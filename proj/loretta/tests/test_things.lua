@@ -22,7 +22,7 @@ cases={
   check=function()
    local dropped=0
    for thing in all(things) do if thing.land then dropped+=1 end end
-   return hearts==max_hearts and result.squirrel.vy<0 and abs(result.squirrel.x-168)<4 and dropped+coins==3,"hearts "..hearts..", up at x "..result.squirrel.x..", climbing "..result.squirrel.vy..", coins "..dropped.."+"..coins
+   return hearts==max_hearts and result.squirrel.top and abs(result.squirrel.x-168)<4 and dropped+coins==3,"hearts "..hearts..", up at x "..result.squirrel.x..", coins "..dropped.."+"..coins
   end,
  },
  {

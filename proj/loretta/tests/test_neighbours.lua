@@ -1,4 +1,4 @@
--- test_neighbours.lua : a neighbour's pats, treat and where they stand; hedges.
+-- test_neighbours.lua : a neighbour's pats, treat and where they stand; the slide.
 
 cases={
  {
@@ -32,13 +32,9 @@ cases={
   check=function() return hearts==1 and result.pats>0,"hearts "..hearts..", pats "..result.pats end,
  },
  {
-  name="a belly slide goes through a hedge wall",buttons={1,3},frames=70,
-  setup=function() arena(40) mset(12,10,14) mset(12,11,14) hero.vx=1.3 end,
-  check=function() mset(12,10,0) mset(12,11,0) return hero.x>100,"x "..hero.x end,
- },
- {
-  name="inside a hedge she can still walk out",buttons={1},frames=40,
-  setup=function() arena(88) mset(12,10,14) mset(12,11,14) end,
-  check=function() mset(12,10,0) mset(12,11,0) return hero.x>110,"x "..hero.x end,
+  name="one tap of down at a run is a slide past her top speed, and she keeps going with no more buttons",buttons={},frames=20,every_frame=true,
+  setup=function() arena(40) hero.vx=1.3 hero.held=0 result.top=0 update_loretta(hero,8) end,
+  each=function() result.top=max(result.top,abs(hero.vx)) end,
+  check=function() return result.top>run_max and hero.sliding and hero.state=="sploot","top "..result.top..", "..hero.state end,
  },
 }

@@ -29,7 +29,6 @@ function _draw()
 end
 
 function _init()
- apply_stats()
  set_palette()
  level,score,coins=1,0,0
  start_level()

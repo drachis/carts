@@ -597,7 +597,7 @@ SPRITES = {
 # rising to the right, 4 a slope rising to the left (solid only below the
 # diagonal), 7 drawn by the map (markers have no flag 7, so the map skips
 # them: they stay in their chunks, which are shared)
-FLAGS = {14: 32, 1: 1, 2: 1, 3: 1, 4: 2, 5: 4, 6: 4, 9: 1 | 8, 10: 1 | 16, 11: 2, 12: 2, 13: 1}
+FLAGS = {14: 1, 1: 1, 2: 1, 3: 1, 4: 2, 5: 4, 6: 4, 9: 1 | 8, 10: 1 | 16, 11: 2, 12: 2, 13: 1}
 FLAGS.update({tile: FLAGS.get(tile, 0) | 128 for tile in range(1, 15)})
 
 # the level: eight sections of 32 by 16 tiles, side by side. the first four
