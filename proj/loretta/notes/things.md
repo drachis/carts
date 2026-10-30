@@ -8,7 +8,7 @@ A stomp needs her falling with her feet in the squirrel's top half; any other to
 Keep: squirrels never cost a heart; the user wanted to chase them, not run into them.
 
 **things.lua:158** `function update_neighbour(neighbour,hero)`
-Sitting within pet_range of a neighbour starts the petting; at its end her hearts fill by pet_hearts, once a neighbour.
+Sitting within pet_range (64, the zone the user circled: about a dog length either side) of a neighbour starts the petting; at its end her hearts fill by pet_hearts, once a neighbour.
 
 **things.lua:183** `function draw_neighbour(neighbour)`
 The neighbour is a tall adult seen from a corgi's height: one of four Los Feliz outfits (sprite 99 on, 10x16 each: sundress, bowling shirt, overalls, jumpsuit, by place) stretched from off the top of the screen to the shoes, skin (f) swapped from skins, the head never seen. Petting, they step in behind her shoulders (step) and the arm on her head's side swings down; a big hand (twice size) lands: pat, pat, pat, a pause (40-frame beat); each pat dips her head (flop) and knocks her ears sideways. Until the first pats they hold a bone treat. Only the first pats restore hearts; after that, while she sits by them, they pat again at random (1 in pet_again a frame).
