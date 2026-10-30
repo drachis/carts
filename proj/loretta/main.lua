@@ -149,12 +149,11 @@ function draw_title()
  for sparkle=1,6 do
   if (t()*1.5+sparkle/6)%1<0.5 then spr(44,sparkle*41%120,8+sparkle*13%40) end
  end
- rectfill(1,36,44,62,0)
- rect(1,36,44,62,14)
- if t()%1<0.6 then print("\145",3,40,14) end
- print("start",13,40,7)
- print("best",4,48,6)
- print(score_text(best),4,55,10)
+ rectfill(1,34,34,46,0)
+ rect(1,34,34,46,14)
+ if t()%1<0.6 then print("\145",3,36,14) end
+ print("start",13,36,7)
+ print(score_text(best),4,41,10)
  rectfill(86,36,126,76,0)
  rect(86,36,126,76,14)
  print("player 1",90,39,7)
