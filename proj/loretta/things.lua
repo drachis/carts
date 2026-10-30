@@ -78,7 +78,7 @@ function draw_hydrant(hydrant)
  if hydrant.lit and t()%1<0.5 then spr(140,hydrant.x+1,hydrant.y-10) end
 end
 
-function update_squirrel(squirrel)
+function update_squirrel(squirrel,hero)
  if squirrel.state then
   squirrel.x+=squirrel.vx
   squirrel.y+=squirrel.vy
@@ -86,11 +86,12 @@ function update_squirrel(squirrel)
   if squirrel.y>140 or squirrel.y<-16 then squirrel.gone=true end
   return
  end
- if squirrel.vx==0 then squirrel.vx=-squirrel_speed end
+ if abs(hero.x-squirrel.x)>squirrel_wake then return end
+ if squirrel.vx==0 then squirrel.vx,squirrel.home=-squirrel_speed-squirrel_ramp*squirrel.x/level_w,squirrel.x end
  if squirrel.age%90<60 then
   local ahead=squirrel.vx<0 and squirrel.x-1 or squirrel.x+squirrel.w
   local below=squirrel.y+squirrel.h
-  if flag_at(ahead,squirrel.y+6,0) or not (flag_at(ahead,below,0) or flag_at(ahead,below,1)) then
+  if flag_at(ahead,squirrel.y+6,0) or not (flag_at(ahead,below,0) or flag_at(ahead,below,1)) or abs(squirrel.x+squirrel.vx-squirrel.home)>squirrel_patrol then
    squirrel.vx=-squirrel.vx
   else
    squirrel.x+=squirrel.vx

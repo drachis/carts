@@ -119,6 +119,14 @@ little dog doing it. Short legs, big ears, a wagging nub of a tail.
      viewer, the observatory.
   The Hollywood sign stands on its own far peak through the climb.
   Squirrels, coins, bones, three hydrants.
+- The challenge grows along the trail (the user asked for a bot to check
+  it): Vermont and the lawns teach (one squirrel each, no water), Fern
+  Dell's stream is two planks and one gap, the yard adds a garden pond and
+  three squirrels, the trailhead squirrels on its slopes, the ravine a
+  5-tile gap that needs a held jump, the switchback a 4-tile pit in its
+  dip, and the observatory lawn a 4-tile reflecting pool and a gauntlet of
+  three squirrels. Squirrels sleep until she is near, patrol near where
+  they were placed, and get faster along the level.
 - Set pieces are data: a line of drawing steps each in data.lua's shapes,
   placed by a letter in the level text (gen_cart.py LETTER_TILES).
 - HUD: three hearts, the paw coin count, and the score in seven digits.
@@ -157,12 +165,23 @@ little dog doing it. Short legs, big ears, a wagging nub of a tail.
 - test_level: a bot that cannot be hurt runs right, jumping at walls and
   gaps, and must reach the observatory. It proves the level can be
   crossed, not that it is fair or fun.
+- bot_playthrough (not in the suite: about a minute; run it with
+  `py run_tests.py tests/bot_playthrough.p8`, then
+  `py challenge_report.py`): twelve imperfect bots, each with its own
+  reach of sight and jump hold, play the level able to be hurt and lose.
+  The report gives each section's runs, seconds, jumps, hits, falls and
+  deaths, a challenge score (hits + 2 falls + 4 deaths per run, plus jumps
+  a second) and whether it grows. Last measured: 0.77, 0.61, 0.91, 0.80,
+  1.27, 1.01, 2.29, 2.48 from the street to the observatory; 6 of 12 won.
+  The bots never sit, bark, heal or turn back, so a person should find it
+  easier; how hard a jump feels is not measured.
 
 ## Not built yet, or not checked
 
 - Nobody has played it. No one has heard the sounds or music.
-- The level is short: a bot runs it in 24 seconds. Its shapes have not
-  been tuned for fun, only checked crossable.
+- The level is short: a bot runs it in 24 seconds. Its challenge curve is
+  measured by bots, not by a person.
+- Loretta's ears whip sideways for a few frames when she turns round.
 - In the high sections (6-8) the bottom half of the screen is solid dirt.
   A ridge with the city's lights below it would show where she has come
   from.

@@ -515,12 +515,11 @@ LAWNS = [EMPTY] * 8 + [
 ] + [GROUND] * 4
 # Fern Dell: a stream under plank footbridges with rails (R), ferns (F),
 # a sycamore (T), and its wooden sign (W)
-STREAM = [EMPTY] * 6 + [
-    "." * 15 + "oooo" + "." * 13,
-    "." * 14 + "R.." + "b" + "." * 14,
-    "." * 14 + "=" * 6 + "." * 12,
-    "." * 6 + "Roooo" + "." * 10 + "Roooo" + "." * 6,
-    "." * 6 + "=" * 6 + "." * 9 + "=" * 6 + "." * 5,
+STREAM = [EMPTY] * 7 + [
+    "." * 13 + "oooo" + "." * 15,
+    EMPTY,
+    "." * 5 + "R" + "." * 11 + "R" + "..." + "b" + "." * 10,
+    "." * 5 + "=" * 8 + "." * 4 + "=" * 10 + "." * 5,
     ".FW" + "." * 25 + "F.T.",
 ] + ["####" + "." * 24 + "####"] * 2 + ["####" + "~" * 24 + "####"] * 2
 # a yard: a picket fence (P), a mailbox (X), the neighbour, and a
@@ -530,14 +529,14 @@ YARD = [EMPTY] * 7 + [
     "." * 17 + "=" * 8 + "." * 7,
     EMPTY,
     EMPTY,
-    "P.h...ff.X..n..H....s.....f..s..",
-] + [GROUND] * 4
+    "P.h...ff.X..n..H....s..s.....s..",
+] + ["#" * 25 + "..." + "####"] * 2 + ["#" * 25 + "~~~" + "####"] * 2
 # Griffith Park's trailhead: its wooden sign (U) and chaparral (Q) up the
 # slopes; the Hollywood sign is on the far hills (scenery.lua)
 TRAILHEAD = [EMPTY] * 7 + [
-    "." * 18 + "o.o.o.o" + "." + "s" + ".." + "Q" + "..",
+    "." * 16 + "s." + "o.o.o.o" + "." + "s" + ".." + "Q" + "..",
     "." * 15 + "/" + "#" * 16,
-    "." * 9 + "Q" + "o.o" + "." + "/" + "#" * 17,
+    "." * 9 + "Q" + "oso" + "." + "/" + "#" * 17,
     "." * 7 + "/" + "#" * 24,
     ".U..Q." + "/" + "#" * 25,
 ] + [GROUND] * 4
@@ -545,20 +544,20 @@ TRAILHEAD = [EMPTY] * 7 + [
 RAVINE = [EMPTY] * 6 + [
     "." * 11 + "oooooo" + "." * 15,
     "..h" + "..." + "Q" + "." * 13 + "Z" + "..." + "s" + "." * 7,
-    "#" * 10 + ".." + "====" + ".." + "#" * 14,
-] + ["#" * 10 + "." * 8 + "#" * 14] * 5 + ["#" * 10 + "~" * 8 + "#" * 14] * 2
+    "#" * 11 + "." * 5 + "#" * 16,
+] + ["#" * 11 + "." * 5 + "#" * 16] * 5 + ["#" * 11 + "~" * 5 + "#" * 16] * 2
 # a switchback: a split-rail fence (V), a hiker resting by a bench (E) in
 # the dip, a sycamore
 SWITCHBACK = [EMPTY] * 7 + [
-    "V" + "." * 24 + "T" + "o.o.o" + ".",
+    "V" + "." * 24 + "T" + "o.o.o" + "s",
     "#" * 8 + "\\" + "." * 14 + "/" + "#" * 8,
-    "#" * 9 + "\\" + "..." + "n" + ".." + "E" + "." * 5 + "/" + "#" * 9,
-] + [GROUND] * 6
+    "#" * 9 + "\\" + "." + "s" + "." + "n" + "E" + "." * 7 + "/" + "#" * 9,
+] + ["#" * 17 + "...." + "#" * 11] * 4 + ["#" * 17 + "~~~~" + "#" * 11] * 2
 # the observatory lawn: the Astronomers Monument (A), lamps, the
 # observatory itself (G) and a coin-op viewer (C) looking out over the city
 LAWN_TOP = [EMPTY] * 7 + [
-    "....f..A..sY......G.......Y.C.f.",
-] + [GROUND] * 8
+    "..s.fs.A....sY....G.......Y.C.f.",
+] + ["#" * 8 + "...." + "#" * 20] * 6 + ["#" * 8 + "~~~~" + "#" * 20] * 2
 LEVEL_SECTIONS = [STREET, LAWNS, STREAM, YARD, TRAILHEAD, RAVINE, SWITCHBACK, LAWN_TOP]
 LETTER_TILES = {".": 0, "=": 4, "f": 7, ",": 8, "/": 9, "\\": 10, "-": 11, "^": 12, "_": 13,
                 "L": 16, "S": 17, "G": 18, "o": 19, "b": 20, "s": 21, "h": 22, "n": 23,
