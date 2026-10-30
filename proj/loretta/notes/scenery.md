@@ -21,3 +21,4 @@ The observatory far off on the hills, growing as she nears it; a light comes on 
 **Finale**
 Winning the last level pans the view up 80px (main.lua _draw): night sweeps down the sky with a dithered edge, stars fill it (draw_stars), the moon rises. test carts with plain_sky have an empty draw_night.
 **Keep:** a star's position never depends on anything that changes: scaling it by the sky's height made every star jump each frame of the pan (the user saw noise). Night reveals fixed stars with clip.
+The finale's banner leaves after 150 frames and the moon takes ten seconds to rise: the night sky is the player's reward (the user). O still returns to the title, with no prompt on screen.

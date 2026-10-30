@@ -28,7 +28,7 @@ end
 function go_title()
  level,score,coins=1,0,0
  start_level()
- mode,hero.held="title",0
+ mode="title"
  play_music(0)
 end
 
@@ -181,7 +181,7 @@ function _draw()
  if mode=="title" then draw_title() else draw_hud() end
  if mode=="win" then
   local last=level==#levels
-  draw_banner((last and "you made it!|loretta saw the stars" or landmarks[level].."!|"..praises[level]).."|score "..score_text(score)..(hearts==0 and (last and "|\142 back to the start" or "|\142 on to "..level_names[level+1]) or ""),74)
+  if not last or mode_frames<150 then draw_banner((last and "you made it!|loretta saw the stars" or landmarks[level].."!|"..praises[level]).."|score "..score_text(score)..(hearts==0 and not last and "|\142 on to "..level_names[level+1] or ""),74) end
  end
  if mode=="over" then draw_banner("loretta needs a nap|score "..score_text(score).."|\142 try again",22) end
 end

@@ -48,7 +48,7 @@ function draw_night(pan)
  clip(0,0,128,pan*2)
  draw_stars(60)
  clip()
- local moon=130-pan*1.25
+ local moon=max(30,130-mode_frames/6)
  circfill(96,moon,9,7)
  circfill(93,moon-3,2,6)
  circfill(99,moon+3,1,6)
@@ -105,9 +105,7 @@ function draw_far_observatory(cam_x,colour)
  rectfill(x-9*size,y-6*size,x+9*size,y,colour)
  circfill(x-8*size,y-6*size,2*size,colour)
  circfill(x+8*size,y-6*size,2*size,colour)
- if title or progress()>0.3 then
-  for window=-2,2 do pset(x+window*3*size,y-3*size,10) end
- end
+ for window=-2,2 do pset(x+window*3*size,y-3*size,10) end
 end
 
 function draw_palms(cam_x)
