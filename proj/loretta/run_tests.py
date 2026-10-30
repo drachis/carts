@@ -122,6 +122,22 @@ class Run:
             self.process.wait()
 
 
+def stripped(path):
+    """A Lua module without comment lines, blank lines or indents, for a release
+    build. Multi-line strings keep their blank lines and text."""
+    out, in_string = [], False
+    with open(path, encoding="utf-8") as handle:
+        for line in handle.read().split("\n"):
+            bare = line.strip()
+            if in_string:
+                out.append(line)
+            elif bare and not bare.startswith("--"):
+                out.append(bare)
+            if bare.count("[[") != bare.count("]]"):
+                in_string = not in_string
+    return "\n".join(out) + "\n"
+
+
 def comments_in_modules():
     """Where the game's own Lua has a comment, as "module:line"."""
     found = []
