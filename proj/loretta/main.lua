@@ -166,8 +166,11 @@ end
 function _draw()
  cls()
  local cam=camera_x()
+ local pan=mode=="win" and level==#levels and min(mode_frames/3,80) or 0
+ camera(0,-pan)
  draw_backdrop(cam)
- camera(cam+(shake%4<2 and 0 or shake\4),-view_drop)
+ if pan>0 then draw_night(pan) end
+ camera(cam+(shake%4<2 and 0 or shake\4),-view_drop-pan)
  draw_things(1)
  draw_level(cam)
  draw_things()

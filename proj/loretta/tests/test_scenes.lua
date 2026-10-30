@@ -25,6 +25,10 @@ function _update60()
    section+=1
    dump_screen("scene_"..section)
   else
+   camera(0,-80)
+   draw_backdrop(0)
+   draw_night(80)
+   dump_screen("night")
    local function backdrop_row(cam_x,shift)
     view.x=cam_x
     camera()

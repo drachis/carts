@@ -95,15 +95,6 @@ function update_loretta(hero,input)
  animate_loretta(hero)
 end
 
-function hurt_loretta(hero,from_x)
- if hero.hurt>0 then return end
- hearts-=1
- hero.hurt,hero.vx,hero.vy=hurt_frames,sgn(hero.x+12-from_x)*knock_x,-knock_y
- shake=8
- sfx(snd_hurt)
- if hearts<=0 then game_over() end
-end
-
 function fall_in(hero)
  hearts-=1
  respawn=respawn_frames

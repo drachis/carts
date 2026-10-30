@@ -123,7 +123,7 @@ function update_squirrel(squirrel,hero)
   return
  end
  if not squirrel.state and abs(hero.x-squirrel.x)<squirrel_gap then spook(squirrel,sgn(squirrel.x-hero.x)) end
- if squirrel.vx==0 then squirrel.vx,squirrel.home=-squirrel_speed-squirrel_ramp*squirrel.x/level_w,squirrel.x end
+ if squirrel.vx==0 then squirrel.vx,squirrel.home=-squirrel_speed,squirrel.x end
  squirrel.x+=squirrel.vx
  for step=1,8 do
   if flag_at(squirrel.x+6,squirrel.y+11,0) then squirrel.y-=1 end
@@ -137,7 +137,8 @@ function update_squirrel(squirrel,hero)
  local gap=(squirrel.x-hero.x)*dir
  squirrel.vx=dir*mid(squirrel_flee,abs(hero.vx)+(squirrel_gap-gap)*0.04,squirrel_dash)
  squirrel.leap=flag_at(squirrel.x+6+dir*20,squirrel.y+6,0) and 1 or squirrel.leap*0.96
- if abs(gap)<squirrel_safe then chase_x=squirrel.x+6 end
+ squirrel.held=abs(gap)<(squirrel.held and 100 or 80)
+ if squirrel.held then chase_x=squirrel.x+6 end
  if abs(gap)<100 then
   chase+=1
   hero.happy=30

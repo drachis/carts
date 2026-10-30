@@ -5,3 +5,4 @@
 
 function set_palette() end
 function draw_backdrop() cls(1) end
+function draw_night() end

@@ -60,12 +60,12 @@ cases={
  },
  {
   name="a squirrel past the safe zone is not followed",buttons={},frames=2,every_frame=true,
-  setup=function() arena(40) spook(squirrel_at(40+squirrel_safe+40),1) chase_x=nil end,
+  setup=function() arena(40) spook(squirrel_at(200),1) chase_x=nil end,
   check=function() return not chase_x,"chase_x "..tostr(chase_x) end,
  },
  {
   name="losing the last heart is a game over",buttons={},frames=90,
-  setup=function() arena(40) hearts=1 hurt_loretta(hero,hero.x+20) end,
+  setup=function() arena(40) hearts=1 fall_in(hero) end,
   check=function() _draw() dump_screen("over") return mode=="over","mode "..mode end,
  },
  {

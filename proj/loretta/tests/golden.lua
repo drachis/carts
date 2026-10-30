@@ -29,8 +29,7 @@ function _update60()
   left-=1
   local input=plan[at+1] or 0
   function read_input() return input end
-  if frame==700 then hurt_loretta(hero,hero.x+20) end
-  if frame==1400 then hearts=1 hurt_loretta(hero,hero.x+20) end
+  if frame==1400 then hearts=1 fall_in(hero) end
   game_update_frame()
   game_draw()
   line_of(hero)

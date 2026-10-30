@@ -961,5 +961,17 @@ def main():
     print("wrote art and sound into %d of %d carts" % (written, len(carts)))
 
 
+def write_title_scenery():
+    """scenery.lua without the finale, for test_title: the title never calls
+    it, and the whole game plus even a tiny test must fit 8192 tokens."""
+    with open(os.path.join(HERE, "scenery.lua"), encoding="utf-8") as handle:
+        text = handle.read()
+    start = text.index("function draw_night(pan)")
+    end = text.index("function draw_backdrop(cam_x)")
+    with open(os.path.join(HERE, "tests", "title_scenery.lua"), "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(text[:start] + text[end:])
+
+
 if __name__ == "__main__":
+    write_title_scenery()
     main()

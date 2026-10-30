@@ -5,7 +5,7 @@ __lua__
 log_name="log_title"
 #include ../data.lua
 #include ../world.lua
-#include ../scenery.lua
+#include title_scenery.lua
 #include ../loretta.lua
 #include ../things.lua
 #include ../camera.lua
