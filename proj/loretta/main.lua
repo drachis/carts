@@ -12,7 +12,7 @@ end
 
 function start_level()
  load_level()
- hearts,shake,respawn,mode_frames=max_hearts,0,0,0
+ hearts,respawn,mode_frames=max_hearts,0,0
  barks,puffs,floaters={},{},{}
  hero,respawn_x,respawn_y=new_loretta(16,82),16,82
  for thing in all(things) do
@@ -92,7 +92,7 @@ function update_win()
  if mode_frames%60==40 then float_text("aroo!",hero.x,hero.y-10,7) end
  if mode_frames>=60 and mode_frames%20==0 and hearts>0 then
   hearts-=1
-  add_score(heart_bonus)
+  score+=heart_bonus
   sfx(snd_coin)
   if hearts==0 then save_best() end
  end
@@ -170,7 +170,7 @@ function _draw()
  camera(0,-pan)
  draw_backdrop(cam)
  if pan>0 then draw_night(pan) end
- camera(cam+(shake%4<2 and 0 or shake\4),-view_drop-pan)
+ camera(cam,-view_drop-pan)
  draw_things(1)
  draw_level(cam)
  draw_things()

@@ -1,7 +1,3 @@
-function add_score(points)
- score+=points
-end
-
 function update_things(hero)
  for thing in all(things) do
   thing.age+=1
@@ -53,7 +49,7 @@ function touch_coin(coin,hero)
  coin.gone,hero.happy=true,30
  coins+=1
  if coins%50==0 then new_thing(thing_specs.bone,view.x+36,-14,1) end
- add_score(coin_points)
+ score+=coin_points
  sfx(snd_coin)
  puff(coin.x+3,coin.y+3,6,10)
 end
@@ -87,7 +83,7 @@ function touch_bone(bone,hero)
   hearts+=1
   float_text("\135",hero.x+10,hero.y-8,8)
  else
-  add_score(bone_points)
+  score+=bone_points
   float_text("munch!",hero.x,hero.y-8,7)
  end
 end
@@ -220,7 +216,7 @@ function update_neighbour(neighbour,hero)
   if neighbour.petting==0 then
    if not neighbour.petted then
     hearts=min(hearts+pet_hearts,max_hearts)
-    add_score(pet_points)
+    score+=pet_points
    end
    neighbour.petted=true
    praise(neighbour.x-24,neighbour.y-16)
@@ -308,7 +304,6 @@ function float_text(text,x,y,colour)
 end
 
 function update_effects()
- shake=max(shake-1)
  for bit in all(puffs) do
   bit.x+=bit.vx
   bit.y+=bit.vy
@@ -321,7 +316,7 @@ function update_effects()
   if floater.fly then
    floater.x+=(view.x+100-floater.x)/8
    floater.y+=(-14-floater.y)/8
-   if floater.life==0 then add_score(floater.fly) end
+   if floater.life==0 then score+=floater.fly end
   end
   floater.life-=1
   if floater.life<0 then del(floaters,floater) end

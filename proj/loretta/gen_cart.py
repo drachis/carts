@@ -14,7 +14,6 @@ import glob
 import os
 import time
 
-import corgi_art
 import level_gen
 from png import write_png
 
@@ -186,10 +185,6 @@ BODY[5] = BODY[5][:26] + "07" + BODY[5][28:]
 BODY[6] = BODY[6][:26] + "00" + BODY[6][28:]
 # her legs, three rows under the body: the near ones four wide, the far
 # ones two wide and darker, drawn first so the near ones cover them
-NEAR_BACK = ["4999", "6777", "6776"]
-NEAR_FRONT = ["7776", "7776", "6776"]
-FAR_BACK = ["44", "44", "66"]
-FAR_FRONT = ["66", "66", "66"]
 
 
 def legs(*parts):
@@ -216,17 +211,9 @@ def edit(text, changes):
     return "\n".join("".join(row) for row in rows)
 
 
-CORGI_STAND = corgi((9, FAR_BACK, 0), (22, FAR_FRONT, 0), (4, NEAR_BACK, 0), (17, NEAR_FRONT, 0))
 # the wag: her fluffy rump nub flicks up a row
-CORGI_WAG = edit(CORGI_STAND, [(0, 3, ".44."), (0, 4, "4774"), (0, 5, ".499"), (0, 6, ".499")])
-CORGI_RUN_A = corgi((8, FAR_BACK, 1), (24, FAR_FRONT, 1), (2, NEAR_BACK, 0), (20, NEAR_FRONT, 0))
-CORGI_RUN_B = corgi((5, FAR_BACK, 0), (19, FAR_FRONT, 0), (8, NEAR_BACK, 1), (14, NEAR_FRONT, 1))
-CORGI_JUMP = corgi((5, NEAR_BACK, 1), (9, FAR_BACK, 2), (18, NEAR_FRONT, 1), (22, FAR_FRONT, 2))
 # falling and paddling at the air with her short legs: two frames
-CORGI_PADDLE_A = corgi((3, NEAR_BACK, 0), (9, FAR_BACK, 2), (19, NEAR_FRONT, 2), (23, FAR_FRONT, 0))
-CORGI_PADDLE_B = corgi((6, NEAR_BACK, 2), (8, FAR_BACK, 0), (16, NEAR_FRONT, 0), (22, FAR_FRONT, 2))
 # the bark: her jaw drops open
-CORGI_BARK = edit(CORGI_STAND, [(29, 8, "00."), (28, 9, "8ee."), (27, 10, "76e..")])
 
 
 def part(text, left, width, height, size):
@@ -248,13 +235,8 @@ def her(text, width, height, colours=None):
     return text.replace(".", "c")
 
 
-FAR = {"9": "4", "e": "f"}
 # in play her body and ears are drawn by loretta.lua from her skeleton;
 # only the face is a sprite. the ears here are for the title's player card.
-LORETTA_PARTS = {
-    60: her(corgi_art.ear(0, True), 16, 16), 62: her(corgi_art.ear(0, False), 16, 16, FAR),
-    96: her(corgi_art.face(), 24, 16),
-}
 
 # her body is drawn by loretta.lua: a spine of round segments and four
 # legs worked out by IK. her head is a sprite, after the user's picture: big
@@ -282,47 +264,9 @@ HEAD = """
 """
 # no outline where the back of her head sits on her shoulder
 HEAD = edit(HEAD, [(0, 6, "9"), (0, 7, "9"), (0, 8, "9"), (1, 9, "9"), (1, 10, "9"), (2, 11, "7")])
-HEAD_EARS_BACK = edit(HEAD,[(0, 0, "." * 16), (0, 1, ".44.....44......"), (0, 2, ".4994..4994.....")])
-HEAD_TONGUE = edit(HEAD, [(10, 11, "ee."), (10, 12, "e..")])
-HEAD_EARS_BACK_TONGUE = edit(HEAD_EARS_BACK, [(10, 11, "ee."), (10, 12, "e..")])
-HEAD_BARK = edit(HEAD, [(10, 8, "00"), (9, 9, "0000"), (9, 10, "0880"), (10, 11, "ee")])
-HEAD_BLINK = edit(HEAD, [(3, 6, "4"), (10, 6, "4")])
-SIT_LEFT = ["." * 19] * 5 + [
-    "." * 14 + "4" * 5,
-    "." * 11 + "444" + "9" * 5,
-    "." * 9 + "44" + "f" * 3 + "9" * 5,
-    "." * 7 + "44" + "9" + "fff" + "9" * 6,
-    "." * 5 + "44" + "9" * 12,
-    "." * 4 + "4" + "9" * 10 + "7" * 4,
-    "." * 3 + "4" + "9" * 10 + "7" * 5,
-    "." * 3 + "4" + "9" * 9 + "7" * 6,
-    ".." + "4" + "9" * 8 + "4" + ".." + "7" * 4 + "6",
-    ".." + "4" + "9" * 7 + "4" + "..." + "7" * 4 + "6",
-    "." + "6777776" + "." * 6 + "6776" + ".",
-]
-CORGI_SIT = "\n".join(SIT_LEFT[y] + (BODY[y][19:] if y < 13 else "." * 13) for y in range(16))
 # asleep: lying flat, ears down, eyes shut
-CORGI_NAP = edit("\n".join(["." * 32] * 5 + BODY[2:]), [(26, 8, "99"), (26, 9, "44")])
 
 # her face for the player card, 16x16
-CORGI_FACE = """
-.9............9.
-.99..........99.
-.9e9........9e9.
-.9ee9......9ee9.
-.9ee99999999ee9.
-..9e99977999e9..
-..999997799999..
-.99909977990999.
-.99999777799999.
-..999777777999..
-..997770077799..
-...7777007777...
-...777e88e777...
-....77eeee77....
-.....b7ee7b.....
-....bbbaabbb....
-"""
 COIN = """
 ................
 .....999999.....
@@ -352,49 +296,10 @@ BONE = """
 ................
 """
 # a squirrel facing right: a big curled tail behind, ears up, a peach belly
-SQUIRREL_A = """
-..2222..........
-.244442.........
-24499442........
-2499f9942...2...
-249f9f9442.242..
-2499f942.2444442
-2499994224440442
-.249994244444ff0
-..2494244444ff2.
-...24424444fff2.
-.....2444444fff.
-....24444444fff2
-....244444444ff2
-.....24444444f2.
-....24442..242..
-...244442..2442.
-"""
-SQUIRREL_B = edit(SQUIRREL_A, [(0, 14, ".....2442..242.."), (0, 15, "....24442.2442..")])
 # spooked: eyes wide
 # fleeing on the ground, a two-frame bound after the user's reference
 # (16x8, low): stretched out, front paws reaching and hind legs pushing back,
 # then gathered, the hind feet swung up past the front ones, back arched
-SQUIRREL_STRETCH = """
-............22..
-222........2442.
-29922222.2244042
-.29999922444442.
-..222224444444f2
-....2444444fff2.
-...242.....2f42.
-..242.......242.
-"""
-SQUIRREL_GATHER = """
-............22..
-22........22442.
-2992222..2444042
-.2999992444444f2
-..22222444444442
-.....244444ff2..
-......2424242...
-.....242.242....
-"""
 # the title logo, baked after the reference picture: chunky 5x7 letters,
 # yellow fading to orange, a pink extrusion down and right, a plum outline,
 # a pink paw dot in the O. 45x11 at sheet (64, 48), drawn at twice its size
@@ -428,39 +333,8 @@ def logo(text):
 
 LOGO = logo("loretta")
 # the squirrel's head, an oversized sprite on a spring-chain body (things.lua)
-SQUIRREL_HEAD = """
-.2..2...
-292292..
-2944442.
-24447042
-24444442
-2ff44440
-.2ffff2.
-..2222..
-"""
 # the rest of the bound, stacked in slot 108 (108 and 124): the long flat
 # flight with every leg out, then the front paws touching down, rump high
-SQUIRREL_FLIGHT = """
-............2.2.
-22222.....224442
-2999922222444042
-.2222444444444f2
-.....244444fff2.
-..222.......2f22
-................
-................
-"""
-SQUIRREL_LAND = """
-2222........22..
-29992222...2442.
-.29999922244042.
-..2222444444ff2.
-....24444444f2..
-....242...2f42..
-...242.....242..
-..22.......22...
-"""
-SQUIRREL_SPOOKED = SQUIRREL_FLIGHT.strip() + "\n" + SQUIRREL_LAND.strip()
 HYDRANT = """
 ......2222......
 .....288882.....
@@ -612,42 +486,12 @@ GROUND = "#" * 32
 EMPTY = "." * 32
 # Vermont and Hillhurst: a movie palace (M) whose marquee she can stand
 # on, a bookshop (B) under a striped awning, street lamps (Y), a sidewalk
-STREET = [EMPTY] * 5 + [
-    "." * 10 + "o.o.o.o" + "." * 15,
-    EMPTY,
-    "." * 8 + "-" * 11 + "." * 13,
-    "." * 22 + "oooo" + "." * 6,
-    "." * 21 + "^" * 8 + "." * 3,
-    EMPTY,
-    "......SYM..........sYB..........",
-    "_" * 32,
-] + [GROUND] * 3
 # the lawns: Spanish bungalows (K) with red tile roofs, and a jacaranda
 # (J) dropping petals on the hill between them
-LAWNS = [EMPTY] * 8 + [
-    "." * 11 + "o.o.o" + "." * 16,
-    "." * 13 + "J" + "." * 18,
-    "." * 9 + "/" + "#" * 8 + "\\" + "." * 13,
-    "K" + "." * 7 + "/" + "#" * 10 + "\\" + ".." + "K" + "h" + "...." + "s" + "...",
-] + [GROUND] * 4
 # Fern Dell: a stream under plank footbridges with rails (R), ferns (F),
 # a sycamore (T), and its wooden sign (W)
-STREAM = [EMPTY] * 7 + [
-    "." * 13 + "oooo" + "." * 15,
-    EMPTY,
-    "." * 5 + "R" + "." * 11 + "R" + "..." + "b" + "." * 10,
-    "." * 5 + "=" * 8 + "." * 4 + "=" * 10 + "." * 5,
-    ".FW" + "." * 25 + "F.T.",
-] + ["####" + "." * 24 + "####"] * 2 + ["####" + "~" * 24 + "####"] * 2
 # a yard: a picket fence (P), a mailbox (X), the neighbour, and a
 # Craftsman bungalow (H) whose porch roof is the plank she can stand on
-YARD = [EMPTY] * 7 + [
-    "." * 18 + "oooooo" + "." * 8,
-    "." * 17 + "=" * 8 + "." * 7,
-    EMPTY,
-    EMPTY,
-    "P.h...ff.X..n..H....s..s.....s..",
-] + ["#" * 25 + "..." + "####"] * 2 + ["#" * 25 + "~~~" + "####"] * 2
 # Griffith Park's trailhead: its wooden sign (U) and chaparral (Q) up the
 # slopes; the Hollywood sign is on the far hills (scenery.lua)
 TRAILHEAD = [EMPTY] * 7 + [
@@ -658,11 +502,6 @@ TRAILHEAD = [EMPTY] * 7 + [
     ".U..T." + "/" + "#" * 25,
 ] + [GROUND] * 4
 # a ravine, and over it the old zoo's stone enclosures (Z)
-RAVINE = [EMPTY] * 6 + [
-    "." * 11 + "oooooo" + "." * 15,
-    "..h" + "..." + "Q" + "." * 13 + "Z" + "..." + "s" + "." * 7,
-    "#" * 11 + "." * 5 + "#" * 16,
-] + ["#" * 11 + "." * 5 + "#" * 16] * 5 + ["#" * 11 + "~" * 5 + "#" * 16] * 2
 # a switchback: a split-rail fence (V), a hiker resting by a bench (E) in
 # the dip, a sycamore
 SWITCHBACK = [EMPTY] * 7 + [
@@ -699,14 +538,6 @@ FRED62 = [EMPTY] * 5 + [
     ".S....L..D............M....s..T.",
 ] + ["_" * 32] + [GROUND] * 3
 # 10: a fork: up over planks for the coins, or down across a pit
-FORK = [EMPTY] * 6 + [
-    "." * 14 + "oooooo" + "." * 12,
-    "." * 13 + "=" * 8 + "." * 11,
-    "." * 5 + "oooo" + "." * 14 + "oooo" + "." * 5,
-    "." * 4 + "=" * 7 + "." * 12 + "=" * 7 + "." * 2,
-    EMPTY,
-    "..." + "T" + "." * 21 + "s" + "." * 6,
-] + ["#" * 13 + "." * 7 + "#" * 12] * 2 + ["#" * 13 + "~" * 7 + "#" * 12] * 2
 # 11..15 and 7 are the levels' ends, each at a dog landmark (G): the dog
 # park, the Trails Cafe, a pet shop's dog bowl, Barnsdall Park's olive
 # lawn, the trail's water stop, the observatory

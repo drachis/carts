@@ -14,6 +14,6 @@ dx, dy place a thing's box relative to its marker cell's top-left; w, h are its 
 **Keep:** the tiles are the marker sprites 16..23 gen_cart.py's LETTER_TILES writes.
 
 
-**data.lua:152** `shapes={}`
+**data.lua:149** `shapes={}`
 Set pieces (props) are data: each a string of drawing steps separated by "/", a step's fields by spaces: r rectfill, b rect, l line (x0 y0 x1 y1 colour), c circfill (x y radius colour), t print (x y colour word). Coordinates are from the prop's marker cell's bottom-left, which is the ground, so up is negative. Parsed once at boot into `shapes`.
 **Keep:** a word in a t step is one word (split on spaces); a new landmark is a row in thing_specs plus a line here, no code.

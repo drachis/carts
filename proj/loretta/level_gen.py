@@ -47,13 +47,6 @@ def put(rows, x, y, letter):
         rows[y][x] = letter
 
 
-def coins(rows, x, y, count, step=1):
-    # the chase is the reward: platforms carry only a few coins
-    count = max(1, count // 2)
-    for i in range(count):
-        put(rows, x + i * step, y, "o")
-
-
 def text(rows):
     return ["".join(row) for row in rows]
 

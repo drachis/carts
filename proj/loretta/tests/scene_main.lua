@@ -8,7 +8,7 @@ function win() end
 
 function start_level()
  load_level()
- hearts,shake,respawn,mode_frames=max_hearts,0,0,0
+ hearts,respawn,mode_frames=max_hearts,0,0
  barks,puffs,floaters={},{},{}
  hero,respawn_x,respawn_y=new_loretta(16,82),16,82
  view=new_camera(hero)
