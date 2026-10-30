@@ -581,7 +581,6 @@ SPRITES = {
     32: HYDRANT_LIT, 34: COIN, 36: squash(COIN, 8), 38: squash(COIN, 3),
     40: BONE, 42: HEART, 43: HEART_EMPTY, 44: SPARKLE, 45: HAND, 46: SHOES, 99: OUTFITS,
 }
-SPRITES.update({96: SQUIRREL_HEAD})
 # sprites stop at 127: the sheet's lower half is map rows 32..63 (chunks
 # 8..15). flag 0 solid, 1 semisolid (its top row only), 2 water, 3 a slope
 # rising to the right, 4 a slope rising to the left (solid only below the
@@ -645,7 +644,7 @@ TRAILHEAD = [EMPTY] * 7 + [
     "." * 15 + "/" + "#" * 16,
     "." * 9 + "Q" + "oso" + "." + "/" + "#" * 17,
     "." * 7 + "/" + "#" * 24,
-    ".U..Q." + "/" + "#" * 25,
+    ".U..T." + "/" + "#" * 25,
 ] + [GROUND] * 4
 # a ravine, and over it the old zoo's stone enclosures (Z)
 RAVINE = [EMPTY] * 6 + [

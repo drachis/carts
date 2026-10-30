@@ -115,13 +115,20 @@ function update_squirrel(squirrel,hero)
    if not on_ledge(squirrel) then squirrel.y+=2 end
   end
   if squirrel.tree and (squirrel.x-squirrel.tree)*squirrel.vx>=0 then
-   squirrel.x,squirrel.vx,squirrel.vy,squirrel.tree=squirrel.tree-6,0,-1
+   squirrel.trunk,squirrel.vy,squirrel.tree,squirrel.top=squirrel.tree-6,-squirrel_climb,nil,squirrel.y-squirrel_height
    sfx(snd_chitter)
    for drop=0,2 do
     new_thing(thing_specs[19],squirrel.x+drop*7-4,squirrel.y-30-drop*9,squirrel.y)
    end
   end
-  if squirrel.y>140 or squirrel.y<-16 then squirrel.gone=true end
+  if squirrel.top then
+   squirrel.x,squirrel.vx=squirrel.trunk+sin(squirrel.age/squirrel_wind)*3,cos(squirrel.age/squirrel_wind)
+   if squirrel.y<squirrel.top then
+    squirrel.gone=true
+    puff(squirrel.x+6,squirrel.y,10,11)
+   end
+  end
+  if squirrel.y>140 then squirrel.gone=true end
   return
  end
  if abs(hero.x-squirrel.x)>squirrel_wake then return end
@@ -155,13 +162,15 @@ function touch_squirrel(squirrel,hero)
 end
 
 function spook(squirrel,direction)
- squirrel.state,squirrel.vx,squirrel.vy="spooked",direction*squirrel_flee,0
- local tree=squirrel.x+direction*squirrel_run
+ local tree,best=squirrel.x+direction*squirrel_run,squirrel_run*3
  for thing in all(things) do
   local gap=(thing.x+4-squirrel.x)*direction
-  if thing.name=="tree" and gap>0 and gap<(tree-squirrel.x)*direction then tree=thing.x+4 end
+  if thing.name=="tree" then
+   if gap<0 then gap=squirrel_run-gap end
+   if gap<best then tree,best=thing.x+4,gap end
+  end
  end
- squirrel.tree=tree
+ squirrel.state,squirrel.vx,squirrel.vy,squirrel.tree="spooked",sgn(tree-squirrel.x)*squirrel_flee,0,tree
  add_score(spook_points)
  float_text(spook_points.."0",squirrel.x,squirrel.y-8,10)
  sfx(snd_chitter)
@@ -169,8 +178,8 @@ end
 
 function draw_squirrel(squirrel)
  local dir,links=sgn(squirrel.vx),squirrel.links or {}
- local body_x,body_y=squirrel.x+6-dir*2,squirrel.y+7-abs(sin(squirrel.x/squirrel_arc/2))*(squirrel.tree and 20 or 6)
- local x,y=body_x-dir*4,body_y
+ local body_x,body_y=squirrel.x+6-dir*2,squirrel.y+6-abs(sin(squirrel.x/squirrel_arc/2))*(squirrel.tree and 20 or 6)
+ local x,y=body_x-dir*5,body_y
  squirrel.links=links
  for i=1,6 do
   local link=links[i] or {}
@@ -181,9 +190,14 @@ function draw_squirrel(squirrel)
  for pass=0,1 do
   for i=6,1,-1 do circfill(links[i].x,links[i].y,2+i/2-pass,pass*7+2) end
  end
- circfill(body_x,body_y,5,2)
- circfill(body_x,body_y,4,4)
- sspr(0,48,8,8,body_x+dir*7-8,body_y-11,16,16,dir<0,squirrel.state=="bonked")
+ circfill(body_x,body_y,6,2)
+ circfill(body_x,body_y,5,4)
+ for ear=-3,2,5 do
+  rectfill(body_x+ear,body_y-8,body_x+ear+1,body_y-5,2)
+  pset(body_x+ear,body_y-6,9)
+ end
+ pset(body_x+dir*3,body_y-1,0)
+ pset(body_x+dir*5,body_y+1,0)
 end
 
 function update_neighbour(neighbour,hero)

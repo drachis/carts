@@ -73,6 +73,7 @@ def shop_street(rnd):
     put(rows, rnd.randint(9, 12), 11, "s")
     put(rows, 30, 11, "d")
     put(rows, rnd.choice([25, 27]), 11, "T")
+    put(rows, 15, 11, "T")
     return rows
 
 
@@ -130,6 +131,7 @@ def fork(rnd):
     coins(rows, middle + 1, 6, 6)
     put(rows, 2, 11, "T")
     put(rows, right + 2, 11, "s")
+    put(rows, min(right + 6, 30), 11, "T")
     return rows
 
 

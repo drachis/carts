@@ -30,8 +30,11 @@ def main():
         if len(chunk) != 16 or any(len(row) != 32 for row in chunk):
             problems.append("chunk %d is not 16 rows of 32" % number)
         # a chased squirrel escapes up a tree: any chunk with squirrels needs one
-        if any("s" in row for row in chunk) and not any("T" in row for row in chunk):
-            problems.append("chunk %d has squirrels but no tree to escape to" % number)
+        trees = [x for row in chunk for x, cell in enumerate(row) if cell == "T"]
+        for row in chunk:
+            for x, cell in enumerate(row):
+                if cell == "s" and not any(abs(x - tree) <= 15 for tree in trees):
+                    problems.append("chunk %d: a squirrel at column %d has no tree within 15 tiles" % (number, x))
     for level, chunks in enumerate(gen_cart.LEVELS, 1):
         for a, b in zip(chunks, chunks[1:]):
             end, start = top(gen_cart.CHUNKS[a], 31), top(gen_cart.CHUNKS[b], 0)
