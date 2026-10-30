@@ -4,6 +4,15 @@
 
 cases={
  {
+  name="a jump like a dog over a hurdle, a film strip",buttons={4},frames=60,every_frame=true,
+  setup=function() arena(40) result.frame=0 end,
+  each=function()
+   result.frame+=1
+   if result.frame%7==0 then dump_screen("hurdle_"..result.frame\7) end
+  end,
+  check=function() return true,"hurdle_1..8 dumped" end,
+ },
+ {
   name="turning round, her head swings through facing the camera",buttons={},frames=12,every_frame=true,
   setup=function() arena(40) hero.facing,result.frame,result.front=-1,0,false end,
   each=function()

@@ -5,7 +5,7 @@ __lua__
 log_name="log_motion"
 #include ../data.lua
 #include ../world.lua
-#include ../scenery.lua
+#include plain_sky.lua
 #include ../loretta.lua
 #include ../things.lua
 #include ../camera.lua

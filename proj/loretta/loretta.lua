@@ -120,7 +120,16 @@ function gait_amp(hero)
  return hero.state=="paddle" and 1 or hero.air and 0 or min(1,abs(hero.vx)/0.4)
 end
 
+function pitch(hero)
+ return hero.state=="jump" and mid(-1,-hero.vy/2,1) or 0
+end
+
 function leg_pose(hero,front,phase)
+ if hero.state=="jump" then
+  local rise=(pitch(hero)+1)/2
+  if front then return 4-2*rise,1+3*rise end
+  return -1-4*rise,3-2*rise
+ end
  local amp,cycle=gait_amp(hero),(hero.gait+phase)%1
  local reach,lift=hero.pose[front and 9 or 8],hero.air and 2 or 0
  if cycle<0.5 then return reach+leg_stride*(0.5-2*cycle)*amp,lift end
@@ -169,7 +178,7 @@ function animate_loretta(hero)
  hero.head_bob+=(body_bob(hero)-hero.head_bob)*0.35
  hero.turn+=mid(-head_turn_speed,(hero.state=="sit" and 0 or hero.facing*head_turn)-hero.turn,head_turn_speed)
  local turn=hero.turn
- local hx,hy=ex(hero,pose[3]+pose[5]),hero.y+13+pose[4]+pose[6]+hero.head_bob-(hero.bark>0 and 1 or 0)
+ local hx,hy=ex(hero,pose[3]+pose[5]),hero.y+13+pose[4]+pose[6]+hero.head_bob-(hero.bark>0 and 1 or 0)-pitch(hero)*2
  hero.hx,hero.hy=hx,hy
  local lying,fast=pose[7]>2 or hero.flop>0,hero.air or abs(hero.vx)>1
  for i,ear in ipairs(hero.ears) do
@@ -217,7 +226,8 @@ function draw_loretta(hero)
  local pose,g,turn,hx,hy=hero.pose,hero.y+13,hero.turn,hero.hx,hero.hy
  local side=-sin(turn)
  local bob,rump=body_bob(hero)
- local px,py,cx,cy=flr(pose[1]+0.5),g+flr(pose[2]+0.5)+bob+rump,flr(pose[3]+0.5),g+flr(pose[4]+0.5)+bob
+ local tilt=flr(pitch(hero)*2+0.5)
+ local px,py,cx,cy=flr(pose[1]+0.5),g+flr(pose[2]+0.5)+bob+rump+tilt,flr(pose[3]+0.5),g+flr(pose[4]+0.5)+bob-tilt
  local near,far={},{}
  local function part(list,x,y,radius,colour) add(list,{ex(hero,x),y,radius,colour}) end
  local function capsule(list,x0,y0,x1,y1,r0,r1,colour)
