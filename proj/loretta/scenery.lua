@@ -66,13 +66,13 @@ function draw_backdrop(cam_x)
   line(sun_x-half,y,sun_x+half,y,9)
  end
  local far=haze_fill(3,far_hill,0.1,cam_x)
- draw_far_observatory(cam_x,far)
  local sign_x,peak=34-dusk*14,40-dusk*14
  for dx=-34,34 do
   line(sign_x+dx,peak+abs(dx)*0.7,sign_x+dx,90,far)
  end
  print("hollywood",sign_x-17,peak+7,6)
  haze_fill(4,near_hill,0.25,cam_x)
+ draw_far_observatory(cam_x,far)
  for x=0,127,3 do
   local world_x=flr(x+cam_x*0.25)
   if world_x*13%7==0 and (t()*2+world_x)%9>0.4 then
@@ -83,14 +83,15 @@ function draw_backdrop(cam_x)
 end
 
 function draw_far_observatory(cam_x,colour)
- local size=1+progress()*2
- local x=104-progress()*40
- local y=far_hill(x+cam_x*0.1)+1
+ local title=mode=="title"
+ local size,x=title and 2 or 1+progress()*2,title and 25 or 104-progress()*40
+ if title then colour=2 end
+ local y=title and 84 or far_hill(x+cam_x*0.1)+1
  circfill(x,y-6*size,4*size,colour)
  rectfill(x-9*size,y-6*size,x+9*size,y,colour)
  circfill(x-8*size,y-6*size,2*size,colour)
  circfill(x+8*size,y-6*size,2*size,colour)
- if progress()>0.3 then
+ if title or progress()>0.3 then
   for window=-2,2 do pset(x+window*3*size,y-3*size,10) end
  end
 end

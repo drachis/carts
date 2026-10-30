@@ -15,4 +15,5 @@ Every fill pattern is drawn with the camera at 0, so the checkerboard is fixed t
 Dusk deepens with progress: the sky bands slide down, stars come out, the sun sets.
 
 **scenery.lua:85** `function draw_far_observatory(cam_x,colour)`
+On the title it is big, dark and lit on the hill below the START panel (the reference has it right, but the player card and her head cover that side here).
 The observatory far off on the hills, growing as she nears it; a light comes on past halfway.
