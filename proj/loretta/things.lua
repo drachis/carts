@@ -148,7 +148,11 @@ function update_neighbour(neighbour,hero)
  if neighbour.petting>0 then
   neighbour.petting-=1
   hero.happy=30
-  if neighbour.petting%15==0 then float_text("\135",hero.x+8+neighbour.petting%8,hero.y-8,14) end
+  local beat=neighbour.petting%40
+  if beat<24 and beat%8==0 then
+   hero.flop=6
+   float_text("\135",hero.hx-3+beat%3,hero.hy-24,14)
+  end
   if neighbour.petting==0 then
    neighbour.petted=true
    hearts=min(hearts+pet_hearts,max_hearts)
@@ -163,21 +167,26 @@ end
 
 function draw_neighbour(neighbour)
  local x,feet=neighbour.x,neighbour.y
+ local waist,shirt=feet-40,shirts[x\8%#shirts+1]
  for leg=1,9,8 do
-  rectfill(x+leg,0,x+leg+5,feet+4,13)
-  line(x+leg+5,0,x+leg+5,feet+4,5)
+  rectfill(x+leg,waist,x+leg+5,feet+4,13)
+  line(x+leg+5,waist,x+leg+5,feet+4,5)
   rectfill(x+leg-1,feet-2,x+leg+6,feet,2)
  end
  spr(46,x,feet+1,2,1)
+ rectfill(x-2,-8,x+17,waist-2,shirt)
+ rectfill(x-1,waist-2,x+16,waist,4)
+ for button=waist-30,waist-6,8 do pset(x+8,button,7) end
+ local hand_x,hand_y=x+16,waist-2
  if neighbour.petting>0 then
-  local reach=min(1,(pet_frames-neighbour.petting)/15)
-  local hand_x,hand_y=hero.x+8+hero.facing*8,(hero.y-10)*reach-8+(t()*4%1<0.5 and 2 or 0)
-  rectfill(hand_x+1,0,hand_x+6,hand_y,5)
-  rectfill(hand_x+2,0,hand_x+5,hand_y,6)
-  spr(45,hand_x,hand_y)
+  local reach,beat=min(1,(pet_frames-neighbour.petting)/20),neighbour.petting%40
+  hand_x+=(hero.hx-8-hand_x)*reach
+  hand_y+=(hero.hy-22+(beat<24 and beat%8<4 and 3 or 0)-hand_y)*reach
  elseif not neighbour.petted and abs(hero.x-x)<48 then
   print("\135?",x+4,feet-12+sin(t()),14)
  end
+ for side=0,3 do line(x+14+side,-8,hand_x+5+side,hand_y+2,shirt) end
+ sspr(104,16,8,8,hand_x,hand_y,16,16)
 end
 
 function touch_gate()

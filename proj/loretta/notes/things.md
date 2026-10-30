@@ -9,17 +9,17 @@ A stomp needs her falling with her feet in the squirrel's top half; anything els
 **things.lua:147** `function update_neighbour(neighbour,hero)`
 Sitting within pet_range of a neighbour starts the petting; at its end her hearts fill by pet_hearts, once a neighbour.
 
-**things.lua:164** `function draw_neighbour(neighbour)`
-The neighbour is seen from a corgi's height: trouser legs from the top of the screen to the shoes, and a hand that comes down to pat her head while petting.
-**Keep:** the user asked for a Peanuts-style adult whose top is never seen.
+**things.lua:168** `function draw_neighbour(neighbour)`
+The neighbour is a tall adult seen from a corgi's height: shoes, trousers, a belt and a shirt (colour from shirts by place) up past the top of the screen, the head never seen, an arm hanging at the side. Petting, the arm swings down and a big hand (the hand sprite at twice its size) lands on her head: pat, pat, pat, a pause (a 40-frame beat, update_neighbour flops her ears and floats a heart on each pat).
+**Keep:** the user asked for a Peanuts-style adult whose head is off screen, about six times her shoulder height, and a larger hand that gives a good pat - pat - pat.
 
-**things.lua:187** `function draw_gate(gate)`
+**things.lua:196** `function draw_gate(gate)`
 The end of a level, at its cell: on levels 1..5 an arch with the level's dog landmark named on its banner (landmarks), on the last the observatory (both shapes in data.lua). The gate box itself is what she touches to win.
 
 **things.lua:81** `function update_hydrant(hydrant,hero)`
 A hydrant is a checkpoint, lit once she passes it at any height: needing to touch it let a jump or a squirrel bounce carry her over it, and a fall then sent her far back.
 
-**things.lua:236** `function puff(x,y,count,colour)`
+**things.lua:245** `function puff(x,y,count,colour)`
 Puffs spread by an angle worked out from their index, not rnd, so tests replay.
 
 **things.lua:37** `function draw_prop(prop,shape)`

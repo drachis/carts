@@ -45,7 +45,7 @@ bark_cool=24
 bark_speed=2
 drop_frames=10
 idle_sit=240
-pet_frames=60
+pet_frames=120
 pet_range=28
 respawn_frames=50
 hero_w=24
@@ -180,7 +180,7 @@ levels={split"9,0,1,0,10,1,0,3,1,0,10,1,0,3,0,1,13",split"1,3,1,0,10,1,3,1,2,1,1
 level_names=split"hillhurst,barnsdall park,fern dell,griffith park,the trail,the observatory"
 landmarks=split"dog bowl,olive lawn,trails cafe,dog park,water stop"
 slot_kinds={house=split"bungalow,craftsman,cafe,bookshop",tree=split"jacaranda,sycamore,palm,orange",decor=split"birdbath,agave,pot,roses,flamingo"}
-walls,roofs=split"15,14,6,13",split"8,4,2,3"
+walls,roofs,shirts=split"15,14,6,13",split"8,4,2,3",split"3,14,6,2"
 praises=split"who's a sweet pup!,best dog on the block!,what a little loaf!,treat earned!,tail wags all round!,such a fine corgi!"
 
 stat_names=split"speed,jump,bark,charm"

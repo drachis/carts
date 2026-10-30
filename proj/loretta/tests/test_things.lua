@@ -40,7 +40,7 @@ cases={
   check=function() return hearts==3,"hearts "..hearts end,
  },
  {
-  name="sitting beside a neighbour fills her hearts",buttons={3},frames=100,
+  name="sitting beside a neighbour fills her hearts",buttons={3},frames=170,
   setup=function()
    arena(40)
    hearts=1

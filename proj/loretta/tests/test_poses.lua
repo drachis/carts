@@ -46,8 +46,8 @@ cases={
   end,
  },
  {
-  name="sitting pretty",buttons={3},frames=60,
-  setup=function() arena(40) end,
+  name="sitting pretty, patted by a neighbour",buttons={3},frames=62,
+  setup=function() arena(40) thing_at("neighbour",70,88) end,
   check=function()
    _draw()
    dump_screen("pose_sit")
