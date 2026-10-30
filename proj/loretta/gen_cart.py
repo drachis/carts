@@ -437,14 +437,26 @@ SHOES = """
 """
 HAND = """
 ..dddd..
+..dddd..
+..ffff..
 .ffffff.
-ffffffff
-ffffffff
-ffffffff
-f.f.f.f.
-f.f.f.f.
+.ffffff.
+.fffff..
+.ff.ff..
 ........
 """
+# the neighbours' outfits, 10x16 each, drawn stretched from off the top of
+# the screen down to the shoes (f is skin, swapped per person): a polka-dot
+# sundress, a bowling shirt over pleated trousers, overalls on a striped
+# tee with rolled cuffs, a mustard jumpsuit with flares
+SUNDRESS = [".eeeeeeee.", ".ee7eee7e.", ".eeeeeeee.", ".e7eee7ee.", ".88888888.",
+            ".eeeeeeee.", "eee7eee7ee", "eeeeeeeeee", "e7eee7eee7", "eeeeeeeeee"] + [".fff..fff."] * 6
+BOWLING = [".cc7cc7cc."] * 7 + [".444aa444.", ".11111111.", ".11d11d11."] + [".1d1..1d1."] * 6
+OVERALLS = [".88888888.", ".77777777.", ".8cccccc8.", ".7cc66cc7.", ".8cccccc8."] + \
+           [".cccccccc."] * 4 + [".ccc..ccc."] * 6 + [".777..777."]
+JUMPSUIT = [".a9aaaa9a."] + [".aaaaaaaa."] * 5 + [".44444444."] + [".aaaaaaaa."] * 3 + \
+           [".aaa..aaa."] * 3 + ["aaaa..aaaa"] * 3
+OUTFITS = "\n".join("".join(look[row] for look in (SUNDRESS, BOWLING, OVERALLS, JUMPSUIT)) for row in range(16))
 
 
 def squash(text, width):
@@ -475,7 +487,7 @@ SPRITES = {
     87: mark("6"), 88: mark("6"), 89: mark("6"), 90: mark("6"), 91: mark("6"), 92: mark("6"),
     104: SQUIRREL_A, 106: SQUIRREL_B, 108: SQUIRREL_SPOOKED, 110: HYDRANT,
     32: HYDRANT_LIT, 34: COIN, 36: squash(COIN, 8), 38: squash(COIN, 3),
-    40: BONE, 42: HEART, 43: HEART_EMPTY, 44: SPARKLE, 45: HAND, 46: SHOES,
+    40: BONE, 42: HEART, 43: HEART_EMPTY, 44: SPARKLE, 45: HAND, 46: SHOES, 99: OUTFITS,
 }
 SPRITES.update(LORETTA_PARTS)
 # sprites stop at 127: the sheet's lower half is map rows 32..63 (chunks

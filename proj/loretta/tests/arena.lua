@@ -15,5 +15,5 @@ function arena(x,y)
 end
 
 function thing_at(name,x,y)
- return add(things,setmetatable({x=x,y=y,vx=0,vy=0,age=0,petting=0},thing_specs[name]))
+ return add(things,setmetatable({x=x,y=y,vx=0,vy=0,age=0,petting=0,step=0},thing_specs[name]))
 end

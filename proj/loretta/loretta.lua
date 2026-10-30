@@ -178,7 +178,7 @@ function animate_loretta(hero)
  hero.head_bob+=(body_bob(hero)-hero.head_bob)*0.35
  hero.turn+=mid(-head_turn_speed,(hero.state=="sit" and 0 or hero.facing*head_turn)-hero.turn,head_turn_speed)
  local turn=hero.turn
- local hx,hy=ex(hero,pose[3]+pose[5]),hero.y+13+pose[4]+pose[6]+hero.head_bob-(hero.bark>0 and 1 or 0)-pitch(hero)*2
+ local hx,hy=ex(hero,pose[3]+pose[5]),hero.y+13+pose[4]+pose[6]+hero.head_bob+hero.flop\3-(hero.bark>0 and 1 or 0)-pitch(hero)*2
  hero.hx,hero.hy=hx,hy
  local lying,fast=pose[7]>2 or hero.flop>0,hero.air or abs(hero.vx)>1
  for i,ear in ipairs(hero.ears) do

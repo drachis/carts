@@ -37,7 +37,7 @@ function load_level()
   for cell_x=0,#level_chunks*32-1 do
    local spec=thing_specs[level_tile(cell_x,cell_y)]
    if spec then
-    add(things,setmetatable({x=cell_x*8+spec.dx,y=cell_y*8+spec.dy,vx=0,vy=0,age=0,petting=0},spec))
+    add(things,setmetatable({x=cell_x*8+spec.dx,y=cell_y*8+spec.dy,vx=0,vy=0,age=0,petting=0,step=0},spec))
    end
   end
  end

@@ -12,5 +12,5 @@ The title is the level's first screen, Loretta hopping now and then by herself, 
 **main.lua:127** `function score_text(points)`
 Scores are kept in tens and shown with a 0 added, seven digits as in the user's picture, so they stay far below 32767.
 
-**main.lua:205** `function _draw()`
+**main.lua:194** `function _draw()`
 Draw order: backdrop, things behind the map (sign, observatory), the map, things, barks, Loretta, effects, then the HUD or title over everything.

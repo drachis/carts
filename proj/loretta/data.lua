@@ -56,6 +56,8 @@ squirrel_speed=0.35
 squirrel_ramp=0.4
 squirrel_wake=150
 squirrel_patrol=40
+squirrel_flee=1.2
+squirrel_run=70
 camera_speed_change=0.12
 camera_lookahead=32
 camera_lookahead_speed=0.04
@@ -159,6 +161,7 @@ bench=r 0 -8 23 -6 4/r 0 -14 23 -12 4/l 2 -12 2 -8 4/l 21 -12 21 -8 4/l 1 -6 1 0
 monument=r 0 -6 15 0 6/r 1 -8 14 -6 13/r 4 -50 11 -8 6/l 4 -50 4 -8 13/l 7 -40 7 -14 13/l 9 -30 9 -16 13/r 6 -54 9 -50 6/c 7 -57 2 10/l 7 -62 7 -60 10
 observatory=c -31 26 9 5/c 39 26 9 5/c 4 13 18 13/c 4 13 17 5/r -14 13 22 26 6/r -41 26 49 47 6/r -41 44 49 47 13/l -36 29 -36 43 13/l -27 29 -27 43 13/l -18 29 -18 43 13/l -9 29 -9 43 13/l 0 29 0 43 13/l 9 29 9 43 13/l 18 29 18 43 13/l 27 29 27 43 13/l 36 29 36 43 13/c 4 36 5 1/r -1 36 9 47 1/r -6 18 -5 21 10/r 14 18 15 21 10
 arch=r -16 8 -13 48 4/r 21 8 24 48 4/r -22 0 30 10 8/b -22 0 30 10 2/c -19 5 1 10/c 27 5 1 10
+sign=r 3 -1 4 7 4/r -9 -15 16 -1 4/b -9 -15 16 -1 2/t -6 -13 15 los/t -6 -7 15 feliz
 fred62=r 0 -30 71 0 15/r 0 -34 71 -30 8/l -6 -35 30 -46 8/l -6 -34 30 -45 8/l 30 -46 78 -35 8/l 30 -45 78 -34 8/r 6 -24 64 -10 1/r 8 -22 62 -12 9/l 22 -22 22 -12 2/l 38 -22 38 -12 2/l 54 -22 54 -12 2/r 66 -24 70 0 1/r 82 -52 84 0 5/r 74 -70 98 -52 8/b 74 -70 98 -52 10/t 78 -67 7 fred/t 82 -60 10 62
 cafe=r 0 -28 39 0 4/r -3 -32 42 -28 2/r 4 -40 36 -33 4/t 12 -38 15 cafe/r 6 -22 20 -12 9/r 24 -14 36 -10 15/l 43 -20 57 -20 14/l 44 -21 56 -21 14/l 46 -22 54 -22 14/l 48 -23 52 -23 14/l 50 -20 50 -2 6/r 45 -8 55 -7 4/l 46 -7 46 0 4/l 54 -7 54 0 4/r 28 -3 34 0 6/r 29 -3 33 -2 12
 petshop=r 0 -40 47 0 13/r 0 -42 47 -40 2/r 6 -38 41 -30 2/t 9 -36 7 pet/t 23 -36 7 shop/r 4 -24 30 -6 1/c 12 -15 2 7/c 9 -19 1 7/c 12 -20 1 7/c 15 -19 1 7/r 34 -26 44 0 4/r 18 -3 26 0 6/r 19 -3 25 -2 12
@@ -181,7 +184,7 @@ levels={split"9,0,1,0,10,1,0,3,1,0,10,1,0,3,0,1,13",split"1,3,1,0,10,1,3,1,2,1,1
 level_names=split"hillhurst,barnsdall park,fern dell,griffith park,the trail,the observatory"
 landmarks=split"dog bowl,olive lawn,trails cafe,dog park,water stop"
 slot_kinds={house=split"bungalow,craftsman,cafe,bookshop",tree=split"jacaranda,sycamore,palm,orange",decor=split"birdbath,agave,pot,roses,flamingo"}
-walls,roofs,shirts=split"15,14,6,13",split"8,4,2,3",split"3,14,6,2"
+walls,roofs,shirts,skins=split"15,14,6,13",split"8,4,2,3",split"14,12,8,10",split"15,4,9"
 praises=split"who's a sweet pup!,best dog on the block!,what a little loaf!,treat earned!,tail wags all round!,such a fine corgi!"
 
 stat_names=split"speed,jump,bark,charm"

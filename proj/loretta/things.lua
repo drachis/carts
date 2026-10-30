@@ -57,6 +57,10 @@ function touch_coin(coin,hero)
  puff(coin.x+3,coin.y+3,6,10)
 end
 
+function update_coin(coin)
+ if coin.land and coin.y<coin.land then coin.y+=1 end
+end
+
 function draw_coin(coin)
  local frame=({34,34,34,34,34,36,38,36})[(t()*8+coin.x/16)\1%8+1]
  sspr(frame%16*8,frame\16*8,16,16,coin.x-1,coin.y-1+sin(t()/2+coin.x/40),8,8)
@@ -98,6 +102,13 @@ function update_squirrel(squirrel,hero)
   squirrel.x+=squirrel.vx
   squirrel.y+=squirrel.vy
   if squirrel.state=="bonked" then squirrel.vy+=0.15 end
+  if squirrel.age==squirrel.climb then
+   squirrel.vx,squirrel.vy=0,-1
+   sfx(snd_chitter)
+   for drop=0,2 do
+    add(things,setmetatable({x=squirrel.x+drop*7-4,y=squirrel.y-30-drop*9,vx=0,vy=0,age=0,land=squirrel.y},thing_specs[19]))
+   end
+  end
   if squirrel.y>140 or squirrel.y<-16 then squirrel.gone=true end
   return
  end
@@ -127,12 +138,12 @@ function touch_squirrel(squirrel,hero)
   puff(squirrel.x+6,squirrel.y,8,7)
   sfx(snd_stomp)
  else
-  hurt_loretta(hero,squirrel.x+6)
+  spook(squirrel,sgn(squirrel.x-hero.x))
  end
 end
 
 function spook(squirrel,direction)
- squirrel.state,squirrel.vx,squirrel.vy="spooked",direction*1.4,-1.2
+ squirrel.state,squirrel.vx,squirrel.vy,squirrel.climb="spooked",direction*squirrel_flee,0,squirrel.age+squirrel_run
  add_score(spook_points)
  float_text(spook_points.."0",squirrel.x,squirrel.y-8,10)
  sfx(snd_chitter)
@@ -148,9 +159,11 @@ function update_neighbour(neighbour,hero)
  if neighbour.petting>0 then
   neighbour.petting-=1
   hero.happy=30
+  neighbour.step+=(hero.hx-hero.facing*14-8-neighbour.x-neighbour.step)/12
   local beat=neighbour.petting%40
   if beat<24 and beat%8==0 then
    hero.flop=6
+   for ear in all(hero.ears) do ear.x+=rnd(6)-3 end
    float_text("\135",hero.hx-3+beat%3,hero.hy-24,14)
   end
   if neighbour.petting==0 then
@@ -166,18 +179,12 @@ function update_neighbour(neighbour,hero)
 end
 
 function draw_neighbour(neighbour)
- local x,feet=neighbour.x,neighbour.y
- local waist,shirt=feet-40,shirts[x\8%#shirts+1]
- for leg=1,9,8 do
-  rectfill(x+leg,waist,x+leg+5,feet+4,13)
-  line(x+leg+5,waist,x+leg+5,feet+4,5)
-  rectfill(x+leg-1,feet-2,x+leg+6,feet,2)
- end
+ local x,feet,look=neighbour.x+neighbour.step,neighbour.y,neighbour.x\8%4
+ local shirt,arm=shirts[look+1],hero.hx>x+8 and 14 or -2
+ pal(15,skins[neighbour.x\8%3+1])
+ sspr(24+look*10,48,10,16,x-2,-24,20,feet+24)
  spr(46,x,feet+1,2,1)
- rectfill(x-2,-24,x+17,waist-2,shirt)
- rectfill(x-1,waist-2,x+16,waist,4)
- for button=waist-30,waist-6,8 do pset(x+8,button,7) end
- local hand_x,hand_y=x+16,waist-2
+ local hand_x,hand_y=x+arm+(arm>0 and 2 or -12),feet-42
  if neighbour.petting>0 then
   local reach,beat=min(1,(pet_frames-neighbour.petting)/20),neighbour.petting%40
   hand_x+=(hero.hx-8-hand_x)*reach
@@ -185,8 +192,9 @@ function draw_neighbour(neighbour)
  elseif not neighbour.petted and abs(hero.x-x)<48 then
   print("\135?",x+4,feet-12+sin(t()),14)
  end
- for side=0,3 do line(x+14+side,-24,hand_x+5+side,hand_y+2,shirt) end
+ for side=0,3 do line(x+arm+side,-24,hand_x+5+side,hand_y+2,shirt) end
  sspr(104,16,8,8,hand_x,hand_y,16,16)
+ pal(15,15)
 end
 
 function touch_gate()
@@ -200,15 +208,6 @@ function draw_gate(gate)
   local text=landmarks[level]
   print(text,gate.x+4-#text*2,gate.y+3,7)
  end
-end
-
-function draw_sign(sign)
- local x,y=sign.x,sign.y
- rectfill(x+3,y-1,x+4,y+7,4)
- rectfill(x-9,y-15,x+16,y-1,4)
- rect(x-9,y-15,x+16,y-1,2)
- print("los \145",x-6,y-13,15)
- print("feliz",x-6,y-7,15)
 end
 
 function start_bark(hero)

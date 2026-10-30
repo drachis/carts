@@ -4,6 +4,8 @@ sky_bands=split"0,1,0,20,1,2,30,2,0,44,2,5,52,5,0,60,5,14,66,14,0,76,14,15,82,15
 
 haze_ramp=split"15,14,13,5,2,1"
 
+ray_ramp=split"15,9,14,8,2"
+
 function set_palette()
  for colour=0,15 do pal(colour,screen_palette[colour+1],1) end
 end
@@ -49,10 +51,12 @@ function draw_backdrop(cam_x)
   end
  end
  local sun_x,sun_y=92-cam_x*0.02,48+dusk*30
- fillp(0x5a5a.8)
- for ray=1,7 do
-  local angle,width=ray/7+t()/90,0.012+sin(t()/3+ray/4)*0.006
-  tri(sun_x,sun_y,sun_x+cos(angle-width)*100,sun_y+sin(angle-width)*100,sun_x+cos(angle+width)*100,sun_y+sin(angle+width)*100,15)
+ local shade=flr(dusk*3.99)+1
+ for ray=1,16 do
+  local wide=ray%2
+  local angle,width,reach=ray/16+t()/90*(wide*2-1),0.006+wide*0.012+sin(t()/3+ray/5)*0.005,170+ray*29%50
+  fillp(wide>0 and 0xa5f5.8 or 0x5a5a.8)
+  tri(sun_x,sun_y,sun_x+cos(angle-width)*reach,sun_y+sin(angle-width)*reach,sun_x+cos(angle+width)*reach,sun_y+sin(angle+width)*reach,ray_ramp[shade+wide])
  end
  fillp()
  circfill(sun_x,sun_y,14,9)
