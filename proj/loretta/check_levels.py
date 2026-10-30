@@ -40,6 +40,9 @@ def chase_problems():
                         squirrels.append((i * 32 + x) * 8)
                     elif cell in "Td":
                         escapes.append((i * 32 + x) * 8)
+        for a, b in zip(sorted(squirrels), sorted(squirrels)[1:]):
+            if b - a < 48:
+                problems.append("level %d: squirrels at x %d and %d are too close to patrol apart" % (level, a, b))
         for x in squirrels:
             ahead = [e - x for e in escapes if e - x >= FAR]
             if not ahead:

@@ -578,6 +578,24 @@ CHUNKS = [GEN["shop_street"], GEN["garden_street"], GEN["fern_dell"], GEN["pond_
           DESCENT, FRED62, GEN["fork"], DOG_PARK, CAFE, PET_SHOP, BARNSDALL, WATER_STOP]
 # the levels, from Fred 62 to the observatory (data.lua's levels must match)
 CHUNKS = [[row.replace("=", ".").replace("o", ".") for row in chunk] for chunk in CHUNKS]
+
+
+def spaced_squirrels(chunk):
+    """Squirrels clear of the chunk's edges and 6 tiles apart, so that any two
+    in a level keep at least 48px between them whichever chunks meet."""
+    last, rows = -99, []
+    cells = sorted((x, y) for y, row in enumerate(chunk) for x, cell in enumerate(row) if cell == "s")
+    keep = set()
+    for x, y in cells:
+        if 6 <= x <= 26 and x - last >= 6:
+            keep.add((x, y))
+            last = x
+    for y, row in enumerate(chunk):
+        rows.append("".join("." if cell == "s" and (x, y) not in keep else cell for x, cell in enumerate(row)))
+    return rows
+
+
+CHUNKS = [spaced_squirrels(chunk) for chunk in CHUNKS]
 LEVELS = [
     [9, 0, 1, 0, 1, 13],
     [1, 3, 0, 10, 1, 14],

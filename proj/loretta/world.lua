@@ -35,7 +35,7 @@ function overlaps(a,b)
 end
 
 function load_level()
- level_chunks=levels[level]
+ level_chunks,lead=levels[level]
  level_w,things=#level_chunks*256,{}
  for cell_y=0,15 do
   for cell_x=0,#level_chunks*32-1 do

@@ -112,7 +112,7 @@ def pond_yard(rnd):
     put(rows, rnd.randint(2, 5), 11, "K")
     beat_hedges(rows, start + width + 3, 1, rnd)
     put(rows, 25, 11, "d")
-    put(rows, 29, 11, "s")
+    put(rows, 26, 11, "s")
     return rows
 
 
@@ -157,7 +157,7 @@ def trail(rnd):
     pit(rows, start, start + width - 1, top=8)
     put(rows, 2, 7, "h")
     put(rows, rnd.randint(4, 7), 7, "Q")
-    put(rows, 4, 7, "s")
+    put(rows, 6, 7, "s")
     beat_hedges(rows, start + width + 2, 1, rnd, top=8)
     put(rows, 28, 7, "T")
     return rows
