@@ -217,7 +217,7 @@ function _draw()
  if mode=="title" then draw_title() else draw_hud() end
  if mode=="win" then
   local last=level==#levels
-  draw_banner((last and "you made it!|loretta saw the stars" or landmarks[level].."!|good girl!").."|score "..score_text(score)..(hearts==0 and (last and "|\142 back to the start" or "|\142 on to "..level_names[level+1]) or ""),74)
+  draw_banner((last and "you made it!|loretta saw the stars" or landmarks[level].."!|"..praises[level]).."|score "..score_text(score)..(hearts==0 and (last and "|\142 back to the start" or "|\142 on to "..level_names[level+1]) or ""),74)
  end
  if mode=="over" then draw_banner("loretta needs a nap|score "..score_text(score).."|\142 try again",22) end
 end

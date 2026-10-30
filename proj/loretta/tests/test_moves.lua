@@ -46,10 +46,10 @@ cases={
   end,
  },
  {
-  name="runs over the lawn's hill, up and down its slopes, never leaving the ground",buttons={1},frames=170,
-  setup=function() arena(290) result.air,result.top=0,ground_y end,
+  name="runs up the trailhead's slopes onto the trail, never leaving the ground",buttons={1},frames=170,
+  setup=function() arena(1040) result.air,result.top=0,ground_y end,
   each=track_height,
-  check=function() return result.air==0 and hero.x>440 and hero.y==ground_y and result.top==ground_y-16,"frames in the air "..result.air..", highest "..(ground_y-result.top).."px, x "..hero.x end,
+  check=function() return result.air==0 and hero.y==ground_y-32,"frames in the air "..result.air..", climbed "..(ground_y-hero.y).."px, x "..hero.x end,
  },
  {
   name="jumps up through an awning from below and lands on it",buttons={4},frames=200,

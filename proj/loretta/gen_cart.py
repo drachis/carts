@@ -15,6 +15,7 @@ import os
 import time
 
 import corgi_art
+import level_gen
 from png import write_png
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -471,7 +472,7 @@ SPRITES = {
     29: mark("6"), 30: mark("6"), 31: mark("6"), 68: mark("6"), 69: mark("6"),
     70: mark("6"), 71: mark("6"), 72: mark("6"), 73: mark("6"), 74: mark("6"),
     75: mark("6"), 84: mark("6"), 85: mark("6"), 86: mark("6"),
-    87: mark("6"), 88: mark("6"), 89: mark("6"), 90: mark("6"), 91: mark("6"),
+    87: mark("6"), 88: mark("6"), 89: mark("6"), 90: mark("6"), 91: mark("6"), 92: mark("6"),
     104: SQUIRREL_A, 106: SQUIRREL_B, 108: SQUIRREL_SPOOKED, 110: HYDRANT,
     32: HYDRANT_LIT, 34: COIN, 36: squash(COIN, 8), 38: squash(COIN, 3),
     40: BONE, 42: HEART, 43: HEART_EMPTY, 44: SPARKLE, 45: HAND, 46: SHOES,
@@ -574,10 +575,14 @@ DESCENT = [EMPTY] * 7 + [
     "#" * 13 + "\\" + "." * 12 + "s" + "." * 5,
 ] + [GROUND] * 4
 # 9: Fred 62, the diner on Hillhurst where she sets out (D)
-FRED62 = [EMPTY] * 9 + [
-    "." * 20 + "oooo" + "." * 8,
+FRED62 = [EMPTY] * 5 + [
+    "." * 24 + "oooo" + "." * 4,
     EMPTY,
-    ".L....S..D................s.....",
+    "." * 22 + "-" * 10,
+    EMPTY,
+    EMPTY,
+    EMPTY,
+    ".L....S..D............M....s....",
 ] + ["_" * 32] + [GROUND] * 3
 # 10: a fork: up over planks for the coins, or down across a pit
 FORK = [EMPTY] * 6 + [
@@ -620,23 +625,27 @@ WATER_STOP = [EMPTY] * 5 + [
     EMPTY,
     "..U.....E.....w.......G....Q....",
 ] + ["#" * 32] * 8
-CHUNKS = [STREET, LAWNS, STREAM, YARD, TRAILHEAD, RAVINE, SWITCHBACK, LAWN_TOP,
-          DESCENT, FRED62, FORK, DOG_PARK, CAFE, PET_SHOP, BARNSDALL, WATER_STOP]
+# everyday chunks come from level_gen.py (checked crossable there); the
+# start, the climbs and the six landmark ends are drawn by hand above
+GEN = {name: [row for row in rows] for name, rows in level_gen.GENERATED.items()}
+CHUNKS = [GEN["shop_street"], GEN["garden_street"], GEN["fern_dell"], GEN["pond_yard"],
+          TRAILHEAD, GEN["trail"], SWITCHBACK, LAWN_TOP,
+          DESCENT, FRED62, GEN["fork"], DOG_PARK, CAFE, PET_SHOP, BARNSDALL, WATER_STOP]
 # the levels, from Fred 62 to the observatory (data.lua's levels must match)
 LEVELS = [
-    [9, 0, 1, 10, 0, 3, 1, 10, 2, 0, 3, 10, 1, 3, 0, 1, 13],
-    [0, 1, 3, 10, 1, 2, 3, 1, 10, 3, 2, 1, 3, 10, 1, 14],
-    [1, 2, 10, 2, 3, 2, 1, 10, 2, 2, 3, 10, 2, 1, 12],
-    [3, 1, 4, 5, 8, 10, 2, 3, 4, 6, 8, 3, 10, 1, 11],
+    [9, 0, 1, 0, 10, 1, 0, 3, 1, 0, 10, 1, 0, 3, 0, 1, 13],
+    [1, 3, 1, 0, 10, 1, 3, 1, 2, 1, 10, 3, 1, 0, 1, 14],
+    [1, 2, 10, 2, 1, 3, 2, 1, 10, 2, 2, 1, 3, 2, 1, 12],
+    [1, 3, 4, 5, 8, 10, 1, 2, 4, 6, 8, 3, 10, 1, 11],
     [1, 4, 5, 6, 5, 8, 10, 4, 6, 5, 6, 5, 15],
-    [4, 5, 6, 5, 6, 6, 5, 6, 6, 5, 7],
+    [4, 5, 6, 5, 6, 5, 6, 6, 5, 7],
 ]
 LETTER_TILES = {".": 0, "=": 4, "f": 7, ",": 8, "/": 9, "\\": 10, "-": 11, "^": 12, "_": 13,
                 "L": 16, "S": 17, "G": 18, "o": 19, "b": 20, "s": 21, "h": 22, "n": 23,
                 "M": 24, "B": 25, "Y": 26, "K": 27, "J": 28, "F": 29, "R": 30, "T": 31,
                 "W": 68, "H": 69, "P": 70, "X": 71, "U": 72, "Q": 73, "Z": 74,
                 "V": 75, "E": 84, "A": 85, "C": 86,
-                "D": 87, "c": 88, "p": 89, "k": 90, "w": 91}
+                "D": 87, "c": 88, "p": 89, "k": 90, "w": 91, "d": 92}
 
 
 def level_rows(chunks):

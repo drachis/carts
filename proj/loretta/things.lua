@@ -20,6 +20,20 @@ function draw_things(back)
  end
 end
 
+function draw_slot(slot)
+ local kinds,tint=slot_kinds[slot.name],(slot.x\8+level)%4+1
+ pal(15,walls[tint])
+ pal(8,roofs[tint])
+ draw_prop(slot,kinds[(slot.x\8*7+level*3)%#kinds+1])
+ pal(15,15)
+ pal(8,8)
+end
+draw_house,draw_tree,draw_decor=draw_slot,draw_slot,draw_slot
+
+function praise(x,y)
+ float_text(praises[(x\8+level)%#praises+1],x,y,7)
+end
+
 function draw_prop(prop,shape)
  for op in all(shapes[shape or prop.name]) do
   local kind,a,b,c,d,e=unpack(op)
@@ -139,7 +153,7 @@ function update_neighbour(neighbour,hero)
    neighbour.petted=true
    hearts=min(hearts+pet_hearts,max_hearts)
    add_score(pet_points)
-   float_text("good girl!",neighbour.x-12,neighbour.y-16,7)
+   praise(neighbour.x-24,neighbour.y-16)
   end
  elseif not neighbour.petted and hero.resting and abs(hero.x+12-neighbour.x-8)<pet_range then
   neighbour.petting=pet_frames
