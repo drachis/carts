@@ -22,7 +22,7 @@ import random
 
 RISE = 5      # a held jump: about 46px, under 6 tiles
 REACH = 7     # tiles across at the same height (about 70px held)
-SOLID = "#_/\\"
+SOLID = "#_/\\g"
 STAND = SOLID + "=-^"
 
 
@@ -47,7 +47,16 @@ def put(rows, x, y, letter):
         rows[y][x] = letter
 
 
+def hedge(rows, x, width=2):
+    """A clipped hedge on the street: she hops it, a chased squirrel leaps it."""
+    for column in range(x, x + width):
+        for y in (10, 11):
+            rows[y][column] = "g"
+
+
 def coins(rows, x, y, count, step=1):
+    # the chase is the reward: platforms carry only a few coins
+    count = max(1, count // 2)
     for i in range(count):
         put(rows, x + i * step, y, "o")
 
@@ -73,6 +82,7 @@ def shop_street(rnd):
     put(rows, rnd.randint(9, 12), 11, "s")
     put(rows, 30, 11, "d")
     put(rows, rnd.choice([25, 27]), 11, "T")
+    hedge(rows, 28)
     put(rows, 15, 11, "T")
     return rows
 
@@ -85,9 +95,7 @@ def garden_street(rnd):
     put(rows, rnd.randint(9, 12), 11, "n")
     put(rows, rnd.randint(4, 6), 11, "K")
     put(rows, rnd.randint(18, 21), 11, "K")
-    for y in (10, 11):
-        for x in range(15, 17):
-            rows[y][x] = "g"
+    hedge(rows, 15)
     for x in rnd.sample(range(1, 31), 5):
         put(rows, x, 11, rnd.choice("fd,"))
     put(rows, rnd.choice([14, 15, 29]), 11, "T")

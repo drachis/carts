@@ -10,8 +10,8 @@ cases={
  {
   name="landing on a squirrel starts a chase and bounces her",buttons={},frames=50,
   setup=function()
-   arena(236,40)
-   result.squirrel,result.bounce=squirrel_at(244),0
+   arena(90,40)
+   result.squirrel,result.bounce=squirrel_at(98),0
   end,
   each=function() result.bounce=min(result.bounce,hero.vy) end,
   check=function() return result.squirrel.state=="spooked" and result.bounce<-1 and hearts==max_hearts,"score "..score..", bounce "..result.bounce..", hearts "..hearts end,

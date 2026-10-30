@@ -156,7 +156,7 @@ function draw_title()
  rect(86,36,126,76,14)
  print("player 1",90,39,7)
  print("loretta",92,46,9)
- print("\f6speed \fe\16\16\16\f1\16\16\n\f6jump  \f9\16\16\16\f1\16\16\n\f6bark  \fb\16\16\f1\16\16\16\n\f6charm \fd\16\16\16\16\f1\16",88,53)
+ print("\f6speed \^x3\fe\16\16\16\f1\16\16\n\^x4\f6jump  \^x3\f9\16\16\16\f1\16\16\n\^x4\f6bark  \^x3\fb\16\16\f1\16\16\16\n\^x4\f6charm \^x3\fd\16\16\16\16\f1\16",88,53)
  outlined("\142 jump \151 bark \131 sit",8,121,7)
 end
 
