@@ -33,7 +33,6 @@ tongue_weight=0.4
 belly_spring=0.12
 belly_damp=0.82
 belly_bounce=1.5
-stomp_bounce=2.4
 hurt_frames=90
 knock_x=1.2
 knock_y=1.8

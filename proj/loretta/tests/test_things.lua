@@ -8,13 +8,13 @@ end
 
 cases={
  {
-  name="landing on a squirrel starts a chase and bounces her",buttons={},frames=50,
+  name="a squirrel bolts before she can touch it, even dropping on it from above",buttons={},frames=50,every_frame=true,
   setup=function()
    arena(90,40)
-   result.squirrel,result.bounce=squirrel_at(98),0
+   result.squirrel,result.touched=squirrel_at(98),false
   end,
-  each=function() result.bounce=min(result.bounce,hero.vy) end,
-  check=function() return result.squirrel.state=="spooked" and result.bounce<-1 and hearts==max_hearts,"score "..score..", bounce "..result.bounce..", hearts "..hearts end,
+  each=function() result.touched=result.touched or overlaps(hero,result.squirrel) and not result.squirrel.state end,
+  check=function() return result.squirrel.state=="spooked" and not result.touched,"state "..tostr(result.squirrel.state)..", touched while calm "..tostr(result.touched) end,
  },
  {
   name="running into a squirrel chases it off: it flees to the tree ahead, climbs it and drops three coins, no heart lost",buttons={1},frames=130,

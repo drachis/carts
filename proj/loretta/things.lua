@@ -122,6 +122,7 @@ function update_squirrel(squirrel,hero)
   end
   return
  end
+ if not squirrel.state and abs(hero.x-squirrel.x)<squirrel_gap then spook(squirrel,sgn(squirrel.x-hero.x)) end
  if squirrel.vx==0 then squirrel.vx,squirrel.home=-squirrel_speed-squirrel_ramp*squirrel.x/level_w,squirrel.x end
  squirrel.x+=squirrel.vx
  for step=1,8 do
@@ -156,12 +157,6 @@ function update_squirrel(squirrel,hero)
   add(floaters,{text=pot.."0",x=(squirrel.x+hero.x)/2,y=hero.y-16,life=40,colour=10,fly=pot})
   chase,pot=0,0
  end
-end
-
-function touch_squirrel(squirrel,hero)
- if squirrel.state then return end
- spook(squirrel,sgn(squirrel.x-hero.x))
- if hero.vy>0 then hero.vy=-stomp_bounce end
 end
 
 function spook(squirrel,direction)

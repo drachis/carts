@@ -152,11 +152,6 @@ function draw_title()
  if t()%1<0.6 then print("\145",3,36,14) end
  print("start",13,36,7)
  print(score_text(best),4,41,10)
- rectfill(86,36,126,76,0)
- rect(86,36,126,76,14)
- print("player 1",90,39,7)
- print("loretta",92,46,9)
- print("\f6speed \^x3\fe\16\16\16\f1\16\16\n\^x4\f6jump  \^x3\f9\16\16\16\f1\16\16\n\^x4\f6bark  \^x3\fb\16\16\f1\16\16\16\n\^x4\f6charm \^x3\fd\16\16\16\16\f1\16",88,53)
  outlined("\142 jump \151 bark \131 sit",8,121,7)
 end
 
