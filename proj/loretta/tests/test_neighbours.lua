@@ -28,7 +28,7 @@ cases={
    result.neighbour=thing_at("neighbour",60,88)
    result.neighbour.petted=true
   end,
-  each=function() if result.neighbour.petting==pet_frames then result.pats+=1 end end,
+  each=function() if result.neighbour.petting>0 then result.pats+=1 end end,
   check=function() return hearts==1 and result.pats>0,"hearts "..hearts..", pats "..result.pats end,
  },
 }

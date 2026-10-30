@@ -35,14 +35,13 @@ cases={
   check=function() return hero.vx==run_max,"vx "..hero.vx.." of "..run_max..", the screen crossed in "..flr(128/run_max).." frames" end,
  },
  jump_case("tapped jump",{}),
- jump_case("held jump, no paddle",{4},function() hero.paddle=0 end),
- jump_case("held jump with paddle",{4}),
+ jump_case("held jump, no paddle",{4}),
  {
-  name="a held jump rises higher than a tap, and paddling hangs longer",buttons={},frames=1,
+  name="a held jump rises higher than a tap",buttons={},frames=1,
   setup=function() end,
   check=function()
-   local tap,held,paddle=result["tapped jump"],result["held jump, no paddle"],result["held jump with paddle"]
-   return held[1]>tap[1]+12 and held[1]>=36 and held[1]<=56 and paddle[2]>held[2]+20,"tap "..tap[1].."px, held "..held[1].."px, air "..held[2].." frames, paddling "..paddle[2]
+   local tap,held=result["tapped jump"],result["held jump, no paddle"]
+   return held[1]>tap[1]+12 and held[1]>=36 and held[1]<=56,"tap "..tap[1].."px, held "..held[1].."px, air "..held[2]
   end,
  },
  {

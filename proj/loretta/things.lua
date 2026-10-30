@@ -112,7 +112,7 @@ function update_squirrel(squirrel,hero)
    for step=1,8 do
     if flag_at(squirrel.x+6,squirrel.y+11,0) then squirrel.y-=1 end
    end
-   if not on_ledge(squirrel) then squirrel.y+=2 end
+   if not on_ledge(squirrel) and flag_at(squirrel.x+6,squirrel.y+40,0) then squirrel.y+=2 end
   end
   if squirrel.tree and (squirrel.x-squirrel.tree)*squirrel.vx>=0 then
    squirrel.trunk,squirrel.vy,squirrel.tree,squirrel.top=squirrel.tree-6,-squirrel_climb,nil,squirrel.y-squirrel_height
@@ -150,7 +150,6 @@ function touch_squirrel(squirrel,hero)
   squirrel.state,squirrel.vx,squirrel.vy="bonked",hero.facing*0.5,-1.5
   hero.vy=hero.held&16>0 and -jump_a or -stomp_bounce
   hero.chain+=1
-  hero.paddle=paddle_frames
   local points=stomp_points*(1<<min(hero.chain-1,3))
   add_score(points)
   float_text(points.."0",squirrel.x,squirrel.y-8,10)
@@ -162,11 +161,11 @@ function touch_squirrel(squirrel,hero)
 end
 
 function spook(squirrel,direction)
- local tree,best=squirrel.x+direction*squirrel_run,squirrel_run*3
+ local tree,best=squirrel.x+direction*squirrel_run,30000
  for thing in all(things) do
   local gap=(thing.x+4-squirrel.x)*direction
   if thing.name=="tree" then
-   if gap<0 then gap=squirrel_run-gap end
+   if gap<squirrel_far then gap=5000-gap end
    if gap<best then tree,best=thing.x+4,gap end
   end
  end
@@ -179,7 +178,7 @@ end
 function draw_squirrel(squirrel)
  local dir,links=sgn(squirrel.vx),squirrel.links or {}
  local body_x,body_y=squirrel.x+6-dir*2,squirrel.y+6-abs(sin(squirrel.x/squirrel_arc/2))*(squirrel.tree and 20 or 6)
- local x,y=body_x-dir*5,body_y
+ local x,y=body_x-dir*6,body_y
  squirrel.links=links
  for i=1,6 do
   local link=links[i] or {}
@@ -190,14 +189,18 @@ function draw_squirrel(squirrel)
  for pass=0,1 do
   for i=6,1,-1 do circfill(links[i].x,links[i].y,2+i/2-pass,pass*7+2) end
  end
- circfill(body_x,body_y,6,2)
- circfill(body_x,body_y,5,4)
- for ear=-3,2,5 do
-  rectfill(body_x+ear,body_y-8,body_x+ear+1,body_y-5,2)
-  pset(body_x+ear,body_y-6,9)
+ local head_x,head_y=body_x+dir*6,body_y-5
+ for ear=-2,2,4 do
+  tri(head_x+ear-3,head_y-1,head_x+ear+3,head_y-1,head_x+ear,head_y-9,2)
+  tri(head_x+ear-1,head_y-2,head_x+ear+1,head_y-2,head_x+ear,head_y-6,9)
  end
- pset(body_x+dir*3,body_y-1,0)
- pset(body_x+dir*5,body_y+1,0)
+ for pass=0,1 do
+  circfill(body_x-dir*3,body_y,5-pass,2+pass*2)
+  circfill(body_x+dir*2,body_y-1,4-pass,2+pass*2)
+  circfill(head_x,head_y,4-pass,2+pass*2)
+ end
+ pset(head_x+dir*2,head_y,0)
+ pset(head_x+dir*3,head_y+1,0)
 end
 
 function update_neighbour(neighbour,hero)
@@ -267,6 +270,7 @@ end
 function update_barks()
  for bark in all(barks) do
   bark.distance+=bark_speed
+  bark.x,bark.y=hero.x+12+bark.direction*14,hero.y+6
   local front=bark.x+bark.direction*bark.distance
   for thing in all(things) do
    if thing.name=="squirrel" and not thing.state and abs(thing.x+6-front)<8 and abs(thing.y+6-bark.y)<12 then

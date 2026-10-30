@@ -66,8 +66,7 @@ function win()
 end
 
 function update_title()
- hero.drop=2
- update_loretta(hero,mode_frames%100<8 and 16 or 0)
+ update_loretta(hero,8)
  if btnp(4) then start_game() end
 end
 

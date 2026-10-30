@@ -15,7 +15,6 @@ little dog doing it. Short legs, big ears, a wagging nub of a tail.
 |---|---|---|
 | Run speed builds up, skids on a turn, coyote time, a buffered jump, hold for a higher jump, a flush collision box | dustroom (the user's movement room) | already tuned and tested; the base of any good platformer feel |
 | Camera eases after her and leads where she is running | dustroom | the same, and it shows what is coming |
-| Hold jump while falling: her short legs paddle and she hangs in the air for a moment, once a jump | Yoshi's Island's flutter jump | the JUMP stat's own verb, and a corgi paddling at the air is the most charming thing in the game |
 | Land on a squirrel to bonk it; more bonks without touching the ground score more | Super Mario Bros. stomp and chain | the core enemy rule everyone already knows |
 | Hurt: lose a heart, bounce back, blink and cannot be hurt for a moment | Super Mario Bros. / most platformers | forgiving; three hearts is three mistakes |
 | Paw coins in lines and arcs, showing the way to go | Super Mario Bros. coins | they draw the path and reward the jump |
@@ -102,7 +101,7 @@ little dog doing it. Short legs, big ears, a wagging nub of a tail.
 - Title: the level's first screen, the LORETTA logo, a menu (START,
   HIGH SCORE) and Loretta's player card with her four stats. O starts.
 - Controls: left and right run; O jumps (hold for higher; hold while
-  falling to paddle); X barks; down sits (down+O drops through a branch).
+  falling); X barks; down sits (down+O drops through a branch).
 - One level, eight sections, each a Los Feliz or Griffith Park place:
   1. Vermont/Hillhurst: a movie palace (STAR blade sign, a marquee reading
      "now: good girl" that she can stand on), a bookshop under a striped
