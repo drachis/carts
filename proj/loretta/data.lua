@@ -57,6 +57,7 @@ squirrel_patrol=40
 squirrel_flee=1.2
 squirrel_run=120
 squirrel_arc=40
+squirrel_lag=0.07
 squirrel_dash=1.9
 chase=0
 slide_speed=2.2

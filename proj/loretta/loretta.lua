@@ -55,7 +55,6 @@ function update_loretta(hero,input)
  local sitting=ground and abs(hero.vx)<0.5 and (down or hero.idle>=idle_sit)
  if ground and down and abs(hero.vx)>=0.5 and pressed&8>0 then
   hero.vx,hero.sliding=hero.facing*slide_speed,true
-  sfx(snd_land)
  end
  if not (ground and down and abs(hero.vx)>=0.5) then hero.sliding=false end
  if sitting and not hero.resting then sfx(snd_sit) end

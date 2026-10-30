@@ -178,8 +178,11 @@ end
 
 function draw_squirrel(squirrel)
  local dir,links=sgn(squirrel.vx),squirrel.links or {}
- local body_x,body_y=squirrel.x+6-dir*2,squirrel.y+6-abs(sin(squirrel.x/squirrel_arc/2))*(squirrel.tree and 20 or 6)
- local x,y=body_x-dir*6,body_y
+ local hop,height=squirrel.x/squirrel_arc/2,squirrel.tree and 20 or 6
+ local air=abs(sin(hop))
+ local reach,mid_x,base=1.5+air*4,squirrel.x+6,squirrel.y+6
+ local front_x,front_y,back_x,back_y=mid_x+dir*reach,base-air*height,mid_x-dir*reach,base-abs(sin(hop-dir*squirrel_lag))*height
+ local x,y=back_x-dir*3,back_y
  squirrel.links=links
  for i=1,6 do
   local link=links[i] or {}
@@ -190,19 +193,18 @@ function draw_squirrel(squirrel)
  for pass=0,1 do
   for i=6,1,-1 do circfill(links[i].x,links[i].y,2+i/2-pass,pass*13+2) end
  end
- local head_x,head_y=body_x+dir*6,body_y-5
+ local head_x,head_y=front_x+dir*3,front_y-4
  for ear=-2,2,4 do
-  tri(head_x+ear-3,head_y-1,head_x+ear+3,head_y-1,head_x+ear,head_y-9,2)
-  tri(head_x+ear-1,head_y-2,head_x+ear+1,head_y-2,head_x+ear,head_y-6,9)
+  tri(head_x+ear-3,head_y-1,head_x+ear+3,head_y-1,head_x+ear,head_y-8,2)
  end
  for pass=0,1 do
-  circfill(body_x-dir*3,body_y,5-pass,2+pass*7)
-  circfill(body_x+dir*2,body_y-1,4-pass,2+pass*7)
-  circfill(head_x,head_y,4-pass,2+pass*7)
+  circfill(back_x,back_y,5-air-pass,2+pass*7)
+  circfill(mid_x,(front_y+back_y)/2,3-pass,2+pass*7)
+  circfill(front_x,front_y,4-air-pass,2+pass*7)
+  circfill(head_x,head_y,3-pass,2+pass*7)
  end
- circfill(body_x,body_y+2,2,7)
- pset(head_x+dir*2,head_y,0)
- pset(head_x+dir*3,head_y+1,0)
+ circfill(mid_x,(front_y+back_y)/2+1,1,7)
+ pset(head_x+dir,head_y,0)
 end
 
 function update_neighbour(neighbour,hero)
