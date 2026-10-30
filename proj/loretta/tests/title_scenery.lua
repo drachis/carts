@@ -36,9 +36,9 @@ function near_hill(world_x)
  return 84+sin(world_x/130)*7+sin(world_x/47)*3
 end
 
-function draw_stars(count,height)
+function draw_stars(count)
  for star=1,count do
-  if (t()/3+star/7)%1<0.85 then pset(star*37%128,star*star*11%height,star%3==0 and 7 or 13) end
+  if (t()/3+star/7)%1<0.85 then pset(star*37%128,star*star*11%128,star%3==0 and 7 or 13) end
  end
 end
 
@@ -51,7 +51,7 @@ function draw_backdrop(cam_x)
  end
  rectfill(0,0,127,dusk*8,1)
  fillp()
- draw_stars(6+dusk*18,30+dusk*20)
+ draw_stars(6+dusk*18)
  local sun_x,sun_y=92-cam_x*0.02,48+dusk*30
  local shade=flr(dusk*3.99)+1
  for ray=1,16 do

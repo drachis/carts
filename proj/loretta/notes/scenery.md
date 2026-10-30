@@ -11,12 +11,13 @@ Haze from most (salmon, the sky near the horizon) to least (navy). Each hill lay
 Every fill pattern is drawn with the camera at 0, so the checkerboard is fixed to the screen and does not crawl as the view scrolls.
 **Keep:** the user asked for screen-locked dither; test_moves checks it.
 
-**scenery.lua:55** `function draw_backdrop(cam_x)`
+**scenery.lua:57** `function draw_backdrop(cam_x)`
 Dusk deepens with progress: the sky bands slide down, stars come out, the sun sets.
 
-**scenery.lua:97** `function draw_far_observatory(cam_x,colour)`
+**scenery.lua:99** `function draw_far_observatory(cam_x,colour)`
 On the title it is big, dark and lit on the hill below the START panel (the reference has it right, but the player card and her head cover that side here).
 The observatory far off on the hills, growing as she nears it; a light comes on past halfway.
 
 **Finale**
 Winning the last level pans the view up 80px (main.lua _draw): night sweeps down the sky with a dithered edge, stars fill it (draw_stars), the moon rises. test carts with plain_sky have an empty draw_night.
+**Keep:** a star's position never depends on anything that changes: scaling it by the sky's height made every star jump each frame of the pan (the user saw noise). Night reveals fixed stars with clip.
