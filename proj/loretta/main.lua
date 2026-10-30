@@ -13,8 +13,9 @@ end
 
 function start_level()
  load_level()
- hearts,coins,score,shake,respawn,mode_frames=max_hearts,0,0,0,0,0
+ hearts,shake,respawn,mode_frames=max_hearts,0,0,0
  barks,puffs,floaters={},{},{}
+ hero,respawn_x,respawn_y=new_loretta(16,82),16,82
  for thing in all(things) do
   if thing.name=="start" then
    hero=new_loretta(thing.x,thing.y)
@@ -26,7 +27,7 @@ function start_level()
 end
 
 function go_title()
- level=1
+ level,score,coins=1,0,0
  start_level()
  mode,hero.x,hero.held="title",50,0
  play_music(0)
@@ -36,6 +37,12 @@ function start_game()
  start_level()
  mode="play"
  sfx(snd_menu)
+end
+
+function next_level()
+ level+=1
+ start_game()
+ play_music(0)
 end
 
 function save_best()
@@ -91,7 +98,9 @@ function update_win()
   sfx(snd_coin)
   if hearts==0 then save_best() end
  end
- if mode_frames>150 and hearts==0 and btnp(4) then go_title() end
+ if mode_frames>150 and hearts==0 and btnp(4) then
+  if level<#levels then next_level() else go_title() end
+ end
 end
 
 function update_over()
@@ -128,6 +137,10 @@ function draw_hud()
  sspr(16,16,16,16,32,2,8,8)
  outlined("x"..coins,41,3,7)
  outlined("score "..score_text(score),75,3,7)
+ if mode=="play" and mode_frames<150 then
+  local text=level..": "..level_names[level]
+  outlined(text,64-#text*2,16,10)
+ end
 end
 
 function draw_logo(text,x,y)
@@ -202,6 +215,9 @@ function _draw()
  draw_effects()
  camera()
  if mode=="title" then draw_title() else draw_hud() end
- if mode=="win" then draw_banner("you made it!|loretta saw the stars|score "..score_text(score)..(hearts==0 and "|\142 back to the start" or ""),74) end
+ if mode=="win" then
+  local last=level==#levels
+  draw_banner((last and "you made it!|loretta saw the stars" or landmarks[level].."!|good girl!").."|score "..score_text(score)..(hearts==0 and (last and "|\142 back to the start" or "|\142 on to "..level_names[level+1]) or ""),74)
+ end
  if mode=="over" then draw_banner("loretta needs a nap|score "..score_text(score).."|\142 try again",22) end
 end

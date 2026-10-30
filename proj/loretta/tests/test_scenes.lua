@@ -1,6 +1,7 @@
--- test_scenes.lua : two pictures of each of the level's eight sections
--- (scene_1 and scene_2 are the first), with Loretta standing in each, for
--- looking at the set pieces; of those it checks only that each draws.
+-- test_scenes.lua : two pictures of each of the sixteen chunks, played as
+-- one level in chunk order (scene_1 and scene_2 are chunk 0), with
+-- Loretta standing in each, for looking at the set pieces; of those it
+-- checks only that each draws.
 -- then it checks that the backdrop's dither stays put on the screen as
 -- the camera moves (test_body had no room for it).
 
@@ -13,10 +14,11 @@ local section,game_draw=0,_draw
 function _update60()
  run_frame(function()
   if section==0 then
+   levels[1],level=split"0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15",1
    start_level()
    mode="play"
   end
-  if section<16 then
+  if section<32 then
    hero=new_loretta(section*128+40,0)
    for i=1,40 do update_loretta(hero,0) end
    view.x=section*128

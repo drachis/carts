@@ -471,6 +471,7 @@ SPRITES = {
     29: mark("6"), 30: mark("6"), 31: mark("6"), 68: mark("6"), 69: mark("6"),
     70: mark("6"), 71: mark("6"), 72: mark("6"), 73: mark("6"), 74: mark("6"),
     75: mark("6"), 84: mark("6"), 85: mark("6"), 86: mark("6"),
+    87: mark("6"), 88: mark("6"), 89: mark("6"), 90: mark("6"), 91: mark("6"),
     104: SQUIRREL_A, 106: SQUIRREL_B, 108: SQUIRREL_SPOOKED, 110: HYDRANT,
     32: HYDRANT_LIT, 34: COIN, 36: squash(COIN, 8), 38: squash(COIN, 3),
     40: BONE, 42: HEART, 43: HEART_EMPTY, 44: SPARKLE, 45: HAND, 46: SHOES,
@@ -503,7 +504,7 @@ STREET = [EMPTY] * 5 + [
     "." * 22 + "oooo" + "." * 6,
     "." * 21 + "^" * 8 + "." * 3,
     EMPTY,
-    ".L....SYM..........sYB..........",
+    "......SYM..........sYB..........",
     "_" * 32,
 ] + [GROUND] * 3
 # the lawns: Spanish bungalows (K) with red tile roofs, and a jacaranda
@@ -564,14 +565,78 @@ LAWN_TOP = [EMPTY] * 7 + [
 # sheet's lower half). a level is a list of chunk numbers (data.lua
 # levels); chunks are reused, in any order, and must meet at the same
 # ground height. FLAT is ground at row 12 for unbuilt slots.
-FLAT = [EMPTY] * 12 + [GROUND] * 4
-CHUNKS = [STREET, LAWNS, STREAM, YARD, TRAILHEAD, RAVINE, SWITCHBACK, LAWN_TOP] + [FLAT] * 8
-LEVELS = [[0, 1, 2, 3, 4, 5, 6, 7]]
+# 8: back down from the trail's height (row 8) to the street's (row 12)
+DESCENT = [EMPTY] * 7 + [
+    "...h" + "." * 28,
+    "#" * 10 + "\\" + "." * 21,
+    "#" * 11 + "\\" + "." * 8 + "o.o.o" + "." * 7,
+    "#" * 12 + "\\" + "." * 19,
+    "#" * 13 + "\\" + "." * 12 + "s" + "." * 5,
+] + [GROUND] * 4
+# 9: Fred 62, the diner on Hillhurst where she sets out (D)
+FRED62 = [EMPTY] * 9 + [
+    "." * 20 + "oooo" + "." * 8,
+    EMPTY,
+    ".L....S..D................s.....",
+] + ["_" * 32] + [GROUND] * 3
+# 10: a fork: up over planks for the coins, or down across a pit
+FORK = [EMPTY] * 6 + [
+    "." * 14 + "oooooo" + "." * 12,
+    "." * 13 + "=" * 8 + "." * 11,
+    "." * 5 + "oooo" + "." * 14 + "oooo" + "." * 5,
+    "." * 4 + "=" * 7 + "." * 12 + "=" * 7 + "." * 2,
+    EMPTY,
+    "..." + "T" + "." * 21 + "s" + "." * 6,
+] + ["#" * 13 + "." * 7 + "#" * 12] * 2 + ["#" * 13 + "~" * 7 + "#" * 12] * 2
+# 11..15 and 7 are the levels' ends, each at a dog landmark (G): the dog
+# park, the Trails Cafe, a pet shop's dog bowl, Barnsdall Park's olive
+# lawn, the trail's water stop, the observatory
+DOG_PARK = [EMPTY] * 8 + [
+    "." * 14 + "ooooo" + "." * 13,
+    EMPTY,
+    EMPTY,
+    "...h......T.P.......f...G.......",
+] + [GROUND] * 4
+CAFE = [EMPTY] * 8 + [
+    "." * 8 + "oooo" + "." * 20,
+    EMPTY,
+    EMPTY,
+    "..F...T......c........G.....F...",
+] + [GROUND] * 4
+PET_SHOP = [EMPTY] * 8 + [
+    "." * 14 + "oooo" + "." * 14,
+    EMPTY,
+    EMPTY,
+    "......Y...p...........G.........",
+] + ["_" * 32] + [GROUND] * 3
+BARNSDALL = [EMPTY] * 8 + [
+    "." * 16 + "ooo" + "." * 13,
+    EMPTY,
+    EMPTY,
+    "....J.....k.............G..T....",
+] + [GROUND] * 4
+WATER_STOP = [EMPTY] * 5 + [
+    "." * 9 + "oooo" + "." * 19,
+    EMPTY,
+    "..U.....E.....w.......G....Q....",
+] + ["#" * 32] * 8
+CHUNKS = [STREET, LAWNS, STREAM, YARD, TRAILHEAD, RAVINE, SWITCHBACK, LAWN_TOP,
+          DESCENT, FRED62, FORK, DOG_PARK, CAFE, PET_SHOP, BARNSDALL, WATER_STOP]
+# the levels, from Fred 62 to the observatory (data.lua's levels must match)
+LEVELS = [
+    [9, 0, 1, 10, 0, 3, 1, 10, 2, 0, 3, 10, 1, 3, 0, 1, 13],
+    [0, 1, 3, 10, 1, 2, 3, 1, 10, 3, 2, 1, 3, 10, 1, 14],
+    [1, 2, 10, 2, 3, 2, 1, 10, 2, 2, 3, 10, 2, 1, 12],
+    [3, 1, 4, 5, 8, 10, 2, 3, 4, 6, 8, 3, 10, 1, 11],
+    [1, 4, 5, 6, 5, 8, 10, 4, 6, 5, 6, 5, 15],
+    [4, 5, 6, 5, 6, 6, 5, 6, 6, 5, 7],
+]
 LETTER_TILES = {".": 0, "=": 4, "f": 7, ",": 8, "/": 9, "\\": 10, "-": 11, "^": 12, "_": 13,
                 "L": 16, "S": 17, "G": 18, "o": 19, "b": 20, "s": 21, "h": 22, "n": 23,
                 "M": 24, "B": 25, "Y": 26, "K": 27, "J": 28, "F": 29, "R": 30, "T": 31,
                 "W": 68, "H": 69, "P": 70, "X": 71, "U": 72, "Q": 73, "Z": 74,
-                "V": 75, "E": 84, "A": 85, "C": 86}
+                "V": 75, "E": 84, "A": 85, "C": 86,
+                "D": 87, "c": 88, "p": 89, "k": 90, "w": 91}
 
 
 def level_rows(chunks):

@@ -20,8 +20,8 @@ function draw_things(back)
  end
 end
 
-function draw_prop(prop)
- for op in all(shapes[prop.name]) do
+function draw_prop(prop,shape)
+ for op in all(shapes[shape or prop.name]) do
   local kind,a,b,c,d,e=unpack(op)
   local x,y=prop.x+a,prop.y+b
   if kind=="r" then rectfill(x,y,prop.x+c,prop.y+d,e)
@@ -64,8 +64,8 @@ function draw_bone(bone)
  spr(40,bone.x-1,bone.y-1+sin(t()/2+bone.x/30),2,1)
 end
 
-function touch_hydrant(hydrant)
- if not hydrant.lit then
+function update_hydrant(hydrant,hero)
+ if not hydrant.lit and hero.x+12>hydrant.x and respawn==0 then
   hydrant.lit=true
   respawn_x,respawn_y=hydrant.x-7,hydrant.y+hydrant.h-hero_h
   sfx(snd_check)
@@ -171,21 +171,11 @@ function touch_gate()
 end
 
 function draw_gate(gate)
- local x,base=gate.x+4,gate.y+gate.h
- circfill(x-35,base-22,9,5)
- circfill(x+35,base-22,9,5)
- circfill(x,base-35,17,5)
- circ(x,base-35,17,13)
- rectfill(x-18,base-35,x+18,base-22,6)
- rectfill(x-45,base-22,x+45,base-1,6)
- rectfill(x-45,base-4,x+45,base-1,13)
- for column=-40,40,9 do
-  line(x+column,base-19,x+column,base-5,13)
- end
- circfill(x,base-12,5,1)
- rectfill(x-5,base-12,x+5,base-1,1)
- for window=-1,1,2 do
-  rectfill(x+window*10,base-30,x+window*10+1,base-27,10)
+ local last=level==#levels
+ draw_prop(gate,last and "observatory" or "arch")
+ if not last then
+  local text=landmarks[level]
+  print(text,gate.x+4-#text*2,gate.y+3,7)
  end
 end
 

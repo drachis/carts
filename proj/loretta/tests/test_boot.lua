@@ -33,6 +33,8 @@ function boot_frame()
  if n>=400 and n<440 then held[3]=true end
  if n==460 then held[5]=true end
  if n==500 then
+  level=#levels
+  start_game()
   for thing in all(things) do
    if thing.name=="gate" then hero.x,hero.y=thing.x-30,thing.y+thing.h-hero_h end
   end
