@@ -191,7 +191,7 @@ function update_neighbour(neighbour,hero)
  if neighbour.petting>0 then
   neighbour.petting-=1
   hero.happy=30
-  neighbour.step+=(hero.hx-hero.facing*22-8-neighbour.x-neighbour.step)/12
+  neighbour.step+=(hero.hx+sgn(neighbour.x+8-hero.hx)*22-8-neighbour.x-neighbour.step)/12
   local beat=neighbour.petting%40
   if beat<24 and beat%8==0 then
    hero.flop=6

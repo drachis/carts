@@ -12,7 +12,7 @@ Sitting within pet_range (64, the zone the user circled: about a dog length eith
 
 **things.lua:215** `function draw_neighbour(neighbour)`
 The neighbour is a tall adult seen from a corgi's height: one of five Los Feliz outfits (sprite 99 on, 8x16 each, drawn 24 wide, shoulders, waist and hips, about half leg: sundress, bowling shirt, overalls, jumpsuit, pencil skirt), the cloth (14) swapped from cloths stretched from off the top of the screen to the shoes, skin (f) swapped from skins, the head never seen. Petting, they step in (and drift back to their spot after: step decays) behind her shoulders (step) and the arm on her head's side swings down; a big hand (twice size) lands: pat, pat, pat, a pause (40-frame beat); each pat dips her head (flop) and knocks her ears sideways. Until the first pats they hold a bone treat. Only the first pats restore hearts; after that, while she sits by them, they pat again at random (1 in pet_again a frame).
-Keep: the neighbour stands so her head is 22px from their middle, outside their legs (the user: no reaching down to the crotch). The user asked for the petting to stay beside her, not the hand in front, and for repeat pats without hearts because the petting is charming.
+Keep: the neighbour stays on the side they started on, her head 22px from their middle, outside their legs (the user: no crossing her, no reaching down to the crotch). The user asked for the petting to stay beside her, not the hand in front, and for repeat pats without hearts because the petting is charming.
 **Keep:** the user asked for a Peanuts-style adult whose head is off screen, about six times her shoulder height, and a larger hand that gives a good pat - pat - pat.
 
 **things.lua:239** `function draw_gate(gate)`
