@@ -39,7 +39,7 @@ def ground(rows, top, first=0, last=31, letter="#"):
 def pit(rows, first, last, top=12, water=True):
     for x in range(first, last + 1):
         for y in range(top, 16):
-            rows[y][x] = "~" if water and y >= 14 else "."
+            rows[y][x] = "~" if water and y >= 13 else "."
 
 
 def put(rows, x, y, letter):

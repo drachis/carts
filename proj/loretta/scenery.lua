@@ -9,7 +9,7 @@ function set_palette()
 end
 
 function progress()
- return mid(0,view.x/(level_w-128),1)
+ return mid(0,(level-1+view.x/(level_w-128))/#levels,1)
 end
 
 function haze_fill(layer_near,top_fn,parallax,cam_x)
@@ -49,6 +49,12 @@ function draw_backdrop(cam_x)
   end
  end
  local sun_x,sun_y=92-cam_x*0.02,48+dusk*30
+ fillp(0x5a5a.8)
+ for ray=1,7 do
+  local angle,width=ray/7+t()/90,0.012+sin(t()/3+ray/4)*0.006
+  tri(sun_x,sun_y,sun_x+cos(angle-width)*100,sun_y+sin(angle-width)*100,sun_x+cos(angle+width)*100,sun_y+sin(angle+width)*100,15)
+ end
+ fillp()
  circfill(sun_x,sun_y,14,9)
  circfill(sun_x,sun_y,12,15)
  for y=sun_y+2,sun_y+14,3 do
@@ -57,11 +63,11 @@ function draw_backdrop(cam_x)
  end
  local far=haze_fill(3,far_hill,0.1,cam_x)
  draw_far_observatory(cam_x,far)
- local sign_x=246-cam_x*0.1
+ local sign_x,peak=34-dusk*14,40-dusk*14
  for dx=-34,34 do
-  line(sign_x+dx,38+abs(dx)*0.7,sign_x+dx,90,far)
+  line(sign_x+dx,peak+abs(dx)*0.7,sign_x+dx,90,far)
  end
- print("hollywood",sign_x-17,45,6)
+ print("hollywood",sign_x-17,peak+7,6)
  haze_fill(4,near_hill,0.25,cam_x)
  for x=0,127,3 do
   local world_x=flr(x+cam_x*0.25)
@@ -73,8 +79,8 @@ function draw_backdrop(cam_x)
 end
 
 function draw_far_observatory(cam_x,colour)
- local size=1+progress()*1.5
- local x=118-cam_x*0.09
+ local size=1+progress()*2
+ local x=104-progress()*40
  local y=far_hill(x+cam_x*0.1)+1
  circfill(x,y-6*size,4*size,colour)
  rectfill(x-9*size,y-6*size,x+9*size,y,colour)

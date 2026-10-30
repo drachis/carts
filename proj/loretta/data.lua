@@ -46,6 +46,7 @@ bark_speed=2
 drop_frames=10
 idle_sit=240
 pet_frames=120
+view_drop=16
 pet_range=28
 respawn_frames=50
 hero_w=24

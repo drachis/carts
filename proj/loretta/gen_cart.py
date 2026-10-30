@@ -555,12 +555,12 @@ SWITCHBACK = [EMPTY] * 7 + [
     "V" + "." * 24 + "T" + "o.o.o" + "s",
     "#" * 8 + "\\" + "." * 14 + "/" + "#" * 8,
     "#" * 9 + "\\" + "." + "s" + "." + "n" + "E" + "." * 7 + "/" + "#" * 9,
-] + ["#" * 17 + "...." + "#" * 11] * 4 + ["#" * 17 + "~~~~" + "#" * 11] * 2
+] + ["#" * 17 + "...." + "#" * 11] * 3 + ["#" * 17 + "~~~~" + "#" * 11] * 3
 # the observatory lawn: the Astronomers Monument (A), lamps, the
 # observatory itself (G) and a coin-op viewer (C) looking out over the city
 LAWN_TOP = [EMPTY] * 7 + [
     "..s.fs.A....sY....G.......Y.C.f.",
-] + ["#" * 8 + "...." + "#" * 20] * 6 + ["#" * 8 + "~~~~" + "#" * 20] * 2
+] + ["#" * 8 + "...." + "#" * 20] * 5 + ["#" * 8 + "~~~~" + "#" * 20] * 3
 # the chunk library: sixteen pieces of 32 by 16 tiles, in the map four
 # across (chunk k at map x k%4*32, y k//4*16; 8..15 are in the sprite
 # sheet's lower half). a level is a list of chunk numbers (data.lua

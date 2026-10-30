@@ -174,7 +174,7 @@ function draw_neighbour(neighbour)
   rectfill(x+leg-1,feet-2,x+leg+6,feet,2)
  end
  spr(46,x,feet+1,2,1)
- rectfill(x-2,-8,x+17,waist-2,shirt)
+ rectfill(x-2,-24,x+17,waist-2,shirt)
  rectfill(x-1,waist-2,x+16,waist,4)
  for button=waist-30,waist-6,8 do pset(x+8,button,7) end
  local hand_x,hand_y=x+16,waist-2
@@ -185,7 +185,7 @@ function draw_neighbour(neighbour)
  elseif not neighbour.petted and abs(hero.x-x)<48 then
   print("\135?",x+4,feet-12+sin(t()),14)
  end
- for side=0,3 do line(x+14+side,-8,hand_x+5+side,hand_y+2,shirt) end
+ for side=0,3 do line(x+14+side,-24,hand_x+5+side,hand_y+2,shirt) end
  sspr(104,16,8,8,hand_x,hand_y,16,16)
 end
 
