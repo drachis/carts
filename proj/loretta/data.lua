@@ -59,6 +59,7 @@ squirrel_wake=150
 squirrel_patrol=40
 squirrel_flee=1.2
 squirrel_run=120
+squirrel_arc=40
 camera_speed_change=0.12
 camera_lookahead=32
 camera_lookahead_speed=0.04
@@ -185,7 +186,7 @@ levels={split"9,0,1,10,3,13",split"1,3,0,10,2,14",split"1,2,10,3,2,12",split"1,3
 level_names=split"hillhurst,barnsdall park,fern dell,griffith park,the trail,the observatory"
 landmarks=split"dog bowl,olive lawn,trails cafe,dog park,water stop"
 slot_kinds={house=split"bungalow,craftsman,cafe,bungalow,bookshop,craftsman",tree=split"jacaranda,sycamore,palm,orange",decor=split"birdbath,agave,pot,roses,flamingo"}
-walls,roofs,cloths,skins,coin_frames,run_frames=split"15,14,6,13",split"8,4,2,3",split"14,12,3,10,8,13",split"15,4,9",split"34,34,34,34,34,36,38,36",split"93,14,108,124"
+walls,roofs,cloths,skins,coin_frames=split"15,14,6,13",split"8,4,2,3",split"14,12,3,10,8,13",split"15,4,9",split"34,34,34,34,34,36,38,36"
 praises=split"who's a sweet pup!,best dog on the block!,what a little loaf!,treat earned!,tail wags all round!,such a fine corgi!"
 
 stat_names=split"speed,jump,bark,charm"

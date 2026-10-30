@@ -162,12 +162,22 @@ function spook(squirrel,direction)
 end
 
 function draw_squirrel(squirrel)
- if squirrel.tree then
-  spr(run_frames[squirrel.age\4%4+1],squirrel.x-2,squirrel.y+4,2,1,squirrel.vx<0)
-  return
+ local dir,links=sgn(squirrel.vx),squirrel.links or {}
+ local body_x,body_y=squirrel.x+6-dir*2,squirrel.y+7-abs(sin(squirrel.x/squirrel_arc/2))*(squirrel.tree and 20 or 6)
+ local x,y=body_x-dir*4,body_y
+ squirrel.links=links
+ for i=1,6 do
+  local link=links[i] or {}
+  links[i]=link
+  follow(link,x,y,3,0.85,-0.12,x-dir*3,y-1,0.03)
+  x,y=link.x,link.y
  end
- local sprite=squirrel.age%90<60 and 104+squirrel.age\8%2*2 or 104
- spr(sprite,squirrel.x-2,squirrel.y-4,2,2,squirrel.vx<0,squirrel.state=="bonked")
+ for pass=0,1 do
+  for i=6,1,-1 do circfill(links[i].x,links[i].y,2+i/2-pass,pass*7+2) end
+ end
+ circfill(body_x,body_y,5,2)
+ circfill(body_x,body_y,4,4)
+ sspr(0,48,8,8,body_x+dir*7-8,body_y-11,16,16,dir<0,squirrel.state=="bonked")
 end
 
 function update_neighbour(neighbour,hero)

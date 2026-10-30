@@ -55,6 +55,19 @@ cases={
   end,
  },
  {
+  name="a fleeing squirrel bounds in arcs as tall as her, its tail trailing, a film strip",buttons={},frames=48,every_frame=true,
+  setup=function()
+   arena(16)
+   result.frame,result.squirrel=0,thing_at("squirrel",40,84)
+   spook(result.squirrel,1)
+  end,
+  each=function()
+   result.frame+=1
+   if result.frame%6==0 then dump_screen("squirrel_"..result.frame\6) end
+  end,
+  check=function() return true,"squirrel_1..8 dumped" end,
+ },
+ {
   name="a film strip of her trot",buttons={1},frames=50,every_frame=true,
   setup=function() arena(16) result.frame=0 end,
   each=function()

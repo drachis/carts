@@ -29,7 +29,7 @@ end
 function go_title()
  level,score,coins=1,0,0
  start_level()
- mode,hero.x,hero.held="title",50,0
+ mode,hero.held="title",0
  play_music(0)
 end
 
@@ -143,26 +143,9 @@ function draw_hud()
  end
 end
 
-function draw_logo(text,x,y)
- local big="\^w\^t"..text
- for dx=-2,2 do
-  for dy=-2,3 do print(big,x+dx,y+dy,2) end
- end
- for dx=-1,1 do
-  for dy=-1,1 do print(big,x+dx,y+dy,14) end
- end
- print(big,x,y,9)
- clip(0,0,128,y+5)
- print(big,x,y,10)
- clip()
-end
-
 function draw_title()
- draw_logo("loretta",36,6+sin(t()/3)*1.5)
- outlined("\135 corgi quest \135",30,24,7)
- for sparkle=1,6 do
-  if (t()*1.5+sparkle/6)%1<0.5 then spr(44,sparkle*41%120,8+sparkle*13%40) end
- end
+ sspr(64,48,45,11,19,2+sin(t()/3)*1.5,90,22)
+ outlined("\135 corgi quest \135",30,27,7)
  rectfill(1,36,44,62,0)
  rect(1,36,44,62,14)
  if t()%1<0.6 then print("\145",3,40,14) end

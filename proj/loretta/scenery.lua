@@ -90,7 +90,6 @@ function draw_far_observatory(cam_x,colour)
  rectfill(x-9*size,y-6*size,x+9*size,y,colour)
  circfill(x-8*size,y-6*size,2*size,colour)
  circfill(x+8*size,y-6*size,2*size,colour)
- if progress()>0.5 then pset(x,y-3*size,10) end
 end
 
 function draw_palms(cam_x)

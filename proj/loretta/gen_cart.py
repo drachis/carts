@@ -395,6 +395,49 @@ SQUIRREL_GATHER = """
 ......2424242...
 .....242.242....
 """
+# the title logo, baked after the reference picture: chunky 5x7 letters,
+# yellow fading to orange, a pink extrusion down and right, a plum outline,
+# a pink paw dot in the O. 45x11 at sheet (64, 48), drawn at twice its size
+GLYPHS = {
+    "l": ["11000", "11000", "11000", "11000", "11000", "11111", "11111"],
+    "o": ["01110", "11011", "11011", "11011", "11011", "11011", "01110"],
+    "r": ["11110", "11011", "11011", "11110", "11011", "11011", "11011"],
+    "e": ["11111", "11000", "11000", "11110", "11000", "11000", "11111"],
+    "t": ["11111", "11111", "01110", "01110", "01110", "01110", "01110"],
+    "a": ["01110", "11011", "11011", "11111", "11011", "11011", "11011"],
+}
+
+
+def logo(text):
+    width, height = len(text) * 6 + 3, 11
+    letters = {(1 + i * 6 + x, 1 + y) for i, letter in enumerate(text)
+               for y in range(7) for x in range(5) if GLYPHS[letter][y][x] == "1"}
+    depth = {(x + dx, y + dy) for (x, y) in letters for dx in (0, 1) for dy in (1, 2)} - letters
+    solid = letters | depth
+    rim = {(x + dx, y + dy) for (x, y) in solid for dx in (-1, 0, 1) for dy in (-1, 0, 1)} - solid
+    grid = [["."] * width for _ in range(height)]
+    for cells, colour in ((rim, "2"), (depth, "e")):
+        for (x, y) in cells:
+            if 0 <= x < width and 0 <= y < height:
+                grid[y][x] = colour
+    for (x, y) in letters:
+        grid[y][x] = "a" if y < 4 else "9"
+    grid[4][9] = "e"
+    return "\n".join("".join(row) for row in grid)
+
+
+LOGO = logo("loretta")
+# the squirrel's head, an oversized sprite on a spring-chain body (things.lua)
+SQUIRREL_HEAD = """
+.2..2...
+292292..
+2944442.
+24447042
+24444442
+2ff44440
+.2ffff2.
+..2222..
+"""
 # the rest of the bound, stacked in slot 108 (108 and 124): the long flat
 # flight with every leg out, then the front paws touching down, rump high
 SQUIRREL_FLIGHT = """
@@ -530,11 +573,11 @@ SPRITES = {
     70: mark("6"), 71: mark("6"), 72: mark("6"), 73: mark("6"), 74: mark("6"),
     75: mark("6"), 84: mark("6"), 85: mark("6"), 86: mark("6"),
     87: mark("6"), 88: mark("6"), 89: mark("6"), 90: mark("6"), 91: mark("6"), 92: mark("6"),
-    104: SQUIRREL_A, 106: SQUIRREL_B, 108: SQUIRREL_SPOOKED, 110: HYDRANT,
+    104: LOGO, 110: HYDRANT,
     32: HYDRANT_LIT, 34: COIN, 36: squash(COIN, 8), 38: squash(COIN, 3),
-    40: BONE, 42: HEART, 43: HEART_EMPTY, 44: SPARKLE, 45: HAND, 46: SHOES, 99: OUTFITS, 14: SQUIRREL_STRETCH, 93: SQUIRREL_GATHER,
+    40: BONE, 42: HEART, 43: HEART_EMPTY, 44: SPARKLE, 45: HAND, 46: SHOES, 99: OUTFITS,
 }
-SPRITES.update(LORETTA_PARTS)
+SPRITES.update({96: SQUIRREL_HEAD})
 # sprites stop at 127: the sheet's lower half is map rows 32..63 (chunks
 # 8..15). flag 0 solid, 1 semisolid (its top row only), 2 water, 3 a slope
 # rising to the right, 4 a slope rising to the left (solid only below the
@@ -639,7 +682,7 @@ FRED62 = [EMPTY] * 5 + [
     EMPTY,
     EMPTY,
     EMPTY,
-    ".L....S..D............M....s..T.",
+    ".S....L..D............M....s..T.",
 ] + ["_" * 32] + [GROUND] * 3
 # 10: a fork: up over planks for the coins, or down across a pit
 FORK = [EMPTY] * 6 + [
