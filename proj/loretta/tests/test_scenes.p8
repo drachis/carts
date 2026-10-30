@@ -9,7 +9,7 @@ log_name="log_scenes"
 #include ../loretta.lua
 #include ../things.lua
 #include ../camera.lua
-#include ../main.lua
+#include scene_main.lua
 #include dump.lua
 #include test_scenes.lua
 __gfx__

@@ -146,6 +146,9 @@ end
 function draw_title()
  sspr(64,48,45,11,19,2+sin(t()/3)*1.5,90,22)
  outlined("\135 corgi quest \135",30,27,7)
+ for sparkle=1,6 do
+  if (t()*1.5+sparkle/6)%1<0.5 then spr(44,sparkle*41%120,8+sparkle*13%40) end
+ end
  rectfill(1,36,44,62,0)
  rect(1,36,44,62,14)
  if t()%1<0.6 then print("\145",3,40,14) end
