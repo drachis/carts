@@ -47,13 +47,6 @@ def put(rows, x, y, letter):
         rows[y][x] = letter
 
 
-def hedge(rows, x, width=2):
-    """A clipped hedge on the street: she hops it, a chased squirrel leaps it."""
-    for column in range(x, x + width):
-        for y in (10, 11):
-            rows[y][column] = "g"
-
-
 def coins(rows, x, y, count, step=1):
     # the chase is the reward: platforms carry only a few coins
     count = max(1, count // 2)
@@ -67,119 +60,113 @@ def text(rows):
 
 # everyday Los Feliz pieces --------------------------------------------
 
+# a squirrel hops every 5 tiles (squirrel_arc, 40px): hedges on that beat
+# make its leaps land in rhythm. each chunk has a job in a chase: START has a
+# squirrel and no escape, RUN keeps it going, FINISH ends it at an escape and
+# sets off the next squirrel just past it. chases are judged by check_levels.
+BEAT = 5
+
+
+def beat_hedges(rows, first, count, rnd, top=12):
+    """Hedges on the squirrel's beat, some skipped, up to `count`."""
+    x = first
+    for _ in range(count):
+        for y in (top - 2, top - 1):
+            rows[y][x] = rows[y][x + 1] = "g"
+        x += BEAT * rnd.choice([2, 3])
+        if x > 29:
+            break
+
+
 def shop_street(rnd):
-    """Storefronts on a sidewalk, an awning to hop onto, a lamp."""
+    """START. Storefronts on a sidewalk, a squirrel, then a clear run."""
     rows = empty()
     ground(rows, 12, letter="_")
-    shop = rnd.randint(2, 6)
-    put(rows, shop, 11, "K")
+    put(rows, rnd.randint(2, 6), 11, "K")
     awning = rnd.randint(16, 20)
     for x in range(awning, awning + 8):
         rows[9][x] = "^"
     put(rows, awning, 11, "K")
-    coins(rows, awning + 2, 8, 4)
     put(rows, rnd.choice([1, 13, 14]), 11, "Y")
     put(rows, rnd.randint(9, 12), 11, "s")
-    put(rows, 30, 11, "d")
-    put(rows, rnd.choice([25, 27]), 11, "T")
-    hedge(rows, 28)
-    put(rows, 15, 11, "T")
+    beat_hedges(rows, 28, 1, rnd)
     return rows
 
 
 def garden_street(rnd):
-    """Bungalows behind front gardens, lush trees, a hydrant."""
+    """RUN then FINISH. Bungalows, front hedges, a neighbour, a tree to end on."""
     rows = empty()
     ground(rows, 12)
     put(rows, 2, 11, "h")
     put(rows, rnd.randint(9, 12), 11, "n")
     put(rows, rnd.randint(4, 6), 11, "K")
     put(rows, rnd.randint(18, 21), 11, "K")
-    hedge(rows, 15)
-    for x in rnd.sample(range(1, 31), 5):
-        put(rows, x, 11, rnd.choice("fd,"))
-    put(rows, rnd.choice([14, 15, 29]), 11, "T")
-    put(rows, rnd.randint(24, 28), 11, "s")
-    coins(rows, rnd.randint(8, 12), 9, 3, 2)
+    beat_hedges(rows, 14, 2, rnd)
+    for x in rnd.sample(range(1, 26), 4):
+        put(rows, x, 11, rnd.choice("f,"))
+    put(rows, 27, 11, "T")
+    put(rows, 30, 11, "s")
     return rows
 
 
 def pond_yard(rnd):
-    """A front yard with a garden pond to clear and a porch roof above it."""
+    """FINISH in a bush. A garden pond to clear, then roses to dive into."""
     rows = empty()
     ground(rows, 12)
-    start = rnd.randint(12, 16)
-    width = rnd.randint(3, 5)
+    start = rnd.randint(8, 12)
+    width = rnd.randint(3, 4)
     pit(rows, start, start + width - 1)
     put(rows, rnd.randint(2, 5), 11, "K")
-    for x in range(start - 2, start + width + 2):
-        rows[8][x] = "="
-    coins(rows, start - 1, 7, width + 2)
-    put(rows, start + width + rnd.randint(2, 5), 11, "s")
-    put(rows, 28, 11, "T")
-    for x in rnd.sample(range(1, 11), 3):
-        put(rows, x, 11, rnd.choice("fd"))
+    beat_hedges(rows, start + width + 3, 1, rnd)
+    put(rows, 25, 11, "d")
+    put(rows, 29, 11, "s")
     return rows
 
 
 def fork(rnd):
-    """Two ways on: over planks for coins, or over a clipped front hedge below
-    (Los Feliz streets have hedges, not pits)."""
+    """RUN. Terraces: a stepped rise and fall for big arcs against the sky."""
     rows = empty()
     ground(rows, 12)
-    start = rnd.randint(11, 14)
-    width = rnd.randint(5, 7)
-    for x in range(start, start + width):
-        for y in (10, 11):
-            rows[y][x] = "g"
-    left, middle, right = rnd.randint(3, 5), start, start + width + 2
-    for x in range(left, left + 7):
-        rows[9][x] = "="
-    for x in range(middle, middle + 8):
-        rows[7][x] = "="
-    for x in range(right, min(right + 7, 31)):
-        rows[9][x] = "="
-    coins(rows, middle + 1, 6, 6)
-    put(rows, 2, 11, "T")
-    put(rows, right + 2, 11, "s")
-    put(rows, min(right + 6, 30), 11, "T")
+    x = rnd.randint(5, 7)
+    for step, height in enumerate((1, 2, 3, 2, 1)):
+        for column in range(x + step * 4, x + step * 4 + 4):
+            for y in range(12 - height, 12):
+                rows[y][column] = "#"
+    put(rows, 2, 11, "f")
+    put(rows, 28, 11, "T")
+    put(rows, 30, 11, "s")
     return rows
 
 
 def fern_dell(rnd):
-    """The stream: planks with rails, ferns, a sycamore."""
+    """RUN. The stream: banks and ferns, water to hop over, a sycamore last."""
     rows = empty()
-    ground(rows, 12, 0, 3)
-    ground(rows, 12, 28, 31)
-    pit(rows, 4, 27)
-    gap = rnd.randint(12, 15)
-    for x in range(5, gap):
-        rows[10][x] = "="
-    for x in range(gap + 4, 27):
-        rows[10][x] = "="
-    put(rows, 5, 9, "R")
-    put(rows, gap + 4, 9, "R")
-    coins(rows, gap, 7, 4)
+    ground(rows, 12)
+    x = rnd.randint(5, 7)
+    while x < 22:
+        width = rnd.randint(3, 4)
+        pit(rows, x, x + width - 1)
+        put(rows, x + width + 1, 11, "F")
+        x += width + BEAT
     put(rows, 1, 11, "F")
     put(rows, 2, 11, "W")
-    put(rows, 28, 11, "F")
-    put(rows, 30, 11, "T")
+    put(rows, 28, 11, "T")
+    put(rows, 30, 11, "s")
     return rows
 
 
 def trail(rnd):
-    """The high trail: a ravine to jump, chaparral, a hiker resting."""
+    """START and FINISH on the high trail: a ravine or two, chaparral."""
     rows = empty()
     ground(rows, 8)
     start = rnd.randint(9, 12)
-    width = rnd.randint(4, 6)
+    width = rnd.randint(4, 5)
     pit(rows, start, start + width - 1, top=8)
     put(rows, 2, 7, "h")
     put(rows, rnd.randint(4, 7), 7, "Q")
-    put(rows, start + width + 3, 7, "T")
-    put(rows, start + width + 7, 7, "s")
-    coins(rows, start, 5, width)
-    put(rows, 29, 7, "d")
+    put(rows, 4, 7, "s")
+    beat_hedges(rows, start + width + 2, 1, rnd, top=8)
+    put(rows, 28, 7, "T")
     return rows
 
 

@@ -192,7 +192,7 @@ viewer=l 3 -10 3 0 5/r 2 -2 4 0 5/r 0 -16 7 -10 1/r 6 -18 9 -15 1/l 1 -14 5 -14 
  for op in all(split(text,"/")) do add(shapes[name],split(op," ")) end
 end
 
-levels={split"9,0,1,10,3,13",split"1,3,0,10,2,14",split"1,2,10,3,2,12",split"1,3,4,5,8,11",split"4,5,8,10,4,5,15",split"4,5,6,5,6,7"}
+levels={split"9,0,1,0,1,13",split"1,3,0,10,1,14",split"0,2,1,2,3,12",split"0,10,3,4,5,8,11",split"4,5,8,10,4,5,15",split"4,5,6,5,6,7"}
 level_names=split"hillhurst,barnsdall park,fern dell,griffith park,the trail,the observatory"
 landmarks=split"dog bowl,olive lawn,trails cafe,dog park,water stop"
 slot_kinds={house=split"bungalow,craftsman,cafe,bungalow,bookshop,craftsman",tree=split"jacaranda,sycamore,palm,orange",decor=split"birdbath,agave,pot,roses,flamingo"}

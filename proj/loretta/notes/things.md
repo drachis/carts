@@ -42,3 +42,4 @@ A floating word of praise picked from praises by place and level.
 **Chase**
 Any touch or bark starts a chase; squirrels are never caught (squirrel_dash when she is within 48px). While she is within 100px, chase counts up: every 30 frames she scores chase\60+1 with more dust and a warmer colour. Escapes: up a tree or into decor (a bush, squirrel.dive). Coins dropped grow with chase.
 **Keep:** the user: the game is the chase, not killing; herding beats platform coins. Hedges (tile 14, flag 5) block walking but a belly slide (down at speed, hero.sliding) goes through.
+**Keep:** the user: no floating platforms or pickup coins (gen_cart strips = and o from every chunk); coins come from chases. level_gen gives each chunk a job in a chase and check_levels fails a chase outside 3..8s.

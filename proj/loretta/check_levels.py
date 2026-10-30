@@ -30,7 +30,7 @@ def chase_problems():
     """Every squirrel gets a 3..8s run (at her top speed, as the game's
     spook picks: the nearest escape at least FAR px ahead), unless it is so
     near the level's end that no escape is left ahead."""
-    problems, times = [], []
+    problems, times, per_level = [], [], {}
     for level, chunks in enumerate(gen_cart.LEVELS, 1):
         squirrels, escapes = [], []
         for i, chunk in enumerate(chunks):
@@ -46,9 +46,11 @@ def chase_problems():
                 continue
             seconds = min(ahead) / SPEED / 60
             times.append(seconds)
+            per_level.setdefault(level, []).append(seconds)
             if not 3 <= seconds <= 8:
                 problems.append("level %d: the squirrel at x %d runs %.1fs" % (level, x, seconds))
-    print("chases: %d, %.1f to %.1f seconds" % (len(times), min(times), max(times)))
+    for level, seconds in per_level.items():
+        print("level %d: %d chases, %s seconds" % (level, len(seconds), " ".join("%.1f" % s for s in seconds)))
     return problems
 
 
@@ -57,12 +59,6 @@ def main():
     for number, chunk in enumerate(gen_cart.CHUNKS):
         if len(chunk) != 16 or any(len(row) != 32 for row in chunk):
             problems.append("chunk %d is not 16 rows of 32" % number)
-        # a chased squirrel escapes up a tree: any chunk with squirrels needs one
-        trees = [x for row in chunk for x, cell in enumerate(row) if cell == "T"]
-        for row in chunk:
-            for x, cell in enumerate(row):
-                if cell == "s" and not any(abs(x - tree) <= 15 for tree in trees):
-                    problems.append("chunk %d: a squirrel at column %d has no tree within 15 tiles" % (number, x))
     for level, chunks in enumerate(gen_cart.LEVELS, 1):
         for a, b in zip(chunks, chunks[1:]):
             end, start = top(gen_cart.CHUNKS[a], 31), top(gen_cart.CHUNKS[b], 0)

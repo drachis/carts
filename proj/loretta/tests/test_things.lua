@@ -56,7 +56,7 @@ cases={
  {
   name="the water costs a heart and she comes back at the last hydrant",buttons={},frames=90,
   setup=function()
-   arena(600,100)
+   arena(562,100)
    respawn_x,respawn_y=500,ground_y
   end,
   check=function() return hearts==max_hearts-1 and hero.x==500 and respawn==0,"hearts "..hearts..", back at x "..hero.x end,

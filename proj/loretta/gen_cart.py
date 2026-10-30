@@ -746,11 +746,12 @@ CHUNKS = [GEN["shop_street"], GEN["garden_street"], GEN["fern_dell"], GEN["pond_
           TRAILHEAD, GEN["trail"], SWITCHBACK, LAWN_TOP,
           DESCENT, FRED62, GEN["fork"], DOG_PARK, CAFE, PET_SHOP, BARNSDALL, WATER_STOP]
 # the levels, from Fred 62 to the observatory (data.lua's levels must match)
+CHUNKS = [[row.replace("=", ".").replace("o", ".") for row in chunk] for chunk in CHUNKS]
 LEVELS = [
-    [9, 0, 1, 10, 3, 13],
-    [1, 3, 0, 10, 2, 14],
-    [1, 2, 10, 3, 2, 12],
-    [1, 3, 4, 5, 8, 11],
+    [9, 0, 1, 0, 1, 13],
+    [1, 3, 0, 10, 1, 14],
+    [0, 2, 1, 2, 3, 12],
+    [0, 10, 3, 4, 5, 8, 11],
     [4, 5, 8, 10, 4, 5, 15],
     [4, 5, 6, 5, 6, 7],
 ]
