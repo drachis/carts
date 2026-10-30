@@ -198,12 +198,12 @@ function draw_squirrel(squirrel)
   tri(head_x+ear-3,head_y-1,head_x+ear+3,head_y-1,head_x+ear,head_y-8,2)
  end
  for pass=0,1 do
-  circfill(back_x,back_y,5-air-pass,2+pass*7)
-  circfill(mid_x,(front_y+back_y)/2,3-pass,2+pass*7)
-  circfill(front_x,front_y,4-air-pass,2+pass*7)
-  circfill(head_x,head_y,3-pass,2+pass*7)
+  circfill(back_x,back_y,6-air-pass,2+pass*7)
+  circfill(mid_x,(front_y+back_y)/2,4-pass,2+pass*7)
+  circfill(front_x,front_y,5-air-pass,2+pass*7)
+  circfill(head_x,head_y,4-pass,2+pass*7)
  end
- circfill(mid_x,(front_y+back_y)/2+1,1,7)
+ circfill(mid_x,(front_y+back_y)/2+1,2,7)
  pset(head_x+dir,head_y,0)
 end
 
