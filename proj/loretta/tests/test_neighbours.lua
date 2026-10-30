@@ -1,0 +1,55 @@
+-- test_neighbours.lua : a neighbour's pats, treat and where they stand; the slide.
+
+cases={
+ {
+  name="sitting beside a neighbour fills her hearts",buttons={3},frames=170,
+  setup=function()
+   arena(40)
+   hearts=1
+   result.neighbour=thing_at("neighbour",60,88)
+  end,
+  check=function() return hearts==min(1+pet_hearts,max_hearts) and result.neighbour.petted,"hearts "..hearts..", petted "..tostr(result.neighbour.petted) end,
+ },
+ {
+  name="sitting near the edge of the neighbour's zone still brings them over, her head beside their legs",buttons={3},frames=60,
+  setup=function() arena(40) result.neighbour=thing_at("neighbour",100,88) end,
+  check=function() local n=result.neighbour return n.petting>0 and n.x+n.step+8-hero.hx>=20,"petting "..n.petting..", head from their middle "..abs(hero.hx-n.x-n.step-8) end,
+ },
+ {
+  name="a neighbour on her other side stays on that side to pat",buttons={3},frames=60,
+  setup=function() arena(80) result.neighbour=thing_at("neighbour",50,88) end,
+  check=function() local n=result.neighbour return n.petting>0 and hero.hx-n.x-n.step-8>=20,"head past their middle by "..hero.hx-n.x-n.step-8 end,
+ },
+ {
+  name="once the treat is given, staying by the neighbour gets more pats but no more hearts",buttons={3},frames=600,every_frame=true,
+  setup=function()
+   arena(40)
+   hearts,result.pats=1,0
+   result.neighbour=thing_at("neighbour",60,88)
+   result.neighbour.petted=true
+  end,
+  each=function() if result.neighbour.petting>0 then result.pats+=1 end end,
+  check=function() return hearts==1 and result.pats>0,"hearts "..hearts..", pats "..result.pats end,
+ },
+ {
+  name="one tap of down at a run is a slide past her top speed, and she keeps going with no more buttons",buttons={},frames=20,every_frame=true,
+  setup=function() arena(40) hero.vx=1.3 hero.held=0 result.top=0 update_loretta(hero,8) end,
+  each=function() result.top=max(result.top,abs(hero.vx)) end,
+  check=function() return result.top>run_max and hero.sliding and hero.state=="sploot","top "..result.top..", "..hero.state end,
+ },
+ {
+  name="the view never loses her, whatever it is framing",buttons={1},frames=60,every_frame=true,
+  setup=function() arena(40) result.worst=64 end,
+  each=function()
+   chase_x=hero.x+400
+   local on=hero.x-view.x
+   result.worst=min(result.worst,min(on,128-hero_w-on))
+  end,
+  check=function() return result.worst>=0,"closest to an edge "..result.worst end,
+ },
+ {
+  name="losing the last heart is a game over",buttons={},frames=90,
+  setup=function() arena(40) hearts=1 fall_in(hero) end,
+  check=function() _draw() dump_screen("over") return mode=="over","mode "..mode end,
+ },
+}

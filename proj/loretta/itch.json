@@ -1,0 +1,5 @@
+{
+  "target": "catnfever/loretta",
+  "version": "1.0",
+  "channels": {"html5": "release/loretta_web.zip"}
+}

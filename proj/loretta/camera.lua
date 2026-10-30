@@ -1,0 +1,21 @@
+function new_camera(hero)
+ local view={look=0}
+ view.x=focus_x(hero,view)
+ return view
+end
+
+function focus_x(hero,view)
+ return mid(0,(hero.x+12+(chase_x or hero.x+12))/2-64+view.look,level_w-128)
+end
+
+function camera_x()
+ return flr(hero.x+0.5)-flr(hero.x-view.x+0.5)
+end
+
+function update_camera(view,hero)
+ local speed=abs(hero.vx)/run_max
+ view.look+=(sgn(hero.vx)*camera_lookahead*min(speed,1)*(speed>0.1 and 1 or 0)-view.look)*camera_lookahead_speed
+ local aim=focus_x(hero,view)-view.x
+ view.x=mid(0,mid(hero.x-camera_margin,view.x+sgn(aim)*max(abs(aim)-camera_dead)*camera_speed_change,hero.x+hero_w+camera_margin-128),level_w-128)
+ chase_x=nil
+end
