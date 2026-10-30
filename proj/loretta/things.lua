@@ -208,12 +208,12 @@ end
 
 function draw_neighbour(neighbour)
  local x,feet,seed=neighbour.x+neighbour.step,neighbour.y,neighbour.x\8
- local shirt,arm=cloths[seed%#cloths+1],hero.hx>x+8 and 14 or -2
+ local shirt,arm=cloths[seed%#cloths+1],hero.hx>x+8 and 18 or -6
  pal(15,skins[seed%3+1])
  pal(14,shirt)
- sspr(24+seed%5*8,48,8,16,x,-24,16,feet+24)
+ sspr(24+seed%5*8,48,8,16,x-4,-24,24,feet+28)
  spr(46,x,feet+1,2,1)
- local hand_x,hand_y=x+arm+(arm>0 and 2 or -12),feet-42
+ local hand_x,hand_y=x+arm+(arm>0 and 0 or -12),feet-50
  if neighbour.petting>0 then
   local reach,beat=min(1,(pet_frames-neighbour.petting)/20),neighbour.petting%40
   hand_x+=(hero.hx-8-hand_x)*reach

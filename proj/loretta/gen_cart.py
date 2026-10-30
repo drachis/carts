@@ -538,12 +538,16 @@ HAND = """
 # e the cloth, both swapped per person: a polka-dot sundress, a bowling
 # shirt over slacks, overalls on a striped tee with rolled cuffs, a
 # jumpsuit with flares, a pencil skirt under a bow blouse
-SUNDRESS = [".eeeeee.", ".e7ee7e.", ".eeeeee.", ".888888.", ".eeeeee.", "ee7ee7ee",
-            "eeeeeeee", "e7ee7ee7", "eeeeeeee"] + [".ff..ff."] * 7
-BOWLING = [".e7ee7e."] * 7 + [".44a444.", ".111111."] + [".11..11."] * 7
-OVERALLS = [".888888.", ".777777.", ".8eeee8.", ".7e66e7."] + [".eeeeee."] * 5 +            [".ee..ee."] * 6 + [".77..77."]
-JUMPSUIT = [".e9ee9e."] + [".eeeeee."] * 5 + [".444444."] + [".eeeeee."] * 3 +            [".ee..ee."] * 3 + ["eee..eee"] * 3
-PENCIL = [".77ee77."] + [".777777."] * 5 + [".eeeeee."] * 6 + ["..f..f.."] * 4
+# rows: shoulders 0..1, waist 4..5, hips 6..8, then legs: about half the
+# visible height is leg, as on a person
+SUNDRESS = ["eeeeeeee", "ee7ee7ee", ".eeeeee.", ".e7ee7e.", "..eeee..", "..8888..", ".eeeeee.", ".e7ee7e.",
+            "eeeeeeee", "e7ee7ee7", "eeeeeeee", ".ff..ff.", ".ff..ff.", ".ff..ff.", "..f..f..", "..f..f.."]
+BOWLING = ["e7eeee7e"] * 4 + [".e7ee7e."] * 2 + [".44a444.", ".111111.", ".111111."] + [".11..11."] * 7
+OVERALLS = ["88888888", "77777777", "88eeee88", "77e66e77", ".8eeee8."] + [".eeeeee."] * 4 + [".ee..ee."] * 6 + [".77..77."]
+JUMPSUIT = ["e9eeee9e", "eeeeeeee", "eeeeeeee", ".eeeeee.", "..eeee..", "..4444.."] + [".eeeeee."] * 3 + \
+           [".ee..ee."] * 5 + ["eee..eee"] * 2
+PENCIL = ["777ee777", "77777777", "77777777", ".777777.", "..7777..", "..eeee.."] + [".eeeeee."] * 3 + \
+         ["..eeee.."] * 3 + ["..f..f.."] * 4
 OUTFITS = "\n".join("".join(look[row] for look in (SUNDRESS, BOWLING, OVERALLS, JUMPSUIT, PENCIL)) for row in range(16))
 
 

@@ -68,6 +68,12 @@ cases={
   check=function() return true,"squirrel_1..8 dumped" end,
  },
  {
+  name="the five neighbour outfits side by side",buttons={},frames=2,every_frame=true,
+  setup=function() arena(16) for k=0,4 do thing_at("neighbour",8+24*k,88) end end,
+  each=function() _draw() dump_screen("outfits") end,
+  check=function() return true,"outfits dumped" end,
+ },
+ {
   name="a film strip of her trot",buttons={1},frames=50,every_frame=true,
   setup=function() arena(16) result.frame=0 end,
   each=function()
