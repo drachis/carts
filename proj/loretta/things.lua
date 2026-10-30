@@ -187,11 +187,11 @@ function draw_squirrel(squirrel)
 end
 
 function update_neighbour(neighbour,hero)
- neighbour.step*=0.94
+ neighbour.step*=neighbour.petting>0 and 1 or 0.94
  if neighbour.petting>0 then
   neighbour.petting-=1
   hero.happy=30
-  neighbour.step+=(hero.hx-hero.facing*14-8-neighbour.x-neighbour.step)/12
+  neighbour.step+=(hero.hx-hero.facing*22-8-neighbour.x-neighbour.step)/12
   local beat=neighbour.petting%40
   if beat<24 and beat%8==0 then
    hero.flop=6

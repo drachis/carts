@@ -53,9 +53,9 @@ cases={
   check=function() return hearts==min(1+pet_hearts,max_hearts) and result.neighbour.petted,"hearts "..hearts..", petted "..tostr(result.neighbour.petted) end,
  },
  {
-  name="sitting near the edge of the neighbour's zone still brings them over to pat",buttons={3},frames=60,
+  name="sitting near the edge of the neighbour's zone still brings them over, her head beside their legs",buttons={3},frames=60,
   setup=function() arena(40) result.neighbour=thing_at("neighbour",100,88) end,
-  check=function() return result.neighbour.petting>0 and result.neighbour.step<-10,"petting "..result.neighbour.petting..", stepped "..result.neighbour.step end,
+  check=function() local n=result.neighbour return n.petting>0 and abs(hero.hx-n.x-n.step-8)>=20,"petting "..n.petting..", head from their middle "..abs(hero.hx-n.x-n.step-8) end,
  },
  {
   name="once the treat is given, staying by the neighbour gets more pats but no more hearts",buttons={3},frames=600,every_frame=true,
