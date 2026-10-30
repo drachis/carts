@@ -169,12 +169,12 @@ function draw_title()
  print("start",13,40,7)
  print("best",4,48,6)
  print(score_text(best),4,55,10)
- rectfill(86,32,126,101,0)
- rect(86,32,126,101,14)
- print("player 1",90,35,7)
- print("loretta",92,70,9)
+ rectfill(86,36,126,76,0)
+ rect(86,36,126,76,14)
+ print("player 1",90,39,7)
+ print("loretta",92,46,9)
  for row,name in ipairs(stat_names) do
-  local y=71+row*6
+  local y=47+row*6
   print(name,88,y,6)
   for bar=0,4 do
    rectfill(110+bar*3,y,111+bar*3,y+3,bar<stats[name] and stat_colours[row] or 1)
