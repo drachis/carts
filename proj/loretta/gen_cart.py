@@ -523,6 +523,17 @@ SHOES = """
 .2222222.2222222
 ................
 """
+# a clipped hedge: a wall to jump, but she belly-slides right through it
+HEDGE = """
+33b33333
+3333b333
+b3333333
+33333b33
+333b3333
+3b33333b
+33333333
+333b3333
+"""
 HAND = """
 ..dddd..
 ..dddd..
@@ -579,15 +590,15 @@ SPRITES = {
     87: mark("6"), 88: mark("6"), 89: mark("6"), 90: mark("6"), 91: mark("6"), 92: mark("6"),
     104: LOGO, 110: HYDRANT,
     32: HYDRANT_LIT, 34: COIN, 36: squash(COIN, 8), 38: squash(COIN, 3),
-    40: BONE, 42: HEART, 43: HEART_EMPTY, 44: SPARKLE, 45: HAND, 46: SHOES, 99: OUTFITS,
+    40: BONE, 42: HEART, 43: HEART_EMPTY, 44: SPARKLE, 14: HEDGE, 45: HAND, 46: SHOES, 99: OUTFITS,
 }
 # sprites stop at 127: the sheet's lower half is map rows 32..63 (chunks
 # 8..15). flag 0 solid, 1 semisolid (its top row only), 2 water, 3 a slope
 # rising to the right, 4 a slope rising to the left (solid only below the
 # diagonal), 7 drawn by the map (markers have no flag 7, so the map skips
 # them: they stay in their chunks, which are shared)
-FLAGS = {1: 1, 2: 1, 3: 1, 4: 2, 5: 4, 6: 4, 9: 1 | 8, 10: 1 | 16, 11: 2, 12: 2, 13: 1}
-FLAGS.update({tile: FLAGS.get(tile, 0) | 128 for tile in range(1, 14)})
+FLAGS = {14: 32, 1: 1, 2: 1, 3: 1, 4: 2, 5: 4, 6: 4, 9: 1 | 8, 10: 1 | 16, 11: 2, 12: 2, 13: 1}
+FLAGS.update({tile: FLAGS.get(tile, 0) | 128 for tile in range(1, 15)})
 
 # the level: eight sections of 32 by 16 tiles, side by side. the first four
 # are map rows 0..15, the last four map rows 16..31 (world.lua joins them).
@@ -743,7 +754,7 @@ LEVELS = [
     [4, 5, 8, 10, 4, 5, 15],
     [4, 5, 6, 5, 6, 7],
 ]
-LETTER_TILES = {".": 0, "=": 4, "f": 7, ",": 8, "/": 9, "\\": 10, "-": 11, "^": 12, "_": 13,
+LETTER_TILES = {"g": 14, ".": 0, "=": 4, "f": 7, ",": 8, "/": 9, "\\": 10, "-": 11, "^": 12, "_": 13,
                 "L": 16, "S": 17, "G": 18, "o": 19, "b": 20, "s": 21, "h": 22, "n": 23,
                 "M": 24, "B": 25, "Y": 26, "K": 27, "J": 28, "F": 29, "R": 30, "T": 31,
                 "W": 68, "H": 69, "P": 70, "X": 71, "U": 72, "Q": 73, "Z": 74,

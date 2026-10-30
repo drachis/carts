@@ -1,18 +1,11 @@
--- test_title.lua : the whole real cart, real scenery and main together,
--- from its first frame: it boots, runs and draws the title. kept tiny so
--- this cart is only ever limited by the game itself.
-function music() end
-local n,game_draw,game_update=0,_draw,_update60
-function _draw() end
+-- test_title.lua : the whole real cart boots and runs 20 frames. no picture,
+-- no helpers: this cart is only ever limited by the game itself.
+local update,n=_update60,0
 function _update60()
- run_frame(function()
-  n+=1
-  game_update()
-  game_draw()
-  if n==20 then
-   dump_screen("title")
-   printh("ok title")
-   extcmd("shutdown")
-  end
- end)
+ n+=1
+ update()
+ if n==20 then
+  printh("started\nok title","log_title",true)
+  extcmd("shutdown")
+ end
 end

@@ -31,7 +31,7 @@ local function bot_frame()
  end
  last_respawn=respawn
  local front=hero.x+hero_w+4
- local blocked=area_has(front,hero.y,2,hero_h-4,0)
+ local blocked=area_has(front,hero.y,2,hero_h-4,0) or area_has(front,hero.y,2,hero_h-4,5)
  local ground=not hero.air
  held={[1]=true}
  if ground then

@@ -85,6 +85,9 @@ def garden_street(rnd):
     put(rows, rnd.randint(9, 12), 11, "n")
     put(rows, rnd.randint(4, 6), 11, "K")
     put(rows, rnd.randint(18, 21), 11, "K")
+    for y in (10, 11):
+        for x in range(15, 17):
+            rows[y][x] = "g"
     for x in rnd.sample(range(1, 31), 5):
         put(rows, x, 11, rnd.choice("fd,"))
     put(rows, rnd.choice([14, 15, 29]), 11, "T")
@@ -120,7 +123,7 @@ def fork(rnd):
     width = rnd.randint(5, 7)
     for x in range(start, start + width):
         for y in (10, 11):
-            rows[y][x] = "#"
+            rows[y][x] = "g"
     left, middle, right = rnd.randint(3, 5), start, start + width + 2
     for x in range(left, left + 7):
         rows[9][x] = "="

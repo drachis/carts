@@ -1,6 +1,6 @@
 function new_loretta(x,y)
  local hero={x=x,y=y,w=hero_w,h=hero_h,facing=1,held=63,state="stand",pose=split"5,-10,19,-10,4,-10,0.5,0,0",turn=head_turn,sag=0.5,ears={{},{}},tongue={{},{},{}}}
- for field in all(split"vx,vy,coyote,buffer,drop,idle,bark,cool,hurt,chain,squash,gait,happy,sag_v,head_bob,flop") do hero[field]=0 end
+ for field in all(split"vx,vy,coyote,buffer,drop,idle,bark,cool,hurt,squash,gait,happy,sag_v,head_bob,flop") do hero[field]=0 end
  animate_loretta(hero)
  return hero
 end
@@ -25,7 +25,7 @@ function slide(hero,dx,dy,climb)
   local x,y=hero.x+(dx!=0 and part or 0),hero.y+(dy!=0 and part or 0)
   if climb and area_has(x,y,hero_w,hero_h,0) and not area_has(x,y-1,hero_w,hero_h,0) then y-=1 end
   local feet=flr(y)+hero_h-1
-  if area_has(x,y,hero_w,hero_h,0) or dy>0 and hero.drop==0 and feet>flr(hero.y)+hero_h-1 and feet%8==0 and area_has(x,feet,hero_w,1,1) then
+  if area_has(x,y,hero_w,hero_h,0) or dx!=0 and not hero.sliding and area_has(x,y,hero_w,hero_h,5) or dy>0 and hero.drop==0 and feet>flr(hero.y)+hero_h-1 and feet%8==0 and area_has(x,feet,hero_w,1,1) then
    if dx!=0 then hero.x=flr(hero.x) else hero.y=flr(hero.y) end
    return true
   end
@@ -46,19 +46,26 @@ function update_loretta(hero,input)
    hero.squash,hero.landed=6,true
    puff(hero.x+12,hero.y+14,6,7)
   end
-  hero.coyote,hero.chain,hero.y=coyote_frames,0,flr(hero.y)
+  hero.coyote,hero.y=coyote_frames,flr(hero.y)
  else
   hero.coyote=max(hero.coyote-1)
  end
  hero.air=not ground
  hero.idle=ground and input==0 and min(hero.idle+1,idle_sit) or 0
  local sitting=ground and abs(hero.vx)<0.5 and (down or hero.idle>=idle_sit)
+ if ground and down and abs(hero.vx)>=0.5 and pressed&8>0 then
+  hero.vx,hero.sliding=hero.facing*slide_speed,true
+  sfx(snd_land)
+ end
+ if not (ground and down and abs(hero.vx)>=0.5) then hero.sliding=false end
  if sitting and not hero.resting then sfx(snd_sit) end
  hero.resting,hero.happy=sitting,max(hero.happy-1)
  local drop=sitting and down and pressed&16>0 and not on_ledge(hero,true)
  if drop then hero.drop,sitting=drop_frames,false end
  hero.buffer=pressed&16>0 and not drop and jump_buffer or max(hero.buffer-1)
- if sitting or ground and x_intent==0 then
+ if hero.sliding then
+  hero.vx=toward(hero.vx,0,slide_fric)
+ elseif sitting or ground and x_intent==0 then
   hero.vx=toward(hero.vx,0,idle_fric)
  elseif ground then
   if hero.vx*x_intent<0 then
@@ -85,7 +92,7 @@ function update_loretta(hero,input)
  if slide(hero,0,hero.vy) then hero.vy=0 end
  hero.drop,hero.hurt,hero.squash=max(hero.drop-1),max(hero.hurt-1),toward(hero.squash,0,1)
  hero.gait=(hero.gait+(ground and abs(hero.vx)/(2*leg_stride) or 0))%1
- hero.state=sitting and (down and "sit" or "sploot") or hero.bark>0 and "bark" or not ground and "jump" or abs(hero.vx)>0.1 and "run" or "stand"
+ hero.state=hero.sliding and "sploot" or sitting and (down and "sit" or "sploot") or hero.bark>0 and "bark" or not ground and "jump" or abs(hero.vx)>0.1 and "run" or "stand"
  animate_loretta(hero)
 end
 

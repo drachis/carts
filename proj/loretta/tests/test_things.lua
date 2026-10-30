@@ -8,13 +8,13 @@ end
 
 cases={
  {
-  name="landing on a squirrel bonks it, scores and bounces",buttons={},frames=50,
+  name="landing on a squirrel starts a chase and bounces her",buttons={},frames=50,
   setup=function()
    arena(236,40)
    result.squirrel,result.bounce=squirrel_at(244),0
   end,
   each=function() result.bounce=min(result.bounce,hero.vy) end,
-  check=function() return result.squirrel.state=="bonked" and score==stomp_points and result.bounce<-1 and hearts==max_hearts,"score "..score..", bounce "..result.bounce..", hearts "..hearts end,
+  check=function() return result.squirrel.state=="spooked" and result.bounce<-1 and hearts==max_hearts,"score "..score..", bounce "..result.bounce..", hearts "..hearts end,
  },
  {
   name="running into a squirrel chases it off: it flees to the tree ahead, climbs it and drops three coins, no heart lost",buttons={1},frames=130,
@@ -47,6 +47,11 @@ cases={
   name="a coin at her head is collected, once, though it misses her body",buttons={},frames=6,
   setup=function() arena(40) thing_at("coin",hero.hx-3,hero.hy-8) end,
   check=function() return coins==1 and #things==0,"coins "..coins end,
+ },
+ {
+  name="a belly slide goes through a hedge wall",buttons={1,3},frames=70,
+  setup=function() arena(40) mset(12,10,14) mset(12,11,14) hero.vx=1.3 end,
+  check=function() mset(12,10,0) mset(12,11,0) return hero.x>100,"x "..hero.x end,
  },
  {
   name="losing the last heart is a game over",buttons={},frames=90,

@@ -107,19 +107,32 @@ function update_squirrel(squirrel,hero)
  if squirrel.state then
   squirrel.x+=squirrel.vx
   squirrel.y+=squirrel.vy
-  if squirrel.state=="bonked" then squirrel.vy+=0.15 end
   if squirrel.tree then
    for step=1,8 do
     if flag_at(squirrel.x+6,squirrel.y+11,0) then squirrel.y-=1 end
    end
    if not on_ledge(squirrel) and flag_at(squirrel.x+6,squirrel.y+40,0) then squirrel.y+=2 end
+   local gap=abs(squirrel.x-hero.x)
+   squirrel.vx=sgn(squirrel.vx)*(gap<48 and squirrel_dash or squirrel_flee)
+   if gap<100 then
+    chase+=1
+    hero.happy=30
+    if chase%30==0 then
+     add_score(chase\60+1)
+     float_text((chase\60+1).."0",hero.x+8,hero.y-16,chase>300 and 8 or chase>120 and 10 or 7)
+     puff(hero.x+4,hero.y+14,2+chase\60,7)
+    end
+   end
   end
   if squirrel.tree and (squirrel.x-squirrel.tree)*squirrel.vx>=0 then
    squirrel.trunk,squirrel.vy,squirrel.tree,squirrel.top=squirrel.tree-6,-squirrel_climb,nil,squirrel.y-squirrel_height
    sfx(snd_chitter)
-   for drop=0,2 do
+   squirrel.gone=squirrel.dive
+   if squirrel.dive then puff(squirrel.x+6,squirrel.y+6,12,11) end
+   for drop=0,min(2+chase\120,6) do
     new_thing(thing_specs[19],squirrel.x+drop*7-4,squirrel.y-30-drop*9,squirrel.y)
    end
+   chase=0
   end
   if squirrel.top then
    squirrel.x,squirrel.vx=squirrel.trunk+sin(squirrel.age/squirrel_wind)*3,cos(squirrel.age/squirrel_wind)
@@ -146,32 +159,20 @@ end
 
 function touch_squirrel(squirrel,hero)
  if squirrel.state then return end
- if hero.vy>0 and hero.y+hero_h-1<squirrel.y+6 then
-  squirrel.state,squirrel.vx,squirrel.vy="bonked",hero.facing*0.5,-1.5
-  hero.vy=hero.held&16>0 and -jump_a or -stomp_bounce
-  hero.chain+=1
-  local points=stomp_points*(1<<min(hero.chain-1,3))
-  add_score(points)
-  float_text(points.."0",squirrel.x,squirrel.y-8,10)
-  puff(squirrel.x+6,squirrel.y,8,7)
-  sfx(snd_stomp)
- else
-  spook(squirrel,sgn(squirrel.x-hero.x))
- end
+ spook(squirrel,sgn(squirrel.x-hero.x))
+ if hero.vy>0 then hero.vy=-stomp_bounce end
 end
 
 function spook(squirrel,direction)
  local tree,best=squirrel.x+direction*squirrel_run,30000
  for thing in all(things) do
   local gap=(thing.x+4-squirrel.x)*direction
-  if thing.name=="tree" then
+  if thing.name=="tree" or thing.name=="decor" then
    if gap<squirrel_far then gap=5000-gap end
-   if gap<best then tree,best=thing.x+4,gap end
+   if gap<best then tree,best,squirrel.dive=thing.x+4,gap,thing.name=="decor" end
   end
  end
  squirrel.state,squirrel.vx,squirrel.vy,squirrel.tree="spooked",sgn(tree-squirrel.x)*squirrel_flee,0,tree
- add_score(spook_points)
- float_text(spook_points.."0",squirrel.x,squirrel.y-8,10)
  sfx(snd_chitter)
 end
 

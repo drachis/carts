@@ -3,25 +3,25 @@
 **things.lua:5** `function update_things(hero)`
 Each thing's behaviour is found by name: update_<name>, touch_<name>, draw_<name>. A new kind of thing is a row in thing_specs and these functions.
 
-**things.lua:147** `function touch_squirrel(squirrel,hero)`
-A stomp needs her falling with her feet in the squirrel's top half; any other touch chases it off (spook, away from her). Stomp points double each bonk without landing (chain), up to 8x.
+**things.lua:160** `function touch_squirrel(squirrel,hero)`
+A stomp needs her falling with her feet in the squirrel's top half; any other touch chases it off (spook, away from her). 
 Keep: squirrels never cost a heart; the user wanted to chase them, not run into them.
 
-**things.lua:207** `function update_neighbour(neighbour,hero)`
+**things.lua:208** `function update_neighbour(neighbour,hero)`
 Sitting within pet_range (64, the zone the user circled: about a dog length either side) of a neighbour starts the petting; at its end her hearts fill by pet_hearts, once a neighbour.
 
-**things.lua:233** `function draw_neighbour(neighbour)`
+**things.lua:234** `function draw_neighbour(neighbour)`
 The neighbour is a tall adult seen from a corgi's height: one of five Los Feliz outfits (sprite 99 on, 8x16 each, drawn 24 wide, shoulders, waist and hips, about half leg: sundress, bowling shirt, overalls, jumpsuit, pencil skirt), the cloth (14) swapped from cloths stretched from off the top of the screen to the shoes, skin (f) swapped from skins, the head never seen. Petting, they step in (and drift back to their spot after: step decays) behind her shoulders (step) and the arm on her head's side swings down; a big hand (twice size) lands: pat, pat, pat, a pause (40-frame beat); each pat dips her head (flop) and knocks her ears sideways. Until the first pats they hold a bone treat. Only the first pats restore hearts; after that, while she sits by them, they pat again at random (1 in pet_again a frame).
 Keep: the neighbour stays on the side they started on, her head 22px from their middle, outside their legs (the user: no crossing her, no reaching down to the crotch). The user asked for the petting to stay beside her, not the hand in front, and for repeat pats without hearts because the petting is charming.
 **Keep:** the user asked for a Peanuts-style adult whose head is off screen, about six times her shoulder height, and a larger hand that gives a good pat - pat - pat.
 
-**things.lua:257** `function draw_gate(gate)`
+**things.lua:258** `function draw_gate(gate)`
 The end of a level, at its cell: on levels 1..5 an arch with the level's dog landmark named on its banner (landmarks), on the last the observatory (both shapes in data.lua). The gate box itself is what she touches to win.
 
 **things.lua:91** `function update_hydrant(hydrant,hero)`
 A hydrant is a checkpoint, lit once she passes it at any height: needing to touch it let a jump or a squirrel bounce carry her over it, and a fall then sent her far back.
 
-**things.lua:298** `function puff(x,y,count,colour)`
+**things.lua:299** `function puff(x,y,count,colour)`
 Puffs spread by an angle worked out from their index, not rnd, so tests replay.
 
 **things.lua:37** `function draw_prop(prop,shape)`
@@ -41,3 +41,7 @@ House, tree and decor slots (K, T, d in the level text) pick which shape they sh
 **things.lua:33** `function praise(x,y)`
 A floating word of praise picked from praises by place and level.
 **Keep:** the user asked not to repeat one phrase ("good girl") everywhere.
+
+**Chase**
+Any touch or bark starts a chase; squirrels are never caught (squirrel_dash when she is within 48px). While she is within 100px, chase counts up: every 30 frames she scores chase\60+1 with more dust and a warmer colour. Escapes: up a tree or into decor (a bush, squirrel.dive). Coins dropped grow with chase.
+**Keep:** the user: the game is the chase, not killing; herding beats platform coins. Hedges (tile 14, flag 5) block walking but a belly slide (down at speed, hero.sliding) goes through.
