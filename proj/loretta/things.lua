@@ -187,7 +187,7 @@ function draw_squirrel(squirrel)
   x,y=link.x,link.y
  end
  for pass=0,1 do
-  for i=6,1,-1 do circfill(links[i].x,links[i].y,2+i/2-pass,pass*7+2) end
+  for i=6,1,-1 do circfill(links[i].x,links[i].y,2+i/2-pass,pass*13+2) end
  end
  local head_x,head_y=body_x+dir*6,body_y-5
  for ear=-2,2,4 do
@@ -195,10 +195,11 @@ function draw_squirrel(squirrel)
   tri(head_x+ear-1,head_y-2,head_x+ear+1,head_y-2,head_x+ear,head_y-6,9)
  end
  for pass=0,1 do
-  circfill(body_x-dir*3,body_y,5-pass,2+pass*2)
-  circfill(body_x+dir*2,body_y-1,4-pass,2+pass*2)
-  circfill(head_x,head_y,4-pass,2+pass*2)
+  circfill(body_x-dir*3,body_y,5-pass,2+pass*7)
+  circfill(body_x+dir*2,body_y-1,4-pass,2+pass*7)
+  circfill(head_x,head_y,4-pass,2+pass*7)
  end
+ circfill(body_x,body_y+2,2,7)
  pset(head_x+dir*2,head_y,0)
  pset(head_x+dir*3,head_y+1,0)
 end
