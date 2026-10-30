@@ -17,12 +17,12 @@ cases={
   check=function() return result.squirrel.state=="bonked" and score==stomp_points and result.bounce<-1 and hearts==max_hearts,"score "..score..", bounce "..result.bounce..", hearts "..hearts end,
  },
  {
-  name="running into a squirrel chases it off: it flees, climbs and drops three coins, no heart lost",buttons={1},frames=130,
-  setup=function() arena(40) result.squirrel=squirrel_at(90) end,
+  name="running into a squirrel chases it off: it flees to the tree ahead, climbs it and drops three coins, no heart lost",buttons={1},frames=200,
+  setup=function() arena(40) result.squirrel=squirrel_at(90) thing_at("tree",170,88) end,
   check=function()
    local dropped=0
    for thing in all(things) do if thing.land then dropped+=1 end end
-   return hearts==max_hearts and result.squirrel.vy<0 and dropped+coins==3,"hearts "..hearts..", climbing "..result.squirrel.vy..", coins "..dropped.."+"..coins
+   return hearts==max_hearts and result.squirrel.vy<0 and result.squirrel.x==168 and dropped+coins==3,"hearts "..hearts..", up at x "..result.squirrel.x..", climbing "..result.squirrel.vy..", coins "..dropped.."+"..coins
   end,
  },
  {
@@ -67,6 +67,11 @@ cases={
   end,
   each=function() if result.neighbour.petting==pet_frames then result.pats+=1 end end,
   check=function() return hearts==1 and result.pats>0,"hearts "..hearts..", pats "..result.pats end,
+ },
+ {
+  name="losing the last heart is a game over",buttons={},frames=90,
+  setup=function() arena(40) hearts=1 hurt_loretta(hero,hero.x+20) end,
+  check=function() _draw() dump_screen("over") return mode=="over","mode "..mode end,
  },
  {
   name="the water costs a heart and she comes back at the last hydrant",buttons={},frames=90,

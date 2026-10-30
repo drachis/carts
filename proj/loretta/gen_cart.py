@@ -372,25 +372,52 @@ SQUIRREL_A = """
 """
 SQUIRREL_B = edit(SQUIRREL_A, [(0, 14, ".....2442..242.."), (0, 15, "....24442.2442..")])
 # spooked: eyes wide
-# fleeing: a low bounding gallop with the tail streaming straight back
-SQUIRREL_SPOOKED = """
+# fleeing on the ground, a two-frame bound after the user's reference
+# (16x8, low): stretched out, front paws reaching and hind legs pushing back,
+# then gathered, the hind feet swung up past the front ones, back arched
+SQUIRREL_STRETCH = """
+............22..
+222........2442.
+29922222.2244042
+.29999922444442.
+..222224444444f2
+....2444444fff2.
+...242.....2f42.
+..242.......242.
+"""
+SQUIRREL_GATHER = """
+............22..
+22........22442.
+2992222..2444042
+.2999992444444f2
+..22222444444442
+.....244444ff2..
+......2424242...
+.....242.242....
+"""
+# the rest of the bound, stacked in slot 108 (108 and 124): the long flat
+# flight with every leg out, then the front paws touching down, rump high
+SQUIRREL_FLIGHT = """
+............2.2.
+22222.....224442
+2999922222444042
+.2222444444444f2
+.....244444fff2.
+..222.......2f22
 ................
-................
-................
-.............2..
-222.........242.
-29922222...24442
-.2999999224404f2
-..22229244444ff2
-.....2444444fff2
-....24444444ff2.
-...244444442f2..
-...2444242.242..
-..2442.242.242..
-.2442..2442.22..
-.22.....22......
 ................
 """
+SQUIRREL_LAND = """
+2222........22..
+29992222...2442.
+.29999922244042.
+..2222444444ff2.
+....24444444f2..
+....242...2f42..
+...242.....242..
+..22.......22...
+"""
+SQUIRREL_SPOOKED = SQUIRREL_FLIGHT.strip() + "\n" + SQUIRREL_LAND.strip()
 HYDRANT = """
 ......2222......
 .....288882.....
@@ -463,18 +490,18 @@ HAND = """
 .ff.ff..
 ........
 """
-# the neighbours' outfits, 10x16 each, drawn stretched from off the top of
-# the screen down to the shoes (f is skin, swapped per person): a polka-dot
-# sundress, a bowling shirt over pleated trousers, overalls on a striped
-# tee with rolled cuffs, a mustard jumpsuit with flares
-SUNDRESS = [".eeeeeeee.", ".ee7eee7e.", ".eeeeeeee.", ".e7eee7ee.", ".88888888.",
-            ".eeeeeeee.", "eee7eee7ee", "eeeeeeeeee", "e7eee7eee7", "eeeeeeeeee"] + [".fff..fff."] * 6
-BOWLING = [".cc7cc7cc."] * 7 + [".444aa444.", ".11111111.", ".11d11d11."] + [".1d1..1d1."] * 6
-OVERALLS = [".88888888.", ".77777777.", ".8cccccc8.", ".7cc66cc7.", ".8cccccc8."] + \
-           [".cccccccc."] * 4 + [".ccc..ccc."] * 6 + [".777..777."]
-JUMPSUIT = [".a9aaaa9a."] + [".aaaaaaaa."] * 5 + [".44444444."] + [".aaaaaaaa."] * 3 + \
-           [".aaa..aaa."] * 3 + ["aaaa..aaaa"] * 3
-OUTFITS = "\n".join("".join(look[row] for look in (SUNDRESS, BOWLING, OVERALLS, JUMPSUIT)) for row in range(16))
+# the neighbours' outfits, 8x16 each, drawn at twice the width and
+# stretched from off the top of the screen down to the shoes. f is skin and
+# e the cloth, both swapped per person: a polka-dot sundress, a bowling
+# shirt over slacks, overalls on a striped tee with rolled cuffs, a
+# jumpsuit with flares, a pencil skirt under a bow blouse
+SUNDRESS = [".eeeeee.", ".e7ee7e.", ".eeeeee.", ".888888.", ".eeeeee.", "ee7ee7ee",
+            "eeeeeeee", "e7ee7ee7", "eeeeeeee"] + [".ff..ff."] * 7
+BOWLING = [".e7ee7e."] * 7 + [".44a444.", ".111111."] + [".11..11."] * 7
+OVERALLS = [".888888.", ".777777.", ".8eeee8.", ".7e66e7."] + [".eeeeee."] * 5 +            [".ee..ee."] * 6 + [".77..77."]
+JUMPSUIT = [".e9ee9e."] + [".eeeeee."] * 5 + [".444444."] + [".eeeeee."] * 3 +            [".ee..ee."] * 3 + ["eee..eee"] * 3
+PENCIL = [".77ee77."] + [".777777."] * 5 + [".eeeeee."] * 6 + ["..f..f.."] * 4
+OUTFITS = "\n".join("".join(look[row] for look in (SUNDRESS, BOWLING, OVERALLS, JUMPSUIT, PENCIL)) for row in range(16))
 
 
 def squash(text, width):
@@ -505,7 +532,7 @@ SPRITES = {
     87: mark("6"), 88: mark("6"), 89: mark("6"), 90: mark("6"), 91: mark("6"), 92: mark("6"),
     104: SQUIRREL_A, 106: SQUIRREL_B, 108: SQUIRREL_SPOOKED, 110: HYDRANT,
     32: HYDRANT_LIT, 34: COIN, 36: squash(COIN, 8), 38: squash(COIN, 3),
-    40: BONE, 42: HEART, 43: HEART_EMPTY, 44: SPARKLE, 45: HAND, 46: SHOES, 99: OUTFITS,
+    40: BONE, 42: HEART, 43: HEART_EMPTY, 44: SPARKLE, 45: HAND, 46: SHOES, 99: OUTFITS, 14: SQUIRREL_STRETCH, 93: SQUIRREL_GATHER,
 }
 SPRITES.update(LORETTA_PARTS)
 # sprites stop at 127: the sheet's lower half is map rows 32..63 (chunks
@@ -567,7 +594,7 @@ YARD = [EMPTY] * 7 + [
 # Griffith Park's trailhead: its wooden sign (U) and chaparral (Q) up the
 # slopes; the Hollywood sign is on the far hills (scenery.lua)
 TRAILHEAD = [EMPTY] * 7 + [
-    "." * 16 + "s." + "o.o.o.o" + "." + "s" + ".." + "Q" + "..",
+    "." * 16 + "s." + "o.o.o.o" + "." + "s" + ".." + "Q" + "T.",
     "." * 15 + "/" + "#" * 16,
     "." * 9 + "Q" + "oso" + "." + "/" + "#" * 17,
     "." * 7 + "/" + "#" * 24,
@@ -589,8 +616,8 @@ SWITCHBACK = [EMPTY] * 7 + [
 # the observatory lawn: the Astronomers Monument (A), lamps, the
 # observatory itself (G) and a coin-op viewer (C) looking out over the city
 LAWN_TOP = [EMPTY] * 7 + [
-    "..s.fs.A....sY....G.......Y.C.f.",
-] + ["#" * 8 + "...." + "#" * 20] * 5 + ["#" * 8 + "~~~~" + "#" * 20] * 3
+    "..s.fs.A..T.sY....G.......Y.C.f.",
+] + [GROUND] * 8
 # the chunk library: sixteen pieces of 32 by 16 tiles, in the map four
 # across (chunk k at map x k%4*32, y k//4*16; 8..15 are in the sprite
 # sheet's lower half). a level is a list of chunk numbers (data.lua
@@ -602,7 +629,7 @@ DESCENT = [EMPTY] * 7 + [
     "#" * 10 + "\\" + "." * 21,
     "#" * 11 + "\\" + "." * 8 + "o.o.o" + "." * 7,
     "#" * 12 + "\\" + "." * 19,
-    "#" * 13 + "\\" + "." * 12 + "s" + "." * 5,
+    "#" * 13 + "\\" + "." * 12 + "s" + "...T.",
 ] + [GROUND] * 4
 # 9: Fred 62, the diner on Hillhurst where she sets out (D)
 FRED62 = [EMPTY] * 5 + [
@@ -612,7 +639,7 @@ FRED62 = [EMPTY] * 5 + [
     EMPTY,
     EMPTY,
     EMPTY,
-    ".L....S..D............M....s....",
+    ".L....S..D............M....s..T.",
 ] + ["_" * 32] + [GROUND] * 3
 # 10: a fork: up over planks for the coins, or down across a pit
 FORK = [EMPTY] * 6 + [

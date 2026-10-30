@@ -72,6 +72,7 @@ def shop_street(rnd):
     put(rows, rnd.choice([1, 13, 14]), 11, "Y")
     put(rows, rnd.randint(9, 12), 11, "s")
     put(rows, 30, 11, "d")
+    put(rows, rnd.choice([25, 27]), 11, "T")
     return rows
 
 
@@ -110,12 +111,15 @@ def pond_yard(rnd):
 
 
 def fork(rnd):
-    """Two ways on: over planks for coins, or across a pit below."""
+    """Two ways on: over planks for coins, or over a clipped front hedge below
+    (Los Feliz streets have hedges, not pits)."""
     rows = empty()
     ground(rows, 12)
     start = rnd.randint(11, 14)
     width = rnd.randint(5, 7)
-    pit(rows, start, start + width - 1)
+    for x in range(start, start + width):
+        for y in (10, 11):
+            rows[y][x] = "#"
     left, middle, right = rnd.randint(3, 5), start, start + width + 2
     for x in range(left, left + 7):
         rows[9][x] = "="

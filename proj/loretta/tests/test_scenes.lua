@@ -6,8 +6,7 @@
 -- the camera moves (test_body had no room for it).
 
 function sfx() end
-music=sfx
-dset=sfx
+music,dset=sfx,sfx
 
 local section,game_draw=0,_draw
 
@@ -37,7 +36,7 @@ function _update60()
     return row
    end
    local still,moved,shifted=backdrop_row(300,0),backdrop_row(301,0),backdrop_row(300,1)
-   printh((still==moved and still!=shifted and "pass: " or "error: ").."the backdrop's dither stays put on the screen as the camera moves (same at camera 300 and 301: "..tostr(still==moved)..", the rows are dithered: "..tostr(still!=shifted)..")")
+   printh((still==moved and still!=shifted and "pass: " or "error: ").."the backdrop's dither stays put on the screen as the camera moves (same at camera 300 and 301, and dithered)")
    printh("ok scenes")
    extcmd("shutdown")
   end

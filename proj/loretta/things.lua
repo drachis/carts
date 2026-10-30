@@ -58,11 +58,11 @@ function touch_coin(coin,hero)
 end
 
 function update_coin(coin)
- if coin.land and coin.y<coin.land then coin.y+=1 end
+ coin.y=min(coin.y+1,coin.land or coin.y)
 end
 
 function draw_coin(coin)
- local frame=({34,34,34,34,34,36,38,36})[(t()*8+coin.x/16)\1%8+1]
+ local frame=coin_frames[(t()*8+coin.x/16)\1%8+1]
  sspr(frame%16*8,frame\16*8,16,16,coin.x-1,coin.y-1+sin(t()/2+coin.x/40),8,8)
 end
 
@@ -102,8 +102,14 @@ function update_squirrel(squirrel,hero)
   squirrel.x+=squirrel.vx
   squirrel.y+=squirrel.vy
   if squirrel.state=="bonked" then squirrel.vy+=0.15 end
-  if squirrel.age==squirrel.climb then
-   squirrel.vx,squirrel.vy=0,-1
+  if squirrel.tree then
+   for step=1,8 do
+    if flag_at(squirrel.x+6,squirrel.y+11,0) then squirrel.y-=1 end
+   end
+   if not on_ledge(squirrel.x,squirrel.y,12,12) then squirrel.y+=2 end
+  end
+  if squirrel.tree and (squirrel.x-squirrel.tree)*squirrel.vx>=0 then
+   squirrel.x,squirrel.vx,squirrel.vy,squirrel.tree=squirrel.tree-6,0,-1
    sfx(snd_chitter)
    for drop=0,2 do
     add(things,setmetatable({x=squirrel.x+drop*7-4,y=squirrel.y-30-drop*9,vx=0,vy=0,age=0,land=squirrel.y},thing_specs[19]))
@@ -143,19 +149,29 @@ function touch_squirrel(squirrel,hero)
 end
 
 function spook(squirrel,direction)
- squirrel.state,squirrel.vx,squirrel.vy,squirrel.climb="spooked",direction*squirrel_flee,0,squirrel.age+squirrel_run
+ squirrel.state,squirrel.vx,squirrel.vy="spooked",direction*squirrel_flee,0
+ local tree=squirrel.x+direction*squirrel_run
+ for thing in all(things) do
+  local gap=(thing.x+4-squirrel.x)*direction
+  if thing.name=="tree" and gap>0 and gap<(tree-squirrel.x)*direction then tree=thing.x+4 end
+ end
+ squirrel.tree=tree
  add_score(spook_points)
  float_text(spook_points.."0",squirrel.x,squirrel.y-8,10)
  sfx(snd_chitter)
 end
 
 function draw_squirrel(squirrel)
- local sprite=squirrel.state=="spooked" and 108 or squirrel.age%90<60 and 104+squirrel.age\8%2*2 or 104
+ if squirrel.tree then
+  spr(run_frames[squirrel.age\4%4+1],squirrel.x-2,squirrel.y+4,2,1,squirrel.vx<0)
+  return
+ end
+ local sprite=squirrel.age%90<60 and 104+squirrel.age\8%2*2 or 104
  spr(sprite,squirrel.x-2,squirrel.y-4,2,2,squirrel.vx<0,squirrel.state=="bonked")
- if squirrel.state=="spooked" then print("!",squirrel.x+5,squirrel.y-12,7) end
 end
 
 function update_neighbour(neighbour,hero)
+ neighbour.step*=0.94
  if neighbour.petting>0 then
   neighbour.petting-=1
   hero.happy=30
@@ -181,23 +197,23 @@ function update_neighbour(neighbour,hero)
 end
 
 function draw_neighbour(neighbour)
- local x,feet,look=neighbour.x+neighbour.step,neighbour.y,neighbour.x\8%4
- local shirt,arm=shirts[look+1],hero.hx>x+8 and 14 or -2
- pal(15,skins[neighbour.x\8%3+1])
- sspr(24+look*10,48,10,16,x-2,-24,20,feet+24)
+ local x,feet,seed=neighbour.x+neighbour.step,neighbour.y,neighbour.x\8
+ local shirt,arm=cloths[seed%#cloths+1],hero.hx>x+8 and 14 or -2
+ pal(15,skins[seed%3+1])
+ pal(14,shirt)
+ sspr(24+seed%5*8,48,8,16,x,-24,16,feet+24)
  spr(46,x,feet+1,2,1)
  local hand_x,hand_y=x+arm+(arm>0 and 2 or -12),feet-42
  if neighbour.petting>0 then
   local reach,beat=min(1,(pet_frames-neighbour.petting)/20),neighbour.petting%40
   hand_x+=(hero.hx-8-hand_x)*reach
   hand_y+=(hero.hy-22+(beat<24 and beat%8<4 and 3 or 0)-hand_y)*reach
- elseif not neighbour.petted and abs(hero.x-x)<48 then
-  print("\135?",x+4,feet-12+sin(t()),14)
  end
  for side=0,3 do line(x+arm+side,-24,hand_x+5+side,hand_y+2,shirt) end
  sspr(104,16,8,8,hand_x,hand_y,16,16)
  if not neighbour.petted then spr(40,hand_x,hand_y+12,2,1) end
  pal(15,15)
+ pal(14,14)
 end
 
 function touch_gate()
