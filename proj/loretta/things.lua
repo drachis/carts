@@ -142,7 +142,7 @@ function update_squirrel(squirrel,hero)
   chase+=1
   hero.happy=30
   if chase%30==0 then
-   pot+=1+max(80-abs(gap))\20
+   pot+=(100-abs(gap))\20
    puff(hero.x+4,hero.y+14,2+chase\60,7)
   end
  end
