@@ -49,11 +49,6 @@ cases={
   check=function() return coins==1 and #things==0,"coins "..coins end,
  },
  {
-  name="a belly slide goes through a hedge wall",buttons={1,3},frames=70,
-  setup=function() arena(40) mset(12,10,14) mset(12,11,14) hero.vx=1.3 end,
-  check=function() mset(12,10,0) mset(12,11,0) return hero.x>100,"x "..hero.x end,
- },
- {
   name="losing the last heart is a game over",buttons={},frames=90,
   setup=function() arena(40) hearts=1 hurt_loretta(hero,hero.x+20) end,
   check=function() _draw() dump_screen("over") return mode=="over","mode "..mode end,

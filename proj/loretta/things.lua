@@ -141,7 +141,6 @@ function update_squirrel(squirrel,hero)
     puff(squirrel.x+6,squirrel.y,10,11)
    end
   end
-  if squirrel.y>140 then squirrel.gone=true end
   return
  end
  if abs(hero.x-squirrel.x)>squirrel_wake then return end
@@ -182,7 +181,7 @@ function draw_squirrel(squirrel)
  local air=abs(sin(hop))
  local reach,mid_x,base=1.5+air*4,squirrel.x+6,squirrel.y+6
  local front_x,front_y,back_x,back_y=mid_x+dir*reach,base-air*height,mid_x-dir*reach,base-abs(sin(hop-dir*squirrel_lag))*height
- local x,y=back_x-dir*3,back_y
+ local x,y,mid_y=back_x-dir*3,back_y,(front_y+back_y)/2
  squirrel.links=links
  for i=1,6 do
   local link=links[i] or {}
@@ -199,11 +198,11 @@ function draw_squirrel(squirrel)
  end
  for pass=0,1 do
   circfill(back_x,back_y,6-air-pass,2+pass*7)
-  circfill(mid_x,(front_y+back_y)/2,4-pass,2+pass*7)
+  circfill(mid_x,mid_y,4-pass,2+pass*7)
   circfill(front_x,front_y,5-air-pass,2+pass*7)
   circfill(head_x,head_y,4-pass,2+pass*7)
  end
- circfill(mid_x,(front_y+back_y)/2+1,2,7)
+ circfill(mid_x,mid_y+1,2,7)
  pset(head_x+dir,head_y,0)
 end
 

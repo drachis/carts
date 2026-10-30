@@ -25,7 +25,7 @@ function slide(hero,dx,dy,climb)
   local x,y=hero.x+(dx!=0 and part or 0),hero.y+(dy!=0 and part or 0)
   if climb and area_has(x,y,hero_w,hero_h,0) and not area_has(x,y-1,hero_w,hero_h,0) then y-=1 end
   local feet=flr(y)+hero_h-1
-  if area_has(x,y,hero_w,hero_h,0) or dx!=0 and not hero.sliding and area_has(x,y,hero_w,hero_h,5) or dy>0 and hero.drop==0 and feet>flr(hero.y)+hero_h-1 and feet%8==0 and area_has(x,feet,hero_w,1,1) then
+  if area_has(x,y,hero_w,hero_h,0) or not hero.sliding and area_has(x,y,hero_w,hero_h,5) and not area_has(hero.x,hero.y,hero_w,hero_h,5) or dy>0 and hero.drop==0 and feet>flr(hero.y)+hero_h-1 and feet%8==0 and area_has(x,feet,hero_w,1,1) then
    if dx!=0 then hero.x=flr(hero.x) else hero.y=flr(hero.y) end
    return true
   end
