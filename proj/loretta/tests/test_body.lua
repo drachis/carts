@@ -35,7 +35,7 @@ cases={
   name="running, her ears lean back and her tongue trails behind",buttons={1},frames=90,
   setup=function() arena(16) end,
   check=function()
-   local ear,tip,root=hero.ears[2],hero.tongue[5],hero.tongue[1]
+   local ear,tip,root=hero.ears[2],hero.tongue[3],hero.tongue[1]
    return ear.x<ear.bx-3 and tip.x<root.x,"ear tip "..flr(ear.x-ear.bx).."px across from its base, tongue tip "..flr(tip.x-root.x).."px across from the mouth"
   end,
  },

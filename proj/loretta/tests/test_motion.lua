@@ -90,7 +90,7 @@ function _update60()
    track("her place on screen",flr(hero.x+0.5)-camera_x())
    track("her chest",bob)
    track("her ear tip",ear.x-ear.bx)
-   track("her tongue tip",tongue[5].x-tongue[1].x)
+   track("her tongue tip",tongue[3].x-tongue[1].x)
   end
   if frame==211 then
    expect("her place on screen","reversals",2)
@@ -98,7 +98,7 @@ function _update60()
    expect("her ear tip","reversals",15)
    expect("her tongue tip","reversals",15)
   end
-  local line="m "..frame.." "..hero.x.." "..hero.vx.." "..hero.gait.." "..bob.." "..rump.." "..hero.head_bob.." "..hero.sag.." "..(ear.x-ear.bx).." "..(ear.y-ear.by).." "..(tongue[5].x-tongue[1].x).." "..(tongue[5].y-tongue[1].y)
+  local line="m "..frame.." "..hero.x.." "..hero.vx.." "..hero.gait.." "..bob.." "..rump.." "..hero.head_bob.." "..hero.sag.." "..(ear.x-ear.bx).." "..(ear.y-ear.by).." "..(tongue[3].x-tongue[1].x).." "..(tongue[3].y-tongue[1].y)
   for pass=1,2 do
    if pass==1 then
     cls(1)

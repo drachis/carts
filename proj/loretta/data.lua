@@ -29,7 +29,7 @@ ear_gravity=0.15
 ear_flop=10
 head_turn=0.13
 head_turn_speed=0.03
-tongue_link=1.3
+tongue_link=1.1
 tongue_damp=0.9
 tongue_weight=0.4
 belly_spring=0.12
@@ -104,7 +104,7 @@ name,tile,w,h,dx,dy,back
 start,16,24,14,0,-6
 sign,17,8,8,0,0,1
 gate,18,8,48,0,-40,1
-coin,19,12,12,-2,-4
+coin,19,6,6,1,1
 bone,20,14,6,-3,1
 squirrel,21,12,12,-2,-4
 hydrant,22,10,14,-1,-6

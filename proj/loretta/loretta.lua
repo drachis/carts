@@ -1,5 +1,5 @@
 function new_loretta(x,y)
- local hero={x=x,y=y,w=hero_w,h=hero_h,vx=0,vy=0,facing=1,coyote=0,buffer=0,held=63,paddle=0,drop=0,idle=0,bark=0,cool=0,hurt=0,chain=0,squash=0,gait=0,happy=0,state="stand",pose=split"5,-10,19,-10,4,-10,0.5,0,0",turn=head_turn,sag=0.5,sag_v=0,head_bob=0,flop=0,ears={{},{}},tongue={{},{},{},{},{}}}
+ local hero={x=x,y=y,w=hero_w,h=hero_h,vx=0,vy=0,facing=1,coyote=0,buffer=0,held=63,paddle=0,drop=0,idle=0,bark=0,cool=0,hurt=0,chain=0,squash=0,gait=0,happy=0,state="stand",pose=split"5,-10,19,-10,4,-10,0.5,0,0",turn=head_turn,sag=0.5,sag_v=0,head_bob=0,flop=0,ears={{},{}},tongue={{},{},{}}}
  animate_loretta(hero)
  return hero
 end

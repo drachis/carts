@@ -40,11 +40,12 @@ function touch_coin(coin,hero)
  coins+=1
  add_score(coin_points)
  sfx(snd_coin)
- puff(coin.x+6,coin.y+6,8,10)
+ puff(coin.x+3,coin.y+3,6,10)
 end
 
 function draw_coin(coin)
- spr(({130,130,130,130,130,132,134,132})[(t()*8+coin.x/16)\1%8+1],coin.x-2,coin.y-2+sin(t()/2+coin.x/40),2,2)
+ local frame=({130,130,130,130,130,132,134,132})[(t()*8+coin.x/16)\1%8+1]
+ sspr(frame%16*8,frame\16*8,16,16,coin.x-1,coin.y-1+sin(t()/2+coin.x/40),8,8)
 end
 
 function touch_bone(bone,hero)
