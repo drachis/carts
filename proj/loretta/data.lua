@@ -61,6 +61,7 @@ squirrel_flee=1.2
 squirrel_run=120
 squirrel_arc=40
 grab_reach=11
+ear_rise=4
 camera_speed_change=0.12
 camera_lookahead=32
 camera_lookahead_speed=0.04

@@ -188,6 +188,9 @@ function animate_loretta(hero)
   local around=turn+(i*2-3)*0.14
   ear.bx,ear.by,ear.depth=hx-5.5*sin(around),hy-5,cos(around)
   follow(ear,ear.bx,ear.by,ear_length,ear_damp,ear_gravity,ear.bx-turn/head_turn*(lying and 9 or fast and 4 or 1),ear.by-(lying and 4 or fast and 9 or 10),ear_spring)
+  if ear.y>ear.by-ear_rise then
+   ear.x,ear.y=ear.bx+sgn(ear.x-ear.bx)*sqrt(ear_length*ear_length-ear_rise*ear_rise),ear.by-ear_rise
+  end
  end
  local x,y=hx-7.5*sin(turn),hy+6
  for i,link in ipairs(hero.tongue) do
