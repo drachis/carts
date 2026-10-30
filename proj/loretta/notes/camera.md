@@ -6,3 +6,7 @@ The whole-pixel camera, worked out from Loretta's rounded x, so her place on the
 
 **camera.lua:15** `function update_camera(view,hero)`
 dustroom's camera: eases after her, leads the way she runs, stops at the level's ends. It never moves up or down: the level is one screen tall.
+
+**Framing**
+The view centres between her and a chased squirrel only while it is within squirrel_safe px; beyond that it goes back to her. A hard clamp keeps her camera_margin px inside the screen whatever the view is doing.
+**Keep:** the user: she can never be off screen; a squirrel out of the safe zone is not followed.

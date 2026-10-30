@@ -137,7 +137,7 @@ function update_squirrel(squirrel,hero)
  local gap=(squirrel.x-hero.x)*dir
  squirrel.vx=dir*mid(squirrel_flee,abs(hero.vx)+(squirrel_gap-gap)*0.04,squirrel_dash)
  squirrel.leap=flag_at(squirrel.x+6+dir*20,squirrel.y+6,0) and 1 or squirrel.leap*0.96
- chase_x=squirrel.x+6
+ if abs(gap)<squirrel_safe then chase_x=squirrel.x+6 end
  if abs(gap)<100 then
   chase+=1
   hero.happy=30
@@ -154,7 +154,7 @@ function update_squirrel(squirrel,hero)
   for drop=0,min(2+chase\120,6) do
    new_thing(thing_specs[19],squirrel.x+drop*7-4,squirrel.y-30-drop*9,squirrel.y)
   end
-  add(floaters,{text=pot.."0",x=(squirrel.x+hero.x)/2,y=hero.y-16,life=40,colour=10,fly=pot})
+  add(floaters,{text=pot.."0",x=squirrel.x,y=squirrel.y-16,life=40,colour=10,fly=pot})
   chase,pot=0,0
  end
 end
@@ -201,7 +201,7 @@ function draw_squirrel(squirrel)
  end
  circfill(mid_x,mid_y+1,2,7)
  pset(head_x+dir,head_y,0)
- if squirrel.tree and pot>0 then outlined(pot.."0",(mid_x+hero.x)/2+8,hero.y-16,10) end
+ if squirrel.tree and pot>0 then outlined(pot.."0",head_x-4,head_y-16,10) end
 end
 
 function update_neighbour(neighbour,hero)
