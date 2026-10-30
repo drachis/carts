@@ -156,6 +156,8 @@ viewer=l 3 -10 3 0 5/r 2 -2 4 0 5/r 0 -16 7 -10 1/r 6 -18 9 -15 1/l 1 -14 5 -14 
  for op in all(split(text,"/")) do add(shapes[name],split(op," ")) end
 end
 
+levels={split"0,1,2,3,4,5,6,7"}
+
 stat_names=split"speed,jump,bark,charm"
 stat_colours=split"14,9,11,13"
 stats=parse_record[[

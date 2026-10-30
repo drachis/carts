@@ -1,8 +1,7 @@
-level_w=2048
-
 function level_tile(cell_x,cell_y)
- if cell_y<0 or cell_y>15 then return 0 end
- return cell_x<128 and mget(cell_x,cell_y) or mget(cell_x-128,cell_y+16)
+ local chunk=level_chunks[cell_x\32+1]
+ if not chunk or cell_y<0 or cell_y>15 then return 0 end
+ return mget(chunk%4*32+cell_x%32,chunk\4*16+cell_y)
 end
 
 function flag_at(x,y,flag)
@@ -32,20 +31,21 @@ function overlaps(a,b)
 end
 
 function load_level()
- reload(0x2000,0x2000,0x1000)
- things={}
+ level_chunks=levels[level]
+ level_w,things=#level_chunks*256,{}
  for cell_y=0,15 do
-  for cell_x=0,255 do
+  for cell_x=0,#level_chunks*32-1 do
    local spec=thing_specs[level_tile(cell_x,cell_y)]
    if spec then
-    if cell_x<128 then mset(cell_x,cell_y,0) else mset(cell_x-128,cell_y+16,0) end
     add(things,setmetatable({x=cell_x*8+spec.dx,y=cell_y*8+spec.dy,vx=0,vy=0,age=0,petting=0},spec))
    end
   end
  end
 end
 
-function draw_level()
- map(0,0,0,0,128,16)
- map(0,16,1024,0,128,16)
+function draw_level(cam)
+ for i=cam\256+1,(cam+127)\256+1 do
+  local chunk=level_chunks[i]
+  if chunk then map(chunk%4*32,chunk\4*16,i*256-256,0,32,16,0x80) end
+ end
 end

@@ -251,8 +251,8 @@ FAR = {"9": "4", "e": "f"}
 # in play her body and ears are drawn by loretta.lua from her skeleton;
 # only the face is a sprite. the ears here are for the title's player card.
 LORETTA_PARTS = {
-    176: her(corgi_art.ear(0, True), 16, 16), 182: her(corgi_art.ear(0, False), 16, 16, FAR),
-    228: her(corgi_art.face(), 24, 16),
+    60: her(corgi_art.ear(0, True), 16, 16), 62: her(corgi_art.ear(0, False), 16, 16, FAR),
+    96: her(corgi_art.face(), 24, 16),
 }
 
 # her body is drawn by loretta.lua: a spine of round segments and four
@@ -471,17 +471,18 @@ SPRITES = {
     29: mark("6"), 30: mark("6"), 31: mark("6"), 68: mark("6"), 69: mark("6"),
     70: mark("6"), 71: mark("6"), 72: mark("6"), 73: mark("6"), 74: mark("6"),
     75: mark("6"), 84: mark("6"), 85: mark("6"), 86: mark("6"),
-    40: HEAD, 42: HEAD_EARS_BACK, 44: HEAD_TONGUE,
-    46: HEAD_BARK, 64: HEAD_BLINK, 66: HEAD_EARS_BACK_TONGUE,
     104: SQUIRREL_A, 106: SQUIRREL_B, 108: SQUIRREL_SPOOKED, 110: HYDRANT,
-    128: HYDRANT_LIT, 130: COIN, 132: squash(COIN, 8), 134: squash(COIN, 3),
-    136: BONE, 138: HEART, 139: HEART_EMPTY, 140: SPARKLE, 141: HAND,
-    142: CORGI_FACE, 160: SHOES,
+    32: HYDRANT_LIT, 34: COIN, 36: squash(COIN, 8), 38: squash(COIN, 3),
+    40: BONE, 42: HEART, 43: HEART_EMPTY, 44: SPARKLE, 45: HAND, 46: SHOES,
 }
 SPRITES.update(LORETTA_PARTS)
-# flag 0 solid, 1 semisolid (its top row only), 2 water, 3 a slope rising
-# to the right, 4 a slope rising to the left (solid only below the diagonal)
+# sprites stop at 127: the sheet's lower half is map rows 32..63 (chunks
+# 8..15). flag 0 solid, 1 semisolid (its top row only), 2 water, 3 a slope
+# rising to the right, 4 a slope rising to the left (solid only below the
+# diagonal), 7 drawn by the map (markers have no flag 7, so the map skips
+# them: they stay in their chunks, which are shared)
 FLAGS = {1: 1, 2: 1, 3: 1, 4: 2, 5: 4, 6: 4, 9: 1 | 8, 10: 1 | 16, 11: 2, 12: 2, 13: 1}
+FLAGS.update({tile: FLAGS.get(tile, 0) | 128 for tile in range(1, 14)})
 
 # the level: eight sections of 32 by 16 tiles, side by side. the first four
 # are map rows 0..15, the last four map rows 16..31 (world.lua joins them).
@@ -558,7 +559,14 @@ SWITCHBACK = [EMPTY] * 7 + [
 LAWN_TOP = [EMPTY] * 7 + [
     "..s.fs.A....sY....G.......Y.C.f.",
 ] + ["#" * 8 + "...." + "#" * 20] * 6 + ["#" * 8 + "~~~~" + "#" * 20] * 2
-LEVEL_SECTIONS = [STREET, LAWNS, STREAM, YARD, TRAILHEAD, RAVINE, SWITCHBACK, LAWN_TOP]
+# the chunk library: sixteen pieces of 32 by 16 tiles, in the map four
+# across (chunk k at map x k%4*32, y k//4*16; 8..15 are in the sprite
+# sheet's lower half). a level is a list of chunk numbers (data.lua
+# levels); chunks are reused, in any order, and must meet at the same
+# ground height. FLAT is ground at row 12 for unbuilt slots.
+FLAT = [EMPTY] * 12 + [GROUND] * 4
+CHUNKS = [STREET, LAWNS, STREAM, YARD, TRAILHEAD, RAVINE, SWITCHBACK, LAWN_TOP] + [FLAT] * 8
+LEVELS = [[0, 1, 2, 3, 4, 5, 6, 7]]
 LETTER_TILES = {".": 0, "=": 4, "f": 7, ",": 8, "/": 9, "\\": 10, "-": 11, "^": 12, "_": 13,
                 "L": 16, "S": 17, "G": 18, "o": 19, "b": 20, "s": 21, "h": 22, "n": 23,
                 "M": 24, "B": 25, "Y": 26, "K": 27, "J": 28, "F": 29, "R": 30, "T": 31,
@@ -566,10 +574,11 @@ LETTER_TILES = {".": 0, "=": 4, "f": 7, ",": 8, "/": 9, "\\": 10, "-": 11, "^": 
                 "V": 75, "E": 84, "A": 85, "C": 86}
 
 
-def level_rows():
+def level_rows(chunks):
     rows = ["" for _ in range(16)]
-    for section in LEVEL_SECTIONS:
-        assert len(section) == 16, "a section has %d rows" % len(section)
+    for chunk in chunks:
+        section = CHUNKS[chunk]
+        assert len(section) == 16, "chunk %d has %d rows" % (chunk, len(section))
         for y, row in enumerate(section):
             assert len(row) == 32, "row %r is not 32 wide" % row
             rows[y] += row
@@ -667,8 +676,30 @@ def stamp(sheet, rows, sprite):
 def build_gfx():
     sheet = [["0"] * 128 for _ in range(128)]
     for sprite, text in SPRITES.items():
+        assert sprite < 128, "sprite %d is in the map's half of the sheet" % sprite
         stamp(sheet, rows_of(text, len(text.strip().split("\n")[0])), sprite)
     return ["".join(row) for row in sheet]
+
+
+def chunk_map():
+    """The whole map, 128 by 64 tile numbers: each chunk at its place."""
+    grid = [[0] * 128 for _ in range(64)]
+    for number, section in enumerate(CHUNKS):
+        tiles = level_tiles(level_rows([number]))
+        left, top = number % 4 * 32, number // 4 * 16
+        for y, row in enumerate(tiles):
+            grid[top + y][left:left + 32] = row
+    return grid
+
+
+def map_into_gfx(gfx, grid):
+    """Map rows 32..63 are the sheet's lower half: a byte a tile, each
+    byte's low nibble first, 64 bytes to a row of the sheet."""
+    for y in range(32):
+        pixels = "".join("%x%x" % (tile & 15, tile >> 4) for tile in grid[32 + y])
+        gfx[64 + y * 2] = pixels[:128]
+        gfx[65 + y * 2] = pixels[128:]
+    return gfx
 
 
 def build_flags():
@@ -676,13 +707,9 @@ def build_flags():
     return [flags[:256], flags[256:]]
 
 
-def build_map(tiles):
-    """Columns 0..127 of the level in map rows 0..15, 128..255 in 16..31."""
-    lines = []
-    for strip in range(2):
-        for row in tiles:
-            lines.append("".join("%02x" % tile for tile in row[strip * 128:strip * 128 + 128]).ljust(256, "0"))
-    return lines
+def build_map(grid):
+    """Map rows 0..31, the cart's __map__ section."""
+    return ["".join("%02x" % tile for tile in row) for row in grid[:32]]
 
 
 def level_picture(gfx, tiles):
@@ -723,11 +750,14 @@ def write_cart(path, text):
 
 def main():
     gfx = build_gfx()
-    tiles = level_tiles(level_rows())
-    write_png(os.path.join(HERE, "sheet.png"), gfx[:128])
-    write_png(os.path.join(HERE, "level.png"), level_picture(gfx, tiles), 1)
+    write_png(os.path.join(HERE, "sheet.png"), gfx[:64])
+    for number, chunks in enumerate(LEVELS):
+        tiles = level_tiles(level_rows(chunks))
+        write_png(os.path.join(HERE, "level_%d.png" % (number + 1)), level_picture(gfx, tiles), 1)
+    grid = chunk_map()
+    gfx = map_into_gfx(gfx, grid)
     tail = "\n".join(["__gfx__"] + gfx + ["__gff__"] + build_flags()
-                     + ["__map__"] + build_map(tiles)
+                     + ["__map__"] + build_map(grid)
                      + ["__sfx__"] + build_sfx() + ["__music__"] + MUSIC) + "\n"
     carts = [GAME] + sorted(glob.glob(os.path.join(HERE, "tests", "*.p8")))
     written = 0

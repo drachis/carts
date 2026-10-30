@@ -26,6 +26,7 @@ function start_level()
 end
 
 function go_title()
+ level=1
  start_level()
  mode,hero.x,hero.held="title",50,0
  play_music(0)
@@ -122,9 +123,9 @@ end
 
 function draw_hud()
  for heart=1,max_hearts do
-  spr(heart<=hearts and 138 or 139,2+(heart-1)*9,2)
+  spr(heart<=hearts and 42 or 43,2+(heart-1)*9,2)
  end
- sspr(16,64,16,16,32,2,8,8)
+ sspr(16,16,16,16,32,2,8,8)
  outlined("x"..coins,41,3,7)
  outlined("score "..score_text(score),75,3,7)
 end
@@ -147,7 +148,7 @@ function draw_title()
  draw_logo("loretta",36,6+sin(t()/3)*1.5)
  outlined("\135 corgi quest \135",30,24,7)
  for sparkle=1,6 do
-  if (t()*1.5+sparkle/6)%1<0.5 then spr(140,sparkle*41%120,8+sparkle*13%40) end
+  if (t()*1.5+sparkle/6)%1<0.5 then spr(44,sparkle*41%120,8+sparkle*13%40) end
  end
  rectfill(1,36,44,62,0)
  rect(1,36,44,62,14)
@@ -161,9 +162,9 @@ function draw_title()
  rect(96,42,119,68,13)
  palt(0,false)
  palt(12,true)
- spr(182,97,44,2,2)
- spr(228,98,53,3,2)
- spr(176,105,44,2,2)
+ spr(62,97,44,2,2)
+ spr(96,98,53,3,2)
+ spr(60,105,44,2,2)
  palt()
  rectfill(110,59,111,61,0)
  pset(110,59,7)
@@ -194,7 +195,7 @@ function _draw()
  draw_backdrop(cam)
  camera(cam+(shake%4<2 and 0 or shake\4),0)
  draw_things(1)
- draw_level()
+ draw_level(cam)
  draw_things()
  draw_barks()
  if respawn==0 then draw_loretta(hero) end

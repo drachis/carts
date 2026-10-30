@@ -44,7 +44,7 @@ function touch_coin(coin,hero)
 end
 
 function draw_coin(coin)
- local frame=({130,130,130,130,130,132,134,132})[(t()*8+coin.x/16)\1%8+1]
+ local frame=({34,34,34,34,34,36,38,36})[(t()*8+coin.x/16)\1%8+1]
  sspr(frame%16*8,frame\16*8,16,16,coin.x-1,coin.y-1+sin(t()/2+coin.x/40),8,8)
 end
 
@@ -61,7 +61,7 @@ function touch_bone(bone,hero)
 end
 
 function draw_bone(bone)
- spr(136,bone.x-1,bone.y-1+sin(t()/2+bone.x/30),2,1)
+ spr(40,bone.x-1,bone.y-1+sin(t()/2+bone.x/30),2,1)
 end
 
 function touch_hydrant(hydrant)
@@ -75,8 +75,8 @@ function touch_hydrant(hydrant)
 end
 
 function draw_hydrant(hydrant)
- spr(hydrant.lit and 128 or 110,hydrant.x-3,hydrant.y-2,2,2)
- if hydrant.lit and t()%1<0.5 then spr(140,hydrant.x+1,hydrant.y-10) end
+ spr(hydrant.lit and 32 or 110,hydrant.x-3,hydrant.y-2,2,2)
+ if hydrant.lit and t()%1<0.5 then spr(44,hydrant.x+1,hydrant.y-10) end
 end
 
 function update_squirrel(squirrel,hero)
@@ -154,13 +154,13 @@ function draw_neighbour(neighbour)
   line(x+leg+5,0,x+leg+5,feet+4,5)
   rectfill(x+leg-1,feet-2,x+leg+6,feet,2)
  end
- spr(160,x,feet+1,2,1)
+ spr(46,x,feet+1,2,1)
  if neighbour.petting>0 then
   local reach=min(1,(pet_frames-neighbour.petting)/15)
   local hand_x,hand_y=hero.x+8+hero.facing*8,(hero.y-10)*reach-8+(t()*4%1<0.5 and 2 or 0)
   rectfill(hand_x+1,0,hand_x+6,hand_y,5)
   rectfill(hand_x+2,0,hand_x+5,hand_y,6)
-  spr(141,hand_x,hand_y)
+  spr(45,hand_x,hand_y)
  elseif not neighbour.petted and abs(hero.x-x)<48 then
   print("\135?",x+4,feet-12+sin(t()),14)
  end
