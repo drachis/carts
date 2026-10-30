@@ -34,6 +34,7 @@ function slide(hero,dx,dy,climb)
 end
 
 function update_loretta(hero,input)
+ run_max=1.3+min(chase/300,0.8)
  local pressed=input&~hero.held
  hero.held=input
  local x_intent=(input&2>0 and 1 or 0)-(input&1>0 and 1 or 0)
@@ -90,7 +91,7 @@ function update_loretta(hero,input)
  if ground and hero.vy>=0 and area_has(hero.x,hero.y+3,hero_w,hero_h,0) then hero.vy=3 end
  if slide(hero,0,hero.vy) then hero.vy=0 end
  hero.drop,hero.hurt,hero.squash=max(hero.drop-1),max(hero.hurt-1),toward(hero.squash,0,1)
- hero.gait=(hero.gait+(ground and abs(hero.vx)/(2*leg_stride) or 0))%1
+ hero.gait=(hero.gait+(ground and abs(hero.vx)/(2*leg_stride*max(1,gait_amp(hero))) or 0))%1
  hero.state=hero.sliding and "sploot" or sitting and (down and "sit" or "sploot") or hero.bark>0 and "bark" or not ground and "jump" or abs(hero.vx)>0.1 and "run" or "stand"
  animate_loretta(hero)
 end
@@ -106,7 +107,7 @@ loretta_legs=split"0,-1,0.5,4,6,1,5,0,6,6,0,-3,0,9,7,1,3,0.5,7,7"
 loretta_poses={stand=split"5,-10,19,-10,4,-10,0.5,0,0",sit=split"7,-5,14,-12,4,-10,0,3,0",sploot=split"4,-5,19,-5,6,-7,4,-9,6",nap=split"4,-5,19,-5,7,-5,4,-7,6",jump=split"4,-10,20,-11,4,-10,0,-3,3"}
 
 function gait_amp(hero)
- return hero.air and 0 or min(1,abs(hero.vx)/0.4)
+ return hero.air and 0 or max(min(1,abs(hero.vx)/0.4),abs(hero.vx)-0.3)
 end
 
 function pitch(hero)

@@ -37,4 +37,19 @@ cases={
   each=function() result.top=max(result.top,abs(hero.vx)) end,
   check=function() return result.top>run_max and hero.sliding and hero.state=="sploot","top "..result.top..", "..hero.state end,
  },
+ {
+  name="the view never loses her, whatever it is framing",buttons={1},frames=60,every_frame=true,
+  setup=function() arena(40) result.worst=64 end,
+  each=function()
+   chase_x=hero.x+400
+   local on=hero.x-view.x
+   result.worst=min(result.worst,min(on,128-hero_w-on))
+  end,
+  check=function() return result.worst>=0,"closest to an edge "..result.worst end,
+ },
+ {
+  name="losing the last heart is a game over",buttons={},frames=90,
+  setup=function() arena(40) hearts=1 fall_in(hero) end,
+  check=function() _draw() dump_screen("over") return mode=="over","mode "..mode end,
+ },
 }

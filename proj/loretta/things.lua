@@ -79,13 +79,8 @@ end
 function touch_bone(bone,hero)
  bone.gone=true
  sfx(snd_munch)
- if hearts<max_hearts then
-  hearts+=1
-  float_text("\135",hero.x+10,hero.y-8,8)
- else
-  score+=bone_points
-  float_text("munch!",hero.x,hero.y-8,7)
- end
+ hearts=min(hearts+1,max_hearts)
+ float_text("\135",hero.x+10,hero.y-8,8)
 end
 
 function draw_bone(bone)
@@ -174,13 +169,12 @@ function spook(squirrel,direction)
 end
 
 function draw_squirrel(squirrel)
- local dir,links=sgn(squirrel.vx),squirrel.links or {}
+ local dir,links=sgn(squirrel.vx),squirrel.links
  local hop,height=squirrel.x/squirrel_arc/2,squirrel.tree and 20+squirrel.leap*24 or 6
  local air=abs(sin(hop))
  local reach,mid_x,base=1.5+air*4,squirrel.x+6,squirrel.y+6
  local front_x,front_y,back_x,back_y=mid_x+dir*reach,base-air*height,mid_x-dir*reach,base-abs(sin(hop-dir*squirrel_lag))*height
  local x,y,mid_y=back_x-dir*3,back_y,(front_y+back_y)/2
- squirrel.links=links
  for i=1,6 do
   local link=links[i] or {}
   links[i]=link

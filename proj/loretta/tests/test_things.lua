@@ -49,24 +49,9 @@ cases={
   check=function() return coins==1 and #things==0,"coins "..coins end,
  },
  {
-  name="the view never loses her, whatever it is framing",buttons={1},frames=60,every_frame=true,
-  setup=function() arena(40) result.worst=64 end,
-  each=function()
-   chase_x=hero.x+400
-   local on=hero.x-view.x
-   result.worst=min(result.worst,min(on,128-hero_w-on))
-  end,
-  check=function() return result.worst>=0,"closest to an edge "..result.worst end,
- },
- {
   name="a squirrel past the safe zone is not followed",buttons={},frames=2,every_frame=true,
   setup=function() arena(40) spook(squirrel_at(200),1) chase_x=nil end,
   check=function() return not chase_x,"chase_x "..tostr(chase_x) end,
- },
- {
-  name="losing the last heart is a game over",buttons={},frames=90,
-  setup=function() arena(40) hearts=1 fall_in(hero) end,
-  check=function() _draw() dump_screen("over") return mode=="over","mode "..mode end,
  },
  {
   name="the water costs a heart and she comes back at the last hydrant",buttons={},frames=90,

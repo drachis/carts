@@ -116,18 +116,33 @@ def pond_yard(rnd):
     return rows
 
 
+def hill(rows, x, height, flat, top=12):
+    """A small hill of diagonal tiles: a step would stop her dead, a slope
+    keeps the run going. Returns the column after it."""
+    for i in range(height):
+        rows[top - 1 - i][x + i] = "/"
+        for y in range(top - i, top):
+            rows[y][x + i] = "#"
+    x += height
+    for column in range(x, x + flat):
+        for y in range(top - height, top):
+            rows[y][column] = "#"
+    x += flat
+    for i in range(height):
+        rows[top - height + i][x + i] = "\\"
+        for y in range(top - height + i + 1, top):
+            rows[y][x + i] = "#"
+    return x + height
+
+
 def fork(rnd):
-    """RUN. Terraces: a stepped rise and fall for big arcs against the sky."""
+    """RUN. Rolling hills: big arcs against the sky, nothing to stop her."""
     rows = empty()
     ground(rows, 12)
-    x = rnd.randint(5, 7)
-    for step, height in enumerate((1, 2, 3, 2, 1)):
-        for column in range(x + step * 4, x + step * 4 + 4):
-            for y in range(12 - height, 12):
-                rows[y][column] = "#"
+    x = hill(rows, rnd.randint(4, 6), 2, rnd.randint(1, 3))
+    hill(rows, x + rnd.randint(2, 4), 3, rnd.randint(1, 3))
     put(rows, 2, 11, "f")
     put(rows, 28, 11, "T")
-    put(rows, 30, 11, "s")
     return rows
 
 

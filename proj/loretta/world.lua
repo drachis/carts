@@ -27,7 +27,7 @@ function on_ledge(thing,ignore_branches)
 end
 
 function new_thing(spec,x,y,land)
- return add(things,setmetatable({x=x,y=y,vx=0,vy=0,age=0,petting=0,step=0,land=land},spec))
+ return add(things,setmetatable({x=x,y=y,vx=0,vy=0,age=0,petting=0,step=0,land=land,links={}},spec))
 end
 
 function overlaps(a,b)
@@ -35,7 +35,7 @@ function overlaps(a,b)
 end
 
 function load_level()
- level_chunks,lead=levels[level]
+ level_chunks,lead,chase=levels[level],nil,0
  level_w,things=#level_chunks*256,{}
  for cell_y=0,15 do
   for cell_x=0,#level_chunks*32-1 do

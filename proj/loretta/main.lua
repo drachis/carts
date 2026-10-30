@@ -149,7 +149,7 @@ function draw_title()
  end
  rectfill(1,34,34,46,0)
  rect(1,34,34,46,14)
- if t()%1<0.6 then print("\145",3,36,14) end
+ print("\145",3,36,14)
  print("start",13,36,7)
  print(score_text(best),4,41,10)
  outlined("\142 jump \151 bark \131 sit",8,121,7)
