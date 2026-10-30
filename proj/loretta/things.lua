@@ -106,13 +106,13 @@ function update_squirrel(squirrel,hero)
    for step=1,8 do
     if flag_at(squirrel.x+6,squirrel.y+11,0) then squirrel.y-=1 end
    end
-   if not on_ledge(squirrel.x,squirrel.y,12,12) then squirrel.y+=2 end
+   if not on_ledge(squirrel) then squirrel.y+=2 end
   end
   if squirrel.tree and (squirrel.x-squirrel.tree)*squirrel.vx>=0 then
    squirrel.x,squirrel.vx,squirrel.vy,squirrel.tree=squirrel.tree-6,0,-1
    sfx(snd_chitter)
    for drop=0,2 do
-    add(things,setmetatable({x=squirrel.x+drop*7-4,y=squirrel.y-30-drop*9,vx=0,vy=0,age=0,land=squirrel.y},thing_specs[19]))
+    new_thing(thing_specs[19],squirrel.x+drop*7-4,squirrel.y-30-drop*9,squirrel.y)
    end
   end
   if squirrel.y>140 or squirrel.y<-16 then squirrel.gone=true end

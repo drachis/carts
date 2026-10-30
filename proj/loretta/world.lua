@@ -21,9 +21,13 @@ function area_has(x,y,w,h,flag)
  return false
 end
 
-function on_ledge(x,y,w,h,ignore_branches)
- local below=flr(y)+h
- return area_has(x,below,w,1,0) or not ignore_branches and below%8==0 and area_has(x,below,w,1,1)
+function on_ledge(thing,ignore_branches)
+ local below=flr(thing.y)+thing.h
+ return area_has(thing.x,below,thing.w,1,0) or not ignore_branches and below%8==0 and area_has(thing.x,below,thing.w,1,1)
+end
+
+function new_thing(spec,x,y,land)
+ return add(things,setmetatable({x=x,y=y,vx=0,vy=0,age=0,petting=0,step=0,land=land},spec))
 end
 
 function overlaps(a,b)
@@ -37,7 +41,7 @@ function load_level()
   for cell_x=0,#level_chunks*32-1 do
    local spec=thing_specs[level_tile(cell_x,cell_y)]
    if spec and (spec.name!="neighbour" or cell_x>#level_chunks*11) then
-    add(things,setmetatable({x=cell_x*8+spec.dx,y=cell_y*8+spec.dy,vx=0,vy=0,age=0,petting=0,step=0},spec))
+    new_thing(spec,cell_x*8+spec.dx,cell_y*8+spec.dy)
    end
   end
  end

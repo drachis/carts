@@ -10,11 +10,11 @@ Flags: 0 solid, 1 semisolid, 2 water, 3 slope rising right, 4 slope rising left,
 **world.lua:15** `function area_has(x,y,w,h,flag)`
 Samples a box every 4 pixels and at its far edges, so nothing 8px or wider slips between samples.
 
-**world.lua:24** `function on_ledge(x,y,w,h,ignore_branches)`
+**world.lua:24** `function on_ledge(thing,ignore_branches)`
 Standing: solid just below the feet, or a branch whose top row is exactly below them (unless dropping through).
 
-**world.lua:33** `function load_level()`
+**world.lua:37** `function load_level()`
 Turns every marker tile in the level's chunks into a thing; the markers stay in the map (chunks are shared) and are not drawn, having no flag 7. Rerun at every start. Neighbours in a level's first third are not loaded (cell_x>#level_chunks*11), so the treat comes after she has had a chance to lose hearts (the user's note).
 
-**world.lua:46** `function draw_level(cam)`
+**world.lua:50** `function draw_level(cam)`
 Draws only the chunks the camera sees (two at most), with map's layer 0x80, which skips markers.

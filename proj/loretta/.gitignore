@@ -6,3 +6,4 @@ tests/*.p8l
 *.zip
 *.bin/
 run.txt
+tests/golden_base.txt
