@@ -13,11 +13,20 @@ function titan_x()
 end
 
 function titan_y()
- return crest_y-22-(crest_y-horizon)*0.8+(1-titan.rise)*70
+ return crest_y-14-(crest_y-horizon)*0.8+(1-titan.rise)*80
 end
 
 function spot_xy(spot)
- return titan_x()+spot.lane*22,titan_y()+20-abs(spot.lane)*4
+ return titan_x()+spot.lane*12,titan_y()+14-abs(spot.lane)*4
+end
+
+function draw_limb(x0,y0,x1,y1,from_radius,to_radius,colour)
+ for pass=0,1 do
+  for share=0,1,0.1 do
+   circfill(x0+(x1-x0)*share,y0+(y1-y0)*share,
+    from_radius+(to_radius-from_radius)*share-pass,pass==0 and 1 or colour)
+  end
+ end
 end
 
 function open_spot(lane,beat)
@@ -105,28 +114,38 @@ function update_titan()
 end
 
 function draw_titan()
- local x,y=titan_x(),titan_y()
+ local x,y,colour=titan_x(),titan_y(),titan.colour
+ local back,beat=(x-64)*0.4,clock%1
+ pal(3,colour)
+ sspr(104,72,16,24,x-36-back,y-16)
+ sspr(104,72,16,24,x+20-back,y-16,16,24,true)
  for side=-1,1,2 do
-  for leg=0,2 do
-   local knee_x=x+side*(30+leg*10)
-   local knee_y=y+6+leg*6+sin(clock/2+leg/3)*3
-   line(x+side*12,y+20,knee_x,knee_y,2)
-   line(knee_x,knee_y,knee_x+side*8,y+60,2)
-  end
+  local lift=flr(clock)%2==(side+1)/2 and (1-beat)*(1-beat)*6 or 0
+  local hip_x,foot_x,foot_y=x+side*9,x+side*15,y+50-lift
+  local knee_x,knee_y=x+side*17,y+38-lift/2
+  draw_limb(hip_x,y+22,knee_x,knee_y,7,5,colour)
+  draw_limb(knee_x,knee_y,foot_x,foot_y,5,4,colour)
+  sspr(88,72,16,8,foot_x-8,foot_y-3)
  end
- ovalfill(x-36,y+4,x+36,y+40,titan.colour)
- for stripe=0,3 do
-  oval(x-30+stripe*4,y+8+stripe*2,x+30-stripe*4,y+38-stripe*2,1)
+ local bob=pulse>0.5 and 1 or 0
+ sspr(0,96,40,32,x-20,y-4+bob)
+ for side=-1,1,2 do
+  local swing=sin(clock/2+side/4)*3
+  local hand_x,hand_y=x+side*25,y+22+swing
+  draw_limb(x+side*17,y+2+bob,x+side*28,y+12,5,4,colour)
+  draw_limb(x+side*28,y+12,hand_x,hand_y,4,3,colour)
+  sspr(80,72,8,8,hand_x-4,hand_y-1)
  end
- ovalfill(x-14,y-10,x+14,y+10,titan.colour)
- circfill(x-6,y-2,2,8)
- circfill(x+6,y-2,2,8)
- line(x-8,y+8,x-3,y+14,11)
- line(x+8,y+8,x+3,y+14,11)
+ local spat
+ for hazard in all(hazards) do
+  if clock-hazard.from<1 then spat=true end
+ end
+ sspr(spat and 64 or 40,96,24,20,x-12+(robot.x-64)*0.05,y-21+bob*2)
+ pal()
  for spot in all(titan.spots) do
   local lamp_x=x+spot.lane*7
-  circfill(lamp_x,y-16,2,spot.lit and 10 or 1)
-  circ(lamp_x,y-16,2,spot.lit and 7 or 5)
+  circfill(lamp_x,y+1,2,spot.lit and 10 or 1)
+  circ(lamp_x,y+1,2,spot.lit and 7 or 5)
  end
  for spot in all(titan.spots) do
   local sx,sy=spot_xy(spot)

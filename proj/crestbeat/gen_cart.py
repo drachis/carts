@@ -9,9 +9,13 @@ run_tests.py runs this first.
 Sprites are rows of PICO-8 colour digits; "." is colour 0, transparent.
 Symmetrical things are drawn as their left half and mirrored.
 
-    alien      16x16 at (0,0) and (16,0), two hop frames
-    civilian   16x16 at (32,0) and (48,0), arms up, fleeing
-    robot      24x24 at (0,64) and (24,64), hivefall's mech in red
+    swarm      rows 0-71: ten sizes, 8 to 32px, two frames each (art.py;
+               where each lies is swarm_sprites in data.lua)
+    robot      24x24 at (0,72) and (24,72), hivefall's mech in red
+    civilian   16x16 at (48,72) and (64,72), arms up, fleeing
+    giant      a hand 8x8 at (80,72), a foot 16x8 at (88,72), a wing 16x24
+               at (104,72), the torso 40x32 at (0,96), the head 24x20 at
+               (40,96) and with its jaw open at (64,96) (art.py)
 
 The music is 120 BPM: sfx speed 15, a note a quarter beat, 32 notes (eight
 beats) a pattern. Channel 0 is the drums, and the game reads its note
@@ -22,6 +26,7 @@ import os
 import time
 
 from png import write_png
+import art
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GAME = "crestbeat.p8"
@@ -43,29 +48,6 @@ CIVILIAN = """
 ....11..
 ...555..
 ........
-"""
-
-ALIEN = """
-......33
-....33bb
-..33bbbb
-3bbbbbbb
-3bb00bbb
-3bbbb00b
-3bbb77bb
-3bbb70bb
-3bbbbbbb
-3bbbb000
-3bbb0bbb
-..33bbbb
-....33bb
-......33
-...e..e.
-..e...e.
-"""
-ALIEN_LEGS = """
-....e.e.
-...e.e..
 """
 
 MECH = """
@@ -165,15 +147,22 @@ def stamp(sheet, rows, left, top):
 
 def build_gfx():
     sheet = [["0"] * 128 for _ in range(128)]
-    alien = mirrored(ALIEN, 8)
-    stamp(sheet, alien, 0, 0)
-    stamp(sheet, alien[:14] + mirrored(ALIEN_LEGS, 8), 16, 0)
-    civilian = mirrored(CIVILIAN, 8)
-    stamp(sheet, civilian, 32, 0)
-    stamp(sheet, bobbed(civilian, 10), 48, 0)
+    layout, _ = art.swarm_layout()
+    for size, (left, top) in layout.items():
+        for frame in (0, 1):
+            stamp(sheet, art.render(art.tyranid(frame), size, size), left + frame * size, top)
     mech = mirrored(MECH.translate(RED), 12)
-    stamp(sheet, mech, 0, 64)
-    stamp(sheet, bobbed(mech, 14), 24, 64)
+    stamp(sheet, mech, 0, 72)
+    stamp(sheet, bobbed(mech, 14), 24, 72)
+    civilian = mirrored(CIVILIAN, 8)
+    stamp(sheet, civilian, 48, 72)
+    stamp(sheet, bobbed(civilian, 10), 64, 72)
+    stamp(sheet, art.outlined(art.render(art.kaiju_claw(), 8, 8, mirror=False)), 80, 72)
+    stamp(sheet, art.outlined(art.render(art.kaiju_foot(), 16, 8, mirror=False)), 88, 72)
+    stamp(sheet, art.outlined(art.render(art.kaiju_wing(), 16, 24, mirror=False)), 104, 72)
+    stamp(sheet, art.outlined(art.render(art.kaiju_torso(), 40, 32)), 0, 96)
+    stamp(sheet, art.outlined(art.render(art.kaiju_head(False), 24, 20)), 40, 96)
+    stamp(sheet, art.outlined(art.render(art.kaiju_head(True), 24, 20)), 64, 96)
     return ["".join(row) for row in sheet]
 
 
@@ -200,7 +189,7 @@ def write_cart(path, text):
 
 def main():
     gfx = build_gfx()
-    write_png(os.path.join(HERE, "sheet.png"), gfx[:96])
+    write_png(os.path.join(HERE, "sheet.png"), gfx)
     tail = "\n".join(["__gfx__"] + gfx + ["__sfx__"] + build_sfx()
                      + ["__music__"] + MUSIC) + "\n"
     carts = [GAME] + sorted(glob.glob(os.path.join(HERE, "tests", "*.p8")))

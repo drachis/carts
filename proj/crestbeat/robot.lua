@@ -52,7 +52,6 @@ function update_gun()
  elseif robot.waiting and target and not target.penalty then
   if (clock-robot.waiting)*frames_per_beat<=good_window then
    fire(judgements[2])
-   popup("late",robot.x,76-robot.lift,10)
   end
   robot.waiting=nil
  end
@@ -109,8 +108,8 @@ function draw_robot()
  end
  for colour=1,15 do pal(colour,0) end
  for nudge=-1,1,2 do
-  sspr(0,64,24,24,robot.x-18+nudge,top,36,36)
-  sspr(0,64,24,24,robot.x-18,top+nudge,36,36)
+  sspr(0,72,24,24,robot.x-18+nudge,top,36,36)
+  sspr(0,72,24,24,robot.x-18,top+nudge,36,36)
  end
  pal()
  if robot.hurt>0 and robot.hurt%4<2 then
@@ -119,6 +118,6 @@ function draw_robot()
   pal(9,guns[robot.gun].colour)
   pal(10,7)
  end
- sspr(0,64,24,24,robot.x-18,top,36,36)
+ sspr(0,72,24,24,robot.x-18,top,36,36)
  pal()
 end

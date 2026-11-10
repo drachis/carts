@@ -84,12 +84,21 @@ function kind_colours(kind,dark)
  pal(3,kind.rim)
 end
 
+function swarm_sprite(size)
+ local best=swarm_sprites[1]
+ for entry in all(swarm_sprites) do
+  if entry[1]<=size then best=entry end
+ end
+ return unpack(best)
+end
+
 function draw_fallen()
  for body in all(fallen) do
   body.age+=1
-  local height=body.size*max(0.15,1-body.age/5)
+  local size,sx,sy=swarm_sprite(body.size)
+  local height=size*max(0.15,1-body.age/5)
   kind_colours(body.kind,body.age>4)
-  sspr(0,0,16,16,body.x-body.size/2,body.y-height,body.size,height)
+  sspr(sx,sy,size,size,body.x-size/2,body.y-height,size,height)
   pal()
   if body.age>24 then del(fallen,body) end
  end
@@ -111,7 +120,13 @@ function draw_aliens(behind)
    if alien.flash>0 then
     for colour=1,15 do pal(colour,7) end
    end
-   sspr(alien.sprite+(alien.hop<0.34 and 16 or 0),0,16,16,x-size/2,y-size+lift,size,size)
+   local frame=alien.hop<0.34 and 1 or 0
+   if alien.sprite>0 then
+    sspr(alien.sprite+frame*16,72,16,16,x-size/2,y-size+lift,size,size)
+   else
+    local width,sx,sy=swarm_sprite(size)
+    sspr(sx+frame*width,sy,width,width,x-width/2,y-width+lift,width,width)
+   end
    pal()
   end
  end

@@ -11,8 +11,7 @@ gallery than a shmup".
 
 The run is about 75 to 90 seconds, paced like **Godzilla Kaiju Wars VR**
 (Raw Thrills): small clusters, a big enemy, clusters again, a boss. The
-user's sketch was layout, not art; the art pass is still to come (see the
-end).
+user's sketch was layout, not art; the art is described under "The art".
 
 What it takes from where:
 
@@ -101,8 +100,8 @@ intention.
   depth: 0 at the crest, 1 at the bottom of the hill. At `t>=1` it is gone
   and the robot loses a heart; at 0 the run is lost. Lives half a bar.
 - **brute** (`456`) and **hulk** (`789`): the same walk, living 1 and 1.5
-  bars, drawn 1.25 and 1.5 times the size in darker greens (art to come),
-  mixed into the swarms.
+  bars, shown at 1.25 and 1.5 times the size (a larger sprite, not a
+  scaled one) in darker greens, mixed into the swarms.
 - **weaver** (`rty`), the gallery's moving track: walks down like an alien
   but sweeps across the streets as it comes, a street every two beats
   (`weave`), left, centre, right, centre, starting from its chart street.
@@ -214,8 +213,8 @@ as the user asked.
 
 ## The titan
 
-A great bug standing behind the crest, swaying, drawn from ovals and lines
-in `draw_titan`. As it arrives, every building on the far part of the hill
+A kaiju lizard-dragon of our own standing behind the crest (see "The art");
+the titan green, the behemoth lavender, the queen pink. As it arrives, every building on the far part of the hill
 gets a moment to collapse at, so it crunches through the skyline. Its three
 hot spots sit over the three streets; an open one glows orange and can be
 hit, a closed one is dark. Spit is the user's "get out of this lane by beat
@@ -247,6 +246,30 @@ aliens still behind the crest (clipped at `crest_y`, so they rise in front
 of the titan), the other buildings far to near, spit, aliens far to near,
 the aim, the robot, effects, HUD, beat bar. `test_rhythm` reads both clips
 off the screen.
+
+## The art
+
+The figures are drawn from shapes by `art.py` (run by `gen_cart.py`), at
+the size they are shown: the user prefers many sprites to scaled ones. The
+colours stay readable: the swarm green (11 on 3), the golden alien gold,
+civilians white and brown, the robot red, the giants their own colours.
+
+- **The swarm** is a Tyranid-like bug (after hivefall's skitter): scything
+  talons up, a dark carapace over a green body, red eyes, grey legs, and a
+  second frame with the talons raised and the legs stepped. It is drawn at
+  ten sizes, 8 to 32 pixels, two frames each, filling the top of the sheet
+  (`swarm_sprites` in `data.lua` says where each is). An enemy is drawn 1:1
+  with the largest that fits the size its depth asks for; brutes and hulks
+  reach the larger ones. A kind's colours are swapped in with `pal`.
+- **The giant** is a set of parts, after witchcap's hut: a torso (40x32), a
+  head with its jaw shut or open (24x20, open just after it spits), wings
+  behind (16x24, the right one mirrored), hands and feet (8x8, 16x8), all
+  drawn 1:1, and arms and legs as solid limbs between them, rows of filled
+  circles with one outline (`draw_limb`). Its feet stomp in turn on the
+  beat, its arms swing, it bobs on the beat, its head turns a little toward
+  the robot, and its wings sit further back, moving less as it sways. Its
+  body colour is swapped per giant. The hot spots sit on its chest and
+  shoulders, with the bell's lamps above them.
 
 ## The ticket payout
 
@@ -307,9 +330,11 @@ sound and holds the bot.
 
 ## Still to do, or not checked
 
-- The art pass, which the user asked to leave to the end: the titan as a
-  kaiju lizard-dragon of our own, the small enemies Tyranid-like, sprites
-  for each distance, the same readable colours.
+- The robot is still hivefall's 24px mech drawn at 1.5x, and the civilian
+  one 16px sprite scaled by distance; the user prefers sprites drawn at
+  their size to scaled ones, so these are next if the art goes further.
+- A bell route through a giant (one shot on each spot) is possible by hand
+  but not designed in `levels.py` or played by a test.
 - The music has not been heard, and whether `stat(50)` keeps the clock on
   the drums on the user's machine is untested (the tests stub music).
 - Every number (alien health, window, cadences, charts) is tuned only
