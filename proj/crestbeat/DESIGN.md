@@ -57,7 +57,8 @@ within `good_window` is good, and anything else, or a second shot on a beat
 already shot, is a miss. Perfect and good hit the front alien in the
 robot's lane for one point of health and knock it back up the hill
 (perfect further); a miss does nothing and ends the combo. Every fourth
-beat in a row raises the multiplier, to x4.
+beat in a row raises the multiplier, to x4. `score` is kept in tens (a
+perfect is 10, shown as 100) so a run cannot pass PICO-8's 32767.
 
 ## Aliens
 
@@ -85,7 +86,15 @@ stage with `fly` lifts the robot on its jets and slides the city toward it
 that pass the robot come round again at the crest, standing. A stage with
 `spot_hp` is a titan: its chart loops until all three hot spots are gone,
 then it sinks in flames for 1.5 seconds and the next stage starts. The
-last stage done is the win. Each stage shows its `title` as a banner.
+last stage done is the win. Each stage shows its `title` as a banner, and
+a stage with `heal` gives back that many hearts when it starts.
+
+The run now: the hill swarm, a climb, the titan, the streets swarm (one
+heart back), a climb, the crest swarm (clusters: two aliens down one lane
+in a row), a climb, and the hive queen (a pink titan with four hits a hot
+spot, sending aliens and spit between hot spots; one heart back). The bot,
+which never misses, wins in 154 beats, 77 seconds; a person who misses
+takes longer, since only a hit moves things on.
 
 ## The titan
 
@@ -125,7 +134,8 @@ effects, HUD, beat bar.
 
 - `test_boot`: the real cart from frame one, input and sound stubbed. A bot
   that stands in the most urgent alien's lane and fires on every beat wins
-  the run (dodging spit, shooting open hot spots); then a run with no input
+  the whole run (`boot_play`, `boot_climb`, `boot_titan`, `boot_queen`,
+  `boot_won`), dodging spit and shooting open hot spots; then a run with no input
   loses it; then a restart. It prints each stage's start beat and hp. Screens are
   dumped (`boot_*.png`).
 - `test_rhythm`: judging at the beat, a few frames off and far off; a
@@ -136,8 +146,7 @@ effects, HUD, beat bar.
 
 ## Not built yet, or not checked
 
-- Stages so far: swarm, climb, titan. No second swarm, boss or gun pickups
-  yet.
+- No gun pickups yet.
 - The music has not been heard, and whether `stat(50)` keeps the clock on
   the drums on the user's machine is untested (the tests stub music).
 - Whether the windows feel fair to a person; 4 and 8 frames are guesses.

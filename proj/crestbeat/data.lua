@@ -40,15 +40,20 @@ fly_speed=0.012
 ]],nil,_ENV)
 
 stages=parse_table[[
-name,chart,spot_hp,fly,title
-hill,....1.2.3.2.1...3.1.2.3.1.2.3,,,they're over the hill!
-climb,........,,1,up the hill!
-titan,..q.w.e.a.w.q.s.e.w.d.,2,,titan! shoot its hot spots
+name,chart,spot_hp,colour,fly,heal,title
+hill,....1.2.3.2.1...3.1.2.3.1.2.3,,,,,they're over the hill!
+climb,........,,,1,,up the hill!
+titan,..q.w.e.a.w.q.s.e.w.d.,2,3,,,titan! shoot its hot spots
+streets,..1.3.2.1.1.3.2.3.1.2.2.1.3.,,,,1,another swarm!
+climb,........,,,1,,to the crest!
+crest,..1.2.3.3.1.2.1.3.3.2.1.1.2.3.,,,,,they keep coming!
+climb,........,,,1,,the hive queen awaits
+queen,..q.w.1.e.a.3.w.q.s.2.e.d.w.1.,4,14,,1,the hive queen!
 ]]
 
 judgements=parse_table[[
 name,colour,knock,points,sound
-perfect,7,1,100,0
-good,10,0.5,50,1
+perfect,7,1,10,0
+good,10,0.5,5,1
 miss,8,0,0,2
 ]]

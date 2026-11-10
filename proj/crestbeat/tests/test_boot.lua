@@ -75,11 +75,12 @@ function boot_frame()
    seen_stage,stage_start=stage_number,n
    printh("stage "..stage.name.." at beat "..next_beat..", hp "..robot.hp)
   end
-  if stage.name=="climb" and n-stage_start==90 then dump_screen("boot_climb") end
+  if stage_number==2 and n-stage_start==90 then dump_screen("boot_climb") end
   if stage.name=="titan" and n-stage_start==200 then dump_screen("boot_titan") end
+  if stage.name=="queen" and n-stage_start==300 then dump_screen("boot_queen") end
   if mode!="play" then
    expect_mode("won")
-   printh("bot won in "..flr(clock).." beats, hp "..robot.hp.."/"..max_hp..", score "..score)
+   printh("bot won in "..flr(clock).." beats ("..flr(clock/2).."s), hp "..robot.hp.."/"..max_hp..", score "..score)
    next_phase("won")
   elseif age>9000 then
    printh("error: the bot's run never ended")

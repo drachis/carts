@@ -1,7 +1,7 @@
-function make_titan(spot_hp)
- titan={rise=0,spots={}}
+function make_titan(spec)
+ titan={rise=0,spots={},colour=spec.colour}
  for lane=-1,1 do
-  add(titan.spots,{lane=lane,hp=spot_hp,open=-1,flash=0})
+  add(titan.spots,{lane=lane,hp=spec.spot_hp,open=-1,flash=0})
  end
  for building in all(buildings) do
   if building.t<0.45 then building.fall_at=clock+2+rnd(10) end
@@ -83,11 +83,11 @@ function draw_titan()
    line(knee_x,knee_y,knee_x+side*8,y+60,2)
   end
  end
- ovalfill(x-36,y+4,x+36,y+40,3)
+ ovalfill(x-36,y+4,x+36,y+40,titan.colour)
  for stripe=0,3 do
   oval(x-30+stripe*4,y+8+stripe*2,x+30-stripe*4,y+38-stripe*2,1)
  end
- ovalfill(x-14,y-10,x+14,y+10,3)
+ ovalfill(x-14,y-10,x+14,y+10,titan.colour)
  circfill(x-6,y-2,2,8)
  circfill(x+6,y-2,2,8)
  line(x-8,y+8,x-3,y+14,11)

@@ -21,7 +21,8 @@ function start_stage(number)
  stage_number,stage=number,stages[number]
  stage_beat=next_beat
  hazards,titan={}
- if stage.spot_hp then make_titan(stage.spot_hp) end
+ if stage.spot_hp then make_titan(stage) end
+ robot.hp=min(robot.hp+(stage.heal or 0),max_hp)
  banner,banner_life=stage.title,120
 end
 
@@ -129,7 +130,7 @@ function draw_hud()
  for i=1,max_hp do
   circfill(i*8-2,6,2,i<=robot.hp and 8 or 5)
  end
- local text=tostr(score)
+ local text=score_text()
  print(text,126-#text*4,3,7)
  if combo>3 then print("x"..multiplier(),56,3,10) end
  rectfill(0,121,127,127,0)
@@ -181,11 +182,15 @@ function _draw()
  elseif mode!="play" then
   rectfill(24,50,103,76,0)
   centred(mode=="won" and "city saved!" or "the city falls",54,mode=="won" and 11 or 8)
-  centred("score "..score,62,7)
+  centred("score "..score_text(),62,7)
   if ended>30 then centred("press z",70,tick_blink() and 10 or 5) end
  end
 end
 
 function tick_blink()
  return clock%1<0.5
+end
+
+function score_text()
+ return score>0 and score.."0" or "0"
 end
