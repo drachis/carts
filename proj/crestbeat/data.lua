@@ -46,14 +46,15 @@ climb,........,,,1,,up the hill!
 titan,..q.w.e.a.w.q.s.e.w.d.,4,3,,,titan! shoot its hot spots
 streets,..1.3.2.2.k.4.3.j.3.1.l.2.x.1.3.,,,,1,run for it!
 climb,........,,,1,,to the crest!
-crest,..1.2.3.3.c.8.1.3.1.1.z.6.1.2.3.,,,,,they keep coming!
+crest,..1.2.3.3.c.8.r.3.1.1.z.6.t.2.3.,,,,,they keep coming!
 climb,........,,,1,,the hive queen awaits
-queen,..q.w.1.e.a.3.w.q.s.2.e.d.w.1.,6,14,,1,the hive queen!
+queen,..q.w.1.e.a.y.w.q.s.2.e.d.w.r.,6,14,,1,the hive queen!
 ]]
 
 kinds=parse_table[[
-name,keys,bars,walk,bonus,harmless,body,rim,track,depth,sprite,penalty,size
-alien,123,0.5,8,0,,11,3,,,0,,1
+name,keys,bars,walk,bonus,harmless,body,rim,track,depth,sprite,penalty,size,weave
+alien,123,0.5,8,0,,11,3,,,0,,1,
+weaver,rty,0.5,8,0,,11,2,,,0,,1,2
 brute,456,1,8,0,,3,11,,,0,,1.25
 hulk,789,1.5,8,0,,3,1,,,0,,1.5
 gold,zxc,2,,100,1,10,9,3,0.45,0,,1

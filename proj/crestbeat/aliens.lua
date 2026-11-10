@@ -1,7 +1,7 @@
 function send_alien(lane,beat,kind)
  kind=kind or kinds[1]
  local dir=lane<0 and 1 or -1
- add(aliens,setmetatable({lane=lane,pos=lane,start=-2*dir,dir=dir,born=beat,hp=kind.bars*8,flash=0,t=-1},kind))
+ add(aliens,setmetatable({lane=lane,first=lane,pos=lane,start=-2*dir,dir=dir,born=beat,hp=kind.bars*8,flash=0,t=-1},kind))
 end
 
 function update_aliens()
@@ -16,6 +16,11 @@ function update_aliens()
    alien.lane=flr(alien.pos+0.5)
   else
    alien.t=(step-1)/alien.walk
+   if alien.weave then
+    local turn=step/alien.weave+alien.first+1
+    alien.pos=weave_lane(turn)+(weave_lane(turn+1)-weave_lane(turn))*(turn%1)
+    alien.lane=flr(alien.pos+0.5)
+   end
   end
   if alien.t>=1 or abs(alien.pos)>2.2 then
    del(aliens,alien)
@@ -27,6 +32,10 @@ function update_aliens()
   end
  end
  sort_by_t(aliens)
+end
+
+function weave_lane(turn)
+ return ({-1,0,1,0})[flr(turn)%4+1]
 end
 
 function front_alien(lane)

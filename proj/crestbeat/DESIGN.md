@@ -103,6 +103,10 @@ intention.
 - **brute** (`456`) and **hulk** (`789`): the same walk, living 1 and 1.5
   bars, drawn 1.25 and 1.5 times the size in darker greens (art to come),
   mixed into the swarms.
+- **weaver** (`rty`), the gallery's moving track: walks down like an alien
+  but sweeps across the streets as it comes, a street every two beats
+  (`weave`), left, centre, right, centre, starting from its chart street.
+  The player has to read where it will be on the next shot. Purple rim.
 - **golden alien** (`zxc`), the gallery's golden duck: lives 2 bars,
   pays `bonus` (shown 1000). It appears halfway up the hill (`depth`) at the
   side its key names and slides across the streets, one street every 3
@@ -133,6 +137,8 @@ read one character a beat from the beat it starts on:
 | `1` `2` `3` | send an alien down the left, middle, right street |
 | `z` `x` `c` | a golden alien: `z` enters from the left, `x` and `c` from the right |
 | `j` `k` `l` | a fleeing civilian down that street |
+| `r` `t` `y` | a weaver starting in that street |
+| `4` `5` `6`, `7` `8` `9` | a brute, a hulk |
 | `q` `w` `e` | open the titan's hot spot over that street for 2.5 beats |
 | `a` `s` `d` | the titan spits down that street; it lands two beats later |
 | anything else | a rest |

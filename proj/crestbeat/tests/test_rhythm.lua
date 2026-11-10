@@ -153,6 +153,16 @@ local function rhythm()
  check("and an alien nearer in its street shields it",front_alien(0) and not front_alien(0).harmless and #aliens==2,"front is "..(front_alien(0).harmless and "gold" or "an alien"))
 
  reset("play")
+ send_alien(-1,0,kinds.weaver)
+ streets=""
+ for beat=-0.6,7.5,2 do
+  clock=beat
+  update_aliens()
+  streets..=aliens[1].lane.." "
+ end
+ check("a weaver walks down sweeping across the streets every two beats",streets=="-1 0 1 0 -1 ","streets "..streets)
+
+ reset("play")
  send_alien(0,0)
  send_alien(0,2,kinds.civilian)
  clock=5.9
