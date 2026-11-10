@@ -46,8 +46,7 @@ drums. With music stubbed (the tests) the clock runs on frames alone.
 manual does not give a note's length, so this is an assumption the sync
 covers.
 
-Every whole beat `on_beat` reads the stage's chart and pulses the lane
-dashes.
+Every whole beat `on_beat` reads the stage's chart.
 
 ## Guns
 
@@ -79,10 +78,12 @@ starting gun; X/O cycle through the list in this order.
 - A hit knocks an alien back up the hill by `knock_per_damage` beats a
   point of damage.
 
-The beat bar along the bottom is a timeline: ticks flow in from the right to
-the box at the left, one a half beat. The active gun's shots are tall ticks
-in its colour, white just before they land; the other half beats are short
-ticks, brighter on whole beats. The gun's name is at the right of the bar.
+The beat is background, for pacing: the user asked for the NecroDancer feel
+softened. What carries it is the music, the aliens hopping on the beat, the
+robot's one-pixel bob and the shots themselves. Along the bottom a thin dim
+timeline shows the gun's next shots as short ticks in its colour flowing to
+a grey mark at the left, with dark dots on whole beats and the gun's name at
+the right. Nothing in it flashes, and the dashes no longer flash either.
 
 ## Aliens
 

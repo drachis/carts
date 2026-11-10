@@ -62,13 +62,12 @@ function draw_ground()
   local right,bottom=project(1.5,t+0.02)
   rectfill(left,top,right,bottom,0)
  end
- local dash=pulse>0.5 and 7 or 10
  for t=scroll%0.2,1.4,0.2 do
   for lane=-0.5,0.5,1 do
    local x1,y1,scale=project(lane,t)
    local x2,y2=project(lane,t+0.09)
    for w=0,scale*2 do
-    line(x1+w,y1,x2+w,y2,dash)
+    line(x1+w,y1,x2+w,y2,10)
    end
   end
  end

@@ -5,10 +5,11 @@
 Keep: the clock follows the music, not the other way round; with music stubbed (tests) it runs on frames alone.
 
 **main.lua:49** `function on_beat(beat)`
-`on_beat` reads one chart character per beat: `1` `2` `3` send an alien down lane -1, 0, 1 (`ord` 49..51); anything else is a rest.
+`on_beat` reads one chart character per beat (`lane_of` turns a character of a three-character set into lane -1, 0, 1): `123` aliens, `qwe` hot spots, `asd` spit; anything else is a rest.
 
 **main.lua:73** `function update_play()`
 `update_play` steps the clock, runs every whole beat it crossed, then the robot, then the aliens. The wave is won when the chart is used up and no alien is left.
 
 **main.lua:136** `function draw_hud()`
-`draw_hud`: hearts top left, multiplier top centre, score top right, the beat bar along the bottom: ticks a beat apart close on the centre box from both sides; the box flashes white on the beat.
+`draw_hud`: hearts top left, multiplier top centre, score top right, a thin dim timeline along the bottom (y 123-127): the gun's shots as short ticks in its colour flowing left to a grey mark, whole beats as dark dots, the gun's name at the right.
+Keep: background, not a NecroDancer bar: nothing in it flashes; the user asked for it softened.

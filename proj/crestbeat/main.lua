@@ -141,19 +141,18 @@ function draw_hud()
  print(text,126-#text*4,3,7)
  if combo>3 then print("x"..multiplier(),56,3,10) end
  local gun=guns[robot.gun]
- rectfill(0,120,127,127,0)
+ rectfill(0,123,127,127,0)
  for k=0,9 do
   local tick=flr(clock*2)/2+k/2
-  local x=10+(tick-clock)*26
+  local x=6+(tick-clock)*20
   if fires_on(gun,tick*2) then
-   rectfill(x,121,x+1,127,tick-clock<0.3 and 7 or gun.colour)
-  else
-   rectfill(x,125,x,127,tick%1==0 and 6 or 5)
+   rectfill(x,125,x,127,gun.colour)
+  elseif tick%1==0 then
+   pset(x,127,1)
   end
  end
- rect(7,120,13,127,pulse>0.5 and 7 or 8)
- rectfill(126-#gun.name*4,120,127,127,0)
- print(gun.name,128-#gun.name*4,121,gun.colour)
+ line(5,124,5,127,5)
+ print(gun.name,128-#gun.name*4,122,gun.colour)
  if mode=="play" and banner_life>0 then
   centred(banner,14,banner_life%16<8 and 10 or 7)
  end
