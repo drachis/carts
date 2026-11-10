@@ -10,5 +10,5 @@ Keep: the clock follows the music, not the other way round; with music stubbed (
 **main.lua:73** `function update_play()`
 `update_play` steps the clock, runs every whole beat it crossed, then the robot, then the aliens. The wave is won when the chart is used up and no alien is left.
 
-**main.lua:135** `function draw_hud()`
+**main.lua:136** `function draw_hud()`
 `draw_hud`: hearts top left, multiplier top centre, score top right, the beat bar along the bottom: ticks a beat apart close on the centre box from both sides; the box flashes white on the beat.

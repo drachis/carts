@@ -128,6 +128,11 @@ hit, a closed one is dark. Spit is telegraphed by a flashing red bar where
 it will land and a glob travelling down the street; it lands on the beat
 and hurts the robot if it is still in that street.
 
+While a titan stands, the horizon (`crest_y`) eases down from `horizon` (40)
+to `titan_horizon` (82), so the road is the bottom third of the screen and
+the titan, lifted with it, stands whole against the sky; it eases back up
+as the titan falls. The road always ends at `hill_bottom` (100).
+
 ## The picture
 
 `project(lane,t)` is the whole perspective: streets close up toward the
@@ -155,11 +160,20 @@ off the screen.
     py run_tests.py --no-comments
     py count_tokens.py crestbeat.p8
 
-- `test_boot`: the real cart from frame one, input and sound stubbed. A bot
-  that steers to the most urgent target and away from spit wins the whole
-  run (`boot_play`, `boot_climb`, `boot_titan`, `boot_queen`, `boot_won`)
-  and presses X then O once each; then a run with no input loses; then a
-  restart. It prints each stage's start beat and hp.
+The whole suite takes about 8 seconds: ten carts in ten PICO-8 windows at
+once (the user: "no harm in running a few dozen pico8 instances", and
+wants all of it in 10s). The boot and stage carts run the game
+`updates_per_frame` (8) times for each frame PICO-8 shows, and draw only
+the last, or when they dump a screen. `tests/bot.lua` stubs the buttons and
+sound and holds the bot.
+
+- `test_boot`: the real cart from its title, X then O once each, a run with
+  no input until it is lost, a restart, and the win screen (`boot_*.png`).
+- `test_stage_1` to `test_stage_8`: each starts a run at one stage
+  (`first_stage`) and lets the bot (steer to the most urgent target, away
+  from spit) play it to its end; the last must end in the win. Each prints
+  its beats and hearts and dumps a screen (`stage_*.png`). The bot never
+  loses a heart: 29, 7, 10, 27, 7, 29, 7 and 26 beats, 71 seconds.
 - `test_rhythm`: each gun's shots a bar; a hit on the beat and its
   knockback; a late arrival inside and outside `good_window`; nothing fired
   and the glow on an empty beat; minigun, pierce and splash damage; a leak;
@@ -169,8 +183,6 @@ off the screen.
 
 ## Still to do, or not checked
 
-- During titan and queen stages, the road should take a third of the screen
-  rather than two thirds, so more of the titan shows against the sky.
 - The art pass, which the user asked to leave to the end: the titan as a
   kaiju lizard-dragon of our own, the small enemies Tyranid-like, sprites
   for each distance, the same readable colours.

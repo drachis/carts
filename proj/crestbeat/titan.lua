@@ -13,7 +13,7 @@ function titan_x()
 end
 
 function titan_y()
- return crest_y-22+(1-titan.rise)*70
+ return crest_y-22-(crest_y-horizon)*0.8+(1-titan.rise)*70
 end
 
 function spot_xy(spot)

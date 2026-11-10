@@ -1,7 +1,7 @@
 function project(lane,t)
  local near=max(t)
  return 64+lane*(12+28*near),
-  crest_y+(t<0 and -t*96 or hill_span*(0.35*t+0.65*t*t)),
+  crest_y+(t<0 and -t*96 or (hill_bottom-crest_y)*(0.35*t+0.65*t*t)),
   0.4+0.6*near
 end
 

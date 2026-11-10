@@ -119,6 +119,16 @@ local function rhythm()
  check("a titan stage is done once its hot spots are all gone",stage_done(),"dead "..tostr(titan.dead))
 
  reset("play")
+ start_stage(3)
+ for i=1,60 do update_play() end
+ check("in a titan fight the road comes down to the bottom third",crest_y>=titan_horizon-2 and 128-crest_y<=128/3+4,"crest at "..flr(crest_y))
+ local head=titan_y()-10
+ check("and the titan stands against the sky",head>=16 and head<crest_y-40,"head at "..flr(head))
+ for spot in all(titan.spots) do hit_spot(spot,99,judgements[1]) end
+ for i=1,60 do update_play() end
+ check("after it the road goes back up",crest_y<horizon+3,"crest at "..flr(crest_y))
+
+ reset("play")
  start_stage(#stages)
  titan.rise=1
  clock=10

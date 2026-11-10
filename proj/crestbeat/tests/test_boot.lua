@@ -1,12 +1,4 @@
-local held={}
-function btn(i) return held[i] or false end
-btnp=btn
-function sfx() end
-dset=sfx
-music=sfx
-
-local seen_stage,stage_start
-local n,phase,phase_start,bot_beat,shots=0,"title",0,nil,{}
+local n,phase,phase_start,done=0,"title",0
 local game_update,game_draw=_update,_draw
 
 local function expect_mode(wanted)
@@ -15,43 +7,26 @@ local function expect_mode(wanted)
  end
 end
 
-local function danger(lane)
- for hazard in all(hazards) do
-  if hazard.lane==lane and hazard.land-clock<1.4 then return true end
- end
-end
-
-local function bot()
- local want
- for alien in all(aliens) do
-  if alien.t>-0.05 then want=alien.lane end
- end
- if not want and titan then
-  for spot in all(titan.spots) do
-   if open_spot_in(spot.lane) then want=spot.lane end
-  end
- end
- if danger(robot.lane) or want and danger(want) then
-  want=nil
-  for lane=-1,1 do
-   if not danger(lane) then want=lane end
-  end
- end
- if not want then return end
- if want!=robot.lane then
-  if n%2==0 then held[want<robot.lane and 0 or 1]=true end
-  return
- end
-end
-
 local function next_phase(name)
  phase,phase_start=name,n
+end
+
+local function dump(name)
+ game_draw()
+ dump_screen(name)
 end
 
 function _draw() end
 
 function _update()
- run_frame(boot_frame)
+ run_frame(boot_frames)
+end
+
+function boot_frames()
+ for i=1,updates_per_frame do
+  if not done then boot_frame() end
+ end
+ game_draw()
 end
 
 function boot_frame()
@@ -61,40 +36,18 @@ function boot_frame()
  if phase=="title" then
   if age==40 then
    held[4]=true
-   next_phase("bot")
-  end
- elseif phase=="bot" then
-  if age==2 then expect_mode("play") end
-  bot()
-  if age==200 then
-   held[5]=true
-  elseif age==202 then
-   if robot.gun!=start_gun%#guns+1 then printh("error: x did not switch to the next gun") end
-   held[4]=true
-  elseif age==204 and robot.gun!=start_gun then
-   printh("error: o did not switch back")
-  end
-  if stage_number!=seen_stage then
-   seen_stage,stage_start=stage_number,n
-   printh("stage "..stage.name.." at beat "..next_beat..", hp "..robot.hp)
-  end
-  if stage_number==2 and n-stage_start==90 then dump_screen("boot_climb") end
-  if stage.name=="titan" and n-stage_start==100 then dump_screen("boot_titan") end
-  if stage.name=="queen" and n-stage_start==300 then dump_screen("boot_queen") end
-  if mode!="play" then
-   expect_mode("won")
-   printh("bot won in "..flr(clock).." beats ("..flr(clock/2).."s), hp "..robot.hp.."/"..max_hp..", score "..score)
-   next_phase("won")
-  elseif age>9000 then
-   printh("error: the bot's run never ended")
-   next_phase("won")
-  end
- elseif phase=="won" then
-  if age==60 then
-   held[4]=true
    next_phase("idle")
   end
  elseif phase=="idle" then
+  if age==2 then
+   expect_mode("play")
+   held[5]=true
+  elseif age==4 then
+   if robot.gun!=start_gun%#guns+1 then printh("error: x did not switch to the next gun") end
+   held[4]=true
+  elseif age==6 and robot.gun!=start_gun then
+   printh("error: o did not switch back")
+  end
   if mode!="play" then
    expect_mode("lost")
    printh("idle run lost in "..flr(clock).." beats")
@@ -103,19 +56,22 @@ function boot_frame()
    printh("error: the idle run never ended")
    next_phase("lost")
   end
- elseif phase=="lost" and age==60 then
+ elseif phase=="lost" and age==40 then
   held[4]=true
   next_phase("again")
+ elseif phase=="again" and age==10 then
+  expect_mode("play")
+  finish("won")
+  next_phase("won")
  end
  game_update()
- game_draw()
- if n==5 then dump_screen("boot_title") end
- if phase=="bot" and age==420 then dump_screen("boot_play") end
- if phase=="won" and age==50 then dump_screen("boot_won") end
- if phase=="idle" and age==500 then dump_screen("boot_hurt") end
- if phase=="lost" and age==50 then dump_screen("boot_lost") end
- if phase=="again" and age==10 then
-  expect_mode("play")
+ if n==5 then dump("boot_title") end
+ if phase=="idle" and age==150 then dump("boot_play") end
+ if phase=="idle" and age==300 then dump("boot_hurt") end
+ if phase=="lost" and age==30 then dump("boot_lost") end
+ if phase=="won" and age==30 then
+  dump("boot_won")
+  done=true
   printh("ok boot")
   extcmd("shutdown")
  end

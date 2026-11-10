@@ -1,7 +1,7 @@
 function reset(new_mode)
  mode=new_mode
  clock,next_beat,combo,score,shake,pulse,ended=0,0,0,0,0,0,0
- scroll,travel_speed=0,0
+ scroll,travel_speed,crest_y=0,0,horizon
  aliens,sparks,rings,popups,beams={},{},{},{},{}
  make_city()
  reset_robot()
@@ -79,6 +79,7 @@ function update_play()
  end
  travel_speed+=((stage.fly and fly_speed or 0)-travel_speed)*0.1
  robot.lift+=((stage.fly and 14 or 0)-robot.lift)*0.1
+ crest_y+=((titan and not titan.dead and titan_horizon or horizon)-crest_y)*0.08
  banner_life=max(banner_life-1)
  update_city()
  update_robot()
