@@ -1,7 +1,7 @@
 function reset(new_mode)
  mode=new_mode
  clock,next_beat,combo,score,shake,pulse,ended=0,0,0,0,0,0,0
- scroll,travel_speed,pickups_sent=0,0,0
+ scroll,travel_speed=0,0
  aliens,sparks,rings,popups,beams={},{},{},{},{}
  make_city()
  reset_robot()
@@ -23,11 +23,11 @@ function start_stage(number)
  hazards,titan={}
  if stage.spot_hp then make_titan(stage) end
  robot.hp=min(robot.hp+(stage.heal or 0),max_hp)
- banner,banner_life=stage.title,120
+ banner,banner_life=stage.title,60
 end
 
 function stage_done()
- if titan then return titan.dead and titan.dead>90 end
+ if titan then return titan.dead and titan.dead>45 end
  return next_beat-stage_beat>=#stage.chart and #aliens==0
 end
 
@@ -57,8 +57,6 @@ function on_beat(beat)
  local code=sub(chart,index+1,index+1)
  local lane=lane_of(code,"123")
  if lane then send_alien(lane,beat) end
- lane=lane_of(code,"456")
- if lane then send_pickup(lane,beat) end
  lane=lane_of(code,"qwe")
  if lane then open_spot(lane,beat) end
  lane=lane_of(code,"asd")
@@ -79,8 +77,8 @@ function update_play()
   on_beat(next_beat)
   next_beat+=1
  end
- travel_speed+=((stage.fly and fly_speed or 0)-travel_speed)*0.05
- robot.lift+=((stage.fly and 14 or 0)-robot.lift)*0.05
+ travel_speed+=((stage.fly and fly_speed or 0)-travel_speed)*0.1
+ robot.lift+=((stage.fly and 14 or 0)-robot.lift)*0.1
  banner_life=max(banner_life-1)
  update_city()
  update_robot()
@@ -97,7 +95,7 @@ function update_play()
  end
 end
 
-function _update60()
+function _update()
  local pressed=btnp(4) or btnp(5)
  if mode=="play" then
   update_play()
@@ -105,15 +103,21 @@ function _update60()
   ended+=1
   clock+=1/frames_per_beat
   if clock%1<1/frames_per_beat then pulse=1 end
-  if pressed and ended>30 then start_play() end
+  if pressed and ended>15 then start_play() end
  end
  update_effects()
 end
 
 function draw_aim()
- local alien=front_alien(robot.lane)
- if alien then
-  local x,y,scale=alien_centre(alien)
+ local target=target_in(robot.lane)
+ if target then
+  local x,y,scale
+  if target.open then
+   x,y=spot_xy(target)
+   scale=0.6
+  else
+   x,y,scale=alien_centre(target)
+  end
   local half=12*scale+2+pulse*2
   for side=-1,1,2 do
    for up=-1,1,2 do
@@ -122,8 +126,8 @@ function draw_aim()
     line(cx,cy,cx,cy-up*3,10)
    end
   end
-  for i=1,alien.hp do
-   circfill(x-alien.hp*3+i*6-3,y-half-4,1,8)
+  for i=1,target.hp do
+   pset(x-target.hp+i*2-1,y-half-3,8)
   end
  end
 end
@@ -136,19 +140,19 @@ function draw_hud()
  print(text,126-#text*4,3,7)
  if combo>3 then print("x"..multiplier(),56,3,10) end
  local gun=guns[robot.gun]
- print(gun.name..(gun.ammo and " "..robot.ammo or ""),2,11,gun.colour)
- rectfill(0,121,127,127,0)
- local fraction=clock%1
- for k=0,4 do
-  local distance=k-fraction
-  if distance>-0.15 then
-   local colour=distance<0.25 and 10 or 6
-   for side=-1,1,2 do
-    rectfill(64+side*distance*16-1,122,64+side*distance*16,126,colour)
-   end
+ rectfill(0,120,127,127,0)
+ for k=0,9 do
+  local tick=flr(clock*2)/2+k/2
+  local x=10+(tick-clock)*26
+  if tick%gun.every==0 then
+   rectfill(x,121,x+1,127,tick-clock<0.3 and 7 or gun.colour)
+  else
+   rectfill(x,125,x,127,tick%1==0 and 6 or 5)
   end
  end
- rect(61,121,67,127,pulse>0.5 and 7 or 8)
+ rect(7,120,13,127,pulse>0.5 and 7 or 8)
+ rectfill(126-#gun.name*4,120,127,127,0)
+ print(gun.name,128-#gun.name*4,121,gun.colour)
  if mode=="play" and banner_life>0 then
   centred(banner,14,banner_life%16<8 and 10 or 7)
  end
@@ -179,17 +183,18 @@ function _draw()
  camera()
  draw_hud()
  if mode=="title" then
-  rectfill(10,46,117,84,0)
+  rectfill(10,46,117,90,0)
   centred("crestbeat",50,8)
   centred("aliens pour over the hill",58,11)
-  centred("shoot them on the beat",64,7)
-  centred("left/right lane  z/x fire",72,6)
-  centred("press z",78,tick_blink() and 10 or 5)
+  centred("your guns fire on the beat:",64,7)
+  centred("be on the right street",70,7)
+  centred("left/right street  z/x gun",76,6)
+  centred("press z",84,tick_blink() and 10 or 5)
  elseif mode!="play" then
   rectfill(24,50,103,76,0)
   centred(mode=="won" and "city saved!" or "the city falls",54,mode=="won" and 11 or 8)
   centred("score "..score_text(),62,7)
-  if ended>30 then centred("press z",70,tick_blink() and 10 or 5) end
+  if ended>15 then centred("press z",70,tick_blink() and 10 or 5) end
  end
 end
 

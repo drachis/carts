@@ -7,7 +7,7 @@ music=sfx
 
 local seen_stage,stage_start
 local n,phase,phase_start,bot_beat,shots=0,"title",0,nil,{}
-local game_update,game_draw=_update60,_draw
+local game_update,game_draw=_update,_draw
 
 local function expect_mode(wanted)
  if mode!=wanted then
@@ -42,11 +42,6 @@ local function bot()
   if n%2==0 then held[want<robot.lane and 0 or 1]=true end
   return
  end
- local nearest=flr(clock+0.5)
- if nearest!=bot_beat and abs(clock-nearest)*frames_per_beat<1 then
-  bot_beat=nearest
-  held[4]=true
- end
 end
 
 local function next_phase(name)
@@ -55,7 +50,7 @@ end
 
 function _draw() end
 
-function _update60()
+function _update()
  run_frame(boot_frame)
 end
 
@@ -71,12 +66,20 @@ function boot_frame()
  elseif phase=="bot" then
   if age==2 then expect_mode("play") end
   bot()
+  if age==200 then
+   held[5]=true
+  elseif age==202 then
+   if robot.gun!=start_gun%#guns+1 then printh("error: x did not switch to the next gun") end
+   held[4]=true
+  elseif age==204 and robot.gun!=start_gun then
+   printh("error: o did not switch back")
+  end
   if stage_number!=seen_stage then
    seen_stage,stage_start=stage_number,n
    printh("stage "..stage.name.." at beat "..next_beat..", hp "..robot.hp)
   end
   if stage_number==2 and n-stage_start==90 then dump_screen("boot_climb") end
-  if stage.name=="titan" and n-stage_start==200 then dump_screen("boot_titan") end
+  if stage.name=="titan" and n-stage_start==100 then dump_screen("boot_titan") end
   if stage.name=="queen" and n-stage_start==300 then dump_screen("boot_queen") end
   if mode!="play" then
    expect_mode("won")

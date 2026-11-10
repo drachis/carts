@@ -1,6 +1,12 @@
 function reset_robot()
- robot={lane=0,x=64,hp=max_hp,hurt=0,recoil=0,lift=0,gun=1,ammo=0}
- last_shot_beat=nil
+ robot={lane=0,x=64,hp=max_hp,hurt=0,recoil=0,lift=0,shots=0,glow=0}
+ equip(start_gun)
+end
+
+function equip(gun)
+ robot.gun=gun
+ robot.last_tick=flr(clock/guns[gun].every)
+ robot.waiting=nil
 end
 
 function update_robot()
@@ -9,82 +15,87 @@ function update_robot()
   robot.lane+=step
   sfx(5)
  end
- robot.x+=(64+robot.lane*40-robot.x)*0.4
- robot.hurt=max(robot.hurt-1)
- robot.recoil*=0.7
- if btnp(4) or btnp(5) then shoot() end
-end
-
-function judge()
- local nearest=flr(clock+0.5)
- local off=abs(clock-nearest)*frames_per_beat
- local grade=nearest!=last_shot_beat and (off<=perfect_window and 1 or off<=good_window and 2) or 3
- if grade<3 then last_shot_beat=nearest end
- return judgements[grade]
-end
-
-function shoot()
- local judgement=judge()
- local gun_x,gun_y=robot.x,93-robot.lift
- sfx(judgement.sound)
- popup(judgement.name,robot.x,76-robot.lift,judgement.colour)
- if judgement.points==0 then
-  combo=0
-  burst(gun_x,gun_y,4,5,1)
-  return judgement
+ local swap=(btnp(5) and 1 or 0)-(btnp(4) and 1 or 0)
+ if swap!=0 then
+  equip((robot.gun+swap-1)%#guns+1)
+  popup(guns[robot.gun].name,robot.x,68-robot.lift,guns[robot.gun].colour)
+  sfx(5)
  end
+ robot.x+=(64+robot.lane*40-robot.x)*0.6
+ robot.hurt=max(robot.hurt-1)
+ robot.glow=max(robot.glow-1)
+ robot.recoil*=0.5
+ update_gun()
+end
+
+function target_in(lane)
+ return front_alien(lane) or open_spot_in(lane)
+end
+
+function update_gun()
+ local tick=flr(clock/guns[robot.gun].every)
+ if tick!=robot.last_tick then
+  robot.last_tick=tick
+  robot.shots+=1
+  if target_in(robot.lane) then
+   fire(judgements[1])
+  else
+   robot.waiting=clock
+   if #aliens>0 then combo=0 end
+   robot.glow=4
+  end
+ elseif robot.waiting and target_in(robot.lane) then
+  if (clock-robot.waiting)*frames_per_beat<=good_window then
+   fire(judgements[2])
+   popup("late",robot.x,76-robot.lift,10)
+  end
+  robot.waiting=nil
+ end
+end
+
+function fire(judgement)
+ robot.waiting=nil
  robot.recoil=3
- local gun,lane,targets=guns[robot.gun],robot.lane,{}
- local spot=open_spot_in(lane)
+ local gun,lane=guns[robot.gun],robot.lane
+ local gun_x,gun_y,targets=robot.x,93-robot.lift,{}
+ sfx(gun.sound)
  if gun.pierce then
   for alien in all(aliens) do
    if alien.lane==lane and alien.t>-0.05 then add(targets,alien) end
   end
-  add(targets,spot)
+  add(targets,open_spot_in(lane))
  else
-  add(targets,front_alien(lane) or spot)
+  add(targets,target_in(lane))
  end
- local splashed={}
+ combo+=1
+ score+=judgement.points*multiplier()
+ for target in all(targets) do
+  strike(target,gun.damage,judgement,gun_x,gun_y,gun)
+ end
  if gun.splash then
-  for side=-1,1,2 do add(splashed,front_alien(lane+side)) end
- end
- for target in all(splashed) do
-  hit_alien(target,1,judgement)
- end
- if #targets>0 then
-  combo+=1
-  score+=judgement.points*multiplier()
-  for target in all(targets) do
-   local x,y
-   if target.open then x,y=spot_xy(target) else x,y=alien_centre(target) end
-   add(beams,{x1=gun_x,y1=gun_y,x2=x,y2=y,colour=judgement.name=="perfect" and 7 or gun.colour,
-    width=gun.damage+(judgement.name=="perfect" and 1 or 0),life=5})
-   if target.open then hit_spot(target,gun.damage,judgement) else hit_alien(target,gun.damage,judgement) end
-  end
-  if gun.ammo then
-   robot.ammo-=1
-   if robot.ammo<=0 then
-    robot.gun=1
-    popup("out of ammo",robot.x,68-robot.lift,8)
-   end
+  for side=-1,1,2 do
+   local alien=front_alien(lane+side)
+   if alien then strike(alien,gun.splash,judgement,gun_x,gun_y,gun) end
   end
  end
- return judgement
 end
 
-function equip(gun)
- robot.gun,robot.ammo=gun,guns[gun].ammo
- popup(guns[gun].label.."!",robot.x,68-robot.lift,guns[gun].colour)
- sfx(6)
+function strike(target,amount,judgement,gun_x,gun_y,gun)
+ local x,y
+ if target.open then x,y=spot_xy(target) else x,y=alien_centre(target) end
+ add(beams,{x1=gun_x,y1=gun_y,x2=x,y2=y,colour=judgement==judgements[1] and gun.colour or 10,
+  width=amount\2,life=4})
+ if gun.splash then ring(x,y,amount*3,9) end
+ if target.open then hit_spot(target,amount,judgement) else hit_alien(target,amount,judgement) end
 end
 
 function multiplier()
- return min(combo\4+1,4)
+ return min(combo\8+1,4)
 end
 
 function hurt_robot(lane)
  robot.hp-=1
- robot.hurt=20
+ robot.hurt=10
  shake+=6
  combo=0
  local x,y=project(lane,1)
@@ -109,6 +120,9 @@ function draw_robot()
  pal()
  if robot.hurt>0 and robot.hurt%4<2 then
   for colour=1,15 do pal(colour,7) end
+ elseif robot.glow>0 then
+  pal(9,guns[robot.gun].colour)
+  pal(10,7)
  end
  sspr(0,64,24,24,robot.x-18,top,36,36)
  pal()

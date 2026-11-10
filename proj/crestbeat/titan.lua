@@ -61,15 +61,15 @@ function land_spit(hazard)
 end
 
 function update_titan()
- titan.rise=min(titan.rise+1/60,1)
+ titan.rise=min(titan.rise+1/30,1)
  for spot in all(titan.spots) do spot.flash=max(spot.flash-1) end
  if titan.dead then
   titan.dead+=1
-  if titan.dead%4==0 then
+  if titan.dead%2==0 then
    burst(titan_x()+rnd(60)-30,titan_y()+rnd(40),6,rnd{8,9,10},2)
    shake+=1
   end
-  titan.rise=1-titan.dead/90
+  titan.rise=1-titan.dead/45
  end
 end
 
