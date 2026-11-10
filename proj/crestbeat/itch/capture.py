@@ -3,8 +3,9 @@ extcmd("rec"), extcmd("video") and extcmd("screen").
 
 usage: py itch/capture.py
 
-Builds tests/cap_main.p8: the game's modules by #include (the cart has room
-for the script), the test bot steering along each stage's plan or golden
+Builds tests/cap_main.p8: the game as tests/capture.lua (gen_cart.py's
+build of it without the plan chevrons and the music sync, which no clip
+shows, so the script fits beside it), the test bot steering along each stage's plan or golden
 route, and itch/cap_main.lua, which films each section for 8 seconds.
 PICO-8 saves to its desktop folder; this moves every crestbeat_* file it
 made there into itch/, by exact name, leaving the user's own files alone.
@@ -19,12 +20,11 @@ import time
 ITCH = os.path.dirname(os.path.abspath(__file__))
 HERE = os.path.dirname(ITCH)
 DESKTOPS = [os.path.expanduser(r"~\OneDrive\Desktop"), os.path.expanduser(r"~\Desktop")]
-MODULES = ["data", "levels", "world", "aliens", "titan", "robot", "payout", "main"]
 
 with open(os.path.join(HERE, "crestbeat.p8"), encoding="utf-8") as handle:
     data = "__gfx__" + handle.read().split("__gfx__", 1)[1]
 code = 'log_name="cap_main"\n'
-code += "".join("#include ../%s.lua\n" % module for module in MODULES)
+code += "#include capture.lua\n"
 code += "#include dump.lua\n#include bot.lua\n#include ../itch/cap_main.lua\n"
 cart = os.path.join(HERE, "tests", "cap_main.p8")
 with open(cart, "w", encoding="utf-8", newline="\n") as handle:

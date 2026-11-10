@@ -11,3 +11,4 @@ run.txt
 tests/lite.lua
 tests/play.lua
 tests/boot.lua
+tests/capture.lua

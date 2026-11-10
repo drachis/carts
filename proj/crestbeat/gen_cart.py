@@ -161,6 +161,7 @@ BUILDS = {
     "play.lua": ["draw_title"],
     "boot.lua": ["hit_spot", "ring_lamp", "lamps_lit", "update_titan", "spit", "land_spit", "open_spot",
                  "draw_hazards"],
+    "capture.lua": ["draw_plan", "chevron", "sync_clock"],
 }
 
 
