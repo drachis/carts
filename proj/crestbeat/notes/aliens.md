@@ -11,5 +11,5 @@ Keep: the user asked for the golden alien to start midway up the hill and move a
 A killed alien becomes a body in `fallen` that tips over backwards like a shooting-gallery target: its sprite squashes from the feet over 5 frames to a sliver, goes to its kind's dark colour, and is gone after 24 frames. Its sound is the knockdown clack (sfx 3). Ages in the draw.
 Keep: the user asked for gallery knockdowns that clack.
 
-**aliens.lua:90** `function draw_aliens(behind)`
+**aliens.lua:91** `function draw_aliens(behind)`
 `draw_aliens(behind)` is called twice: for aliens still behind the crest (clipped at the crest, so they rise over it, in front of a titan), and for the rest. `kind_colours` swaps the sprite's green for the kind's colours.

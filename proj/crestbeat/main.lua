@@ -21,7 +21,7 @@ function start_stage(number)
  stage_number,stage=number,stages[number]
  stage_beat=next_beat
  hazards,titan={}
- if stage.spot_hp then make_titan(stage) end
+ if stage.bars then make_titan(stage) end
  robot.hp=min(robot.hp+(stage.heal or 0),max_hp)
  banner,banner_life=stage.title,60
 end
@@ -132,8 +132,9 @@ function draw_aim()
   if target.penalty then
    print("!",x-1,y-half-7,8)
   else
-   for i=1,target.hp do
-    pset(x-target.hp+i*2-1,y-half-3,8)
+   local pips=ceil(target.hp/4)
+   for i=1,pips do
+    pset(x-pips+i*2-1,y-half-3,8)
    end
   end
  end

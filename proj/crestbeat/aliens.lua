@@ -1,7 +1,7 @@
 function send_alien(lane,beat,kind)
  kind=kind or kinds[1]
  local dir=lane<0 and 1 or -1
- add(aliens,setmetatable({lane=lane,pos=lane,start=-2*dir,dir=dir,born=beat,hp=kind.hp,flash=0,t=-1},kind))
+ add(aliens,setmetatable({lane=lane,pos=lane,start=-2*dir,dir=dir,born=beat,hp=kind.bars*8,flash=0,t=-1},kind))
 end
 
 function update_aliens()
@@ -51,7 +51,7 @@ function hit_alien(alien,amount,judgement)
  alien.born+=amount*knock_per_damage*judgement.knock
  local x,y,scale=alien_centre(alien)
  burst(x,y,4,judgement.colour,2)
- if alien.hp<=0 then
+ if alien.hp<0.01 then
   del(aliens,alien)
   burst(x,y,12,alien.body,2)
   shake+=2
@@ -84,6 +84,7 @@ end
 
 function alien_centre(alien)
  local x,y,scale=project(alien.pos,alien.t)
+ scale*=alien.size
  return x,y-12*scale,scale
 end
 
@@ -91,7 +92,7 @@ function draw_aliens(behind)
  for alien in all(aliens) do
   if (alien.t<0)==behind then
    local x,y,scale=project(alien.pos,alien.t)
-   local size=24*scale
+   local size=24*scale*alien.size
    local lift=alien.hop<0.34 and sin(alien.hop*1.5)*6*scale or 0
    kind_colours(alien)
    if alien.flash>0 then

@@ -1,5 +1,5 @@
 local game_draw=_draw
-local alien_hp,walk_beats=kinds.alien.hp,kinds.alien.walk
+local alien_hp,walk_beats,spot_hp=kinds.alien.bars*8,kinds.alien.walk,stages[3].bars*8/3
 function sfx() end
 music=sfx
 
@@ -80,7 +80,7 @@ local function rhythm()
 
  name=armed(3,{-1,0,1})
  step_to(6.01)
- check(name.." kill their target and splash the streets beside",#aliens==2 and aliens[1].hp==alien_hp-guns[3].splash,#aliens.." left, hp "..aliens[1].hp)
+ check(name.." kill their target and splash the streets beside",#aliens==2 and aliens[1].hp==alien_hp-guns[3].damage*guns[3].splash,#aliens.." left, hp "..aliens[1].hp)
  check("a killed alien is knocked down where it stood",#fallen==1 and fallen[1].x==64,#fallen.." down")
  game_draw()
  game_draw()
@@ -104,14 +104,38 @@ local function rhythm()
  update_aliens()
  check("a golden alien stays on screen for 12 beats",stayed==1 and #aliens==0,stayed.." at beat 12, "..#aliens.." at 13")
  check("and getting away costs nothing",robot.hp==max_hp,"hp "..robot.hp)
+ for kind in all(kinds) do
+  if not kind.penalty then
+   local counts,wanted="",""
+   for gun in all(guns) do
+    reset("play")
+    send_alien(0,0,kind)
+    local shots=0
+    while #aliens>0 and shots<99 do
+     hit_alien(aliens[1],gun.damage,judgements[1])
+     shots+=1
+    end
+    counts..=shots.." "
+    wanted..=ceil(kind.bars*gun.shots-0.001).." "
+   end
+   check("a "..kind.name.." lives for "..kind.bars.." bars of any gun's fire",counts==wanted,"shots "..counts.."for "..wanted)
+  end
+ end
  reset("play")
  send_alien(0,0,kinds.gold)
- clock=3
- update_aliens()
- for i=1,kinds.gold.hp/2 do
-  hit_alien(aliens[1] or {},2,judgements[1])
+ hit_alien(aliens[1],99,judgements[1])
+ check("a golden alien pays its bonus",score==kinds.gold.bonus,"score "..score)
+ reset("play")
+ start_stage(#stages)
+ local shots=0
+ for spot in all(titan.spots) do
+  spot.open=99
+  while spot.hp>0 do
+   hit_spot(spot,guns[2].damage,judgements[1])
+   shots+=1
+  end
  end
- check("a golden alien takes twice the hits and pays its bonus",#aliens==0 and score==kinds.gold.bonus,"score "..score)
+ printh("the queen takes "..shots.." shock rifle shots, "..(shots/guns[2].shots).." bars (asked for "..stages[#stages].bars..")")
  reset("play")
  send_alien(-1,0,kinds.gold)
  local streets=""
@@ -164,14 +188,14 @@ local function rhythm()
  clock=3.9
  equip(2)
  step_to(4.01)
- check("a shot at an open hot spot hurts it",spot.hp==stages[3].spot_hp-2,"hp "..spot.hp)
+ check("a shot at an open hot spot hurts it",spot.hp==spot_hp-2,"hp "..spot.hp)
  reset("play")
  start_stage(3)
  spot=titan.spots[2]
  clock=3.9
  equip(2)
  step_to(4.01)
- check("a closed hot spot cannot be hurt",spot.hp==stages[3].spot_hp,"hp "..spot.hp)
+ check("a closed hot spot cannot be hurt",spot.hp==spot_hp,"hp "..spot.hp)
 
  reset("play")
  start_stage(3)

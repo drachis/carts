@@ -70,7 +70,7 @@ function fire(judgement)
  if gun.splash then
   for side=-1,1,2 do
    local alien=front_alien(lane+side)
-   if alien then strike(alien,gun.splash,judgement,gun_x,gun_y,gun) end
+   if alien then strike(alien,gun.damage*gun.splash,judgement,gun_x,gun_y,gun) end
   end
  end
 end

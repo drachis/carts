@@ -1,7 +1,7 @@
 function make_titan(spec)
  titan={rise=0,spots={},colour=spec.colour}
  for lane=-1,1 do
-  add(titan.spots,{lane=lane,hp=spec.spot_hp,open=-1,flash=0})
+  add(titan.spots,{lane=lane,hp=spec.bars*8/3,open=-1,flash=0})
  end
  for building in all(buildings) do
   if building.t<0.45 then building.fall_at=clock+2+rnd(10) end
@@ -31,11 +31,12 @@ function open_spot_in(lane)
 end
 
 function hit_spot(spot,amount,judgement)
- spot.hp=max(spot.hp-amount)
+ spot.hp-=amount
  spot.flash=6
  local x,y=spot_xy(spot)
  burst(x,y,8,judgement.colour,2)
- if spot.hp==0 then
+ if spot.hp<0.01 then
+  spot.hp=0
   burst(x,y,30,9,3)
   ring(x,y,16,10)
   shake+=4

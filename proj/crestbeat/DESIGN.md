@@ -54,16 +54,20 @@ X is the next gun, O the one before; left/right change street. There is no
 fire button. Each gun's `pattern` is a 4/4 bar in eighth notes, an `x` for
 each eighth it fires on, to mix up the rhythm:
 
-| Gun | Pattern | Damage | Special |
-|---|---|---|---|
-| minigun | `xxxxxxxx` every eighth | 1 | |
-| shock rifle | `x.x.x.x.` every beat | 2 | no pierce (the user found it looked and felt wrong) |
-| rockets | `x...x...` beats 1 and 3 | 4 | 2 to the front alien in each street beside |
-| flak cannon | `x.x.x...` the user's 3/4, `123_` | 3 | |
-| plasma rifle | `x.x.xxx.` the user's `12_123`: two long, three short | 2 | |
+| Gun | Pattern | Special |
+|---|---|---|
+| minigun | `xxxxxxxx` every eighth | |
+| shock rifle | `x.x.x.x.` every beat | no pierce (the user found it looked and felt wrong) |
+| rockets | `x...x...` beats 1 and 3 | half a shot's damage to the front alien in each street beside |
+| flak cannon | `x.x.x...` the user's 3/4, `123_` | |
+| plasma rifle | `x.x.xxx.` the user's `12_123`: two long, three short | |
 
-An alien has 4 health, so the shock rifle and rockets kill a lone alien in
-two beats, the user's "shoot shoot, 2 beats". The shock rifle is the
+**Health is in bars**, as the user asked: an enemy's `bars` is how long it
+lives under fire, whatever the gun. Health is `bars*8`, and a gun's shot
+does `8/shots`, its shots being the `x`s in its pattern, so every gun does
+one bar of health a bar. A swarm alien lives half a bar (two beats, the
+user's "shoot shoot, 2 beats"); with a gun that fires off the bar's grid
+(flak, plasma) a kill rounds up to the next shot. The shock rifle is the
 starting gun; X/O cycle through the list in this order.
 
 - **On the beat:** if there is a target in the robot's street (the front
@@ -95,8 +99,11 @@ intention.
 - **alien** (`123`): sent on a beat, rises over the crest on that beat, then
   hops down the street one hop a beat for `walk` (8) beats. `t` is its
   depth: 0 at the crest, 1 at the bottom of the hill. At `t>=1` it is gone
-  and the robot loses a heart; at 0 the run is lost.
-- **golden alien** (`zxc`), the gallery's golden duck: double health (8),
+  and the robot loses a heart; at 0 the run is lost. Lives half a bar.
+- **brute** (`456`) and **hulk** (`789`): the same walk, living 1 and 1.5
+  bars, drawn 1.25 and 1.5 times the size in darker greens (art to come),
+  mixed into the swarms.
+- **golden alien** (`zxc`), the gallery's golden duck: lives 2 bars,
   pays `bonus` (shown 1000). It appears halfway up the hill (`depth`) at the
   side its key names and slides across the streets, one street every 3
   beats (`track`), on screen for 12 beats, so there is time to clear the
@@ -133,16 +140,20 @@ read one character a beat from the beat it starts on:
 A swarm stage is done when its chart is played and no alien is left. A
 stage with `fly` lifts the robot on its jets and slides the city toward it
 (`fly_speed`); buildings that pass the robot come round again at the crest,
-standing. A stage with `spot_hp` is a titan: its chart loops until its
-three hot spots are gone, then it sinks in flames for 1.5 seconds. The last
-stage done is the win. Each stage shows its `title` as a banner; `heal`
-gives back hearts.
+standing. A stage with `bars` is a titan: it lives that many bars of fire
+(the titan 4, the queen 6), shared between its three hot spots, and its
+chart loops until they are gone; then it sinks in flames for 1.5 seconds.
+Each spot rounds up to whole shots, so with the shock rifle the titan takes
+4.5 bars and the queen exactly 6. The last stage done is the win. Each stage
+shows its `title` as a banner; `heal` gives back hearts.
 
-The run: the hill swarm, a climb, the titan, the streets swarm (one heart
-back), a climb, the crest swarm (clusters: two aliens down one street in a
-row), a climb, and the hive queen (pink, eight health a hot spot, aliens and
-spit between; one heart back). The bot, which steers perfectly, wins in 149
-beats, 74 seconds; a person takes longer, since only hits move things on.
+The run: the hill swarm (one brute), a climb, the titan, the streets swarm
+with civilians, a brute and a golden alien (one heart back), a climb, the
+crest swarm (clusters, a hulk, a brute, two golden aliens), a climb, and
+the hive queen (pink, aliens and spit between hot spots; one heart back).
+The bot, which steers perfectly, takes 31, 7, 31, 37, 7, 38, 7 and 43 beats,
+about 100 seconds, and loses two hearts in the crest swarm; a person takes
+longer, since only hits move things on.
 
 ## The titan
 
@@ -202,7 +213,8 @@ sound and holds the bot.
   loses a heart: 29, 7, 10, 27, 7, 29, 7 and 26 beats, 71 seconds.
 - `test_rhythm`: each gun fires on exactly its pattern's eighths; a hit on the beat and its
   knockback; a late arrival inside and outside `good_window`; nothing fired
-  and the glow on an empty beat; minigun, front-only and splash damage; a leak;
+  and the glow on an empty beat; minigun, front-only and splash damage; that
+  every kind lives exactly its bars under every gun; a leak;
   the chart; open and closed hot spots; spit in and out of its street; when
   a swarm and a titan stage are done; the titan and rising aliens read off
   the screen.
