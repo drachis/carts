@@ -245,7 +245,7 @@ as the titan falls. The road always ends at `hill_bottom` (100).
 `project(lane,t)` is the whole perspective: streets close up toward the
 crest and the road falls away more steeply near the robot. Draw order: sky
 and skyline, the ground, the road and its dashes, buildings behind the
-crest, the titan (clipped at `crest_y+4`, so it stands behind the crest),
+crest, the titan (clipped at `crest_y+6`, so it stands on the crest),
 aliens still behind the crest (clipped at `crest_y`, so they rise in front
 of the titan), the other buildings far to near, spit, aliens far to near,
 the aim, the robot, effects, HUD, beat bar. `test_rhythm` reads both clips
@@ -266,14 +266,17 @@ civilians white and brown, the robot red, the giants their own colours.
   with the largest that fits the size its depth asks for; brutes and hulks
   reach the larger ones. A kind's colours are swapped in with `pal`.
 - **The giant** is a set of parts, after witchcap's hut: a torso (40x32), a
-  head with its jaw shut or open (24x20, open just after it spits), wings
-  behind (16x24, the right one mirrored), hands and feet (8x8, 16x8), all
-  drawn 1:1, and arms and legs as solid limbs between them, rows of filled
-  circles with one outline (`draw_limb`). Its feet stomp in turn on the
-  beat, its arms swing, it bobs on the beat, its head turns a little toward
-  the robot, and its wings sit further back, moving less as it sways. Its
-  body colour is swapped per giant. The hot spots sit on its chest and
-  shoulders, with the bell's lamps above them.
+  head with its jaw shut or open (24x20, open just after it spits), hands
+  and feet (8x8, 16x8), all drawn 1:1, and arms and legs as solid limbs
+  between them, rows of filled circles with one outline (`draw_limb`). Its
+  feet stand on the road at the crest and stomp in turn on the beat, its
+  arms swing, it bobs on the beat and its head turns a little toward the
+  robot. Its wings are drawn as the wyrm games draw theirs (wyrmdeep): an
+  arm out to a wrist, four finger bones fanning from it in the body's
+  colour, and the membrane as lines from the wrist to scalloped points
+  between them, flapping once every two beats; they sit further back,
+  moving less as it sways. Its body colour is swapped per giant. The hot
+  spots sit on its chest and shoulders, with the bell's lamps above them.
 
 ## The ticket payout
 

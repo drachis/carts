@@ -301,6 +301,23 @@ local function rhythm()
  local below=pget(64,crest_y+10)
  check("the queen stands behind the crest, not on the road",below!=titan.colour and below!=2,"colour "..below)
  dump_screen("rhythm_queen")
+ local function wing_rows()
+  local top
+  for y=0,crest_y do
+   for x=30,48 do
+    if pget(x,y)==2 and not top then top=y end
+   end
+  end
+  return top or -1
+ end
+ aliens={}
+ clock=10.5
+ game_draw()
+ local up=wing_rows()
+ clock=11.5
+ game_draw()
+ local down=wing_rows()
+ check("the giant's wings flap",up>=0 and down>=0 and abs(up-down)>=4,"wing tops at "..up.." and "..down)
 
  printh("ok rhythm")
  extcmd("shutdown")

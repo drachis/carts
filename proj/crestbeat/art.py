@@ -155,16 +155,6 @@ def kaiju_head(open_jaw):
     return figure
 
 
-def kaiju_wing():
-    """One wing, 16x24, the left; ribbed membrane folded behind a shoulder."""
-    return [
-        (triangle((1.0, 0.5), (0.0, 0.0), (0.2, 1.0)), "2"),
-        (capsule(1.0, 0.5, 0.05, 0.05, 0.05), "1"),
-        (capsule(0.9, 0.55, 0.15, 0.6, 0.035), "1"),
-        (capsule(0.9, 0.6, 0.3, 0.95, 0.035), "1"),
-    ]
-
-
 def kaiju_claw():
     """A hand, 8x8: three hooked talons."""
     return [

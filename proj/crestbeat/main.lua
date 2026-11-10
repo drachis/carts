@@ -207,7 +207,7 @@ function _draw()
  draw_ground()
  draw_buildings(true)
  if titan then
-  clip(0,0,128,crest_y+4)
+  clip(0,0,128,crest_y+6)
   draw_titan()
  end
  clip(0,0,128,crest_y)

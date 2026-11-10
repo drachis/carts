@@ -24,5 +24,5 @@ Keep: the user's rule: one shot on each, a double tap resets, one ring a boss, w
 witchcap's hut's limb: an outline pass and a fill pass of filled circles along a line, tapering. The giant's arms and legs.
 
 **titan.lua:116** `function draw_titan()`
-The giant as parts (after witchcap's hut), each sprite 1:1: wings behind (sheet 104,72), legs as limbs stomping in turn on the beat with feet (88,72), the torso (0,96), arms as limbs with hands (80,72), the head (40,96 shut, 64,96 open for a beat after a spit) turned a little toward the robot. pal(3) swaps the body colour per giant. Hot spots (spot_xy) sit on the chest and shoulders.
+The giant as parts (after witchcap's hut), each sprite 1:1: wings behind, drawn like wyrmdeep's (a wrist, four finger bones, a scalloped membrane of lines; `flap` is a sine over two beats), legs as limbs stomping in turn on the beat with feet (88,72) standing on the road at the crest, the torso (0,96), arms as limbs with hands (80,72), the head (40,96 shut, 64,96 open for a beat after a spit) turned a little toward the robot. pal(3) swaps the body colour per giant. Hot spots (spot_xy) sit on the chest and shoulders.
 Keep: the user asked for the giant to follow witchcap's 2.5D multi-sprite hut, and for sprites drawn at their size over scaled ones.

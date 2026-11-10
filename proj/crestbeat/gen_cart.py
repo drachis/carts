@@ -13,9 +13,9 @@ Symmetrical things are drawn as their left half and mirrored.
                where each lies is swarm_sprites in data.lua)
     robot      24x24 at (0,72) and (24,72), hivefall's mech in red
     civilian   16x16 at (48,72) and (64,72), arms up, fleeing
-    giant      a hand 8x8 at (80,72), a foot 16x8 at (88,72), a wing 16x24
-               at (104,72), the torso 40x32 at (0,96), the head 24x20 at
-               (40,96) and with its jaw open at (64,96) (art.py)
+    giant      a hand 8x8 at (80,72), a foot 16x8 at (88,72), the torso
+               40x32 at (0,96), the head 24x20 at (40,96) and with its jaw
+               open at (64,96) (art.py); its wings are drawn in titan.lua
 
 The music is 120 BPM: sfx speed 15, a note a quarter beat, 32 notes (eight
 beats) a pattern. Channel 0 is the drums, and the game reads its note
@@ -159,7 +159,6 @@ def build_gfx():
     stamp(sheet, bobbed(civilian, 10), 64, 72)
     stamp(sheet, art.outlined(art.render(art.kaiju_claw(), 8, 8, mirror=False)), 80, 72)
     stamp(sheet, art.outlined(art.render(art.kaiju_foot(), 16, 8, mirror=False)), 88, 72)
-    stamp(sheet, art.outlined(art.render(art.kaiju_wing(), 16, 24, mirror=False)), 104, 72)
     stamp(sheet, art.outlined(art.render(art.kaiju_torso(), 40, 32)), 0, 96)
     stamp(sheet, art.outlined(art.render(art.kaiju_head(False), 24, 20)), 40, 96)
     stamp(sheet, art.outlined(art.render(art.kaiju_head(True), 24, 20)), 64, 96)

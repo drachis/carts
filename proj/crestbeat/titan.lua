@@ -117,12 +117,29 @@ function draw_titan()
  local x,y,colour=titan_x(),titan_y(),titan.colour
  local back,beat=(x-64)*0.4,clock%1
  pal(3,colour)
- sspr(104,72,16,24,x-36-back,y-16)
- sspr(104,72,16,24,x+20-back,y-16,16,24,true)
+ local flap=sin(clock/2)
+ for side=-1,1,2 do
+  local shoulder_x,shoulder_y=x-back+side*14,y+2
+  local wrist_x,wrist_y=shoulder_x+side*12,shoulder_y-12+flap*6
+  local tips={}
+  for finger=0,3 do
+   add(tips,{wrist_x+side*(4+finger*7),wrist_y-14+finger*9-flap*(3-finger)*3})
+  end
+  for finger=1,3 do
+   local from,to=tips[finger],tips[finger+1]
+   for along=0,1,0.03 do
+    local scallop=1+sin(along/2)*0.3
+    line(wrist_x,wrist_y,wrist_x+(from[1]+(to[1]-from[1])*along-wrist_x)*scallop,
+     wrist_y+(from[2]+(to[2]-from[2])*along-wrist_y)*scallop,2)
+   end
+  end
+  for tip in all(tips) do line(wrist_x,wrist_y,tip[1],tip[2],colour) end
+  draw_limb(shoulder_x,shoulder_y,wrist_x,wrist_y,3,2,colour)
+ end
  for side=-1,1,2 do
   local lift=flr(clock)%2==(side+1)/2 and (1-beat)*(1-beat)*6 or 0
-  local hip_x,foot_x,foot_y=x+side*9,x+side*15,y+50-lift
-  local knee_x,knee_y=x+side*17,y+38-lift/2
+  local hip_x,foot_x,foot_y=x+side*9,x+side*15,y+45-lift
+  local knee_x,knee_y=x+side*17,y+35-lift/2
   draw_limb(hip_x,y+22,knee_x,knee_y,7,5,colour)
   draw_limb(knee_x,knee_y,foot_x,foot_y,5,4,colour)
   sspr(88,72,16,8,foot_x-8,foot_y-3)
