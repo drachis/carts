@@ -152,6 +152,38 @@ local function screen()
  local glob=pget(gx,gy-8*gscale)
  check("spit is drawn in front of an alien farther up its street",glob==7,"colour "..glob.." over the alien at t "..aliens[1].t)
 
+ reset("play")
+ send_alien(0,0)
+ send_alien(1,0)
+ clock=kinds.alien.walk+1.5
+ update_aliens()
+ check("an alien reaching the robot's street is body-blocked: a heart, but downed; one elsewhere leaks",robot.hp==max_hp-2 and stats.kills==1,"hp "..robot.hp..", downed "..stats.kills)
+
+ reset("play")
+ for i=1,10 do award("kills") end
+ award("golds")
+ award("civilians")
+ award("civilians")
+ start_payout(true)
+ local lowest=panel_y
+ for i=1,200 do
+  update_payout()
+  lowest=min(lowest,panel_y)
+ end
+ local expected=10*payouts.kills.each+payouts.golds.each+2*payouts.civilians.each+payouts.saved.each
+ check("the payout adds up each row at level one and pays tickets on the curve",rows[5].value==expected and tickets==22,rows[5].value.." points, "..tickets.." tickets")
+ check("and dispenses every one",dispensed==tickets and payout_done(),dispensed.." dispensed")
+ check("its panel springs up past its rest and settles",lowest<payout_rest-1 and abs(panel_y-payout_rest)<0.5,"lowest "..lowest..", rests at "..panel_y)
+ reset("play")
+ start_payout(false)
+ check("a run with nothing pays one ticket",tickets==1,tickets.." tickets")
+ local curve=""
+ for share in all({1,0.99,0.5}) do
+  stats.kills_tickets=perfect_points*share
+  start_payout(false)
+  curve..=tickets.." "
+ end
+ check("tickets rise exponentially to 500 for a perfect run only",curve=="500 490 166 ",curve)
  printh("ok screen")
  extcmd("shutdown")
 end

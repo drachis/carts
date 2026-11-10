@@ -28,6 +28,10 @@ function update_aliens()
     popup("got away",robot.x,70,alien.body)
    elseif not alien.harmless then
     hurt_robot(alien.lane)
+    if alien.lane==robot.lane then
+     award("kills",alien.bars*2)
+     popup("blocked",robot.x,70,alien.body)
+    end
    end
   end
  end

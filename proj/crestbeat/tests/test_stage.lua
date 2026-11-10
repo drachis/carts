@@ -23,8 +23,9 @@ end
 local function margins()
  local line,clean,survive="",nil,nil
  for lag=0,8 do
-  local lost=play_stage(first_stage,lag)
+  local lost,_,earned=play_stage(first_stage,lag)
   line..=lag..":"..lost.." "
+  printh("points "..first_stage.." lag "..lag.." "..lost.." "..earned)
   if lost>0 and not clean then clean=lag-1 end
   if lost>=max_hp and not survive then survive=lag-1 end
  end
@@ -48,6 +49,7 @@ local function margins()
   end
   local lost,prizes,earned=play_stage(first_stage,0,true)
   _update_game=real_update
+  printh("points "..first_stage.." golden "..lost.." "..earned)
   local prize=stages[first_stage].bars and "bell" or "golden alien"
   printh("stage "..first_stage.." "..prize.." route: gets "..prizes.." "..prize.." for "..lost.." hearts (designed at most "..stages[first_stage].gold_cost.."), "..earned.." tickets")
   if prizes!=1 then printh("error: the "..prize.." route missed its "..prize) end

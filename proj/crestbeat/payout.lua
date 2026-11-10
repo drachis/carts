@@ -18,12 +18,15 @@ end
 
 function start_payout(won)
  if won then award("saved") end
- rows,tickets,paper={},max(ticket_total(),1),{}
+ local points=ticket_total()
+ rows,paper={},{}
+ tickets=max(1,flr(top_tickets*(2^(ticket_curve*mid(0,points/perfect_points,1))-1)/(2^ticket_curve-1)))
  for row in all(payouts) do
   if stats[row.name]>0 then
    add(rows,{label=row.label,value=stats[row.name.."_tickets"]})
   end
  end
+ add(rows,{label="points",value=points})
  panel_y,panel_vy,payout_age,shown_tickets,dispensed=128,0,0,0,0
 end
 

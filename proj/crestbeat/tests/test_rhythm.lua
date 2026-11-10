@@ -131,24 +131,6 @@ local function rhythm()
  hit_alien(aliens[1],99,judgements[1])
  check("a golden alien pays its bonus",score==kinds.gold.bonus and stats.golds==1 and stats.kills==0,"score "..score)
 
- reset("play")
- for i=1,10 do award("kills") end
- award("golds")
- award("civilians")
- award("civilians")
- start_payout(true)
- local lowest=panel_y
- for i=1,200 do
-  update_payout()
-  lowest=min(lowest,panel_y)
- end
- local expected=10*payouts.kills.each+payouts.golds.each+2*payouts.civilians.each+payouts.saved.each
- check("the payout adds up each row at level one",tickets==expected and #rows==4,tickets.." tickets in "..#rows.." rows, expected "..expected)
- check("and dispenses every one",dispensed==expected and flr(shown_tickets)==expected and payout_done(),dispensed.." dispensed")
- check("its panel springs up past its rest and settles",lowest<payout_rest-1 and abs(panel_y-payout_rest)<0.5,"lowest "..lowest..", rests at "..panel_y)
- reset("play")
- start_payout(false)
- check("a run with nothing pays one ticket",tickets==1,tickets.." tickets")
 
  reset("play")
  start_stage(#stages)

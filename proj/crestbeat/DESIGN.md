@@ -207,14 +207,20 @@ climb, and the hive queen (one heart back). On the plan: 27, 7, 22, 32, 7,
 28, 36, 7 and 39 beats, about 100 seconds; the golden aliens hold a stage
 open until they have crossed.
 
-**Tickets** scale with the level: each payout row's `each` is multiplied by
-the stage's `tickets` (1 the hill, 2, 3, 4 the queen). On the plan, with
-no golden alien and no bell, a whole run pays about 284 tickets, 124 of them
-by the end of the crest (about 75 seconds); one golden alien on top makes
-the user's "150 at 75s, hard but doable". Every bell rung adds about 135;
-every golden alien about 173. So a flawless run without the golden aliens
-reaches about 420, and 500 takes going for every golden alien and winning,
-as the user asked.
+**Points** scale with the level: each payout row's `each` is multiplied by
+the stage's `tickets` (1 the hill, 2, 3, 4 the queen). **Tickets** follow
+an exponential curve of the points, as the user asked: with `p` the share
+of `perfect_points`, `500*(2^(2p)-1)/3`, so only a perfect run pays 500
+(99% of it pays 490, half of it 166). `perfect_points` (601) is what every
+stage's golden or bell route scores (the stage carts print `points N
+golden`). A clean plan win scores 284 and pays 154; the three bells on top
+pay 271; a golden alien or two on top of that, with hearts lost on the way,
+pass 300: the user's "300 with mistakes". Dying at 30 seconds pays about 10.
+
+**Body block** (the user's rule): an alien reaching the bottom in the
+robot's street costs a heart but counts as downed and scores; one reaching
+the bottom in another street leaks, a heart and no points. So chasing a
+golden alien can trade hearts for points by blocking what it lets through.
 
 ## The titan
 
