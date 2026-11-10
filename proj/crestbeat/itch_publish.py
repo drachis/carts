@@ -26,6 +26,25 @@ import urllib.request
 import zipfile
 import re
 
+# Where butler has been found off PATH: the folder the itch app installs it
+# in, and beside PICO-8 (the user keeps it in pico-8/butler-windows-amd64).
+BUTLER_FOLDERS = [
+    os.path.expandvars(r"%APPDATA%\itch\apps\butler"),
+    os.path.expandvars(r"%APPDATA%\itch\broth\butler\versions"),
+    os.path.expandvars(r"%APPDATA%\pico-8\butler-windows-amd64"),
+    os.path.expanduser("~/butler"),
+]
+
+
+def find_butler():
+    """butler.exe (or butler) in one of BUTLER_FOLDERS or the folders under them."""
+    for folder in BUTLER_FOLDERS:
+        for root, _, files in os.walk(folder):
+            for name in ("butler.exe", "butler"):
+                if name in files:
+                    return os.path.join(root, name)
+    return None
+
 
 def load_config(path):
     with open(path, encoding="utf-8") as handle:
@@ -100,9 +119,10 @@ def main():
         builds = [os.path.join(base, b) for b in channels.values() if b.lower().endswith(".zip")]
         return verify(args.verify, builds[0]) if builds else 2
 
-    butler = os.environ.get("BUTLER") or shutil.which("butler")
+    butler = os.environ.get("BUTLER") or shutil.which("butler") or find_butler()
     if not butler:
-        problems.append("butler not found: install it from https://itchio.itch.io/butler, or set BUTLER")
+        problems.append("butler not found on PATH or in the usual folders: set BUTLER to butler.exe, "
+                        "or install it from https://itchio.itch.io/butler")
 
     if args.status:
         if problems:
