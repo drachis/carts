@@ -38,6 +38,35 @@ What it takes from where:
 6. The game is one cart. Test carts may be split.
 7. Lua is edited with the edit tool, not shell scripts.
 
+## The music
+
+The user asked for drum and bass or synthwave, and for it to follow the
+run's emotional beats: verse and chorus matching the game's sections,
+building toward the boss. `gen_cart.py` writes a synthwave song in A minor
+(Am F C G, with F G, Em, Dm and E for the builds) at the game's 120 BPM, a
+section per stage, each looping for as long as its stage lasts:
+
+| Stage | Section |
+|---|---|
+| hill | verse one: an intro (kick and a held sine bass), then the lead over a pumping saw bass |
+| climbs 1 and 2 | a build: half-time drums, a rising arp, a snare roll |
+| titan | chorus one: a drum-and-bass two-step breakbeat, the chorus lead |
+| streets | verse two: new chords (Dm, E) and arps |
+| behemoth | chorus two: an amen-style break and stabbing leads |
+| crest | verse three: the bridge's chords, tension toward the end |
+| last climb | the breakdown: hats only, held bass, a slow sine lead |
+| queen | the last chorus: the amen break, every lead up an octave |
+
+38 patterns from 52 sfx (all the slots the game's own sounds leave).
+`start_stage` queues its section (`stage_music`, which `gen_cart.py` checks
+against the song) and `on_beat` starts it on the next 8-beat boundary,
+where the old section's pattern ends, so the beat clock stays on the drums.
+Channel 0 is drums in every pattern, the breakdown too (soft hats). Drum and
+bass runs near 174 BPM; here its breaks play at the game's 120, which the
+beat clock needs. A recording (`itch/crestbeat_music.wav`, verse one then
+chorus one) measured the verse's strongest pulse at 1 s (kicks on 1 and 3)
+and the chorus's at 0.5 s; it has not been listened to by anyone yet.
+
 ## The beat
 
 `clock` is the song position in beats. It advances `1/frames_per_beat` a
@@ -475,7 +504,7 @@ sound and holds the bot.
 
 ## Still to do, or not checked
 
-- The music has not been heard, and whether `stat(50)` keeps the clock on
+- The music has not been heard by the user, and whether `stat(50)` keeps the clock on
   the drums on the user's machine is untested (the tests stub music).
 - Every number (alien health, window, cadences, charts) is tuned only
   against the bot.

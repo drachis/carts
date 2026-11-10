@@ -74,6 +74,8 @@ end
 swarm_sprites=sprite_sizes"8,0,0/10,16,0/12,36,0/14,60,0/16,88,0/18,0,16/22,36,16/24,80,16/28,0,40/32,56,40"
 civilian_sprites=sprite_sizes"8,64,84/12,64,72/16,48,72/24,104,72"
 
+stage_music=split"0,6,8,16,6,22,26,30,32"
+
 guns=parse_table[[
 name,colour,pattern,splash,sound
 minigun,10,xxxxxxxx,,1

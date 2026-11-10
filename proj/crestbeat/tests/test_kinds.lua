@@ -82,6 +82,15 @@ local function kinds_test()
  clock=kinds.alien.walk+1.5
  update_aliens()
  check("an alien reaching the robot's street is body-blocked: a heart, but downed; one elsewhere leaks",robot.hp==max_hp-2 and stats.kills==1,"hp "..robot.hp..", downed "..stats.kills)
+ reset("play")
+ local played
+ music=function(pattern) played=pattern end
+ start_stage(3)
+ on_beat(5)
+ local early=played
+ on_beat(8)
+ check("a stage's music section starts on the next 8-beat pattern boundary",early==nil and played==stage_music[3] and not queued_music,tostr(early).." then "..tostr(played))
+ music=sfx
  printh("ok kinds")
  extcmd("shutdown")
 end

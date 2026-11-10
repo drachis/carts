@@ -34,19 +34,193 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 GAME = "crestbeat.p8"
 
 REST = (0, 0, 0, 0)
-KICK, HAT, SNARE = (10, 0, 6, 3), (50, 6, 2, 0), (32, 6, 4, 0)
-DRUMS = ([KICK, REST, HAT, REST] + [SNARE, REST, HAT, HAT]) * 4
-BASS = [14, 21, 14, 21, 19, 26, 21, 28, 14, 21, 14, 21, 19, 26, 21, 14]
-TUNE_A = [45, 47, 45, 42, 38, 40, 42, 45, 47, 45, 42, 38, 40, 42, 40, 38]
-TUNE_B = [50, 49, 47, 45, 47, 45, 42, 40, 42, 45, 47, 50, 45, 42, 40, 38]
+# The song: synthwave in A minor at 120 BPM, about three minutes through
+# once, as long as a run, so it barely repeats (the user: "mostly unique for
+# the entire run"). Every music sfx is 32 sixteenths at speed 15, two bars;
+# channel 0 is always drums, which sync_clock follows, so even the
+# breakdown keeps a quiet drum part. Pitches: 12 an octave, C0 = 0, A1 = 21.
+KICK, HAT, OPEN = (10, 0, 7, 3), (50, 6, 2, 0), (48, 6, 3, 5)
+SNARE, TAIL, GHOST = (32, 6, 6, 0), (30, 6, 3, 5), (34, 6, 2, 0)
+SOFT_HAT, ROLL = (50, 6, 1, 0), (36, 6, 5, 0)
 
 
-def eighths(pitches, wave, volume):
-    """Each pitch is an eighth note: struck, then fading, over two quarter beats."""
+def bar(hits):
+    """A bar of sixteen sixteenths from {step: note}, rests elsewhere."""
+    return [hits.get(step, REST) for step in range(16)]
+
+
+ROLL_BAR = bar({0: KICK, 2: SNARE, 4: SNARE, 6: KICK, 8: SNARE, 9: SNARE, 10: SNARE, 11: SNARE,
+                12: ROLL, 13: (34, 6, 5, 0), 14: (32, 6, 4, 0), 15: OPEN})
+VERSE_BAR = bar({0: KICK, 2: HAT, 4: SNARE, 5: TAIL, 6: HAT, 8: KICK, 10: HAT, 11: KICK, 12: SNARE,
+                 13: TAIL, 14: OPEN})
+BREAK_BAR = bar({0: KICK, 1: HAT, 2: HAT, 3: HAT, 4: SNARE, 5: TAIL, 6: HAT, 7: GHOST, 9: HAT, 10: KICK,
+                 11: HAT, 12: SNARE, 13: TAIL, 14: HAT, 15: GHOST})
+AMEN_BAR = bar({0: KICK, 1: HAT, 2: KICK, 3: HAT, 4: SNARE, 5: HAT, 6: GHOST, 7: SNARE, 8: HAT, 9: GHOST,
+                10: KICK, 11: KICK, 12: SNARE, 13: HAT, 14: GHOST, 15: SNARE})
+DRUMS = {
+    "intro": bar({0: KICK, 8: KICK, 12: SOFT_HAT}) * 2,
+    "verse": VERSE_BAR * 2,
+    "verse fill": VERSE_BAR + ROLL_BAR,
+    "break": BREAK_BAR * 2,
+    "break fill": BREAK_BAR + ROLL_BAR,
+    "amen": BREAK_BAR + AMEN_BAR,
+    "half": bar({0: KICK, 4: HAT, 8: SNARE, 9: TAIL, 12: HAT, 14: KICK}) * 2,
+    "hats": bar({0: SOFT_HAT, 4: SOFT_HAT, 8: SOFT_HAT, 12: SOFT_HAT, 14: SOFT_HAT}) * 2,
+}
+CHORDS = {"am": (21, [45, 48, 52, 57]), "f": (17, [45, 48, 53, 57]), "c": (24, [48, 52, 55, 60]),
+          "g": (19, [47, 50, 55, 59]), "em": (16, [47, 52, 55, 59]), "dm": (14, [50, 53, 57, 62]),
+          "e": (16, [47, 52, 56, 59])}
+
+
+def bass(first, second):
+    """Outrun bass: pumping sixteenths on the root, the octave on the third of each beat."""
     notes = []
-    for pitch in pitches:
-        notes += [(pitch, wave, volume, 0), (pitch, wave, volume, 5)]
+    for name in (first, second):
+        root = CHORDS[name][0]
+        notes += [(root, 2, 5, 0), (root, 2, 3, 5), (root + 12, 2, 4, 0), (root, 2, 3, 5)] * 4
     return notes
+
+
+def held(first, second):
+    """A bar-long bass note a chord, a sine that swells in and fades out."""
+    notes = []
+    for name in (first, second):
+        root = CHORDS[name][0] + 12
+        notes += [(root, 0, 5, 4)] + [(root, 0, 5, 0)] * 14 + [(root, 0, 5, 5)]
+    return notes
+
+
+def arp(first, second, order=(0, 1, 2, 3, 2, 1, 2, 3), wave=4, lift=0):
+    """A sixteenth-note arpeggio through the chord's tones."""
+    notes = []
+    for name in (first, second):
+        tones = CHORDS[name][1]
+        notes += [(tones[step] + lift, wave, 2, 0) for step in order * (16 // len(order))]
+    return notes
+
+
+def lead(phrase, wave=1, lift=0):
+    """A held lead: each (pitch, sixteenths) struck, then sung with vibrato, fading at its end."""
+    notes = []
+    for pitch, length in phrase:
+        for step in range(length):
+            effect = 0 if step == 0 else 5 if step == length - 1 and length > 2 else 2
+            notes.append((pitch + lift, wave, 4, effect))
+    assert len(notes) == 32, phrase
+    return notes
+
+
+UP = (0, 1, 2, 3)
+LEADS = {
+    "verse a": [(57, 6), (55, 2), (52, 4), (55, 2), (57, 2), (53, 8), (52, 4), (50, 2), (48, 2)],
+    "verse b": [(52, 6), (55, 2), (60, 4), (59, 2), (55, 2), (55, 8), (50, 4), (52, 2), (55, 2)],
+    "verse c": [(57, 4), (60, 4), (59, 2), (57, 2), (55, 4), (53, 6), (57, 2), (60, 8)],
+    "verse d": [(64, 4), (62, 2), (60, 2), (59, 8), (55, 4), (57, 2), (59, 2), (55, 8)],
+    "chorus a": [(52, 4), (50, 2), (48, 2), (45, 6), (48, 2), (53, 4), (52, 2), (50, 2), (48, 6), (45, 2)],
+    "chorus b": [(55, 4), (53, 2), (52, 2), (48, 6), (52, 2), (50, 4), (52, 2), (55, 2), (50, 8)],
+    "stab a": [(57, 2), (57, 2), (60, 2), (57, 2), (64, 4), (62, 2), (60, 2), (53, 2), (53, 2), (57, 2),
+               (53, 2), (60, 4), (57, 4)],
+    "stab b": [(55, 2), (55, 2), (60, 2), (55, 2), (64, 4), (62, 2), (60, 2), (59, 2), (59, 2), (62, 2),
+               (59, 2), (62, 4), (55, 4)],
+    "low a": [(62, 8), (60, 4), (57, 4), (57, 12), (55, 4)],
+    "low b": [(60, 8), (57, 4), (53, 4), (56, 12), (59, 4)],
+}
+
+
+def top(name, **options):
+    return lead(LEADS[name], **options)
+
+
+# The song follows the run (the user: verse and chorus matching the game's
+# sections, building towards the boss): a section per stage, each looping
+# from its "loop" pattern for as long as the stage lasts; main.lua switches
+# section on the next 8-beat pattern boundary. Swarms are verses, giants
+# choruses, climbs builds; the last climb drops to a breakdown before the
+# queen's chorus, everything up an octave. A pattern is (drums, bass, top
+# line), 8 beats, 4 seconds; "loop" marks where a section's loop starts.
+VERSE_ONE = [("intro", held("am", "f"), None),
+             ("intro", held("c", "g"), arp("c", "g", UP)),
+             "loop",
+             ("verse", bass("am", "f"), top("verse a")),
+             ("verse", bass("c", "g"), top("verse b")),
+             ("verse", bass("am", "f"), top("verse c")),
+             ("verse fill", bass("c", "g"), top("verse d"))]
+BUILD = ["loop",
+         ("half", bass("f", "g"), arp("f", "g", UP, lift=12)),
+         ("break fill", bass("e", "e"), arp("e", "e", UP, lift=12))]
+CHORUS_ONE = ["loop",
+              ("break", bass("am", "f"), top("chorus a")),
+              ("break", bass("c", "g"), top("chorus b")),
+              ("break", bass("am", "f"), top("chorus a")),
+              ("break fill", bass("c", "g"), top("chorus b")),
+              ("break", bass("am", "f"), arp("am", "f", lift=12)),
+              ("break", bass("c", "g"), arp("c", "g", lift=12)),
+              ("amen", bass("f", "g"), top("stab b")),
+              ("break fill", bass("am", "am"), top("stab a"))]
+VERSE_TWO = ["loop",
+             ("verse", bass("am", "f"), top("verse a", wave=3)),
+             ("verse", bass("c", "g"), top("verse b", wave=3)),
+             ("verse", bass("dm", "am"), arp("dm", "am")),
+             ("verse fill", bass("f", "e"), arp("f", "e", UP)),
+             ("verse", bass("f", "g"), arp("f", "g")),
+             ("verse fill", bass("em", "am"), arp("em", "am", UP))]
+CHORUS_TWO = ["loop",
+              ("amen", bass("am", "f"), top("stab a")),
+              ("amen", bass("c", "g"), top("stab b")),
+              ("amen", bass("am", "f"), top("chorus a", lift=12)),
+              ("break fill", bass("c", "g"), top("chorus b", lift=12))]
+VERSE_THREE = ["loop",
+               ("verse", bass("f", "c"), arp("f", "c", UP)),
+               ("verse", bass("dm", "e"), arp("dm", "e", UP)),
+               ("verse fill", bass("f", "c"), top("verse c")),
+               ("amen", bass("dm", "e"), top("low b"))]
+BREAKDOWN = ["loop",
+             ("hats", held("dm", "am"), top("low a", wave=0)),
+             ("break fill", held("f", "e"), arp("f", "e", UP, lift=12))]
+LAST_CHORUS = ["loop",
+               ("amen", bass("am", "f"), top("chorus a", lift=12)),
+               ("amen", bass("c", "g"), top("chorus b", lift=12)),
+               ("amen", bass("am", "f"), top("stab a", lift=12)),
+               ("amen", bass("c", "g"), top("stab b", lift=12)),
+               ("break", bass("f", "g"), arp("f", "g", lift=12)),
+               ("break fill", bass("am", "am"), arp("am", "am", UP, lift=12))]
+# a section per stage, in levels.py's order; a section used twice is one copy
+STAGE_SECTIONS = [VERSE_ONE, BUILD, CHORUS_ONE, VERSE_TWO, BUILD, CHORUS_TWO, VERSE_THREE, BREAKDOWN,
+                  LAST_CHORUS]
+GAME_SOUND_IDS = set(range(0, 8)) | set(range(12, 16))
+
+
+def song():
+    """The music sfx (speed 15, deduplicated) as {id: notes}, the __music__
+    lines, and each stage's first pattern (data.lua's stage_music)."""
+    free = [n for n in range(64) if n not in GAME_SOUND_IDS]
+    ids, sounds, lines, starts, placed = {}, {}, [], [], {}
+    for section in STAGE_SECTIONS:
+        if id(section) in placed:
+            starts.append(placed[id(section)])
+            continue
+        placed[id(section)] = len(lines)
+        starts.append(len(lines))
+        patterns = [entry for entry in section if entry != "loop"]
+        loop_at = section.index("loop")
+        for index, (drums, low, high) in enumerate(patterns):
+            channels = []
+            for notes in (DRUMS[drums], low, high):
+                if notes is None:
+                    channels.append(0x40)
+                    continue
+                key = tuple(notes)
+                if key not in ids:
+                    assert free, "the song needs more than 64 sfx"
+                    ids[key] = free.pop(0)
+                    sounds[ids[key]] = notes
+                channels.append(ids[key])
+            flag = (1 if index == loop_at else 0) | (2 if index == len(patterns) - 1 else 0)
+            lines.append("%02x %02x%02x%02x40" % ((flag,) + tuple(channels)))
+    return sounds, lines, starts
+
+
+MUSIC_SOUNDS, MUSIC, STAGE_MUSIC = song()
 
 
 # (speed, notes); a note is (pitch 0..63, waveform, volume, effect)
@@ -59,23 +233,17 @@ SOUNDS = [
     (2, [(30, 0, 2, 0), (34, 0, 2, 0)]),                                      # 5 lane step
     (8, [(38, 1, 5, 0), (42, 1, 5, 0), (45, 1, 5, 0), (50, 1, 6, 0), (50, 1, 4, 5)]),  # 6 hill clear
     (10, [(26, 2, 5, 0), (25, 2, 5, 0), (24, 2, 5, 0), (20, 2, 5, 5)]),       # 7 fallen
-]
-while len(SOUNDS) < 8:
-    SOUNDS.append((1, []))
-SOUNDS += [
-    (15, DRUMS),                                                              # 8 drums
-    (15, eighths(BASS, 0, 5)),                                                # 9 bass
-    (15, eighths(TUNE_A, 1, 3)),                                              # 10 tune a
-    (15, eighths(TUNE_B, 1, 3)),                                              # 11 tune b
+    None, None, None, None,                                                   # 8-11 music
     (4, [(18, 6, 7, 0), (14, 6, 6, 0), (10, 6, 5, 0), (8, 6, 4, 0), (6, 6, 2, 0)]),  # 12 rocket
     (3, [(57, 0, 6, 0), (57, 0, 4, 0), (57, 0, 2, 0)]),                       # 13 bell lamp
     (6, [(62, 0, 7, 0), (57, 0, 6, 0), (62, 0, 6, 0), (57, 0, 5, 0), (62, 0, 4, 0),
          (57, 0, 3, 0), (62, 0, 2, 0)]),                                      # 14 bell rings
     (1, [(44, 6, 5, 0), (30, 3, 4, 0), (20, 3, 2, 0)]),                       # 15 ticket ka-chunk
 ]
-# "FF AABBCCDD": flags (1 loop start, 2 loop end), then the sfx on each
-# channel, 0x40 and over silent
-MUSIC = ["01 08090a40", "02 08090b40"]
+SOUNDS += [None] * (max(MUSIC_SOUNDS) + 1 - len(SOUNDS))
+for number, notes in MUSIC_SOUNDS.items():
+    SOUNDS[number] = (15, notes)
+SOUNDS = [sound or (1, []) for sound in SOUNDS]
 
 
 def rows_of(text, width):
@@ -186,7 +354,16 @@ def build_stubbed():
             handle.write(code)
 
 
+def check_stage_music():
+    """data.lua's stage_music must name each stage's first pattern in the song."""
+    with open(os.path.join(HERE, "data.lua"), encoding="utf-8") as handle:
+        found = re.search(r'stage_music=split"([0-9,]*)"', handle.read())
+    wanted = ",".join(str(start) for start in STAGE_MUSIC)
+    assert found and found.group(1) == wanted, 'data.lua needs stage_music=split"%s"' % wanted
+
+
 def main():
+    check_stage_music()
     build_stubbed()
     gfx = build_gfx()
     write_png(os.path.join(HERE, "sheet.png"), gfx)

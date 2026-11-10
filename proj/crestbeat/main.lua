@@ -16,7 +16,8 @@ end
 
 function start_play()
  reset("play")
- music(0,0,7)
+ music(queued_music,0,7)
+ queued_music=nil
 end
 
 function start_stage(number)
@@ -26,6 +27,7 @@ function start_stage(number)
  if stage.bars then make_titan(stage) end
  robot.hp=min(robot.hp+(stage.heal or 0),max_hp)
  robot.moved=clock
+ queued_music=stage_music[number]
  banner,banner_life=stage.title,60
 end
 
@@ -76,6 +78,10 @@ end
 function on_beat(beat)
  for hazard in all(hazards) do
   if hazard.land==beat then land_spit(hazard) end
+ end
+ if queued_music and beat%8==0 then
+  music(queued_music,0,7)
+  queued_music=nil
  end
  local chart=stage.chart
  local index=beat-stage_beat
