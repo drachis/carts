@@ -269,9 +269,12 @@ a black crack with a flickering red edge, smoke and embers rising from it,
 and on a side street that arm hangs limp (the user asked). The bell's lamps
 are the bars' frames, yellow when lit: the old round lamps on the chest and
 the torso's dark scale dots read as nipples, and are gone. Spit is the user's "get out of this lane by beat
-x": it goes down the street the plan is in, telegraphed by a flashing red
-bar with a beat countdown and a glob travelling down, and lands two beats
-later, by when the plan has moved on; it hurts the robot if it is still
+x": it goes down the street the plan is in as a twister, a swirling pillar
+of the giant's element (the titan fire, the behemoth lightning, the queen
+acid; `pillar_hues`) that stands far taller than the mech, so it can be
+seen past it (the user missed the old glob flying at the mech, and its red
+bar and countdown are gone), travelling from the crest for two beats and
+landing then, by when the plan has moved on; it hurts the robot if it is still
 there. And the giant spits at anyone idling: a robot that has stood in one
 street for `idle_beats` (4) is spat at where it stands, so no one can sit
 in a street waiting for its hot spot to reopen (the user: "spit should force

@@ -101,7 +101,7 @@ end
 function land_spit(hazard)
  del(hazards,hazard)
  local x,y=project(hazard.lane,1)
- burst(x,y,16,11,2)
+ burst(x,y,24,pillar_hues[titan.colour][1],3)
  if robot.lane==hazard.lane then hurt_robot(hazard.lane) end
 end
 
@@ -222,20 +222,17 @@ function hexagon(x,y,radius,colour)
  end
 end
 
-function draw_hazards()
- for hazard in all(hazards) do
-  local x,y=project(hazard.lane,1)
-  if clock*4%1<0.5 then rectfill(x-18,y-2,x+18,y+2,8) end
-  print(ceil(hazard.land-clock),x-1,y-9,8)
- end
-end
 
 function spit_along(hazard)
  return (clock-hazard.from)/2
 end
 
-function draw_glob(hazard)
+function draw_pillar(hazard)
  local x,y,scale=project(hazard.lane,spit_along(hazard))
- circfill(x,y-8*scale,5*scale,11)
- circfill(x,y-8*scale,2*scale,7)
+ local hues=pillar_hues[titan.colour]
+ for ring=0,30 do
+  local up,half,sway=y-ring*3*scale,(2+ring*0.3)*scale,sin(clock+ring/14)*3*scale
+  rectfill(x+sway-half,up-2*scale,x+sway+half,up,hues[(ring+flr(clock*10))%4+1])
+  pset(x+sway+cos(clock*2+ring/5)*half,up-1,7)
+ end
 end

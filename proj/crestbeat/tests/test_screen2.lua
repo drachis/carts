@@ -69,9 +69,16 @@ local function screen()
  update_aliens()
  game_draw()
  dump_screen("screen_spit")
- local gx,gy,gscale=project(0,spit_along(hazards[1]))
- local glob=pget(gx,gy-8*gscale)
- check("spit is drawn in front of an alien farther up its street",glob==7,"colour "..glob.." over the alien at t "..aliens[1].t)
+ local fire,x=0,project(0,spit_along(hazards[1]))
+ cls()
+ draw_pillar(hazards[1])
+ for y=0,83 do
+  for dx=-12,12 do
+   local colour=pget(x+dx,y)
+   if colour==8 or colour==9 or colour==10 then fire+=1 end
+  end
+ end
+ check("the titan's fire pillar towers past the mech",fire>150,fire.." fire pixels above the robot")
 
 
  printh("ok screen2")

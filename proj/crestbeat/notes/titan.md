@@ -35,3 +35,7 @@ Keep: the user asked for the giant to follow witchcap's 2.5D multi-sprite hut, a
 **titan.lua:2** `titan={rise=0,spots={},colour=spec.colour,crown=spec.crown,bars=spec.bars}`
 `crown` (the queen's stage row) gives a giant the queen's crowned head (88,96) and bone blade-wings (the finger bones drawn long and white, no membrane).
 Keep: the user asked for the hive queen to have a queen-of-the-swarm look with a crown; it is our own design, not a copy of any character.
+
+**titan.lua:230** `function draw_pillar(hazard)`
+The spit as a twister: thirty bands up from where it stands on the road, widening upward, swaying with `clock`, its four colours (`pillar_hues` by giant colour: fire, lightning, acid) scrolling up through the bands, a white glint spiralling round. About ninety pixels tall near the mech, so it shows above it. `land_spit` bursts in its first colour.
+Keep: the user asked for a tornado pillar of fire, lightning or acid that can be seen past the mech; they missed the old glob flying at it.

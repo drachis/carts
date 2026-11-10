@@ -278,7 +278,6 @@ function _draw()
  draw_aliens(true)
  clip()
  draw_buildings(false)
- draw_hazards()
  draw_fallen()
  draw_aliens(false)
  if mode=="play" then draw_aim() end

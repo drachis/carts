@@ -14,8 +14,8 @@ A killed alien becomes a body in `fallen` that tips over backwards like a shooti
 Keep: the user asked for gallery knockdowns that clack.
 
 **aliens.lua:115** `function draw_aliens(behind)`
-`draw_aliens(behind)` is called twice: for aliens still behind the crest (clipped at the crest, so they rise over it, in front of a titan), and for the rest. `kind_colours` swaps the sprite's green for the kind's colours. The bob is a smooth arc, `(cos(hop)-1)`, low on the beat and high between. The second call also draws each spit glob (`draw_glob`) in depth order among the aliens, before the first alien nearer than it.
-Keep: the user saw the spit sorted wrongly: drawn before every alien, a farther alien covered a nearer glob.
+`draw_aliens(behind)` is called twice: for aliens still behind the crest (clipped at the crest, so they rise over it, in front of a titan), and for the rest. `kind_colours` swaps the sprite's green for the kind's colours. The bob is a smooth arc, `(cos(hop)-1)`, low on the beat and high between. The second call also draws each spit pillar (`draw_pillar`) in depth order among the aliens, before the first alien nearer than it.
+Keep: the user saw the spit sorted wrongly: drawn before every alien, a farther alien covered a nearer glob (now a pillar).
 
 **aliens.lua:88** `function swarm_sprite(size,sizes)`
 The largest drawn size in a list that fits the size wanted: the swarm's ten (swarm_sprites, 8 to 32px) or the civilian's four (civilian_sprites, 8 to 24px), from art.py. Everything is drawn 1:1 with it, never scaled; a kind with `sprite` set uses the civilian list and bobs a pixel to run.

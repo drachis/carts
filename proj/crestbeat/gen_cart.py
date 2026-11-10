@@ -332,10 +332,10 @@ BUILDS = {
                  "draw_payout", "draw_hud"],
     "play.lua": ["draw_title", "draw_payout", "update_payout"],
     "boot.lua": ["hit_spot", "ring_lamp", "lamps_lit", "update_titan", "spit", "land_spit", "open_spot",
-                 "draw_hazards", "draw_aim", "draw_plan", "chevron"],
+                 "draw_aim", "draw_plan", "chevron"],
     "capture_play.lua": ["draw_plan", "chevron", "sync_clock", "draw_title", "draw_payout", "update_payout"],
     "capture_menus.lua": ["draw_plan", "chevron", "sync_clock", "hit_spot", "ring_lamp", "lamps_lit",
-                          "update_titan", "spit", "land_spit", "open_spot", "draw_hazards", "draw_aim"],
+                          "update_titan", "spit", "land_spit", "open_spot", "draw_aim"],
 }
 
 

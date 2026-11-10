@@ -76,6 +76,7 @@ civilian_sprites=sprite_sizes"8,64,84/12,64,72/16,48,72/24,104,72"
 
 stage_music=split"0,6,8,16,6,22,26,30,32"
 chime=split"34,36,38,41,43,46,48,50,53,55"
+pillar_hues={[3]=split"8,9,10,7",[13]=split"12,13,7,1",[14]=split"11,3,10,7"}
 
 guns=parse_table[[
 name,colour,pattern,splash,sound,style

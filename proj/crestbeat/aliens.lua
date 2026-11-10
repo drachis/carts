@@ -120,7 +120,7 @@ function draw_aliens(behind)
  for alien in all(aliens) do
   for hazard in all(globs) do
    if spit_along(hazard)<alien.t then
-    draw_glob(hazard)
+    draw_pillar(hazard)
     del(globs,hazard)
    end
   end
@@ -143,5 +143,5 @@ function draw_aliens(behind)
    pal()
   end
  end
- foreach(globs,draw_glob)
+ foreach(globs,draw_pillar)
 end
