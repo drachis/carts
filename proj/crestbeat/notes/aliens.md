@@ -1,8 +1,8 @@
 # aliens.lua
 
-**aliens.lua:5** `function update_aliens()`
+**aliens.lua:10** `function update_aliens()`
 `update_aliens`: an alien hops one step a beat, the hop taking the first third of the beat. `t` runs from -1/walk_beats (behind the crest) on the beat it is sent to 1 at the bottom, where it costs the robot a point of hp. A hit's knockback moves `born` later.
 Keep: the aliens list stays sorted by `t`, far first; `front_alien` and drawing rely on it.
 
-**aliens.lua:48** `function draw_aliens(behind)`
+**aliens.lua:55** `function draw_aliens(behind)`
 `draw_aliens(behind)` is called twice: before the ground for aliens still behind the crest (the ground hides their lower part as they rise), after it for the rest.

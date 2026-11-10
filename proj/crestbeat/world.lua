@@ -74,16 +74,18 @@ function draw_ground()
  end
 end
 
-function draw_buildings()
+function draw_buildings(behind)
  for building in all(buildings) do
-  local edge,base,scale=project(building.side*1.5,building.t)
-  local inner=edge+building.side*(4+building.gap)*scale
-  local outer=inner+building.side*building.w*scale
-  local top=base-building.h*scale
-  rectfill(inner,top,outer,base,12)
-  rect(inner,top,outer,base,6)
-  for y=top+4,base-3,5*scale+1 do
-   line(min(inner,outer)+2,y,max(inner,outer)-2,y,13)
+  if (building.t<0.03)==behind then
+   local edge,base,scale=project(building.side*1.5,building.t)
+   local inner=edge+building.side*(4+building.gap)*scale
+   local outer=inner+building.side*building.w*scale
+   local top=base-building.h*scale
+   rectfill(inner,top,outer,base,12)
+   rect(inner,top,outer,base,6)
+   for y=top+4,base-3,5*scale+1 do
+    line(min(inner,outer)+2,y,max(inner,outer)-2,y,13)
+   end
   end
  end
 end

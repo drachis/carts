@@ -1,5 +1,5 @@
 function reset_robot()
- robot={lane=0,x=64,hp=max_hp,hurt=0,recoil=0,lift=0}
+ robot={lane=0,x=64,hp=max_hp,hurt=0,recoil=0,lift=0,gun=1,ammo=0}
  last_shot_beat=nil
 end
 
@@ -34,17 +34,48 @@ function shoot()
   return judgement
  end
  robot.recoil=3
- local alien,spot=front_alien(robot.lane),open_spot_in(robot.lane)
- if alien or spot then
-  local x,y
-  if alien then x,y=alien_centre(alien) else x,y=spot_xy(spot) end
-  add(beams,{x1=gun_x,y1=gun_y,x2=x,y2=y,colour=judgement.colour,
-   width=judgement.name=="perfect" and 2 or 1,life=5})
+ local gun,lane,targets=guns[robot.gun],robot.lane,{}
+ local spot=open_spot_in(lane)
+ if gun.pierce then
+  for alien in all(aliens) do
+   if alien.lane==lane and alien.t>-0.05 then add(targets,alien) end
+  end
+  add(targets,spot)
+ else
+  add(targets,front_alien(lane) or spot)
+ end
+ local splashed={}
+ if gun.splash then
+  for side=-1,1,2 do add(splashed,front_alien(lane+side)) end
+ end
+ for target in all(splashed) do
+  hit_alien(target,1,judgement)
+ end
+ if #targets>0 then
   combo+=1
   score+=judgement.points*multiplier()
-  if alien then hit_alien(alien,1,judgement) else hit_spot(spot,1,judgement) end
+  for target in all(targets) do
+   local x,y
+   if target.open then x,y=spot_xy(target) else x,y=alien_centre(target) end
+   add(beams,{x1=gun_x,y1=gun_y,x2=x,y2=y,colour=judgement.name=="perfect" and 7 or gun.colour,
+    width=gun.damage+(judgement.name=="perfect" and 1 or 0),life=5})
+   if target.open then hit_spot(target,gun.damage,judgement) else hit_alien(target,gun.damage,judgement) end
+  end
+  if gun.ammo then
+   robot.ammo-=1
+   if robot.ammo<=0 then
+    robot.gun=1
+    popup("out of ammo",robot.x,68-robot.lift,8)
+   end
+  end
  end
  return judgement
+end
+
+function equip(gun)
+ robot.gun,robot.ammo=gun,guns[gun].ammo
+ popup(guns[gun].label.."!",robot.x,68-robot.lift,guns[gun].colour)
+ sfx(6)
 end
 
 function multiplier()

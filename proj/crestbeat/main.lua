@@ -1,7 +1,7 @@
 function reset(new_mode)
  mode=new_mode
  clock,next_beat,combo,score,shake,pulse,ended=0,0,0,0,0,0,0
- scroll,travel_speed=0,0
+ scroll,travel_speed,pickups_sent=0,0,0
  aliens,sparks,rings,popups,beams={},{},{},{},{}
  make_city()
  reset_robot()
@@ -57,6 +57,8 @@ function on_beat(beat)
  local code=sub(chart,index+1,index+1)
  local lane=lane_of(code,"123")
  if lane then send_alien(lane,beat) end
+ lane=lane_of(code,"456")
+ if lane then send_pickup(lane,beat) end
  lane=lane_of(code,"qwe")
  if lane then open_spot(lane,beat) end
  lane=lane_of(code,"asd")
@@ -133,6 +135,8 @@ function draw_hud()
  local text=score_text()
  print(text,126-#text*4,3,7)
  if combo>3 then print("x"..multiplier(),56,3,10) end
+ local gun=guns[robot.gun]
+ print(gun.name..(gun.ammo and " "..robot.ammo or ""),2,11,gun.colour)
  rectfill(0,121,127,127,0)
  local fraction=clock%1
  for k=0,4 do
@@ -157,14 +161,16 @@ end
 function _draw()
  camera(rnd(shake)-shake/2,rnd(shake)-shake/2)
  draw_sky()
- draw_aliens(true)
  draw_ground()
+ draw_buildings(true)
  if titan then
-  clip(0,0,128,crest_y+40*titan.rise)
+  clip(0,0,128,crest_y+4)
   draw_titan()
-  clip()
  end
- draw_buildings()
+ clip(0,0,128,crest_y)
+ draw_aliens(true)
+ clip()
+ draw_buildings(false)
  draw_hazards()
  draw_aliens(false)
  if mode=="play" then draw_aim() end

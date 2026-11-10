@@ -1,5 +1,10 @@
-function send_alien(lane,beat)
- add(aliens,{lane=lane,born=beat,hp=alien_hp,flash=0,t=-1})
+function send_alien(lane,beat,gun)
+ add(aliens,{lane=lane,born=beat,hp=gun and 1 or alien_hp,flash=0,t=-1,gun=gun})
+end
+
+function send_pickup(lane,beat)
+ pickups_sent+=1
+ send_alien(lane,beat,(pickups_sent-1)%(#guns-1)+2)
 end
 
 function update_aliens()
@@ -11,7 +16,7 @@ function update_aliens()
   alien.flash=max(alien.flash-1)
   if alien.t>=1 then
    del(aliens,alien)
-   hurt_robot(alien.lane)
+   if not alien.gun then hurt_robot(alien.lane) end
   end
  end
  sort_by_t(aliens)
@@ -33,10 +38,12 @@ function hit_alien(alien,amount,judgement)
  burst(x,y,6,judgement.colour,2)
  if alien.hp<=0 then
   del(aliens,alien)
-  burst(x,y,24,11,3)
-  ring(x,y,20*scale,11)
+  local colour=alien.gun and guns[alien.gun].colour or 11
+  burst(x,y,24,colour,3)
+  ring(x,y,20*scale,colour)
   shake+=2
   sfx(3)
+  if alien.gun then equip(alien.gun) end
  end
 end
 
@@ -51,11 +58,18 @@ function draw_aliens(behind)
    local x,y,scale=project(alien.lane,alien.t)
    local size=24*scale
    local lift=alien.hop<0.34 and sin(alien.hop*1.5)*6*scale or 0
-   if alien.flash>0 then
-    for colour=1,15 do pal(colour,7) end
+   if alien.gun then
+    local half,width=8*scale,8*scale*abs(cos(clock/4))
+    local cy=y-half+lift-4*scale
+    rectfill(x-width,cy-half,x+width,cy+half,alien.flash>0 and 7 or guns[alien.gun].colour)
+    rect(x-width,cy-half,x+width,cy+half,7)
+   else
+    if alien.flash>0 then
+     for colour=1,15 do pal(colour,7) end
+    end
+    sspr(alien.hop<0.34 and 16 or 0,0,16,16,x-size/2,y-size+lift,size,size)
+    pal()
    end
-   sspr(alien.hop<0.34 and 16 or 0,0,16,16,x-size/2,y-size+lift,size,size)
-   pal()
   end
  end
 end

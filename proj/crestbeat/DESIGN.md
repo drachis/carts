@@ -112,9 +112,12 @@ still in that lane.
 
 `project(lane,t)` is the whole perspective: lanes close up toward the
 crest and the road falls away more steeply near the robot. Draw order: sky
-and skyline, aliens still behind the crest, the ground, the road and its
-dashes, the titan (clipped while it rises), the buildings far to near, aliens far to near, beams, the robot,
-effects, HUD, beat bar.
+and skyline, the ground, the road and its dashes, buildings behind the
+crest, the titan (clipped at `crest_y+4`, so it stands behind the crest),
+aliens still behind the crest (clipped at `crest_y`, so they rise in front
+of the titan), the other buildings far to near, spit, aliens far to near,
+the aim, the robot, effects, HUD, beat bar. `test_rhythm` reads both clips
+off the screen.
 
 ## Modules
 
@@ -146,7 +149,8 @@ effects, HUD, beat bar.
 
 ## Not built yet, or not checked
 
-- No gun pickups yet.
+- Gun pickups (`4` `5` `6` in a chart) are a stopgap: the user has asked for
+  guns that fire on their own beat subdivisions, switched with X and O.
 - The music has not been heard, and whether `stat(50)` keeps the clock on
   the drums on the user's machine is untested (the tests stub music).
 - Whether the windows feel fair to a person; 4 and 8 frames are guesses.

@@ -1,3 +1,4 @@
+local game_draw=_draw
 function sfx() end
 music=sfx
 
@@ -95,6 +96,61 @@ local function rhythm()
  for spot in all(titan.spots) do hit_spot(spot,9,judgements[1]) end
  for i=1,91 do update_titan() end
  check("a titan stage is done once its hot spots are all gone",stage_done(),"dead "..tostr(titan.dead))
+
+ reset("play")
+ send_pickup(0,0)
+ at(4,0)
+ update_aliens()
+ shoot()
+ check("shooting a pickup equips its gun",robot.gun==2 and robot.ammo==guns[2].ammo,guns[robot.gun].name.." "..robot.ammo)
+ check("pickups come round the guns in turn",(function() send_pickup(0,0) return aliens[1].gun==3 end)(),"next "..tostr(aliens[1] and aliens[1].gun))
+
+ reset("play")
+ send_pickup(-1,0)
+ at(walk_beats+1,0)
+ update_aliens()
+ check("a pickup that gets past costs nothing",robot.hp==max_hp and #aliens==0,"hp "..robot.hp)
+
+ local function armed(gun,lanes)
+  reset("play")
+  robot.gun,robot.ammo=gun,guns[gun].ammo
+  for i,lane in ipairs(lanes) do send_alien(lane,i-1) end
+  at(#lanes+3,0)
+  update_aliens()
+  shoot()
+  return guns[gun].name
+ end
+ local name=armed(2,{0})
+ check(name.." kills a fresh alien in one shot",#aliens==0 and robot.ammo==guns[2].ammo-1,#aliens.." left, ammo "..robot.ammo)
+ name=armed(3,{0,0})
+ check(name.." hits every alien in the lane",aliens[1].hp==alien_hp-1 and aliens[2].hp==alien_hp-1,aliens[1].hp.." and "..aliens[2].hp)
+ name=armed(4,{-1,0,1})
+ check(name.." kills its target and hurts the lanes beside it",#aliens==2 and aliens[1].hp<alien_hp and aliens[2].hp<alien_hp,#aliens.." left")
+ armed(2,{0})
+ robot.ammo=1
+ send_alien(0,4)
+ at(8,0)
+ update_aliens()
+ shoot()
+ check("a gun that runs dry goes back to pulse",robot.gun==1,guns[robot.gun].name)
+
+ reset("play")
+ start_stage(#stages)
+ titan.rise=1
+ at(10,0)
+ send_alien(0,10-0.253)
+ update_aliens()
+ game_draw()
+ local rising=0
+ for x=58,70 do
+  for y=crest_y-10,crest_y-1 do
+   if pget(x,y)==11 then rising+=1 end
+  end
+ end
+ check("an alien rising over the crest is drawn in front of the queen",rising>10,rising.." green pixels")
+ local below=pget(64,crest_y+10)
+ check("the queen stands behind the crest, not on the road",below!=titan.colour and below!=2,"colour "..below)
+ dump_screen("rhythm_queen")
 
  printh("ok rhythm")
  extcmd("shutdown")
