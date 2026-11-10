@@ -222,6 +222,7 @@ end
 
 function draw_title()
  sunset(75,64,64,30)
+ print("play ▶",2,2,7)
  if not titan then make_titan(stages[3]) end
  titan.rise,titan.bars,crest_y=1,0,225
  local real_pal=pal
@@ -280,6 +281,10 @@ function _draw()
  draw_effects()
  camera()
  if robot.hurt>4 then
+  for glitch=1,8 do
+   local row=0x6000+flr(rnd(128))*64
+   memcpy(row,row+flr(rnd(3)),60)
+  end
   fillp(0x5a5a.8)
   for edge=0,3 do rect(edge,edge,127-edge,127-edge,8) end
   fillp()

@@ -203,7 +203,7 @@ function draw_titan()
   if spot.hp>0 and shield>0 then
    for row=0,6 do
     for col=-1,1 do
-     hexagon(x+spot.lane*15.6+col*5.2+row%2*2.6-1.3,y-2+row*4.5,3*shield,colour)
+     hexagon(x+spot.lane*15.6+col*5.2+row%2*2.6-1.3,y-2+row*4.5,3*shield,row==flr(clock*4)%9 and 7 or colour)
     end
    end
   end

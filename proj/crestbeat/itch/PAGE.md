@@ -25,6 +25,7 @@ You are a giant red robot at the foot of a hill. Aliens pour over the crest and 
 - Hold down to see where the beat wants you next, and where the golden alien's route goes
 - A neon city at sunset: a synthwave sky, a glowing grid road, and each giant haloed by the setting sun as it fights you
 - Giants built from parts: flapping wings, stomping feet, cracks and smoke when you break a street
+- Fever at the top combo: the grid burns pink and the sun throws its rays
 - A ticket payout at the end, counted up and thrown out of the slot
 
 ### Controls
@@ -67,7 +68,9 @@ Upload order on the page:
 3. `crestbeat_titan.gif`: a giant fight: the titan haloed by the sun, the shields falling, the bell ringing, the titan going down
 4. `crestbeat_streets.gif`: civilians and the golden alien on the streets
 5. `crestbeat_queen.gif`: the hive queen (the last fight; a mild spoiler)
-6. `crestbeat_payout.gif`: the ticket payout
+6. `crestbeat_fever.gif`: fever at x4, the pink grid and the sun's rays
+7. `crestbeat_finale.gif`: a giant going down: the flash, the shockwaves, "giant down!"
+8. `crestbeat_payout.gif`: the ticket payout, with fireworks over the saved city
 
 Screenshots: the `.png` of each name. Cover image: `cover_630x500.png` (630x500), the title at 4x with its sky and grid carried out to the sides.
 

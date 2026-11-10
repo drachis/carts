@@ -349,7 +349,10 @@ and throws Loretta's god rays across the sky (the user asked).
   down!", pink and blue shockwave rings, and the halo's rays flaring out as
   it sinks.
 - A saved city gets neon fireworks over the payout.
-- A hit flashes a dithered red frame round the screen.
+- A hit flashes a dithered red frame round the screen and tears a few
+  screen rows sideways, like a VHS tape's tracking.
+- A white scan line sweeps down the giants' hex shields.
+- The title has a VCR's "play" in its corner.
 - The sun is reflected in the road as dithered glints below the crest, and
   the climb stages throw warp streaks out of the sun. The aliens' green, the golden alien
 and the robot's red stay as they were: they read clearly on black.
