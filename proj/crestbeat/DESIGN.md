@@ -1,0 +1,108 @@
+# Crestbeat
+
+You are a giant red robot at the foot of a hill in a city. Angry green
+hexagon aliens pour over the crest down three lanes of road. It is a rhythm
+game: aim at an alien, shoot it on two beats, switch lane, shoot the next on
+two beats, "like a frenetic english country dance". An alien that reaches the
+bottom of the hill hurts you; a few of those and you fall.
+
+The run is meant to be about 90 seconds, paced like the arcade Godzilla VR
+game: a swarm for 10 to 15 seconds, fly up the road to the crest, a titan
+bug crunching through the skyscrapers with hot spots to shoot, another
+swarm, and so on to a boss. A pickup swaps the gun (Unreal Tournament and
+Doom guns). The user's sketch is layout, not art; an art direction pass
+comes later.
+
+What it takes from where:
+
+- **hivefall:** the robot (its mech sprite, recoloured red), sparks, rings,
+  popups and shake.
+- **The arcade Godzilla VR game:** the pacing of small clusters, a big
+  enemy, clusters again, a boss at about 90 seconds.
+- **Rhythm games:** shots are judged against the beat (perfect, good,
+  miss), and a NecroDancer-style beat bar at the bottom shows the beats
+  closing on the centre.
+
+## Rules of the build
+
+1. Tuning and content are data strings in `data.lua`: a wave is a chart
+   string, a judgement is a row.
+2. Art, sound and music are text in `gen_cart.py`, which rewrites every
+   cart's `__gfx__` and on. Look at `sheet.png`.
+3. PICO-8 is the only token counter (`py count_tokens.py crestbeat.p8`).
+4. 60fps (`_update60`); test carts wrap `_update60`.
+5. No comments in the Lua; notes in `notes/<module>.md` (`CODE_NOTES.md`).
+6. The game is one cart. Test carts may be split.
+
+## The beat
+
+`clock` is the song position in beats. It advances `1/frames_per_beat` a
+frame. The music is 120 BPM at sfx speed 15, a note a quarter beat, 32 notes
+(8 beats) a pattern. While music plays, each time channel 0's note number
+(`stat(50)`) changes, `clock` is pulled halfway toward where that note says
+it should be, so the game cannot drift from the drums. With music stubbed
+(the tests) the clock runs on frames alone. `frames_per_beat` (29.88)
+assumes a speed-1 note lasts 183 samples at 22050Hz; the manual does not
+give a note's length, so this is an assumption the sync covers.
+
+Every whole beat `on_beat` runs: it reads the wave's chart (one character a
+beat: `1` `2` `3` a lane to send an alien down, `.` nothing) and pulses the
+lane dashes and the beat bar.
+
+## Shooting
+
+Left/right moves between three lanes. O or X fires. A shot is judged by its
+distance from the nearest beat: within `perfect_window` frames is perfect,
+within `good_window` is good, and anything else, or a second shot on a beat
+already shot, is a miss. Perfect and good hit the front alien in the
+robot's lane for one point of health and knock it back up the hill
+(perfect further); a miss does nothing and ends the combo. Every fourth
+beat in a row raises the multiplier, to x4.
+
+## Aliens
+
+An alien is sent on a beat, rises over the crest on that beat, and then
+hops down the lane one hop a beat for `walk_beats` beats. `t` is its
+depth: 0 at the crest, 1 at the bottom of the hill. A hit knocks it back by
+moving its start later (`born`). At `t>=1` it is gone and the robot loses a
+point of `hp`; at 0 the run is lost.
+
+## The picture
+
+`project(lane,t)` is the whole perspective: lanes close up toward the
+crest and the road falls away more steeply near the robot. Draw order: sky
+and skyline, aliens still behind the crest, the ground, the road and its
+dashes, the buildings far to near, aliens far to near, beams, the robot,
+effects, HUD, beat bar.
+
+## Modules
+
+| File | Owns |
+|---|---|
+| `data.lua` | Parsers, constants, judgements, charts |
+| `world.lua` | Projection, sky, road, buildings, effects |
+| `aliens.lua` | Sending, hopping, hurting, drawing aliens |
+| `robot.lua` | Lanes, shooting, judging, drawing the robot |
+| `main.lua` | Modes, the beat clock, the wave, HUD, beat bar |
+
+## Tests
+
+    py run_tests.py --no-comments
+    py count_tokens.py crestbeat.p8
+
+- `test_boot`: the real cart from frame one, input and sound stubbed. A bot
+  that stands in the most urgent alien's lane and fires on every beat wins
+  the wave; then a run with no input loses it; then a restart. Screens are
+  dumped (`boot_*.png`).
+- `test_rhythm`: judging at the beat, a few frames off and far off; a
+  second shot on the same beat; that perfect and good hurt the front alien
+  and push it back and a miss does not; that a leaking alien costs a point
+  of hp.
+
+## Not built yet, or not checked
+
+- Step 1 only: one swarm wave and the win and loss. No flight up the hill,
+  titan, later waves, boss or gun pickups yet.
+- The music has not been heard, and whether `stat(50)` keeps the clock on
+  the drums on the user's machine is untested (the tests stub music).
+- Whether the windows feel fair to a person; 4 and 8 frames are guesses.
