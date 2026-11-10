@@ -29,8 +29,6 @@ end
 parse_record([[
 frames_per_beat=14.94
 good_window=10
-walk_beats=8
-alien_hp=4
 knock_per_damage=0.25
 max_hp=4
 horizon=40
@@ -46,11 +44,17 @@ name,chart,spot_hp,colour,fly,heal,title
 hill,....1.2.3.2.1...3.1.2.3.1.2.3,,,,,they're over the hill!
 climb,........,,,1,,up the hill!
 titan,..q.w.e.a.w.q.s.e.w.d.,4,3,,,titan! shoot its hot spots
-streets,..1.3.2.1.1.3.2.3.1.2.2.1.3.,,,,1,another swarm!
+streets,..1.3.2.2.x.1.3.2.3.1.2.2.1.3.,,,,1,another swarm!
 climb,........,,,1,,to the crest!
-crest,..1.2.3.3.1.2.1.3.3.2.1.1.2.3.,,,,,they keep coming!
+crest,..1.2.3.3.c.2.1.3.1.1.z.2.1.2.3.,,,,,they keep coming!
 climb,........,,,1,,the hive queen awaits
 queen,..q.w.1.e.a.3.w.q.s.2.e.d.w.1.,8,14,,1,the hive queen!
+]]
+
+kinds=parse_table[[
+name,keys,hp,walk,bonus,harmless,body,rim,track,depth
+alien,123,4,8,0,,11,3,,
+gold,zxc,8,,100,1,10,9,3,0.45
 ]]
 
 guns=parse_table[[

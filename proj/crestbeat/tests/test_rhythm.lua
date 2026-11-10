@@ -1,4 +1,5 @@
 local game_draw=_draw
+local alien_hp,walk_beats=kinds.alien.hp,kinds.alien.walk
 function sfx() end
 music=sfx
 
@@ -93,6 +94,39 @@ local function rhythm()
  clock=walk_beats+1
  update_aliens()
  check("an alien at the bottom costs a point of hp",robot.hp==max_hp-1 and #aliens==0,"hp "..robot.hp)
+
+ reset("play")
+ send_alien(1,0,kinds.gold)
+ clock=12
+ update_aliens()
+ local stayed=#aliens
+ clock=13
+ update_aliens()
+ check("a golden alien stays on screen for 12 beats",stayed==1 and #aliens==0,stayed.." at beat 12, "..#aliens.." at 13")
+ check("and getting away costs nothing",robot.hp==max_hp,"hp "..robot.hp)
+ reset("play")
+ send_alien(0,0,kinds.gold)
+ clock=3
+ update_aliens()
+ for i=1,kinds.gold.hp/2 do
+  hit_alien(aliens[1] or {},2,judgements[1])
+ end
+ check("a golden alien takes twice the hits and pays its bonus",#aliens==0 and score==kinds.gold.bonus,"score "..score)
+ reset("play")
+ send_alien(-1,0,kinds.gold)
+ local streets=""
+ for beat=1,8,kinds.gold.track do
+  clock=beat
+  update_aliens()
+  streets..=aliens[1].lane.." "
+ end
+ check("a golden alien crosses the streets halfway up the hill",streets=="-1 0 1 " and aliens[1].t==kinds.gold.depth,"streets "..streets.."at depth "..aliens[1].t)
+ reset("play")
+ send_alien(-1,0,kinds.gold)
+ send_alien(0,-2)
+ clock=4
+ update_aliens()
+ check("and an alien nearer in its street shields it",front_alien(0) and not front_alien(0).harmless and #aliens==2,"front is "..(front_alien(0).harmless and "gold" or "an alien"))
 
  reset("play")
  on_beat(4)

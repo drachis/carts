@@ -55,9 +55,11 @@ function on_beat(beat)
  local index=beat-stage_beat
  if titan then index%=#chart end
  local code=sub(chart,index+1,index+1)
- local lane=lane_of(code,"123")
- if lane then send_alien(lane,beat) end
- lane=lane_of(code,"qwe")
+ for kind in all(kinds) do
+  local lane=lane_of(code,kind.keys)
+  if lane then send_alien(lane,beat,kind) end
+ end
+ local lane=lane_of(code,"qwe")
  if lane then open_spot(lane,beat) end
  lane=lane_of(code,"asd")
  if lane then spit(lane,beat) end

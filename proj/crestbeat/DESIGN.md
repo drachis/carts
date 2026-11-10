@@ -87,12 +87,26 @@ the right. Nothing in it flashes, and the dashes no longer flash either.
 
 ## Aliens
 
-An alien is sent on a beat, rises over the crest on that beat, and then
-hops down the street one hop a beat for `walk_beats` beats. `t` is its
-depth: 0 at the crest, 1 at the bottom of the hill. A hit knocks it back by
-moving its start later (`born`). At `t>=1` it is gone and the robot loses a
-heart; at 0 the run is lost. The reticle (yellow brackets with a red pip a
-point of health) is on the target in the robot's street, alien or hot spot.
+Each kind of enemy is a row of `kinds` (chart keys, health, how it moves,
+bonus, colours); the user's shooting-gallery ideas are being built in as
+kinds, so that the enemies' movement makes the player pick a street with
+intention.
+
+- **alien** (`123`): sent on a beat, rises over the crest on that beat, then
+  hops down the street one hop a beat for `walk` (8) beats. `t` is its
+  depth: 0 at the crest, 1 at the bottom of the hill. At `t>=1` it is gone
+  and the robot loses a heart; at 0 the run is lost.
+- **golden alien** (`zxc`), the gallery's golden duck: double health (8),
+  pays `bonus` (shown 1000). It appears halfway up the hill (`depth`) at the
+  side its key names and slides across the streets, one street every 3
+  beats (`track`), on screen for 12 beats, so there is time to clear the
+  aliens in front of it. Aliens nearer in its street shield it. Getting
+  away costs nothing.
+
+A hit knocks an enemy back by moving its start later (`born`). A kill
+tips it over backwards like a gallery target (`draw_fallen`), with a hard
+clack. The reticle (yellow brackets with a red pip a point of health) is on
+the target in the robot's street, alien or hot spot.
 
 ## Stages
 
@@ -102,6 +116,7 @@ read one character a beat from the beat it starts on:
 | Character | Meaning |
 |---|---|
 | `1` `2` `3` | send an alien down the left, middle, right street |
+| `z` `x` `c` | a golden alien: `z` enters from the left, `x` and `c` from the right |
 | `q` `w` `e` | open the titan's hot spot over that street for 2.5 beats |
 | `a` `s` `d` | the titan spits down that street; it lands two beats later |
 | anything else | a rest |

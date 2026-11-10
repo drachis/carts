@@ -29,6 +29,13 @@ function stage_frame()
   game_draw()
   dump_screen("stage_"..first_stage.."_"..name)
  end
+ for alien in all(aliens) do
+  if alien.bonus>0 and abs(alien.pos)<0.6 and not gold_seen then
+   gold_seen=true
+   game_draw()
+   dump_screen("stage_"..first_stage.."_gold")
+  end
+ end
  local last=first_stage==#stages
  if mode!="play" or stage_number!=first_stage then
   done=true
