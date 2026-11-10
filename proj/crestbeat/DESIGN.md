@@ -15,7 +15,7 @@ user's sketch was layout, not art; the art is described under "The art".
 
 What it takes from where:
 
-- **hivefall:** the robot (its mech sprite, recoloured red), sparks, rings,
+- **hivefall:** the robot's look (redrawn at full size), the swarm's skitter, sparks, rings,
   popups and shake.
 - **Unreal Tournament and Doom:** the guns: a minigun, a shock rifle,
   rockets that splash.
@@ -271,6 +271,15 @@ civilians white and brown, the robot red, the giants their own colours.
   (`swarm_sprites` in `data.lua` says where each is). An enemy is drawn 1:1
   with the largest that fits the size its depth asks for; brutes and hulks
   reach the larger ones. A kind's colours are swapped in with `pal`.
+- **The robot** is drawn 1:1 at 36x36 (art.py's `robot`): red armour seen
+  from behind, gun pods up on its shoulders with lit tips, a visor, a back
+  plate with two thrusters, armoured legs. The sheet is full, so, as the
+  user suggested, it lives in the map's top half (0x2000), which this game
+  has no map for: `from_map` copies its rows over the sheet's top-left
+  corner (saved in upper memory, 0x8000) just to draw it, then puts the
+  corner back. The manual lets the sheet be remapped only to 0x00 or the
+  screen, so copying is the way. There is room in the map for 128x64
+  pixels more.
 - **Civilians** are drawn the same way at 8, 12, 16 and 24 pixels
   (`civilian_sprites`): arms thrown up, brown hair, a white shirt, blue
   trousers; they bob a pixel as they run.
@@ -352,9 +361,6 @@ sound and holds the bot.
 
 ## Still to do, or not checked
 
-- The robot is still hivefall's 24px mech drawn at 1.5x; the user prefers
-  sprites drawn at their size, but the sheet has no 36x36 room left, so a
-  native robot needs something else to give up space.
 - The music has not been heard, and whether `stat(50)` keeps the clock on
   the drums on the user's machine is untested (the tests stub music).
 - Every number (alien health, window, cadences, charts) is tuned only

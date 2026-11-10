@@ -12,4 +12,8 @@ Keep: the user said 1/3s for a late shot is okay (`good_window` 10 frames at 30f
 `fire`: every gun hits only the target in the robot's street (front alien, else the open hot spot). Keep: no pierce on the shock rifle; the user: "it looks weird and don't feel great". Rockets splash `splash` on the front alien in each street beside. Knockback is per point of damage (`knock_per_damage`).
 
 **robot.lua:101** `function draw_robot()`
-`draw_robot` is hivefall's mech (24x24 at sheet (0,64)) drawn at 1.5x, black edge first, white while hurt. It bobs a pixel on the beat.
+`draw_robot` draws the robot 1:1 at 36x36 (art.py's `robot`, seen from behind), black edge first, white while hurt, its lights (9, a) in the gun's colour on an empty beat. It bobs a pixel on the beat.
+
+**robot.lua:128** `function from_map(size,draw)`
+The robot's pixels live in the map's top half (0x2000, which this game has no map for; gen_cart's build_map writes them there in sprite-sheet layout). For each of its rows this saves the sheet's top-left corner to upper memory (0x8000), copies the robot's row over it, runs `draw`, then puts the corner back. That corner holds swarm sprites, all drawn earlier in the frame.
+Keep: the user asked to use the map's half for sprites rather than scale the robot; the manual lets 0x5F54 map the sheet only to 0x00 or 0x60, so the pixels are copied in. test_rhythm checks the sheet is restored.

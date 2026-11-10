@@ -11,7 +11,7 @@ Symmetrical things are drawn as their left half and mirrored.
 
     swarm      rows 0-71: ten sizes, 8 to 32px, two frames each (art.py;
                where each lies is swarm_sprites in data.lua)
-    robot      24x24 at (0,72) and (24,72), hivefall's mech in red
+    robot      36x36, in the map's top half (build_map), not the sheet
     civilian   at 8, 12, 16 and 24px (art.py CIVILIAN_SIZES)
     giant      a hand 8x8 at (80,72), a foot 16x8 at (88,72), the torso
                40x32 at (0,96), the head 24x20 at (40,96) and with its jaw
@@ -31,35 +31,6 @@ import art
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GAME = "crestbeat.p8"
-
-MECH = """
-............
-............
-............
-.........555
-.......5566d
-......566ddd
-.....55666d9
-.....56666d9
-.....566666d
-.....5666dd1
-..5555d6dd1a
-.5666d5ddd11
-566ddd55dddd
-5ddd5..5ddd5
-.55....56dd5
-......566d55
-.....5666d5.
-.....566dd5.
-.....56ddd5.
-.....5dddd5.
-......5dd5..
-......5115..
-......5995..
-............
-"""
-# hivefall's greys turned red: light grey to red, lavender to dark red
-RED = str.maketrans({"6": "8", "d": "2"})
 
 REST = (0, 0, 0, 0)
 KICK, HAT, SNARE = (10, 0, 6, 3), (50, 6, 2, 0), (32, 6, 4, 0)
@@ -133,9 +104,6 @@ def build_gfx():
     for size, (left, top) in layout.items():
         for frame in (0, 1):
             stamp(sheet, art.render(art.tyranid(frame), size, size), left + frame * size, top)
-    mech = mirrored(MECH.translate(RED), 12)
-    stamp(sheet, mech, 0, 72)
-    stamp(sheet, bobbed(mech, 14), 24, 72)
     for size, (left, top) in art.CIVILIAN_SIZES.items():
         stamp(sheet, art.render(art.civilian(), size, size), left, top)
     stamp(sheet, art.outlined(art.render(art.kaiju_claw(), 8, 8, mirror=False)), 80, 72)
@@ -168,10 +136,27 @@ def write_cart(path, text):
             time.sleep(0.5)
 
 
+def build_map():
+    """The map's top half (0x2000, 128x64 pixels at four bits, the layout of a
+    sprite sheet), which the game has no map for: the robot, drawn at its
+    full size. The game copies its rows into the sheet to draw it."""
+    pixels = [["0"] * 128 for _ in range(64)]
+    stamp(pixels, art.render(art.robot(), art.ROBOT_SIZE, art.ROBOT_SIZE), 0, 0)
+    lines = []
+    for k in range(32):
+        line = ""
+        for row in pixels[2 * k:2 * k + 2]:
+            for x in range(0, 128, 2):
+                line += row[x + 1] + row[x]
+        lines.append(line)
+    write_png(os.path.join(HERE, "map_sprites.png"), ["".join(r) for r in pixels])
+    return lines
+
+
 def main():
     gfx = build_gfx()
     write_png(os.path.join(HERE, "sheet.png"), gfx)
-    tail = "\n".join(["__gfx__"] + gfx + ["__sfx__"] + build_sfx()
+    tail = "\n".join(["__gfx__"] + gfx + ["__map__"] + build_map() + ["__sfx__"] + build_sfx()
                      + ["__music__"] + MUSIC) + "\n"
     carts = [GAME] + sorted(glob.glob(os.path.join(HERE, "tests", "*.p8")))
     written = 0

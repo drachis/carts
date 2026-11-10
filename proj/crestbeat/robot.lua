@@ -107,18 +107,31 @@ function draw_robot()
    end
   end
  end
- for colour=1,15 do pal(colour,0) end
- for nudge=-1,1,2 do
-  sspr(0,72,24,24,robot.x-18+nudge,top,36,36)
-  sspr(0,72,24,24,robot.x-18,top+nudge,36,36)
+ from_map(36,function()
+  for colour=1,15 do pal(colour,0) end
+  for nudge=-1,1,2 do
+   sspr(0,0,36,36,robot.x-18+nudge,top)
+   sspr(0,0,36,36,robot.x-18,top+nudge)
+  end
+  pal()
+  if robot.hurt>0 and robot.hurt%4<2 then
+   for colour=1,15 do pal(colour,7) end
+  elseif robot.glow>0 then
+   pal(9,guns[robot.gun].colour)
+   pal(10,7)
+  end
+  sspr(0,0,36,36,robot.x-18,top)
+  pal()
+ end)
+end
+
+function from_map(size,draw)
+ for row=0,size-1 do
+  memcpy(0x8000+row*64,row*64,size/2)
+  memcpy(row*64,0x2000+row*64,size/2)
  end
- pal()
- if robot.hurt>0 and robot.hurt%4<2 then
-  for colour=1,15 do pal(colour,7) end
- elseif robot.glow>0 then
-  pal(9,guns[robot.gun].colour)
-  pal(10,7)
+ draw()
+ for row=0,size-1 do
+  memcpy(row*64,0x8000+row*64,size/2)
  end
- sspr(0,72,24,24,robot.x-18,top,36,36)
- pal()
 end

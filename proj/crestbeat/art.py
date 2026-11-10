@@ -135,6 +135,38 @@ def kaiju_torso():
     ]
 
 
+def robot():
+    """The player's giant red robot, 36x36, seen from behind as it faces the
+    hill: gun pods up on its shoulders, a back plate with vents and two
+    thrusters, armoured legs. 9 and a are its lights (the game recolours
+    them to glow on an empty beat); 8 and 2 its reds, 5 and 6 its greys."""
+    return [
+        (capsule(0.4, 0.6, 0.35, 0.9, 0.075), "2"),
+        (ellipse(0.36, 0.74, 0.065, 0.06), "8"),
+        (ellipse(0.33, 0.94, 0.1, 0.045), "5"),
+        (ellipse(0.5, 0.58, 0.15, 0.07), "5"),
+        (capsule(0.22, 0.36, 0.17, 0.56, 0.05), "2"),
+        (ellipse(0.17, 0.59, 0.05, 0.045), "5"),
+        (ellipse(0.5, 0.39, 0.22, 0.19), "8"),
+        (band(0.45, 0.58, ellipse(0.5, 0.39, 0.22, 0.19)), "2"),
+        (capsule(0.4, 0.3, 0.44, 0.3, 0.012), "2"),
+        (capsule(0.4, 0.34, 0.44, 0.34, 0.012), "2"),
+        (ellipse(0.43, 0.49, 0.045, 0.04), "9"),
+        (ellipse(0.43, 0.49, 0.02, 0.02), "a"),
+        (ellipse(0.24, 0.28, 0.12, 0.1), "8"),
+        (band(0.33, 0.38, ellipse(0.24, 0.28, 0.12, 0.1)), "2"),
+        (capsule(0.2, 0.24, 0.18, 0.07, 0.055), "6"),
+        (capsule(0.2, 0.24, 0.21, 0.14, 0.02), "5"),
+        (ellipse(0.18, 0.06, 0.035, 0.03), "a"),
+        (ellipse(0.5, 0.2, 0.09, 0.075), "5"),
+        (band(0.2, 0.24, ellipse(0.5, 0.2, 0.09, 0.075)), "9"),
+        (capsule(0.45, 0.14, 0.43, 0.04, 0.012), "6"),
+    ]
+
+
+ROBOT_SIZE = 36
+
+
 def civilian():
     """A fleeing civilian, front on, arms thrown up: brown hair, a white
     shirt, blue trousers, grey shoes. Drawn at each size it is shown."""

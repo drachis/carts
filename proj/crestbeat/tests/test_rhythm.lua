@@ -319,6 +319,18 @@ local function rhythm()
  local down=wing_rows()
  check("the giant's wings flap",up>=0 and down>=0 and abs(up-down)>=4,"wing tops at "..up.." and "..down)
 
+ reset("play")
+ local before=""
+ for y=0,35,5 do for x=0,35,5 do before..=sget(x,y) end end
+ cls()
+ robot.recoil,robot.lift,pulse=0,0,0
+ draw_robot()
+ local after,red=""
+ for y=0,35,5 do for x=0,35,5 do after..=sget(x,y) end end
+ for y=84,119 do for x=46,81 do if pget(x,y)==8 then red=true end end end
+ check("the robot is drawn from the map at its full size",red,"red found: "..tostr(red))
+ check("and the sprite sheet it borrowed is put back",before==after,"sheet "..(before==after and "restored" or "changed"))
+
  printh("ok rhythm")
  extcmd("shutdown")
 end
