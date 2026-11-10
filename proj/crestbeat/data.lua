@@ -37,6 +37,7 @@ hill_bottom=100
 max_sparks=200
 fly_speed=0.024
 start_gun=2
+bell_bonus=200
 ]],nil,_ENV)
 
 stages=parse_table[[

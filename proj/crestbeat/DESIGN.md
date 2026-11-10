@@ -171,6 +171,13 @@ hit, a closed one is dark. Spit is telegraphed by a flashing red bar where
 it will land and a glob travelling down the street; it lands on the beat
 and hurts the robot if it is still in that street.
 
+**Ring the bell** (a first try at the user's "glowing pattern", which they
+called an exploration): three lamps above the titan's head. Each time a hot
+spot opens and is hit at least once before the next opens, a lamp lights
+with a ding; the third rings the bell for `bell_bonus` (shown 2000) and the
+lamps go out. A window with no hit puts them out. So the hot spots become a
+lit sequence to chase across the streets.
+
 While a titan stands, the horizon (`crest_y`) eases down from `horizon` (40)
 to `titan_horizon` (82), so the road is the bottom third of the screen and
 the titan, lifted with it, stands whole against the sky; it eases back up

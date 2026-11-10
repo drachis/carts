@@ -132,6 +132,9 @@ SOUNDS += [
     (15, eighths(TUNE_A, 1, 3)),                                              # 10 tune a
     (15, eighths(TUNE_B, 1, 3)),                                              # 11 tune b
     (4, [(18, 6, 7, 0), (14, 6, 6, 0), (10, 6, 5, 0), (8, 6, 4, 0), (6, 6, 2, 0)]),  # 12 rocket
+    (3, [(57, 0, 6, 0), (57, 0, 4, 0), (57, 0, 2, 0)]),                       # 13 bell lamp
+    (6, [(62, 0, 7, 0), (57, 0, 6, 0), (62, 0, 6, 0), (57, 0, 5, 0), (62, 0, 4, 0),
+         (57, 0, 3, 0), (62, 0, 2, 0)]),                                      # 14 bell rings
 ]
 # "FF AABBCCDD": flags (1 loop start, 2 loop end), then the sfx on each
 # channel, 0x40 and over silent

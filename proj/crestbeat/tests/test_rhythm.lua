@@ -199,6 +199,22 @@ local function rhythm()
  equip(2)
  step_to(4.01)
  check("a shot at an open hot spot hurts it",spot.hp==spot_hp-2,"hp "..spot.hp)
+
+ reset("play")
+ start_stage(3)
+ local lit=""
+ for lane in all({-1,1,0}) do
+  open_spot(lane,0)
+  hit_spot(titan.spots[lane+2],1,judgements[1])
+  hit_spot(titan.spots[lane+2],1,judgements[1])
+  lit..=titan.lamps.." "
+ end
+ check("hitting three hot spot windows in a row rings the bell",lit=="1 2 0 " and score==bell_bonus,"lamps "..lit.."score "..score)
+ open_spot(-1,0)
+ hit_spot(titan.spots[1],1,judgements[1])
+ open_spot(1,0)
+ open_spot(0,0)
+ check("a window missed puts the lamps out",titan.lamps==0,"lamps "..titan.lamps)
  reset("play")
  start_stage(3)
  spot=titan.spots[2]

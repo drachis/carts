@@ -1,5 +1,5 @@
 function make_titan(spec)
- titan={rise=0,spots={},colour=spec.colour}
+ titan={rise=0,spots={},colour=spec.colour,lamps=0,window_hit=true}
  for lane=-1,1 do
   add(titan.spots,{lane=lane,hp=spec.bars*8/3,open=-1,flash=0})
  end
@@ -22,7 +22,11 @@ end
 
 function open_spot(lane,beat)
  local spot=titan.spots[lane+2]
- if spot.hp>0 then spot.open=beat+2.5 end
+ if spot.hp>0 then
+  spot.open=beat+2.5
+  if not titan.window_hit then titan.lamps=0 end
+  titan.window_hit=false
+ end
 end
 
 function open_spot_in(lane)
@@ -35,6 +39,19 @@ function hit_spot(spot,amount,judgement)
  spot.flash=6
  local x,y=spot_xy(spot)
  burst(x,y,8,judgement.colour,2)
+ if not titan.window_hit then
+  titan.window_hit=true
+  titan.lamps+=1
+  sfx(13)
+  if titan.lamps==3 then
+   titan.lamps=0
+   score+=bell_bonus
+   popup("ding! +"..bell_bonus.."0",titan_x(),titan_y()-20,10)
+   ring(titan_x(),titan_y()-14,30,10)
+   shake+=3
+   sfx(14)
+  end
+ end
  if spot.hp<0.01 then
   spot.hp=0
   burst(x,y,30,9,3)
@@ -93,6 +110,10 @@ function draw_titan()
  circfill(x+6,y-2,2,8)
  line(x-8,y+8,x-3,y+14,11)
  line(x+8,y+8,x+3,y+14,11)
+ for lamp=1,3 do
+  circfill(x+lamp*7-14,y-16,2,lamp<=titan.lamps and 10 or 1)
+  circ(x+lamp*7-14,y-16,2,lamp<=titan.lamps and 7 or 5)
+ end
  for spot in all(titan.spots) do
   local sx,sy=spot_xy(spot)
   if spot.hp==0 then
