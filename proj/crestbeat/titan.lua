@@ -85,6 +85,9 @@ function hit_spot(spot,amount,judgement)
   for other in all(titan.spots) do alive+=other.hp end
   if alive==0 then
    titan.dead=0
+   banner,banner_life="giant down!",45
+   ring(titan_x(),titan_y()+10,70,14)
+   ring(titan_x(),titan_y()+10,50,12)
    award("titans")
    sfx(6)
   end

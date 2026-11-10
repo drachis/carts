@@ -83,11 +83,20 @@ function sunset(horizon,sun_x,sun_y,radius,glory)
  end
 end
 
+function fever()
+ return mode=="play" and multiplier()==4
+end
+
 function draw_sky()
  local glory=titan and titan.rise or 0
  local sun_x,sun_y=64-cam_x*0.1,crest_y-8
  if titan then sun_x,sun_y=sun_x+(titan_x()-sun_x)*glory,sun_y+(titan_y()-12-sun_y)*glory end
- sunset(crest_y,sun_x,sun_y,22,titan and glory)
+ glow_x=sun_x
+ sunset(crest_y,sun_x,sun_y,22,titan and glory+(titan.dead or 0)/12 or fever() and 0.7+pulse*0.3)
+ for streak=1,stage.fly and 20 or 0 do
+  local angle,reach=streak/20+0.3,(clock*60+streak*37)%90
+  line(sun_x+cos(angle)*reach,sun_y+sin(angle)*reach/2,sun_x+cos(angle)*(reach+10),sun_y+sin(angle)*(reach+10)/2,streak%3==0 and 12 or 7)
+ end
  for tower in all(skyline) do
   local x=tower.x-cam_x*0.15
   rectfill(x,crest_y-tower.h,x+tower.w,crest_y,0)
@@ -97,9 +106,15 @@ end
 
 function draw_ground()
  rectfill(0,crest_y,127,127,0)
+ fillp(0xa5a5.8)
+ for dy=1,25,3 do
+  local half=20-dy*0.7
+  line(glow_x-half,crest_y+dy,glow_x+half,crest_y+dy,dy<9 and 9 or 8)
+ end
+ fillp()
  for t=scroll%0.1,1.4,0.1 do
   local _,y=project(0,t)
-  line(0,y,127,y,2)
+  line(0,y,127,y,fever() and 14 or 2)
  end
  for edge=-1.5,1.5,3 do
   local x1,y1=project(edge,0)
@@ -184,9 +199,10 @@ end
 
 function draw_effects()
  for beam in all(beams) do
-  for w=-beam.width,beam.width do
-   line(beam.x1+w,beam.y1,beam.x2,beam.y2,beam.life>2 and beam.colour or 9)
+  for w=-beam.width-1,beam.width+1 do
+   line(beam.x1+w,beam.y1,beam.x2,beam.y2,beam.life>2 and beam.colour or 2)
   end
+  if beam.life>2 then line(beam.x1,beam.y1,beam.x2,beam.y2,7) end
  end
  for wave in all(rings) do
   circ(wave.x,wave.y,wave.radius,wave.colour)

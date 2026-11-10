@@ -64,6 +64,7 @@ function hit_alien(alien,amount,judgement)
  if alien.hp<0.01 then
   del(aliens,alien)
   burst(x,y,12,alien.body,2)
+  ring(x,y,6+10*scale,14)
   shake+=2
   sfx(3)
   if alien.bonus>0 then

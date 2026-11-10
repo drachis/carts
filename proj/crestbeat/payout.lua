@@ -36,6 +36,11 @@ end
 
 function update_payout()
  payout_age+=1
+ if stats.saved>0 and payout_age%9==0 then
+  local x,y,colour=10+rnd(108),8+rnd(24),rnd{14,12,10,11}
+  burst(x,y,24,colour,2.5)
+  ring(x,y,10,colour)
+ end
  panel_vy=mid(-8,(panel_vy+(payout_rest-panel_y)*spring)*damping,8)
  panel_y+=panel_vy
  local row=payout_age/row_frames

@@ -22,6 +22,9 @@ Keep: the user asked for this view to see the designated street; the test bots s
 The idle spit: in a giant fight, a robot that has not changed street for `idle_beats` (4) gets spat at where it stands (landing two beats later), so no one can sit in a street waiting for its hot spot. `robot.moved` is set on every street change and when a stage starts. levels.py asserts the plan never holds one street long enough to be hit.
 Keep: the user: "spit should force the player to keep moving so they can't idle out in a lane".
 
-**main.lua:208** `function draw_title()`
+**main.lua:223** `function draw_title()`
 The 1980s title (DESIGN.md "The title"). The giant's silhouette is `draw_titan` with every colour mapped to 0 and `pal` stubbed out while it draws, so its own `pal` calls cannot undo that; it is clipped at the horizon (y 75), stood low with `crest_y` 225 and `titan.bars` 0 (no health bars). It sets `crest_y`, `robot.x`, `robot.lift` and `cam_x` for the title only; `reset` puts them back for play.
 Keep: the user asked for a very 1980s title with the robot flying down the street towards the fight.
+
+**main.lua:208** `function chrome(text,y,wide)`
+Text in the title logo's chrome: printed three times through clips of four rows, white, blue and grey, over a navy shadow; `wide` for the double-width logo, tall letters only for stage banners.

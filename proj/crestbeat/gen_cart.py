@@ -23,6 +23,7 @@ beats) a pattern. Channel 0 is the drums, and the game reads its note
 number to keep its clock on the beat, so every pattern has drums on 0.
 """
 import glob
+import re
 import os
 import time
 
@@ -153,7 +154,39 @@ def build_map():
     return lines
 
 
+MODULES = ["data", "levels", "world", "aliens", "titan", "robot", "payout", "main"]
+BUILDS = {
+    "lite.lua": ["draw_title", "chrome", "tri", "sunset", "draw_sky", "draw_ground", "draw_buildings",
+                 "draw_payout", "draw_hud"],
+    "play.lua": ["draw_title"],
+    "boot.lua": ["hit_spot", "ring_lamp", "lamps_lit", "update_titan", "spit", "land_spit", "open_spot",
+                 "draw_hazards"],
+}
+
+
+def build_stubbed():
+    """tests/lite.lua and tests/play.lua: the game's modules with some
+    functions stubbed out (each becomes an empty function), so a test cart
+    fits 8192 tokens beside its test. lite.lua drops the screens no logic test
+    reads; play.lua drops only the title screen, for the carts that read the
+    play screens; boot.lua drops the giant fight's rules, for test_boot,
+    which never leaves stage 1 but films the title (its giant silhouette
+    included: boot_title is the cart's label)."""
+    for build, stubs in BUILDS.items():
+        code = ""
+        for module in MODULES:
+            with open(os.path.join(HERE, module + ".lua"), encoding="utf-8") as handle:
+                text = handle.read()
+            for name in stubs:
+                text = re.sub(r"^function %s\((.*?)\)\n.*?^end\n" % re.escape(name),
+                              lambda m: "function %s(%s) end\n" % (name, m.group(1)), text, flags=re.M | re.S)
+            code += text
+        with open(os.path.join(HERE, "tests", build), "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(code)
+
+
 def main():
+    build_stubbed()
     gfx = build_gfx()
     write_png(os.path.join(HERE, "sheet.png"), gfx)
     tail = "\n".join(["__gfx__"] + gfx + ["__map__"] + build_map() + ["__sfx__"] + build_sfx()

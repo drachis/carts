@@ -36,6 +36,12 @@ local sections={
  {"streets",play(4,2,true,30)},
  {"titan",play(3,3,true,75)},
  {"queen",play(9,5,false,75)},
+ {"fever",play(7,2,false,20),function() combo=max(combo,30) end},
+ {"finale",play(6,3,false,60),function()
+   if frame==60 then
+    for spot in all(titan.spots) do hit_spot(spot,99,judgements[1]) end
+   end
+  end,72},
  {"payout",payout},
 }
 
@@ -66,8 +72,9 @@ function _update()
  left-=1
  held={}
  if mode=="play" then bot(frame,0,route and stage.golden) end
+ if sections[sec][3] then sections[sec][3]() end
  game_update()
- if frame==150 then extcmd("screen") end
+ if frame==(sections[sec][4] or 150) then extcmd("screen") end
 end
 
 printh("started")

@@ -8,3 +8,6 @@ tests/*.p8l
 build/
 release/
 run.txt
+tests/lite.lua
+tests/play.lua
+tests/boot.lua

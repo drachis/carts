@@ -333,7 +333,25 @@ setting sun; the skyline is black silhouettes; the buildings are navy with
 neon outlines and lit windows; the ground is black with a dim purple grid,
 pink road edges and blue lane dashes. In a giant fight the sun glides up
 behind the giant's head as it rises, a halo like an old religious painting,
-and throws Loretta's god rays across the sky (the user asked). The aliens' green, the golden alien
+and throws Loretta's god rays across the sky (the user asked).
+
+**Juice** (the user: "a thousand tokens left? Go wild"):
+
+- Shots are neon: a coloured beam a pixel wider each side with a white
+  core, and a small ring at the muzzle; every kill throws a pink ring.
+- Stage banners are chrome, in the title logo's banded white, blue and
+  grey (`chrome`, tall letters); the title logo is the same function, wide.
+- Switching streets leaves neon afterimages of the robot: blue, then pink,
+  then purple as they fade over six frames.
+- **Fever** at the top multiplier (x4): the grid turns hot pink, the sun
+  throws its god rays on any stage, and "fever x4" blinks in the HUD.
+- A giant's death: a half-white flash for two frames, a chrome "giant
+  down!", pink and blue shockwave rings, and the halo's rays flaring out as
+  it sinks.
+- A saved city gets neon fireworks over the payout.
+- A hit flashes a dithered red frame round the screen.
+- The sun is reflected in the road as dithered glints below the crest, and
+  the climb stages throw warp streaks out of the sun. The aliens' green, the golden alien
 and the robot's red stay as they were: they read clearly on black.
 
 ## The art
@@ -406,6 +424,17 @@ only once every ticket is out. The rows are `payouts` in `data.lua`.
 | `main.lua` | Modes, the beat clock, stages, aim, HUD, beat bar |
 
 ## Tests
+
+**Test builds.** Every test cart includes the whole game, and the game is
+past 7600 tokens, so `gen_cart.py` writes three stubbed copies of the
+modules into `tests/` (git-ignored): `lite.lua` without the screens no
+logic test reads (the logic carts: rhythm, rhythm2, giant, giant2, kinds,
+margin_*), `play.lua` without the title (the stage and screen carts), and
+`boot.lua` without the giant fight's rules (test_boot, whose title screen
+is the cart's label). A stub is an empty function of the same name. The
+margin checks (`test_margin.lua`) are carts of their own beside each
+stage's plan run.
+
 
     py run_tests.py --no-comments
     py count_tokens.py crestbeat.p8

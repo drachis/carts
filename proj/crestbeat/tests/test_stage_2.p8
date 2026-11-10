@@ -3,14 +3,7 @@ version 42
 __lua__
 log_name="log_stage_2"
 first_stage=2
-#include ../data.lua
-#include ../levels.lua
-#include ../world.lua
-#include ../aliens.lua
-#include ../titan.lua
-#include ../robot.lua
-#include ../payout.lua
-#include ../main.lua
+#include play.lua
 #include dump.lua
 #include bot.lua
 #include test_stage.lua

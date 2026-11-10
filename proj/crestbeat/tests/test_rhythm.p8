@@ -2,14 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
 log_name="log_rhythm"
-#include ../data.lua
-#include ../levels.lua
-#include ../world.lua
-#include ../aliens.lua
-#include ../titan.lua
-#include ../robot.lua
-#include ../payout.lua
-#include ../main.lua
+#include lite.lua
 #include dump.lua
 #include test_rhythm.lua
 __gfx__

@@ -1,5 +1,5 @@
 function reset_robot()
- robot={lane=0,x=64,vx=0,hp=max_hp,hurt=0,recoil=0,lift=0,shots=0,glow=0,moved=0}
+ robot={lane=0,x=64,vx=0,hp=max_hp,hurt=0,recoil=0,lift=0,shots=0,glow=0,moved=0,trail={}}
  equip(start_gun)
 end
 
@@ -29,6 +29,11 @@ function update_robot()
  end
  robot.vx=(robot.vx+(64+robot.lane*40-robot.x)*robot_spring)*robot_damping
  robot.x+=robot.vx
+ for ghost in all(robot.trail) do
+  ghost.life-=1
+  if ghost.life<1 then del(robot.trail,ghost) end
+ end
+ if abs(robot.vx)>1.5 then add(robot.trail,{x=robot.x,life=6}) end
  robot.hurt=max(robot.hurt-1)
  robot.glow=max(robot.glow-1)
  robot.recoil*=0.5
@@ -72,6 +77,7 @@ function fire(judgement)
  local gun,lane=guns[robot.gun],robot.lane
  local gun_x,gun_y=robot.x-cam_x,93-robot.lift
  sfx(gun.sound)
+ ring(gun_x,gun_y,5,gun.colour)
  combo+=1
  score+=judgement.points*multiplier()
  local target=target_in(lane)
@@ -118,6 +124,10 @@ function draw_robot()
   end
  end
  from_map(36,function()
+  for ghost in all(robot.trail) do
+   for colour=1,15 do pal(colour,({2,14,12})[ghost.life\3+1]) end
+   sspr(0,0,36,36,ghost.x-cam_x-18,top)
+  end
   for colour=1,15 do pal(colour,0) end
   for nudge=-1,1,2 do
    sspr(0,0,36,36,x-18+nudge,top)

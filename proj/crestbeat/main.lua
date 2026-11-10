@@ -182,7 +182,11 @@ function draw_hud()
  end
  local text=score_text()
  print(text,126-#text*4,3,7)
- if combo>3 then print("x"..multiplier(),56,3,10) end
+ if fever() then
+  centred("fever x4",3,tick_blink() and 14 or 10)
+ elseif combo>3 then
+  print("x"..multiplier(),56,3,10)
+ end
  local gun=guns[robot.gun]
  rectfill(0,123,127,127,0)
  for k=0,9 do
@@ -197,8 +201,19 @@ function draw_hud()
  line(5,124,5,127,5)
  print(gun.name,128-#gun.name*4,122,gun.colour)
  if mode=="play" and banner_life>0 then
-  centred(banner,14,banner_life%16<8 and 10 or 7)
+  chrome(banner,13)
  end
+end
+
+function chrome(text,y,wide)
+ local x=64-#text*(wide and 4 or 2)
+ text=(wide and "\^w\^t" or "\^t")..text
+ for row=0,2 do
+  clip(0,y+row*4,128,4)
+  print(text,x+1,y+1,1)
+  print(text,x,y,({7,12,13})[row+1])
+ end
+ clip()
 end
 
 function centred(text,y,colour)
@@ -228,12 +243,7 @@ function draw_title()
  robot.x,robot.lift,robot.recoil=64+sin(clock/8)*10,14+sin(clock/2)*3,0
  cam_x=0
  draw_robot()
- for row=0,2 do
-  clip(0,6+row*4,128,4)
-  print("\^w\^tcrestbeat",30,7,1)
-  print("\^w\^tcrestbeat",29,6,({7,12,13})[row+1])
- end
- clip()
+ chrome("crestbeat",6,true)
  pset(29+clock*24%72,7,7)
  for nudge=1,0,-1 do
   centred("aliens pour over the hill",21+nudge,(1-nudge)*14)
@@ -269,6 +279,16 @@ function _draw()
  if mode=="play" and btn(3) then draw_plan() end
  draw_effects()
  camera()
+ if robot.hurt>4 then
+  fillp(0x5a5a.8)
+  for edge=0,3 do rect(edge,edge,127-edge,127-edge,8) end
+  fillp()
+ end
+ if titan and titan.dead and titan.dead<3 then
+  fillp(0xa5a5.8)
+  rectfill(0,0,127,127,7)
+  fillp()
+ end
  draw_hud()
  if mode!="play" then
   draw_payout()

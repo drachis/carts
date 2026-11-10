@@ -9,15 +9,15 @@ Keep: the user asked for the hard beats smoothed out while the game stays about 
 An alien that reaches the bottom in the robot's street is body-blocked: the heart is lost but it counts as downed (`kills` points, a "blocked" popup); one reaching the bottom in another street leaks, a heart and no points.
 Keep: the user's rule, so a golden-alien chase can trade hearts for points without losing them.
 
-**aliens.lua:96** `function draw_fallen()`
+**aliens.lua:97** `function draw_fallen()`
 A killed alien becomes a body in `fallen` that tips over backwards like a shooting-gallery target: its sprite squashes from the feet over 5 frames to a sliver, goes to its kind's dark colour, and is gone after 24 frames. Its sound is the knockdown clack (sfx 3). Ages in the draw.
 Keep: the user asked for gallery knockdowns that clack.
 
-**aliens.lua:114** `function draw_aliens(behind)`
+**aliens.lua:115** `function draw_aliens(behind)`
 `draw_aliens(behind)` is called twice: for aliens still behind the crest (clipped at the crest, so they rise over it, in front of a titan), and for the rest. `kind_colours` swaps the sprite's green for the kind's colours. The bob is a smooth arc, `(cos(hop)-1)`, low on the beat and high between. The second call also draws each spit glob (`draw_glob`) in depth order among the aliens, before the first alien nearer than it.
 Keep: the user saw the spit sorted wrongly: drawn before every alien, a farther alien covered a nearer glob.
 
-**aliens.lua:87** `function swarm_sprite(size,sizes)`
+**aliens.lua:88** `function swarm_sprite(size,sizes)`
 The largest drawn size in a list that fits the size wanted: the swarm's ten (swarm_sprites, 8 to 32px) or the civilian's four (civilian_sprites, 8 to 24px), from art.py. Everything is drawn 1:1 with it, never scaled; a kind with `sprite` set uses the civilian list and bobs a pixel to run.
 Keep: the user prefers many sprites to scaling sprites.
 
