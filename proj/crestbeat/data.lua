@@ -44,6 +44,7 @@ straddle=0.7
 robot_spring=0.45
 robot_damping=0.45
 camera_lean=0.25
+splash_reach=0.15
 payout_rest=24
 row_frames=10
 count_frames=8

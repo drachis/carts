@@ -62,7 +62,7 @@ each eighth it fires on, to mix up the rhythm:
 |---|---|---|
 | minigun | `xxxxxxxx` every eighth | |
 | shock rifle | `x.x.x.x.` every beat | no pierce (the user found it looked and felt wrong) |
-| rockets | `x...x...` beats 1 and 3 | half a shot's damage to the front alien in each street beside |
+| rockets | `x...x...` beats 1 and 3 | half a shot's damage to the aliens close behind its target, same street only |
 | flak cannon | `x.x.x...` the user's 3/4, `123_` | |
 | plasma rifle | `x.x.xxx.` the user's `12_123`: two long, three short | |
 

@@ -78,9 +78,13 @@ local function rhythm()
  step_to(5.01)
  check(name.." hits only the front alien in the street",aliens[1].hp==alien_hp and aliens[2].hp==alien_hp-2,aliens[1].hp.." behind, "..aliens[2].hp.." in front")
 
- name=armed(3,{-1,0,1})
- step_to(6.01)
- check(name.." kill their target and splash the streets beside",#aliens==2 and aliens[1].hp==alien_hp-guns[3].damage*guns[3].splash,#aliens.." left, hp "..aliens[1].hp)
+ name=armed(3,{-1,0,0,1})
+ step_to(8.01)
+ local splashed,spared=0,0
+ for alien in all(aliens) do
+  if alien.lane==0 then splashed=alien_hp-alien.hp else spared+=alien_hp-alien.hp end
+ end
+ check(name.." kill their target and splash only the alien close behind it",#aliens==3 and splashed==guns[3].damage*guns[3].splash and spared==0,#aliens.." left, splash "..splashed..", other streets lost "..spared)
  check("a killed alien is knocked down where it stood",#fallen==1 and fallen[1].x==64,#fallen.." down")
  game_draw()
  game_draw()

@@ -67,11 +67,13 @@ function fire(judgement)
  sfx(gun.sound)
  combo+=1
  score+=judgement.points*multiplier()
- strike(target_in(lane),gun.damage,judgement,gun_x,gun_y,gun)
- if gun.splash then
-  for side=-1,1,2 do
-   local alien=front_alien(lane+side)
-   if alien then strike(alien,gun.damage*gun.splash,judgement,gun_x,gun_y,gun) end
+ local target=target_in(lane)
+ strike(target,gun.damage,judgement,gun_x,gun_y,gun)
+ if gun.splash and not target.open then
+  for alien in all(aliens) do
+   if alien!=target and abs(alien.t-target.t)<splash_reach and abs(alien.pos-target.pos)<0.5 then
+    strike(alien,gun.damage*gun.splash,judgement,gun_x,gun_y,gun)
+   end
   end
  end
 end
