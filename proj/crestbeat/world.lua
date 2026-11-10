@@ -47,7 +47,18 @@ function sort_by_t(list)
  end
 end
 
-function sunset(horizon,sun_x,radius)
+function tri(x0,y0,x1,y1,x2,y2,colour)
+ if y1<y0 then x0,y0,x1,y1=x1,y1,x0,y0 end
+ if y2<y0 then x0,y0,x2,y2=x2,y2,x0,y0 end
+ if y2<y1 then x1,y1,x2,y2=x2,y2,x1,y1 end
+ for y=ceil(y0),y2 do
+  local far=x0+(x2-x0)*(y-y0)/max(y2-y0,0.01)
+  local near=y<y1 and x0+(x1-x0)*(y-y0)/max(y1-y0,0.01) or x1+(x2-x1)*(y-y1)/max(y2-y1,0.01)
+  line(far,y,near,y,colour)
+ end
+end
+
+function sunset(horizon,sun_x,sun_y,radius,glory)
  cls(1)
  fillp(0xa5a5)
  rectfill(0,horizon-44,127,horizon-23,0x12)
@@ -57,17 +68,26 @@ function sunset(horizon,sun_x,radius)
   local x,y=star*37%128,star*23%50
   if y<horizon-12 and (star+flr(clock*2))%7>0 then pset(x,y,star%3==0 and 7 or 13) end
  end
- local centre=horizon-radius*0.37
- for dy=-radius,radius*0.37 do
+ for ray=1,glory and 16 or 0 do
+  local wide=ray%2
+  local angle,width,reach=ray/16+clock/180*(wide*2-1),0.006+wide*0.012+sin(clock/6+ray/5)*0.005,(100+ray*29%50)*glory
+  fillp(wide>0 and 0xa5f5.8 or 0x5a5a.8)
+  tri(sun_x,sun_y,sun_x+cos(angle-width)*reach,sun_y+sin(angle-width)*reach,sun_x+cos(angle+width)*reach,sun_y+sin(angle+width)*reach,wide>0 and 9 or 14)
+ end
+ fillp()
+ for dy=-radius,min(radius,horizon-sun_y) do
   local half,share=sqrt(radius*radius-dy*dy),dy/radius
   if dy<0 or (dy+flr(clock*8))%6>=share*6 then
-   line(sun_x-half,centre+dy,sun_x+half,centre+dy,share<-0.47 and 10 or share<-0.07 and 9 or share<0.33 and 8 or 14)
+   line(sun_x-half,sun_y+dy,sun_x+half,sun_y+dy,share<-0.47 and 10 or share<-0.07 and 9 or share<0.33 and 8 or 14)
   end
  end
 end
 
 function draw_sky()
- sunset(crest_y,64-cam_x*0.1,22)
+ local glory=titan and titan.rise or 0
+ local sun_x,sun_y=64-cam_x*0.1,crest_y-8
+ if titan then sun_x,sun_y=sun_x+(titan_x()-sun_x)*glory,sun_y+(titan_y()-12-sun_y)*glory end
+ sunset(crest_y,sun_x,sun_y,22,titan and glory)
  for tower in all(skyline) do
   local x=tower.x-cam_x*0.15
   rectfill(x,crest_y-tower.h,x+tower.w,crest_y,0)

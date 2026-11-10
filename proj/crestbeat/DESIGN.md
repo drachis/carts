@@ -331,7 +331,9 @@ the title and wished the whole game had its art direction). `sunset` draws
 the same sky and sun at the crest, so the giants stand in front of the
 setting sun; the skyline is black silhouettes; the buildings are navy with
 neon outlines and lit windows; the ground is black with a dim purple grid,
-pink road edges and blue lane dashes. The aliens' green, the golden alien
+pink road edges and blue lane dashes. In a giant fight the sun glides up
+behind the giant's head as it rises, a halo like an old religious painting,
+and throws Loretta's god rays across the sky (the user asked). The aliens' green, the golden alien
 and the robot's red stay as they were: they read clearly on black.
 
 ## The art
@@ -432,12 +434,12 @@ sound and holds the bot.
   knockback; a late arrival inside and outside `good_window`; nothing fired
   and the glow on an empty beat; minigun, front-only and splash damage; that
   every kind lives exactly its bars under every gun; a leak;
-  the chart; when a swarm is done; golden aliens and weavers.
+  the chart; when a swarm is done.
+- `test_kinds` (split when the god rays passed the others over 8192 tokens): golden aliens, the queen's health, weavers, the payout's rows, curve, dispensing and spring.
 - `test_giant` (split from test_rhythm when the title passed it over 8192
   tokens): open and closed hot spots, spit in and out of its street, the
   idle spit, when a titan stage is done, the road coming down and back up,
   a destroyed street's crack and smoke; civilians; the bell.
-- the payout's rows, curve, dispensing and spring are in `test_screen`.
 
 ## Still to do, or not checked
 

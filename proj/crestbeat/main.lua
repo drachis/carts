@@ -206,7 +206,7 @@ function centred(text,y,colour)
 end
 
 function draw_title()
- sunset(75,64,30)
+ sunset(75,64,64,30)
  if not titan then make_titan(stages[3]) end
  titan.rise,titan.bars,crest_y=1,0,225
  local real_pal=pal

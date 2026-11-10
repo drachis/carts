@@ -126,51 +126,6 @@ local function rhythm()
    check("a "..kind.name.." lives for "..kind.bars.." bars of any gun's fire",counts==wanted,"shots "..counts.."for "..wanted)
   end
  end
- reset("play")
- send_alien(0,0,kinds.gold)
- hit_alien(aliens[1],99,judgements[1])
- check("a golden alien pays its bonus",score==kinds.gold.bonus and stats.golds==1 and stats.kills==0,"score "..score)
-
-
- reset("play")
- start_stage(#stages)
- local shots=0
- for spot in all(titan.spots) do
-  spot.open=99
-  while spot.hp>0 do
-   hit_spot(spot,guns[2].damage,judgements[1])
-   shots+=1
-  end
- end
- printh("the queen takes "..shots.." shock rifle shots, "..(shots/guns[2].shots).." bars (asked for "..stages[#stages].bars..")")
- reset("play")
- send_alien(-1,0,kinds.gold)
- local streets=""
- for beat=4,12,kinds.gold.track do
-  clock=beat
-  update_aliens()
-  streets..=aliens[1].lane.." "
- end
- check("a golden alien crosses the streets halfway up the hill",streets=="-1 0 1 " and aliens[1].t==kinds.gold.depth,"streets "..streets.."at depth "..aliens[1].t)
- clock=6.5
- update_aliens()
- check("straddling two streets it can be shot from either",front_alien(-1)==aliens[1] and front_alien(0)==aliens[1] and front_alien(1)==nil,"at "..aliens[1].pos)
- reset("play")
- send_alien(-1,0,kinds.gold)
- send_alien(0,-2)
- clock=4
- update_aliens()
- check("and an alien nearer in its street shields it",front_alien(0) and not front_alien(0).harmless and #aliens==2,"front is "..(front_alien(0).harmless and "gold" or "an alien"))
-
- reset("play")
- send_alien(-1,0,kinds.weaver)
- streets=""
- for beat=-0.6,7.5,2 do
-  clock=beat
-  update_aliens()
-  streets..=aliens[1].lane.." "
- end
- check("a weaver walks down sweeping across the streets every two beats",streets=="-1 0 1 0 -1 ","streets "..streets)
 
  reset("play")
  on_beat(4)
