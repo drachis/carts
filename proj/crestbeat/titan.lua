@@ -185,10 +185,11 @@ function draw_titan()
   local open=clock<spot.open
   local shield=open and 1-min(1,min(clock-spot.open+2.5,spot.open-clock)*4) or 1
   if spot.hp>0 and shield>0 then
-   local glint=spot.flash>0 and 7 or 12
-   hexagon(sx,sy,7*shield,glint)
-   hexagon(sx,sy,4*shield,spot.flash>0 and 7 or 1)
-   pset(sx-2*shield,sy-3*shield,glint)
+   for row=0,6 do
+    for col=-1,1 do
+     hexagon(x+spot.lane*15.6+col*5.2+row%2*2.6-1.3,y-2+row*4.5,3*shield,spot.flash>0 and 7 or 12)
+    end
+   end
   end
   local left=x+spot.lane*(segments*3+4)-segments*1.5
   rectfill(left-1,bar_y-1,left+segments*3-1,bar_y+2,0)

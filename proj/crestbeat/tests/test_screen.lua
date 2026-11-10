@@ -124,9 +124,17 @@ local function screen()
   add(lit,red)
  end
  check("one segmented bar a street over its head, empty once the street is destroyed",lit[1]==0 and lit[2]>4 and lit[3]>4,"red pixels "..lit[1].." "..lit[2].." "..lit[3])
- local sx,sy=spot_xy(spot)
- local ox,oy=spot_xy(titan.spots[3])
- check("a closed street's shield is drawn, an open one's is not",pget(sx,sy+7)==12 and pget(ox,oy+7)!=12,"colours "..pget(sx,sy+7).." "..pget(ox,oy+7))
+ local blue={}
+ for lane=-1,1 do
+  local count=0
+  for dx=lane*3-3,lane*3+3 do
+   for y=titan_y()-4,titan_y()+28 do
+    if pget(x+lane*15.6+dx,y)==12 then count+=1 end
+   end
+  end
+  add(blue,count)
+ end
+ check("a honeycomb shield stands in a closed street, none in an open or destroyed one",blue[1]==0 and blue[2]>40 and blue[3]==0,"blue pixels "..blue[1].." "..blue[2].." "..blue[3])
 
  printh("ok screen")
  extcmd("shutdown")

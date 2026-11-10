@@ -221,8 +221,9 @@ as the user asked.
 A kaiju lizard-dragon of our own standing behind the crest (see "The art");
 the titan green, the behemoth lavender, the queen pink. As it arrives, every building on the far part of the hill
 gets a moment to collapse at, so it crunches through the skyline. Its three
-hot spots sit over the three streets, each behind a blue hex shield; while
-a spot is open its shield shrinks away and it can be hit. A shot into a
+hot spots sit over the three streets, each behind its third of a blue honeycomb
+force field standing in front of the body; while a spot is open its cells
+shrink away and it can be hit (rings on the chest still read as nipples). A shot into a
 shielded street sparks off the shield and does nothing (the user found the
 old glowing orange spots looked like nipples; the shields are a look
 change only, what can be hit is the same). Over its head, one segmented
