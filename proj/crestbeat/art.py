@@ -41,7 +41,7 @@ def band(y0, y1, inside_of):
     return lambda u, v: y0 <= v <= y1 and inside_of(u, v)
 
 
-def render(figure, width, height, mirror=True, keep="78a"):
+def render(figure, width, height, mirror=True, keep="78ab"):
     """The figure as rows of colour digits, "0" transparent. A colour in
     `keep` (eyes, claw tips) wins any pixel it covers a quarter of."""
     big_w, big_h = width * SUPER, height * SUPER
@@ -133,6 +133,31 @@ def kaiju_torso():
         (triangle((0.1, 0.12), (0.2, 0.08), (0.1, -0.1)), "6"),
         (triangle((0.24, 0.07), (0.32, 0.06), (0.26, -0.12)), "6"),
     ]
+
+
+def queen_head():
+    """The hive queen's head, 24x24: our own queen of the swarm, crowned. A
+    narrow, sharp face with glowing eyes and high cheek ridges, spined
+    tendrils sweeping down from the skull to her shoulders, and a gold chitin
+    crown with red gems. 3 is her body (pink in the game)."""
+    figure = [
+        (capsule(0.36, 0.3, 0.12, 0.95, 0.05), "2"),
+        (capsule(0.4, 0.28, 0.24, 1.0, 0.045), "2"),
+        (capsule(0.3, 0.38, 0.06, 0.8, 0.04), "2"),
+        (ellipse(0.5, 0.5, 0.24, 0.26), "3"),
+        (triangle((0.3, 0.55), (0.5, 0.55), (0.5, 0.92)), "3"),
+        (capsule(0.29, 0.52, 0.4, 0.6, 0.03), "1"),
+        (triangle((0.34, 0.5), (0.45, 0.53), (0.36, 0.56)), "b"),
+        (capsule(0.44, 0.78, 0.5, 0.79, 0.015), "1"),
+        (band(0.2, 0.3, ellipse(0.5, 0.3, 0.26, 0.12)), "a"),
+        (triangle((0.26, 0.26), (0.34, 0.26), (0.24, 0.02)), "a"),
+        (triangle((0.38, 0.24), (0.46, 0.24), (0.4, 0.06)), "a"),
+        (triangle((0.46, 0.24), (0.54, 0.24), (0.5, 0.0)), "a"),
+        (ellipse(0.5, 0.24, 0.04, 0.04), "8"),
+        (ellipse(0.32, 0.25, 0.025, 0.025), "8"),
+        (band(0.27, 0.3, ellipse(0.5, 0.3, 0.26, 0.12)), "9"),
+    ]
+    return figure
 
 
 def kaiju_head(open_jaw):

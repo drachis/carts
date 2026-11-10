@@ -55,7 +55,7 @@ STAGES = [
     dict(name="crest", slack=1, tickets=3, margin=2, title="they keep coming!",
          seq="a2 a1 a3 h2 c3 a1 w1 a2 g1 a3 a3"),
     dict(name="climb", fly=1, beats=8, title="the hive queen awaits"),
-    dict(name="queen", bars=6, colour=14, heal=1, tickets=4, slack=2, margin=1, title="the hive queen!",
+    dict(name="queen", bars=6, colour=14, crown=1, heal=1, tickets=4, slack=2, margin=1, title="the hive queen!",
          seq="q1 q2 a3 q3/s q2 a1 q1 q3/s w2 q2/s q1 a3 q3/s q2 a1 q1/s q3"),
 ]
 for giants in (False, True):
@@ -255,13 +255,13 @@ def build(spec):
 
 
 def lua_rows():
-    lines = ["name,chart,plan,golden,gold_cost,bars,colour,fly,heal,tickets,margin,title"]
+    lines = ["name,chart,plan,golden,gold_cost,bars,colour,crown,fly,heal,tickets,margin,title"]
     costs = []
     for spec in STAGES:
         chart, plan, gold, golden, cost = build(spec)
         lines.append(",".join(str(v) for v in (
             spec["name"], chart, plan, golden, cost, spec.get("bars", ""), spec.get("colour", ""),
-            spec.get("fly", ""), spec.get("heal", ""), spec.get("tickets", ""),
+            spec.get("crown", ""), spec.get("fly", ""), spec.get("heal", ""), spec.get("tickets", ""),
             spec.get("margin", ""), spec["title"])))
         if gold:
             costs.append(cost)

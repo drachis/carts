@@ -1,5 +1,5 @@
 function make_titan(spec)
- titan={rise=0,spots={},colour=spec.colour}
+ titan={rise=0,spots={},colour=spec.colour,crown=spec.crown}
  for lane=-1,1 do
   add(titan.spots,{lane=lane,hp=spec.bars*8/3,open=-1,flash=0})
  end
@@ -21,8 +21,9 @@ function spot_xy(spot)
 end
 
 function draw_limb(x0,y0,x1,y1,from_radius,to_radius,colour)
+ local step=min(0.1,1/sqrt((x1-x0)^2+(y1-y0)^2+1))
  for pass=0,1 do
-  for share=0,1,0.1 do
+  for share=0,1,step do
    circfill(x0+(x1-x0)*share,y0+(y1-y0)*share,
     from_radius+(to_radius-from_radius)*share-pass,pass==0 and 1 or colour)
   end
@@ -125,7 +126,7 @@ function draw_titan()
   for finger=0,3 do
    add(tips,{wrist_x+side*(4+finger*7),wrist_y-14+finger*9-flap*(3-finger)*3})
   end
-  for finger=1,3 do
+  for finger=1,titan.crown and 0 or 3 do
    local from,to=tips[finger],tips[finger+1]
    for along=0,1,0.03 do
     local scallop=1+sin(along/2)*0.3
@@ -133,7 +134,13 @@ function draw_titan()
      wrist_y+(from[2]+(to[2]-from[2])*along-wrist_y)*scallop,2)
    end
   end
-  for tip in all(tips) do line(wrist_x,wrist_y,tip[1],tip[2],colour) end
+  for tip in all(tips) do
+   if titan.crown then
+    draw_limb(wrist_x,wrist_y,wrist_x+(tip[1]-wrist_x)*1.4,wrist_y+(tip[2]-wrist_y)*1.4,2.5,0.5,7)
+   else
+    line(wrist_x,wrist_y,tip[1],tip[2],colour)
+   end
+  end
   draw_limb(shoulder_x,shoulder_y,wrist_x,wrist_y,3,2,colour)
  end
  for side=-1,1,2 do
@@ -157,7 +164,12 @@ function draw_titan()
  for hazard in all(hazards) do
   if clock-hazard.from<1 then spat=true end
  end
- sspr(spat and 64 or 40,96,24,20,x-12+(robot.x-64)*0.05,y-21+bob*2)
+ local look=x-12+(robot.x-64)*0.05
+ if titan.crown then
+  sspr(88,96,24,24,look,y-25+bob*2)
+ else
+  sspr(spat and 64 or 40,96,24,20,look,y-21+bob*2)
+ end
  pal()
  for spot in all(titan.spots) do
   local lamp_x=x+spot.lane*7

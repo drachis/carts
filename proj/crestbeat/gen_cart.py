@@ -15,7 +15,8 @@ Symmetrical things are drawn as their left half and mirrored.
     civilian   16x16 at (48,72) and (64,72), arms up, fleeing
     giant      a hand 8x8 at (80,72), a foot 16x8 at (88,72), the torso
                40x32 at (0,96), the head 24x20 at (40,96) and with its jaw
-               open at (64,96) (art.py); its wings are drawn in titan.lua
+               open at (64,96), the queen's crowned head 24x24 at (88,96)
+               (art.py); its wings are drawn in titan.lua
 
 The music is 120 BPM: sfx speed 15, a note a quarter beat, 32 notes (eight
 beats) a pattern. Channel 0 is the drums, and the game reads its note
@@ -162,6 +163,7 @@ def build_gfx():
     stamp(sheet, art.outlined(art.render(art.kaiju_torso(), 40, 32)), 0, 96)
     stamp(sheet, art.outlined(art.render(art.kaiju_head(False), 24, 20)), 40, 96)
     stamp(sheet, art.outlined(art.render(art.kaiju_head(True), 24, 20)), 64, 96)
+    stamp(sheet, art.outlined(art.render(art.queen_head(), 24, 24)), 88, 96)
     return ["".join(row) for row in sheet]
 
 

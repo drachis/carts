@@ -277,6 +277,12 @@ civilians white and brown, the robot red, the giants their own colours.
   between them, flapping once every two beats; they sit further back,
   moving less as it sways. Its body colour is swapped per giant. The hot
   spots sit on its chest and shoulders, with the bell's lamps above them.
+- **The hive queen** (`crown` in `levels.py`) is the same frame given a
+  queen-of-the-swarm look of our own, as the user asked for one with a
+  crown: her own head (24x24 at 88,96: a narrow face with glowing green
+  eyes and cheek ridges, dark spined tendrils sweeping to her shoulders, a
+  gold chitin crown with red gems), and bone blade-wings in place of the
+  membrane: the four finger bones drawn long, tapering and white.
 
 ## The ticket payout
 
