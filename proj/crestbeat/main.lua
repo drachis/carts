@@ -205,7 +205,64 @@ function centred(text,y,colour)
  print(text,64-#text*2,y,colour)
 end
 
+function draw_title()
+ rectfill(0,0,127,30,1)
+ fillp(0xa5a5)
+ rectfill(0,31,127,52,0x12)
+ fillp()
+ rectfill(0,53,127,74,2)
+ for star=1,40 do
+  local x,y=star*37%128,star*23%50
+  if (star+flr(clock*2))%7>0 then pset(x,y,star%3==0 and 7 or 13) end
+ end
+ for dy=-30,11 do
+  local half=sqrt(900-dy*dy)
+  if dy<0 or (dy+flr(clock*8))%6>=dy/5 then
+   line(64-half,64+dy,64+half,64+dy,dy<-14 and 10 or dy<-2 and 9 or dy<10 and 8 or 14)
+  end
+ end
+ if not titan then make_titan(stages[3]) end
+ titan.rise,titan.bars,crest_y=1,0,225
+ local real_pal=pal
+ pal=function() end
+ for colour=0,15 do real_pal(colour,0) end
+ clip(0,0,128,75)
+ draw_titan()
+ clip()
+ pal=real_pal
+ pal()
+ rectfill(0,75,127,127,0)
+ for k=-8,8 do
+  line(64+k*2,75,64+k*28,127,abs(k)==1 and 12 or 2)
+ end
+ for i=0,7 do
+  local depth=(i+clock%1)/8
+  line(0,75+52*depth*depth,127,75+52*depth*depth,depth>0.4 and 14 or 2)
+ end
+ robot.x,robot.lift,robot.recoil=64+sin(clock/8)*10,14+sin(clock/2)*3,0
+ cam_x=0
+ draw_robot()
+ for row=0,2 do
+  clip(0,6+row*4,128,4)
+  print("\^w\^tcrestbeat",30,7,1)
+  print("\^w\^tcrestbeat",29,6,({7,12,13})[row+1])
+ end
+ clip()
+ pset(29+clock*24%72,7,7)
+ for nudge=1,0,-1 do
+  centred("aliens pour over the hill",21+nudge,(1-nudge)*14)
+  centred("your guns fire on the beat",27+nudge,(1-nudge)*14)
+ end
+ print("l/r street",2,114,6)
+ print("z/x gun",98,114,6)
+ centred("press z",120,tick_blink() and 10 or 5)
+end
+
 function _draw()
+ if mode=="title" then
+  draw_title()
+  return
+ end
  camera(rnd(shake)-shake/2,rnd(shake)-shake/2)
  draw_sky()
  draw_ground()
@@ -227,15 +284,7 @@ function _draw()
  draw_effects()
  camera()
  draw_hud()
- if mode=="title" then
-  rectfill(10,46,117,90,0)
-  centred("crestbeat",50,8)
-  centred("aliens pour over the hill",58,11)
-  centred("your guns fire on the beat:",64,7)
-  centred("be on the right street",70,7)
-  centred("left/right street  z/x gun",76,6)
-  centred("press z",84,tick_blink() and 10 or 5)
- elseif mode!="play" then
+ if mode!="play" then
   draw_payout()
  end
 end

@@ -194,7 +194,7 @@ function draw_titan()
    end
   end
   local left=x+spot.lane*(segments*3+4)-segments*1.5
-  rectfill(left-1,bar_y-1,left+segments*3-1,bar_y+2,0)
+  if segments>0 then rectfill(left-1,bar_y-1,left+segments*3-1,bar_y+2,0) end
   for segment=0,segments-1 do
    local filled=segment<spot.hp*3/8-0.01
    rectfill(left+segment*3,bar_y,left+segment*3+1,bar_y+1,filled and (open and pulse>0.5 and 10 or 8) or 1)

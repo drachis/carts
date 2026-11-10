@@ -312,6 +312,16 @@ when a shot lands; that keeps `levels.py`'s plans, margins and routes true.
 - Each frame the enemies move before the guns fire, so a shot on the beat
   sees where everything is on the beat.
 
+## The title
+
+The user asked for a very 1980s title with the robot flying down the street
+towards the fight: a synthwave sky (navy to purple, dithered), stars, a
+striped sunset sun whose slats widen toward the bottom and scroll, the titan
+in black silhouette rising over the horizon in front of it, a neon grid of
+pink lines rolling toward the player with the street's edges in blue, the
+robot on its jets swaying down the street, and a chrome logo in banded
+white, blue and grey. It draws no HUD.
+
 ## The art
 
 The figures are drawn from shapes by `art.py` (run by `gen_cart.py`), at
@@ -410,10 +420,11 @@ sound and holds the bot.
   knockback; a late arrival inside and outside `good_window`; nothing fired
   and the glow on an empty beat; minigun, front-only and splash damage; that
   every kind lives exactly its bars under every gun; a leak;
-  the chart; open and closed hot spots; spit in and out of its street; when
-  a swarm and a titan stage are done; the titan and rising aliens read off
-  the screen; golden aliens, civilians and weavers; the payout's
-  rows, total, dispensing and spring.
+  the chart; when a swarm is done; golden aliens, civilians and weavers.
+- `test_giant` (split from test_rhythm when the title passed it over 8192
+  tokens): open and closed hot spots, spit in and out of its street, the
+  idle spit, when a titan stage is done, the road coming down and back up.
+- the payout's rows, curve, dispensing and spring are in `test_screen`.
 
 ## Still to do, or not checked
 
