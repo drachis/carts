@@ -6,6 +6,7 @@ __lua__
 #include data.lua
 #include world.lua
 #include aliens.lua
+#include titan.lua
 #include robot.lua
 #include main.lua
 __gfx__

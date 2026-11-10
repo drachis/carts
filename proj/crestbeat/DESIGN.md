@@ -67,12 +67,44 @@ depth: 0 at the crest, 1 at the bottom of the hill. A hit knocks it back by
 moving its start later (`born`). At `t>=1` it is gone and the robot loses a
 point of `hp`; at 0 the run is lost.
 
+## Stages
+
+The run is a list of stages (`stages` in `data.lua`), each with a chart
+read one character a beat from the beat it starts on:
+
+| Character | Meaning |
+|---|---|
+| `1` `2` `3` | send an alien down the left, middle, right lane |
+| `q` `w` `e` | open the titan's hot spot over that lane for 2.5 beats |
+| `a` `s` `d` | the titan spits down that lane; it lands two beats later |
+| anything else | a rest |
+
+A swarm stage is done when its chart is played and no alien is left. A
+stage with `fly` lifts the robot on its jets and slides the city toward it
+(`fly_speed`): the road's dashes and the buildings run past, and buildings
+that pass the robot come round again at the crest, standing. A stage with
+`spot_hp` is a titan: its chart loops until all three hot spots are gone,
+then it sinks in flames for 1.5 seconds and the next stage starts. The
+last stage done is the win. Each stage shows its `title` as a banner.
+
+## The titan
+
+A great bug standing on the crest, swaying, drawn from ovals and lines in
+`draw_titan` (art direction later). As it arrives, every building on the
+far third of the hill gets a moment to collapse at, so it crunches through
+the skyline. Its three hot spots sit over the three lanes. A shot (on the
+beat, as ever) at an open hot spot in the robot's lane hurts it, if no
+alien is in front; closed spots are dark and cannot be hurt. Spit is
+telegraphed by a flashing red bar where it will land and a glob that
+travels down the lane; it lands on the beat, and hurts the robot if it is
+still in that lane.
+
 ## The picture
 
 `project(lane,t)` is the whole perspective: lanes close up toward the
 crest and the road falls away more steeply near the robot. Draw order: sky
 and skyline, aliens still behind the crest, the ground, the road and its
-dashes, the buildings far to near, aliens far to near, beams, the robot,
+dashes, the titan (clipped while it rises), the buildings far to near, aliens far to near, beams, the robot,
 effects, HUD, beat bar.
 
 ## Modules
@@ -82,6 +114,7 @@ effects, HUD, beat bar.
 | `data.lua` | Parsers, constants, judgements, charts |
 | `world.lua` | Projection, sky, road, buildings, effects |
 | `aliens.lua` | Sending, hopping, hurting, drawing aliens |
+| `titan.lua` | The titan, its hot spots, its spit |
 | `robot.lua` | Lanes, shooting, judging, drawing the robot |
 | `main.lua` | Modes, the beat clock, the wave, HUD, beat bar |
 
@@ -92,17 +125,19 @@ effects, HUD, beat bar.
 
 - `test_boot`: the real cart from frame one, input and sound stubbed. A bot
   that stands in the most urgent alien's lane and fires on every beat wins
-  the wave; then a run with no input loses it; then a restart. Screens are
+  the run (dodging spit, shooting open hot spots); then a run with no input
+  loses it; then a restart. It prints each stage's start beat and hp. Screens are
   dumped (`boot_*.png`).
 - `test_rhythm`: judging at the beat, a few frames off and far off; a
   second shot on the same beat; that perfect and good hurt the front alien
   and push it back and a miss does not; that a leaking alien costs a point
-  of hp.
+  of hp; open and closed hot spots; spit in and out of its lane; when a
+  swarm and a titan stage are done.
 
 ## Not built yet, or not checked
 
-- Step 1 only: one swarm wave and the win and loss. No flight up the hill,
-  titan, later waves, boss or gun pickups yet.
+- Stages so far: swarm, climb, titan. No second swarm, boss or gun pickups
+  yet.
 - The music has not been heard, and whether `stat(50)` keeps the clock on
   the drums on the user's machine is untested (the tests stub music).
 - Whether the windows feel fair to a person; 4 and 8 frames are guesses.

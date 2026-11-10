@@ -36,8 +36,15 @@ max_hp=4
 crest_y=40
 hill_span=60
 max_sparks=200
-wave_chart=....1.2.3.2.1...3.1.2.3.1.2.3
+fly_speed=0.012
 ]],nil,_ENV)
+
+stages=parse_table[[
+name,chart,spot_hp,fly,title
+hill,....1.2.3.2.1...3.1.2.3.1.2.3,,,they're over the hill!
+climb,........,,1,up the hill!
+titan,..q.w.e.a.w.q.s.e.w.d.,2,,titan! shoot its hot spots
+]]
 
 judgements=parse_table[[
 name,colour,knock,points,sound

@@ -11,6 +11,7 @@ Read only the file for the module you are changing.
 | [notes/data.md](notes/data.md) | tuning, judgements, the wave chart |
 | [notes/world.md](notes/world.md) | projection, road, buildings, effects |
 | [notes/aliens.md](notes/aliens.md) | sending, hopping, hurting, drawing aliens |
+| [notes/titan.md](notes/titan.md) | the titan, hot spots, spit |
 | [notes/robot.md](notes/robot.md) | lanes, judging shots, the robot |
 | [notes/main.md](notes/main.md) | modes, beat clock, chart, HUD, beat bar |
 

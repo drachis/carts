@@ -1,5 +1,5 @@
 function reset_robot()
- robot={lane=0,x=64,hp=max_hp,hurt=0,recoil=0}
+ robot={lane=0,x=64,hp=max_hp,hurt=0,recoil=0,lift=0}
  last_shot_beat=nil
 end
 
@@ -25,23 +25,24 @@ end
 
 function shoot()
  local judgement=judge()
- local gun_x,gun_y=robot.x,93
+ local gun_x,gun_y=robot.x,93-robot.lift
  sfx(judgement.sound)
- popup(judgement.name,robot.x,76,judgement.colour)
+ popup(judgement.name,robot.x,76-robot.lift,judgement.colour)
  if judgement.points==0 then
   combo=0
   burst(gun_x,gun_y,4,5,1)
   return judgement
  end
  robot.recoil=3
- local alien=front_alien(robot.lane)
- if alien then
-  local x,y,scale=alien_centre(alien)
+ local alien,spot=front_alien(robot.lane),open_spot_in(robot.lane)
+ if alien or spot then
+  local x,y
+  if alien then x,y=alien_centre(alien) else x,y=spot_xy(spot) end
   add(beams,{x1=gun_x,y1=gun_y,x2=x,y2=y,colour=judgement.colour,
    width=judgement.name=="perfect" and 2 or 1,life=5})
   combo+=1
   score+=judgement.points*multiplier()
-  hit_alien(alien,judgement)
+  if alien then hit_alien(alien,1,judgement) else hit_spot(spot,1,judgement) end
  end
  return judgement
 end
@@ -50,19 +51,25 @@ function multiplier()
  return min(combo\4+1,4)
 end
 
-function hurt_robot(alien)
+function hurt_robot(lane)
  robot.hp-=1
  robot.hurt=20
  shake+=6
  combo=0
- local x,y=project(alien.lane,1)
+ local x,y=project(lane,1)
  burst(x,y,20,8,3)
  sfx(4)
 end
 
 function draw_robot()
- local bob=pulse>0.5 and 1 or 0
- local top=84+bob+robot.recoil
+ local top=84+(pulse>0.5 and 1 or 0)+robot.recoil-robot.lift
+ if robot.lift>1 then
+  for jet=-8,8,16 do
+   for step=0,robot.lift do
+    circfill(robot.x+jet+rnd(2)-1,top+30+step,2.5*(1-step/(robot.lift+1)),step<4 and 7 or step<9 and 10 or 9)
+   end
+  end
+ end
  for colour=1,15 do pal(colour,0) end
  for nudge=-1,1,2 do
   sspr(0,64,24,24,robot.x-18+nudge,top,36,36)

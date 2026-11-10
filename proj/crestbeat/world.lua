@@ -18,6 +18,25 @@ function make_city()
  sort_by_t(buildings)
 end
 
+function update_city()
+ scroll+=travel_speed
+ for building in all(buildings) do
+  building.t+=travel_speed
+  if building.t>1.3 then
+   building.t-=1.35
+   building.h,building.fall_at=30+rnd(50)
+  end
+  if building.fall_at and clock>building.fall_at and building.h>6 then
+   building.h-=0.5
+   if rnd()<0.3 then
+    local edge,base,scale=project(building.side*1.5,building.t)
+    burst(edge+building.side*(4+building.gap+building.w/2)*scale,base-building.h*scale,1,6,1)
+   end
+  end
+ end
+ sort_by_t(buildings)
+end
+
 function sort_by_t(list)
  for i=2,#list do
   local j=i
@@ -44,7 +63,7 @@ function draw_ground()
   rectfill(left,top,right,bottom,0)
  end
  local dash=pulse>0.5 and 7 or 10
- for t=-scroll%0.2,1.4,0.2 do
+ for t=scroll%0.2,1.4,0.2 do
   for lane=-0.5,0.5,1 do
    local x1,y1,scale=project(lane,t)
    local x2,y2=project(lane,t+0.09)

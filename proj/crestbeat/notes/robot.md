@@ -7,5 +7,5 @@ Keep: the user asked for a rhythm game of fire on the beat; `test_rhythm` checks
 **robot.lua:26** `function shoot()`
 `shoot` hits the front alien in the robot's lane on perfect or good; a miss ends the combo and does nothing else. An on-beat shot at an empty lane keeps the combo.
 
-**robot.lua:63** `function draw_robot()`
+**robot.lua:64** `function draw_robot()`
 `draw_robot` is hivefall's mech (24x24 at sheet (0,64)) drawn at 1.5x, black edge first, white while hurt. It bobs a pixel on the beat.

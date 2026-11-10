@@ -11,7 +11,7 @@ function update_aliens()
   alien.flash=max(alien.flash-1)
   if alien.t>=1 then
    del(aliens,alien)
-   hurt_robot(alien)
+   hurt_robot(alien.lane)
   end
  end
  sort_by_t(aliens)
@@ -25,8 +25,8 @@ function front_alien(lane)
  return front
 end
 
-function hit_alien(alien,judgement)
- alien.hp-=1
+function hit_alien(alien,amount,judgement)
+ alien.hp-=amount
  alien.flash=6
  alien.born+=judgement.knock
  local x,y,scale=alien_centre(alien)

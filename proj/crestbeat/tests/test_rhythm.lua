@@ -66,6 +66,36 @@ local function rhythm()
  on_beat(4)
  check("the chart sends an alien on its beat",#aliens==1 and aliens[1].lane==-1,#aliens.." sent")
 
+ reset("play")
+ start_stage(3)
+ local spot=titan.spots[2]
+ open_spot(0,4)
+ at(4,0)
+ shoot()
+ check("a shot at an open hot spot hurts it",spot.hp==stages[3].spot_hp-1,"hp "..spot.hp)
+ at(8,0)
+ shoot()
+ check("a closed hot spot cannot be hurt",spot.hp==stages[3].spot_hp-1,"hp "..spot.hp)
+
+ reset("play")
+ start_stage(3)
+ spit(1,0)
+ robot.lane=1
+ on_beat(2)
+ check("spit hurts the robot in its lane",robot.hp==max_hp-1,"hp "..robot.hp)
+ spit(1,2)
+ robot.lane=0
+ on_beat(4)
+ check("spit misses a robot that moved",robot.hp==max_hp-1,"hp "..robot.hp)
+
+ reset("play")
+ next_beat=#stages[1].chart
+ check("a swarm is done when its chart is played and no alien is left",stage_done(),next_beat.." beats")
+ start_stage(3)
+ for spot in all(titan.spots) do hit_spot(spot,9,judgements[1]) end
+ for i=1,91 do update_titan() end
+ check("a titan stage is done once its hot spots are all gone",stage_done(),"dead "..tostr(titan.dead))
+
  printh("ok rhythm")
  extcmd("shutdown")
 end

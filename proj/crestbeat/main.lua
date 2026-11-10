@@ -1,19 +1,33 @@
 function reset(new_mode)
  mode=new_mode
  clock,next_beat,combo,score,shake,pulse,ended=0,0,0,0,0,0,0
+ scroll,travel_speed=0,0
  aliens,sparks,rings,popups,beams={},{},{},{},{}
+ make_city()
  reset_robot()
+ start_stage(1)
 end
 
 function _init()
- make_city()
  reset("title")
- scroll=0
 end
 
 function start_play()
  reset("play")
  music(0,0,7)
+end
+
+function start_stage(number)
+ stage_number,stage=number,stages[number]
+ stage_beat=next_beat
+ hazards,titan={}
+ if stage.spot_hp then make_titan(stage.spot_hp) end
+ banner,banner_life=stage.title,120
+end
+
+function stage_done()
+ if titan then return titan.dead and titan.dead>90 end
+ return next_beat-stage_beat>=#stage.chart and #aliens==0
 end
 
 function sync_clock()
@@ -25,10 +39,27 @@ function sync_clock()
  last_note=note
 end
 
+function lane_of(code,set)
+ for i=1,3 do
+  if sub(set,i,i)==code then return i-2 end
+ end
+end
+
 function on_beat(beat)
  pulse=1
- local code=ord(wave_chart,beat+1)
- if code and code>=49 and code<=51 then send_alien(code-50,beat) end
+ for hazard in all(hazards) do
+  if hazard.land==beat then land_spit(hazard) end
+ end
+ local chart=stage.chart
+ local index=beat-stage_beat
+ if titan then index%=#chart end
+ local code=sub(chart,index+1,index+1)
+ local lane=lane_of(code,"123")
+ if lane then send_alien(lane,beat) end
+ lane=lane_of(code,"qwe")
+ if lane then open_spot(lane,beat) end
+ lane=lane_of(code,"asd")
+ if lane then spit(lane,beat) end
 end
 
 function finish(result)
@@ -45,12 +76,21 @@ function update_play()
   on_beat(next_beat)
   next_beat+=1
  end
+ travel_speed+=((stage.fly and fly_speed or 0)-travel_speed)*0.05
+ robot.lift+=((stage.fly and 14 or 0)-robot.lift)*0.05
+ banner_life=max(banner_life-1)
+ update_city()
  update_robot()
  update_aliens()
+ if titan then update_titan() end
  if robot.hp<=0 then
   finish("lost")
- elseif next_beat>#wave_chart and #aliens==0 then
-  finish("won")
+ elseif stage_done() then
+  if stage_number==#stages then
+   finish("won")
+  else
+   start_stage(stage_number+1)
+  end
  end
 end
 
@@ -104,6 +144,9 @@ function draw_hud()
   end
  end
  rect(61,121,67,127,pulse>0.5 and 7 or 8)
+ if mode=="play" and banner_life>0 then
+  centred(banner,14,banner_life%16<8 and 10 or 7)
+ end
 end
 
 function centred(text,y,colour)
@@ -115,7 +158,13 @@ function _draw()
  draw_sky()
  draw_aliens(true)
  draw_ground()
+ if titan then
+  clip(0,0,128,crest_y+40*titan.rise)
+  draw_titan()
+  clip()
+ end
  draw_buildings()
+ draw_hazards()
  draw_aliens(false)
  if mode=="play" then draw_aim() end
  draw_robot()
@@ -131,7 +180,7 @@ function _draw()
   centred("press z",78,tick_blink() and 10 or 5)
  elseif mode!="play" then
   rectfill(24,50,103,76,0)
-  centred(mode=="won" and "hill clear!" or "the city falls",54,mode=="won" and 11 or 8)
+  centred(mode=="won" and "city saved!" or "the city falls",54,mode=="won" and 11 or 8)
   centred("score "..score,62,7)
   if ended>30 then centred("press z",70,tick_blink() and 10 or 5) end
  end

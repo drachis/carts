@@ -5,6 +5,7 @@ log_name="log_boot"
 #include ../data.lua
 #include ../world.lua
 #include ../aliens.lua
+#include ../titan.lua
 #include ../robot.lua
 #include ../main.lua
 #include dump.lua

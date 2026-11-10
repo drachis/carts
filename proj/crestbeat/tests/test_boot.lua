@@ -5,6 +5,7 @@ function sfx() end
 dset=sfx
 music=sfx
 
+local seen_stage,stage_start
 local n,phase,phase_start,bot_beat,shots=0,"title",0,nil,{}
 local game_update,game_draw=_update60,_draw
 
@@ -14,14 +15,31 @@ local function expect_mode(wanted)
  end
 end
 
-local function bot()
- local target
- for alien in all(aliens) do
-  if alien.t>-0.05 then target=alien end
+local function danger(lane)
+ for hazard in all(hazards) do
+  if hazard.lane==lane and hazard.land-clock<1.4 then return true end
  end
- if not target then return end
- if target.lane!=robot.lane then
-  if n%2==0 then held[target.lane<robot.lane and 0 or 1]=true end
+end
+
+local function bot()
+ local want
+ for alien in all(aliens) do
+  if alien.t>-0.05 then want=alien.lane end
+ end
+ if not want and titan then
+  for spot in all(titan.spots) do
+   if open_spot_in(spot.lane) then want=spot.lane end
+  end
+ end
+ if danger(robot.lane) or want and danger(want) then
+  want=nil
+  for lane=-1,1 do
+   if not danger(lane) then want=lane end
+  end
+ end
+ if not want then return end
+ if want!=robot.lane then
+  if n%2==0 then held[want<robot.lane and 0 or 1]=true end
   return
  end
  local nearest=flr(clock+0.5)
@@ -53,11 +71,17 @@ function boot_frame()
  elseif phase=="bot" then
   if age==2 then expect_mode("play") end
   bot()
+  if stage_number!=seen_stage then
+   seen_stage,stage_start=stage_number,n
+   printh("stage "..stage.name.." at beat "..next_beat..", hp "..robot.hp)
+  end
+  if stage.name=="climb" and n-stage_start==90 then dump_screen("boot_climb") end
+  if stage.name=="titan" and n-stage_start==200 then dump_screen("boot_titan") end
   if mode!="play" then
    expect_mode("won")
    printh("bot won in "..flr(clock).." beats, hp "..robot.hp.."/"..max_hp..", score "..score)
    next_phase("won")
-  elseif age>3000 then
+  elseif age>9000 then
    printh("error: the bot's run never ended")
    next_phase("won")
   end
