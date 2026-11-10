@@ -151,7 +151,7 @@ function draw_titan()
   draw_limb(knee_x,knee_y,foot_x,foot_y,5,4,colour)
   sspr(88,72,16,8,foot_x-8,foot_y-3)
  end
- local bob=pulse>0.5 and 1 or 0
+ local bob=pulse*1.5
  sspr(0,96,40,32,x-20,y-4+bob)
  for side=-1,1,2 do
   local swing=sin(clock/2+side/4)*3

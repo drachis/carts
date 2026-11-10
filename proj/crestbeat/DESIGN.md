@@ -277,6 +277,12 @@ when a shot lands; that keeps `levels.py`'s plans, margins and routes true.
   beat is never on a boundary. While it straddles two streets it can be
   shot from either (`straddle` 0.7): an option, not the plan.
 - **Knockback** is a spring, a quarter of the push a frame.
+- **The robot** slides between streets on a damped spring (`robot_spring`,
+  `robot_damping` 0.45): about 1.5px past the street and settled in 10
+  frames. Its street changes at once for the guns; only the picture glides.
+- **The reticle** glides from target to target.
+- **The pulse** is a smooth wave, `(1+cos(clock))/2`, 1 on the beat and 0
+  between, never a jump; the robot's and the giant's bobs follow it.
 - Each frame the enemies move before the guns fire, so a shot on the beat
   sees where everything is on the beat.
 

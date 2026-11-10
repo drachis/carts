@@ -2,6 +2,7 @@ function reset(new_mode)
  mode=new_mode
  clock,next_beat,combo,score,shake,pulse,ended=0,0,0,0,0,0,0
  scroll,travel_speed,crest_y=0,0,horizon
+ aim_x,aim_y,aim_half=64,100,8
  aliens,sparks,rings,popups,beams,fallen={},{},{},{},{},{}
  reset_stats()
  make_city()
@@ -73,7 +74,6 @@ function lane_of(code,set)
 end
 
 function on_beat(beat)
- pulse=1
  for hazard in all(hazards) do
   if hazard.land==beat then land_spit(hazard) end
  end
@@ -136,7 +136,6 @@ function _update()
  else
   ended+=1
   clock+=1/frames_per_beat
-  if clock%1<1/frames_per_beat then pulse=1 end
   if mode!="title" then update_payout() end
   if pressed and ended>15 and (mode=="title" or payout_done()) then start_play() end
  end
@@ -153,7 +152,12 @@ function draw_aim()
   else
    x,y,scale=alien_centre(target)
   end
-  local half,colour=12*scale+2+pulse*2,target.penalty and 8 or 10
+  local colour=target.penalty and 8 or 10
+  aim_x+=(x-aim_x)*0.4
+  aim_y+=(y-aim_y)*0.4
+  aim_half+=(12*scale+2+pulse*2-aim_half)*0.4
+  x,y=aim_x,aim_y
+  local half=aim_half
   for side=-1,1,2 do
    for up=-1,1,2 do
     local cx,cy=x+side*half,y+up*half

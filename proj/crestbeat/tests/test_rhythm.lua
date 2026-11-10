@@ -335,6 +335,17 @@ local function rhythm()
  check("the robot is drawn from the map at its full size",red,"red found: "..tostr(red))
  check("and the sprite sheet it borrowed is put back",before==after,"sheet "..(before==after and "restored" or "changed"))
 
+ reset("play")
+ robot.lane=1
+ local furthest,settled=64
+ for frame=1,30 do
+  robot.vx=(robot.vx+(64+robot.lane*40-robot.x)*robot_spring)*robot_damping
+  robot.x+=robot.vx
+  furthest=max(furthest,robot.x)
+  if not settled and abs(robot.x-104)<1 and abs(robot.vx)<0.5 then settled=frame end
+ end
+ check("the robot springs between streets, a little past and back",furthest>105 and furthest<108 and settled and settled<=12,"overshoots to "..furthest..", settles in "..tostr(settled).." frames")
+
  printh("ok rhythm")
  extcmd("shutdown")
 end

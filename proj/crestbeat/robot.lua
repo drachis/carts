@@ -1,5 +1,5 @@
 function reset_robot()
- robot={lane=0,x=64,hp=max_hp,hurt=0,recoil=0,lift=0,shots=0,glow=0,moved=0}
+ robot={lane=0,x=64,vx=0,hp=max_hp,hurt=0,recoil=0,lift=0,shots=0,glow=0,moved=0}
  equip(start_gun)
 end
 
@@ -27,7 +27,8 @@ function update_robot()
   popup(guns[robot.gun].name,robot.x,68-robot.lift,guns[robot.gun].colour)
   sfx(5)
  end
- robot.x+=(64+robot.lane*40-robot.x)*0.6
+ robot.vx=(robot.vx+(64+robot.lane*40-robot.x)*robot_spring)*robot_damping
+ robot.x+=robot.vx
  robot.hurt=max(robot.hurt-1)
  robot.glow=max(robot.glow-1)
  robot.recoil*=0.5
@@ -99,7 +100,7 @@ function hurt_robot(lane)
 end
 
 function draw_robot()
- local top=84+(pulse>0.5 and 1 or 0)+robot.recoil-robot.lift
+ local top=84+(1-pulse)*1.5+robot.recoil-robot.lift
  if robot.lift>1 then
   for jet=-8,8,16 do
    for step=0,robot.lift do

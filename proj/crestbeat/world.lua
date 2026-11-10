@@ -130,7 +130,7 @@ function update_effects()
   if beam.life<0 then del(beams,beam) end
  end
  shake*=0.85
- pulse*=0.85
+ pulse=(1+cos(clock))/2
 end
 
 function draw_effects()
