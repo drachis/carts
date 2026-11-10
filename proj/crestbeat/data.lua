@@ -75,14 +75,15 @@ swarm_sprites=sprite_sizes"8,0,0/10,16,0/12,36,0/14,60,0/16,88,0/18,0,16/22,36,1
 civilian_sprites=sprite_sizes"8,64,84/12,64,72/16,48,72/24,104,72"
 
 stage_music=split"0,6,8,16,6,22,26,30,32"
+chime=split"34,36,38,41,43,46,48,50,53,55"
 
 guns=parse_table[[
-name,colour,pattern,splash,sound
-minigun,10,xxxxxxxx,,1
-shock rifle,13,x.x.x.x.,,0
-rockets,9,x...x...,0.5,12
-flak cannon,4,x.x.x...,,3
-plasma rifle,12,x.x.xxx.,,0
+name,colour,pattern,splash,sound,style
+minigun,10,xxxxxxxx,,16,tracer
+shock rifle,13,x.x.x.x.,,17,zap
+rockets,9,x...x...,0.5,12,rocket
+flak cannon,4,x.x.x...,,18,flak
+plasma rifle,12,x.x.xxx.,,19,plasma
 ]]
 
 for gun in all(guns) do

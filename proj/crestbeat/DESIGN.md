@@ -57,7 +57,7 @@ section per stage, each looping for as long as its stage lasts:
 | last climb | the breakdown: hats only, held bass, a slow sine lead |
 | queen | the last chorus: the amen break, every lead up an octave |
 
-38 patterns from 52 sfx (all the slots the game's own sounds leave).
+38 patterns from 48 sfx (all the slots the game's own sounds leave; four were freed for the guns by letting a few patterns share parts).
 `start_stage` queues its section (`stage_music`, which `gen_cart.py` checks
 against the song) and `on_beat` starts it on the next 8-beat boundary,
 where the old section's pattern ends, so the beat clock stays on the drums.
@@ -378,6 +378,20 @@ and throws Loretta's god rays across the sky (the user asked).
   down!", pink and blue shockwave rings, and the halo's rays flaring out as
   it sinks.
 - A saved city gets neon fireworks over the payout.
+- **Each gun has its own character** (the user: "weapons need some
+  character"), a `style` and a sound of its own: the minigun a dry brrt and
+  brass casings flying off both pods; the shock rifle a sliding zap and a
+  crackling lightning bolt with a white core; rockets a smoke trail that
+  drifts up and a blast ring; the flak cannon a chunky boom and a spread of
+  pellets round the target; the plasma rifle a wobbling phaser and balls of
+  plasma riding the beam.
+- **The payout rains tickets** over everything, panel and HUD included
+  (the user: "shimmering multi color tickets"): each flutters down, turning
+  (its width is the cosine of its spin), cycling through six colours and
+  flashing white when it faces you. Every other ticket chimes: a click, a
+  bell and its fifth, its pitch poked into the sfx before it plays so the
+  chimes climb a two-octave pentatonic scale (`chime`) and start again;
+  the last ticket out plays the fanfare.
 - A hit flashes a dithered red frame round the screen and tears a few
   screen rows sideways, like a VHS tape's tracking.
 - A white scan line sweeps down the giants' hex shields.
@@ -461,9 +475,9 @@ only once every ticket is out. The rows are `payouts` in `data.lua`.
 past 7600 tokens, so `gen_cart.py` writes three stubbed copies of the
 modules into `tests/` (git-ignored): `lite.lua` without the screens no
 logic test reads (the logic carts: rhythm, rhythm2, giant, giant2, kinds,
-margin_*), `play.lua` without the title (the stage and screen carts), and
-`boot.lua` without the giant fight's rules (test_boot, whose title screen
-is the cart's label). A stub is an empty function of the same name. The
+margin_*), `play.lua` without the title and the payout (the stage and screen carts; test_boot films both payouts), and
+`boot.lua` without the giant fight's rules and the aim and plan (test_boot, whose title screen
+is the cart's label). The itch recorder has two more, `capture_play.lua` and `capture_menus.lua`. A stub is an empty function of the same name. The
 margin checks (`test_margin.lua`) are carts of their own beside each
 stage's plan run.
 

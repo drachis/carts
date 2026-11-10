@@ -78,6 +78,11 @@ function fire(judgement)
  local gun_x,gun_y=robot.x-cam_x,93-robot.lift
  sfx(gun.sound)
  ring(gun_x,gun_y,5,gun.colour)
+ if gun.style=="tracer" then
+  for side=-1,1,2 do
+   add(sparks,{x=gun_x+side*12,y=gun_y-4,vx=side*(0.5+rnd()),vy=-1.5-rnd(),life=14,colour=9})
+  end
+ end
  combo+=1
  score+=judgement.points*multiplier()
  local target=target_in(lane)
@@ -95,7 +100,15 @@ function strike(target,amount,judgement,gun_x,gun_y,gun)
  local x,y
  if target.open then x,y=spot_xy(target) else x,y=alien_centre(target) end
  add(beams,{x1=gun_x,y1=gun_y,x2=x,y2=y,colour=judgement==judgements[1] and gun.colour or 10,
-  width=amount\2,life=4})
+  width=amount\2,life=4,style=gun.style})
+ for share=0.2,0.8,0.2 do
+  local px,py=gun_x+(x-gun_x)*share,gun_y+(y-gun_y)*share
+  if gun.style=="rocket" then
+   add(sparks,{x=px,y=py,vx=rnd()-0.5,vy=0,float=-0.03,life=12+rnd(10),colour=rnd{5,6}})
+  elseif gun.style=="flak" then
+   add(beams,{x1=px,y1=py,x2=x+rnd(14)-7,y2=y+rnd(10)-5,colour=gun.colour,width=0,life=3})
+  end
+ end
  if gun.splash then ring(x,y,amount*3,9) end
  if target.open then hit_spot(target,amount,judgement) else hit_alien(target,amount,judgement) end
 end

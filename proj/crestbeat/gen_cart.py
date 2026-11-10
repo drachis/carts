@@ -154,7 +154,7 @@ CHORUS_ONE = ["loop",
               ("break", bass("am", "f"), top("chorus a")),
               ("break fill", bass("c", "g"), top("chorus b")),
               ("break", bass("am", "f"), arp("am", "f", lift=12)),
-              ("break", bass("c", "g"), arp("c", "g", lift=12)),
+              ("break", bass("c", "g"), arp("c", "g", UP)),
               ("amen", bass("f", "g"), top("stab b")),
               ("break fill", bass("am", "am"), top("stab a"))]
 VERSE_TWO = ["loop",
@@ -162,8 +162,8 @@ VERSE_TWO = ["loop",
              ("verse", bass("c", "g"), top("verse b", wave=3)),
              ("verse", bass("dm", "am"), arp("dm", "am")),
              ("verse fill", bass("f", "e"), arp("f", "e", UP)),
-             ("verse", bass("f", "g"), arp("f", "g")),
-             ("verse fill", bass("em", "am"), arp("em", "am", UP))]
+             ("verse", bass("f", "g"), arp("f", "g", UP, lift=12)),
+             ("verse fill", bass("am", "f"), arp("am", "f"))]
 CHORUS_TWO = ["loop",
               ("amen", bass("am", "f"), top("stab a")),
               ("amen", bass("c", "g"), top("stab b")),
@@ -173,7 +173,7 @@ VERSE_THREE = ["loop",
                ("verse", bass("f", "c"), arp("f", "c", UP)),
                ("verse", bass("dm", "e"), arp("dm", "e", UP)),
                ("verse fill", bass("f", "c"), top("verse c")),
-               ("amen", bass("dm", "e"), top("low b"))]
+               ("amen", bass("dm", "e"), arp("dm", "e", UP))]
 BREAKDOWN = ["loop",
              ("hats", held("dm", "am"), top("low a", wave=0)),
              ("break fill", held("f", "e"), arp("f", "e", UP, lift=12))]
@@ -187,7 +187,7 @@ LAST_CHORUS = ["loop",
 # a section per stage, in levels.py's order; a section used twice is one copy
 STAGE_SECTIONS = [VERSE_ONE, BUILD, CHORUS_ONE, VERSE_TWO, BUILD, CHORUS_TWO, VERSE_THREE, BREAKDOWN,
                   LAST_CHORUS]
-GAME_SOUND_IDS = set(range(0, 8)) | set(range(12, 16))
+GAME_SOUND_IDS = set(range(0, 8)) | set(range(12, 20))
 
 
 def song():
@@ -238,7 +238,11 @@ SOUNDS = [
     (3, [(57, 0, 6, 0), (57, 0, 4, 0), (57, 0, 2, 0)]),                       # 13 bell lamp
     (6, [(62, 0, 7, 0), (57, 0, 6, 0), (62, 0, 6, 0), (57, 0, 5, 0), (62, 0, 4, 0),
          (57, 0, 3, 0), (62, 0, 2, 0)]),                                      # 14 bell rings
-    (1, [(44, 6, 5, 0), (30, 3, 4, 0), (20, 3, 2, 0)]),                       # 15 ticket ka-chunk
+    (4, [(56, 6, 2, 0), (40, 0, 5, 0), (47, 0, 4, 5)]),                       # 15 ticket: click, chime and its fifth (payout.lua pokes their pitches)
+    (1, [(40, 6, 4, 0), (30, 3, 3, 0), (20, 3, 1, 0)]),                       # 16 minigun brrt
+    (2, [(60, 4, 6, 1), (48, 4, 5, 1), (36, 4, 4, 1), (24, 4, 3, 1), (12, 4, 2, 5)]),  # 17 shock rifle zap
+    (3, [(20, 6, 7, 0), (14, 6, 6, 3), (30, 2, 4, 3), (10, 6, 3, 5)]),        # 18 flak boom
+    (2, [(30, 7, 5, 2), (36, 7, 5, 2), (42, 7, 4, 2), (38, 0, 3, 5)]),        # 19 plasma bwow
 ]
 SOUNDS += [None] * (max(MUSIC_SOUNDS) + 1 - len(SOUNDS))
 for number, notes in MUSIC_SOUNDS.items():
@@ -326,10 +330,12 @@ MODULES = ["data", "levels", "world", "aliens", "titan", "robot", "payout", "mai
 BUILDS = {
     "lite.lua": ["draw_title", "chrome", "tri", "sunset", "draw_sky", "draw_ground", "draw_buildings",
                  "draw_payout", "draw_hud"],
-    "play.lua": ["draw_title"],
+    "play.lua": ["draw_title", "draw_payout", "update_payout"],
     "boot.lua": ["hit_spot", "ring_lamp", "lamps_lit", "update_titan", "spit", "land_spit", "open_spot",
-                 "draw_hazards"],
-    "capture.lua": ["draw_plan", "chevron", "sync_clock"],
+                 "draw_hazards", "draw_aim", "draw_plan", "chevron"],
+    "capture_play.lua": ["draw_plan", "chevron", "sync_clock", "draw_title", "draw_payout", "update_payout"],
+    "capture_menus.lua": ["draw_plan", "chevron", "sync_clock", "hit_spot", "ring_lamp", "lamps_lit",
+                          "update_titan", "spit", "land_spit", "open_spot", "draw_hazards", "draw_aim"],
 }
 
 
@@ -337,8 +343,8 @@ def build_stubbed():
     """tests/lite.lua and tests/play.lua: the game's modules with some
     functions stubbed out (each becomes an empty function), so a test cart
     fits 8192 tokens beside its test. lite.lua drops the screens no logic test
-    reads; play.lua drops only the title screen, for the carts that read the
-    play screens; boot.lua drops the giant fight's rules, for test_boot,
+    reads; play.lua drops the title and the payout, for the carts that read
+    the play screens (test_boot films both payouts); boot.lua drops the giant fight's rules, for test_boot,
     which never leaves stage 1 but films the title (its giant silhouette
     included: boot_title is the cart's label)."""
     for build, stubs in BUILDS.items():

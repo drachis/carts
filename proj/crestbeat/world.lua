@@ -199,10 +199,27 @@ end
 
 function draw_effects()
  for beam in all(beams) do
-  for w=-beam.width-1,beam.width+1 do
-   line(beam.x1+w,beam.y1,beam.x2,beam.y2,beam.life>2 and beam.colour or 2)
+  local dx,dy,style=beam.x2-beam.x1,beam.y2-beam.y1,beam.style
+  if style=="zap" then
+   local x,y=beam.x1,beam.y1
+   for i=1,6 do
+    local nx,ny=beam.x1+dx*i/6+(i<6 and rnd(8)-4 or 0),beam.y1+dy*i/6
+    line(x+1,y,nx+1,ny,beam.colour)
+    line(x,y,nx,ny,7)
+    x,y=nx,ny
+   end
+  elseif style=="plasma" then
+   for i=0,0.8,0.2 do
+    local share=i+(4-beam.life)*0.05
+    circfill(beam.x1+dx*share,beam.y1+dy*share,2.5,beam.colour)
+    pset(beam.x1+dx*share,beam.y1+dy*share,7)
+   end
+  else
+   for w=-beam.width-1,beam.width+1 do
+    line(beam.x1+w,beam.y1,beam.x2,beam.y2,beam.life>2 and beam.colour or 2)
+   end
+   if beam.life>2 then line(beam.x1,beam.y1,beam.x2,beam.y2,7) end
   end
-  if beam.life>2 then line(beam.x1,beam.y1,beam.x2,beam.y2,7) end
  end
  for wave in all(rings) do
   circ(wave.x,wave.y,wave.radius,wave.colour)

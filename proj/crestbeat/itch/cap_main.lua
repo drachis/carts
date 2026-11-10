@@ -30,13 +30,14 @@ local function payout()
  finish("won")
 end
 
-local sections={
+local wanted={}
+local every={
  {"title",function() reset("title") end},
- {"hill",play(1,2,true,20)},
+ {"hill",play(1,1,true,20)},
  {"streets",play(4,2,true,30)},
  {"titan",play(3,3,true,75)},
  {"queen",play(9,5,false,75)},
- {"fever",play(7,2,false,20),function() combo=max(combo,30) end},
+ {"fever",play(7,4,false,20),function() combo=max(combo,30) end},
  {"finale",play(6,3,false,60),function()
    if frame==60 then
     for spot in all(titan.spots) do hit_spot(spot,99,judgements[1]) end
@@ -44,6 +45,10 @@ local sections={
   end,72},
  {"payout",payout},
 }
+for section in all(every) do
+ if filming[section[1]] then add(wanted,section) end
+end
+sections=wanted
 
 function _update()
  if sec>#sections then

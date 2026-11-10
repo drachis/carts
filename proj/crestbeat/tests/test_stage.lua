@@ -53,16 +53,7 @@ function stage_frame()
    printh("error: the plan loses "..(start_hp-robot.hp).." hearts on stage "..name)
   end
   printh("stage "..first_stage.." "..name..": "..flr(clock).." beats ("..flr(clock/2).."s) on the plan, hp "..start_hp.." to "..robot.hp..", tickets so far "..ticket_total())
-  if last then
-   for i=1,24 do game_update() end
-   game_draw()
-   dump_screen("stage_payout_counting")
-   while not payout_done() do game_update() end
-   for i=1,10 do game_update() end
-   game_draw()
-   dump_screen("stage_won")
-   printh("payout: "..tickets.." tickets")
-  end
+  if last then printh("payout: "..tickets.." tickets") end
   printh("ok stage "..first_stage)
   extcmd("shutdown")
  elseif n>3000 then

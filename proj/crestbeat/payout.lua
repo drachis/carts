@@ -27,7 +27,7 @@ function start_payout(won)
   end
  end
  add(rows,{label="points",value=points})
- panel_y,panel_vy,payout_age,shown_tickets,dispensed=128,0,0,0,0
+ panel_y,panel_vy,payout_age,shown_tickets,dispensed,cheered=128,0,0,0,0
 end
 
 function payout_done()
@@ -49,24 +49,28 @@ function update_payout()
   shown_tickets=min(tickets,shown_tickets+max(1,tickets/total_frames))
   while dispensed<flr(shown_tickets) do
    dispensed+=1
-   add(paper,{x=60+rnd(8),y=127,vx=rnd(3)-1.5,vy=-2-rnd(3)})
-   if dispensed%2==0 then sfx(15) end
+   if #paper<250 then add(paper,{x=rnd(128),y=-4-rnd(20),vy=0.6+rnd(0.9),spin=rnd(),hue=flr(rnd(6))}) end
+   if dispensed%2==0 then
+    local pitch=chime[dispensed\2%10+1]
+    poke(0x35fe,@0x35fe&0xc0|pitch)
+    poke(0x3600,@0x3600&0xc0|pitch+7)
+    sfx(15)
+   end
   end
  end
+ if dispensed>=tickets and not cheered then
+  cheered=true
+  sfx(6)
+ end
  for ticket in all(paper) do
-  ticket.x+=ticket.vx
   ticket.y+=ticket.vy
-  ticket.vy+=0.2
+  ticket.x+=sin(ticket.spin+ticket.y/40)*0.5
+  ticket.spin+=0.04
   if ticket.y>130 then del(paper,ticket) end
  end
 end
 
 function draw_payout()
- for ticket in all(paper) do
-  rectfill(ticket.x,ticket.y,ticket.x+3,ticket.y+1,9)
-  pset(ticket.x+1,ticket.y,8)
- end
- rectfill(56,125,71,127,5)
  local top=flr(panel_y)
  local bottom=top+30+#rows*8
  rectfill(12,top,115,bottom,0)
@@ -88,5 +92,12 @@ function draw_payout()
  if payout_done() then
   rectfill(46,bottom+2,81,bottom+10,0)
   centred("press z",bottom+4,tick_blink() and 10 or 5)
+ end
+ for ticket in all(paper) do
+  local face=cos(ticket.spin)
+  local half=abs(face)*3
+  local colour=abs(face)>0.9 and 7 or ({8,9,10,11,12,14})[(ticket.hue+flr(ticket.spin*4))%6+1]
+  rectfill(ticket.x-half,ticket.y,ticket.x+half,ticket.y+2,colour)
+  if half>1 then pset(ticket.x,ticket.y+1,face>0 and 1 or 7) end
  end
 end

@@ -7,3 +7,7 @@ Keep: the user asked for the payout to follow bal8tro's cash-out, which they sai
 
 **payout.lua:37** `function update_payout()`
 The panel springs from below the screen to `payout_rest` with `spring` and `damping` (bal8tro's glide, overshooting about 5px at 30fps). A line arrives every `row_frames` with a tick and counts up over `count_frames`; after the last, the total rolls up over `total_frames` (at least a ticket a frame), and each ticket counted is thrown from the slot at the bottom, a ka-chunk every other one. `payout_done` once every ticket is out; only then does a press start a new run.
+
+**payout.lua:53** `if dispensed%2==0 then`
+The ticket chime: before playing sfx 15 its chime and fifth (notes 1 and 2, at 0x35fe and 0x3600) get the next pitch from `chime`, keeping each note's waveform bits; so the chimes climb as tickets pour out. Tickets fall from above the screen and are drawn last, over the panel; `cheered` plays the fanfare once when the last is out.
+Keep: the user asked for the tickets to rain over the UI, shimmering in many colours, and for a more delightful, charming ticket sound.

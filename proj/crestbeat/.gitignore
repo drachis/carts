@@ -11,4 +11,5 @@ run.txt
 tests/lite.lua
 tests/play.lua
 tests/boot.lua
-tests/capture.lua
+tests/capture_play.lua
+tests/capture_menus.lua
