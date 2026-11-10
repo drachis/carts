@@ -50,6 +50,13 @@ function update_gun()
    robot.waiting=clock
    if #aliens>0 then combo=0 end
    robot.glow=4
+   local spot=titan and titan.rise==1 and not titan.dead and titan.spots[robot.lane+2]
+   if spot and spot.hp>0 then
+    local x,y=spot_xy(spot)
+    add(beams,{x1=robot.x-cam_x,y1=93-robot.lift,x2=x,y2=y,colour=12,width=0,life=3})
+    burst(x,y,3,12,1)
+    spot.flash=4
+   end
   end
  elseif robot.waiting and target and not target.penalty then
   if (clock-robot.waiting)*frames_per_beat<=good_window then

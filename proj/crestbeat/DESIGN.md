@@ -221,8 +221,14 @@ as the user asked.
 A kaiju lizard-dragon of our own standing behind the crest (see "The art");
 the titan green, the behemoth lavender, the queen pink. As it arrives, every building on the far part of the hill
 gets a moment to collapse at, so it crunches through the skyline. Its three
-hot spots sit over the three streets; an open one glows orange and can be
-hit, a closed one is dark. Spit is the user's "get out of this lane by beat
+hot spots sit over the three streets, each behind a blue hex shield; while
+a spot is open its shield shrinks away and it can be hit. A shot into a
+shielded street sparks off the shield and does nothing (the user found the
+old glowing orange spots looked like nipples; the shields are a look
+change only, what can be hit is the same). Over its head, one segmented
+health bar a street, a segment per bar of its health (4 for the titans, 6
+for the queen), the open street's blinking yellow; a destroyed street's
+bar is empty and its shield gone. Spit is the user's "get out of this lane by beat
 x": it goes down the street the plan is in, telegraphed by a flashing red
 bar with a beat countdown and a glob travelling down, and lands two beats
 later, by when the plan has moved on; it hurts the robot if it is still
@@ -235,7 +241,8 @@ street long enough to draw it, counting round the chart's loop.
 **Ring the bell** (the user's exploration): three lamps above the giant's
 head, one for each hot spot. One shot on a spot lights its lamp; a second
 shot on a lit spot puts all the lamps out; all three lit rings the bell
-for its tickets, once a giant. So it asks for a different dance from
+for its tickets, once a giant. Destroying any spot before the bell rings
+takes the bell away and its lamps go dark (the user's rule). So it asks for a different dance from
 knocking the giant down: one shot on each spot and move on, which costs
 damage. The plan does not ring it (it shoots each window twice); ringing
 is the player's choice. Each giant has a **bell route** (`bell_route` in
@@ -287,7 +294,7 @@ when a shot lands; that keeps `levels.py`'s plans, margins and routes true.
   it from 30% at the crest to all of it at the bottom, the robot and its
   shots all of it. The city seems to turn as it moves.
 - **The giants** stomp each foot through a smooth half-sine, one a beat,
-  landing on the beat; their hot spots swell open and shrink shut over a
+  landing on the beat; their shields shrink away and grow back over a
   quarter of a beat.
 - `test_screen` measures it: an alien's depth frame by frame over eight
   beats must always move forward, and no frame's step be more than three
@@ -391,14 +398,14 @@ sound and holds the bot.
   Each prints its beats, hearts and tickets and dumps a screen, and the
   first sight of each special kind (`stage_*.png`). A heart lost prints
   where.
-- `test_screen`: what is read off the screen: the queen and rising aliens, the wings flapping, the robot drawn from the map and the sheet restored, the robot's spring.
+- `test_screen`: what is read off the screen: the queen and rising aliens, the wings flapping, the robot drawn from the map and the sheet restored, the robot's spring; the bell (moved here when test_rhythm passed 8192 tokens); a shot blocked by a shield, the health bars and the shields read off the screen (`screen_shields.png`).
 - `test_rhythm`: each gun fires on exactly its pattern's eighths; a hit on the beat and its
   knockback; a late arrival inside and outside `good_window`; nothing fired
   and the glow on an empty beat; minigun, front-only and splash damage; that
   every kind lives exactly its bars under every gun; a leak;
   the chart; open and closed hot spots; spit in and out of its street; when
   a swarm and a titan stage are done; the titan and rising aliens read off
-  the screen; golden aliens, civilians and weavers; the bell; the payout's
+  the screen; golden aliens, civilians and weavers; the payout's
   rows, total, dispensing and spring.
 
 ## Still to do, or not checked

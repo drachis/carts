@@ -1,5 +1,5 @@
 function make_titan(spec)
- titan={rise=0,spots={},colour=spec.colour,crown=spec.crown}
+ titan={rise=0,spots={},colour=spec.colour,crown=spec.crown,bars=spec.bars}
  for lane=-1,1 do
   add(titan.spots,{lane=lane,hp=spec.bars*8/3,open=-1,flash=0})
  end
@@ -179,19 +179,29 @@ function draw_titan()
    circ(lamp_x,y+1,2,spot.lit and 7 or 5)
   end
  end
+ local segments,bar_y=titan.bars,max(10,y-(titan.crown and 30 or 26))
  for spot in all(titan.spots) do
   local sx,sy=spot_xy(spot)
-  if spot.hp==0 then
-   circfill(sx,sy,3,0)
-  elseif clock<spot.open then
-   local grow=min(1,min(clock-spot.open+2.5,spot.open-clock)*4)
-   circfill(sx,sy,3,2)
-   circfill(sx,sy,(5+pulse*2)*grow,spot.flash>0 and 7 or 9)
-   circfill(sx,sy,3*grow,10)
-  else
-   circfill(sx,sy,3,2)
-   circ(sx,sy,4,1)
+  local open=clock<spot.open
+  local shield=open and 1-min(1,min(clock-spot.open+2.5,spot.open-clock)*4) or 1
+  if spot.hp>0 and shield>0 then
+   local glint=spot.flash>0 and 7 or 12
+   hexagon(sx,sy,7*shield,glint)
+   hexagon(sx,sy,4*shield,spot.flash>0 and 7 or 1)
+   pset(sx-2*shield,sy-3*shield,glint)
   end
+  local left=x+spot.lane*(segments*3+4)-segments*1.5
+  rectfill(left-1,bar_y-1,left+segments*3-1,bar_y+2,0)
+  for segment=0,segments-1 do
+   local filled=segment<spot.hp*3/8-0.01
+   rectfill(left+segment*3,bar_y,left+segment*3+1,bar_y+1,filled and (open and pulse>0.5 and 10 or 8) or 1)
+  end
+ end
+end
+
+function hexagon(x,y,radius,colour)
+ for corner=0,5 do
+  line(x+sin(corner/6)*radius,y+cos(corner/6)*radius,x+sin((corner+1)/6)*radius,y+cos((corner+1)/6)*radius,colour)
  end
 end
 
