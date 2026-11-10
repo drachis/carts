@@ -80,6 +80,13 @@ local function rhythm()
  name=armed(3,{-1,0,1})
  step_to(6.01)
  check(name.." kill their target and splash the streets beside",#aliens==2 and aliens[1].hp==alien_hp-guns[3].splash,#aliens.." left, hp "..aliens[1].hp)
+ check("a killed alien is knocked down where it stood",#fallen==1 and fallen[1].x==64,#fallen.." down")
+ game_draw()
+ game_draw()
+ dump_screen("rhythm_knockdown")
+ fallen[1].age=0
+ for i=1,6 do draw_fallen() end
+ check("and lies flat after a few frames",fallen[1] and fallen[1].age==6,"age "..tostr(fallen[1] and fallen[1].age))
 
  reset("play")
  send_alien(-1,0)

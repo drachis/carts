@@ -2,7 +2,7 @@ function reset(new_mode)
  mode=new_mode
  clock,next_beat,combo,score,shake,pulse,ended=0,0,0,0,0,0,0
  scroll,travel_speed,crest_y=0,0,horizon
- aliens,sparks,rings,popups,beams={},{},{},{},{}
+ aliens,sparks,rings,popups,beams,fallen={},{},{},{},{},{}
  make_city()
  reset_robot()
  start_stage(1)
@@ -176,6 +176,7 @@ function _draw()
  clip()
  draw_buildings(false)
  draw_hazards()
+ draw_fallen()
  draw_aliens(false)
  if mode=="play" then draw_aim() end
  draw_robot()

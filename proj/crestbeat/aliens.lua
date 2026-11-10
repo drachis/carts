@@ -33,10 +33,22 @@ function hit_alien(alien,amount,judgement)
  burst(x,y,4,judgement.colour,2)
  if alien.hp<=0 then
   del(aliens,alien)
-  burst(x,y,24,11,3)
-  ring(x,y,20*scale,11)
+  burst(x,y,12,11,2)
   shake+=2
   sfx(3)
+  local foot_x,foot_y=project(alien.lane,alien.t)
+  add(fallen,{x=foot_x,y=foot_y,size=24*scale,age=0})
+ end
+end
+
+function draw_fallen()
+ for body in all(fallen) do
+  body.age+=1
+  local height=body.size*max(0.15,1-body.age/5)
+  if body.age>4 then pal(11,3) end
+  sspr(0,0,16,16,body.x-body.size/2,body.y-height,body.size,height)
+  pal()
+  if body.age>24 then del(fallen,body) end
  end
 end
 
