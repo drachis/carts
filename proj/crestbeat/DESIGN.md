@@ -281,6 +281,11 @@ when a shot lands; that keeps `levels.py`'s plans, margins and routes true.
   `robot_damping` 0.45): about 1.5px past the street and settled in 10
   frames. Its street changes at once for the guns; only the picture glides.
 - **The reticle** glides from target to target.
+- **The camera leans** with the robot: `cam_x` is a quarter of its offset
+  (`camera_lean`), following its spring, and each thing moves by its depth:
+  the skyline 15%, the giant at the crest 30%, the road and everything on
+  it from 30% at the crest to all of it at the bottom, the robot and its
+  shots all of it. The city seems to turn as it moves.
 - **The pulse** is a smooth wave, `(1+cos(clock))/2`, 1 on the beat and 0
   between, never a jump; the robot's and the giant's bobs follow it.
 - Each frame the enemies move before the guns fire, so a shot on the beat
@@ -379,6 +384,7 @@ sound and holds the bot.
   Each prints its beats, hearts and tickets and dumps a screen, and the
   first sight of each special kind (`stage_*.png`). A heart lost prints
   where.
+- `test_screen`: what is read off the screen: the queen and rising aliens, the wings flapping, the robot drawn from the map and the sheet restored, the robot's spring.
 - `test_rhythm`: each gun fires on exactly its pattern's eighths; a hit on the beat and its
   knockback; a late arrival inside and outside `good_window`; nothing fired
   and the glow on an empty beat; minigun, front-only and splash damage; that

@@ -9,7 +9,7 @@ function make_titan(spec)
 end
 
 function titan_x()
- return 64+sin(clock/8)*6
+ return 64+sin(clock/8)*6-cam_x*0.3
 end
 
 function titan_y()

@@ -63,7 +63,7 @@ function fire(judgement)
  robot.waiting=nil
  robot.recoil=3
  local gun,lane=guns[robot.gun],robot.lane
- local gun_x,gun_y=robot.x,93-robot.lift
+ local gun_x,gun_y=robot.x-cam_x,93-robot.lift
  sfx(gun.sound)
  combo+=1
  score+=judgement.points*multiplier()
@@ -100,19 +100,19 @@ function hurt_robot(lane)
 end
 
 function draw_robot()
- local top=84+(1-pulse)*1.5+robot.recoil-robot.lift
+ local top,x=84+(1-pulse)*1.5+robot.recoil-robot.lift,robot.x-cam_x
  if robot.lift>1 then
   for jet=-8,8,16 do
    for step=0,robot.lift do
-    circfill(robot.x+jet+rnd(2)-1,top+30+step,2.5*(1-step/(robot.lift+1)),step<4 and 7 or step<9 and 10 or 9)
+    circfill(x+jet+rnd(2)-1,top+30+step,2.5*(1-step/(robot.lift+1)),step<4 and 7 or step<9 and 10 or 9)
    end
   end
  end
  from_map(36,function()
   for colour=1,15 do pal(colour,0) end
   for nudge=-1,1,2 do
-   sspr(0,0,36,36,robot.x-18+nudge,top)
-   sspr(0,0,36,36,robot.x-18,top+nudge)
+   sspr(0,0,36,36,x-18+nudge,top)
+   sspr(0,0,36,36,x-18,top+nudge)
   end
   pal()
   if robot.hurt>0 and robot.hurt%4<2 then
@@ -121,7 +121,7 @@ function draw_robot()
    pal(9,guns[robot.gun].colour)
    pal(10,7)
   end
-  sspr(0,0,36,36,robot.x-18,top)
+  sspr(0,0,36,36,x-18,top)
   pal()
  end)
 end

@@ -1,6 +1,6 @@
 function project(lane,t)
  local near=max(t)
- return 64+lane*(12+28*near),
+ return 64+lane*(12+28*near)-cam_x*(0.3+0.7*near),
   crest_y+(t<0 and -t*96 or (hill_bottom-crest_y)*(0.35*t+0.65*t*t)),
   0.4+0.6*near
 end
@@ -51,7 +51,8 @@ function draw_sky()
  cls(1)
  rectfill(0,crest_y-10,127,crest_y,2)
  for tower in all(skyline) do
-  rectfill(tower.x,crest_y-tower.h,tower.x+tower.w,crest_y,13)
+  local x=tower.x-cam_x*0.15
+  rectfill(x,crest_y-tower.h,x+tower.w,crest_y,13)
  end
 end
 
@@ -131,6 +132,7 @@ function update_effects()
  end
  shake*=0.85
  pulse=(1+cos(clock))/2
+ cam_x=(robot.x-64)*camera_lean
 end
 
 function draw_effects()

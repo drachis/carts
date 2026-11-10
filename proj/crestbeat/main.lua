@@ -2,7 +2,7 @@ function reset(new_mode)
  mode=new_mode
  clock,next_beat,combo,score,shake,pulse,ended=0,0,0,0,0,0,0
  scroll,travel_speed,crest_y=0,0,horizon
- aim_x,aim_y,aim_half=64,100,8
+ aim_x,aim_y,aim_half,cam_x=64,100,8,0
  aliens,sparks,rings,popups,beams,fallen={},{},{},{},{},{}
  reset_stats()
  make_city()
@@ -51,7 +51,7 @@ function plan_lane(beat,route)
 end
 
 function chevron(lane,y,colour)
- local x=64+lane*40
+ local x=64+lane*40-cam_x
  for nudge=0,1 do
   line(x-5,y-4+nudge,x,y+nudge,colour)
   line(x,y+nudge,x+5,y-4+nudge,colour)
