@@ -257,6 +257,16 @@ local function rhythm()
  check("spit misses a robot that moved",robot.hp==max_hp-1,"hp "..robot.hp)
 
  reset("play")
+ start_stage(3)
+ titan.rise,robot.lane,robot.moved=1,1,0
+ clock=idle_beats-1
+ on_beat(idle_beats-1)
+ local early=#hazards
+ clock=idle_beats
+ on_beat(idle_beats)
+ check("standing still in a giant fight draws spit at your street",early==0 and #hazards==1 and hazards[1].lane==1,#hazards.." spat, "..early.." early")
+
+ reset("play")
  next_beat=#stages[1].chart
  check("a swarm is done when its chart is played and no alien is left",stage_done(),next_beat.." beats")
  start_stage(3)

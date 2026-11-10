@@ -24,6 +24,7 @@ function start_stage(number)
  hazards,titan={}
  if stage.bars then make_titan(stage) end
  robot.hp=min(robot.hp+(stage.heal or 0),max_hp)
+ robot.moved=clock
  banner,banner_life=stage.title,60
 end
 
@@ -88,6 +89,10 @@ function on_beat(beat)
  if lane then open_spot(lane,beat) end
  lane=lane_of(code,"asd")
  if lane then spit(lane,beat) end
+ if titan and not titan.dead and titan.rise==1 and clock-robot.moved>=idle_beats then
+  robot.moved=clock
+  spit(robot.lane,beat)
+ end
 end
 
 function finish(result)

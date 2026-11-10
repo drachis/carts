@@ -2,11 +2,11 @@ stages=parse_table[[
 name,chart,plan,golden,gold_cost,bars,colour,fly,heal,tickets,margin,title
 hill,1.2.3.2....z....3.1..4......,..11223322........33111111..,..11223322..1111222233111111,0,,,,,1,6,they're over the hill!
 climb,........,........,,,,,1,,,,up the hill!
-titan,..q.w.e.wsq.e.w.e.q.....,..112233221133223311....,,,4,3,,,2,8,titan! shoot its hot spots
+titan,..q.w.e.wsq.e.w.q.e.,..112233221133221133,,,4,3,,,2,8,titan! shoot its hot spots
 streets,1.3.1.3k2...4l2...1c1.3.3........,....1133113322111122..11113333...,....11331133221111223333222213333,2,,,,1,2,4,run for it!
 climb,........,........,,,,,1,,,,to the crest!
-behemoth,..w3q..2edq..1wse...qaw.e.....,..221133331122223311112233....,,,4,13,,,3,2,a behemoth!
+behemoth,..w3q..2edq..1wse...qaw.e.,..221133331122223311112233,,,4,13,,,3,2,a behemoth!
 crest,2.1.3.....8.1.r.2l3.3...z........,......2211332222221122223333.....,......221133222222112222311112222,2,,,,,3,2,they keep coming!
 climb,........,........,,,,,1,,,,the hive queen awaits
-queen,.3q.w..1edw..tq.ed.3wsq..1edw...qae.....,..1122333322111133212211333322111133....,,,6,14,,1,4,1,the hive queen!
+queen,.3q.w..1edw..tq.ed.3wsq..1edw...qae.,..1122333322111133212211333322111133,,,6,14,,1,4,1,the hive queen!
 ]]

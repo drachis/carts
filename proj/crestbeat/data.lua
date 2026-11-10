@@ -38,6 +38,7 @@ max_sparks=200
 fly_speed=0.024
 start_gun=2
 bell_bonus=200
+idle_beats=4
 payout_rest=24
 row_frames=10
 count_frames=8

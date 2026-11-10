@@ -1,5 +1,5 @@
 function reset_robot()
- robot={lane=0,x=64,hp=max_hp,hurt=0,recoil=0,lift=0,shots=0,glow=0}
+ robot={lane=0,x=64,hp=max_hp,hurt=0,recoil=0,lift=0,shots=0,glow=0,moved=0}
  equip(start_gun)
 end
 
@@ -18,6 +18,7 @@ function update_robot()
  local step=(btnp(1) and 1 or 0)-(btnp(0) and 1 or 0)
  if step!=0 and mid(-1,robot.lane+step,1)!=robot.lane then
   robot.lane+=step
+  robot.moved=clock
   sfx(5)
  end
  local swap=(btnp(5) and 1 or 0)-(btnp(4) and 1 or 0)

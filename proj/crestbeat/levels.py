@@ -38,6 +38,7 @@ SHOTS = {"a": 2, "b": 4, "h": 6, "w": 2}
 WALK = 8
 GOLD_TRACK, GOLD_DEPTH, GOLD_SHOTS = 4, 0.45, 8
 CIVILIAN_WALK = 4
+IDLE = 4
 SPIT, OPEN = "asd", "qwe"
 
 STAGES = [
@@ -45,17 +46,17 @@ STAGES = [
          seq="a1 a2 a3 a2 g1 . . . . a3 a1 b1"),
     dict(name="climb", fly=1, beats=8, title="up the hill!"),
     dict(name="titan", bars=4, colour=3, tickets=2, margin=8, title="titan! shoot its hot spots",
-         seq="q1 q2 q3 q2/s q1 q3 q2 q3 q1 . ."),
+         seq="q1 q2 q3 q2/s q1 q3 q2 q1 q3"),
     dict(name="streets", slack=3, heal=1, tickets=2, margin=4, title="run for it!",
          seq="a1 a3 c2 a1 a3 a2 c3 b1 a2 g3 . a1 a1 a3 a3"),
     dict(name="climb", fly=1, beats=8, title="to the crest!"),
     dict(name="behemoth", bars=4, colour=13, tickets=3, margin=2, title="a behemoth!",
-         seq="q2 q1 a3 q3/s q1 a2 q2/s q3 a1 q1/s q2 q3 . ."),
+         seq="q2 q1 a3 q3/s q1 a2 q2/s q3 a1 q1/s q2 q3"),
     dict(name="crest", slack=1, tickets=3, margin=2, title="they keep coming!",
          seq="a2 a1 a3 h2 c3 a1 w1 a2 g1 a3 a3"),
     dict(name="climb", fly=1, beats=8, title="the hive queen awaits"),
     dict(name="queen", bars=6, colour=14, heal=1, tickets=4, slack=2, margin=1, title="the hive queen!",
-         seq="q1 q2 a3 q3/s q2 a1 q1 q3/s w2 q2/s q1 a3 q3/s q2 a1 q1/s q3 . ."),
+         seq="q1 q2 a3 q3/s q2 a1 q1 q3/s w2 q2/s q1 a3 q3/s q2 a1 q1/s q3"),
 ]
 for giants in (False, True):
     FIGHTS = [spec for spec in STAGES if "margin" in spec and ("bars" in spec) == giants]
@@ -238,6 +239,13 @@ def build(spec):
         for b in range(sent + 1, sent + 5):
             assert stage.plan.get(b) != lane, "civilian in street %d crosses the plan at beat %d" % (lane + 2, b)
     if titan:
+        run, longest, last = 0, 0, None
+        for b in list(range(window)) * 2:
+            here = stage.plan.get(b, last)
+            run = run + 1 if here == last else 1
+            last, longest = here, max(longest, run)
+        assert longest < IDLE + 2, "%s: the plan stays in one street %d beats; the idle spit (after %d) would hit it" % (
+            spec["name"], longest, IDLE)
         per_opening = 2 * 2
         needed = -(-spec["bars"] * 8 / 3 // per_opening)
         for lane in (-1, 0, 1):

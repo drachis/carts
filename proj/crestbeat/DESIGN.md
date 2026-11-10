@@ -221,7 +221,11 @@ hit, a closed one is dark. Spit is the user's "get out of this lane by beat
 x": it goes down the street the plan is in, telegraphed by a flashing red
 bar with a beat countdown and a glob travelling down, and lands two beats
 later, by when the plan has moved on; it hurts the robot if it is still
-there.
+there. And the giant spits at anyone idling: a robot that has stood in one
+street for `idle_beats` (4) is spat at where it stands, so no one can sit
+in a street waiting for its hot spot to reopen (the user: "spit should force
+the player to keep moving"). The generator asserts the plan never holds a
+street long enough to draw it, counting round the chart's loop.
 
 **Ring the bell** (the user's exploration): three lamps above the giant's
 head, one for each hot spot. One shot on a spot lights its lamp; a second
