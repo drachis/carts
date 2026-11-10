@@ -135,6 +135,7 @@ SOUNDS += [
     (3, [(57, 0, 6, 0), (57, 0, 4, 0), (57, 0, 2, 0)]),                       # 13 bell lamp
     (6, [(62, 0, 7, 0), (57, 0, 6, 0), (62, 0, 6, 0), (57, 0, 5, 0), (62, 0, 4, 0),
          (57, 0, 3, 0), (62, 0, 2, 0)]),                                      # 14 bell rings
+    (1, [(44, 6, 5, 0), (30, 3, 4, 0), (20, 3, 2, 0)]),                       # 15 ticket ka-chunk
 ]
 # "FF AABBCCDD": flags (1 loop start, 2 loop end), then the sfx on each
 # channel, 0x40 and over silent

@@ -45,8 +45,14 @@ function stage_frame()
   end
   printh("stage "..first_stage.." "..name..": "..flr(clock).." beats ("..flr(clock/2).."s), hp "..start_hp.." to "..robot.hp)
   if last then
+   for i=1,24 do game_update() end
+   game_draw()
+   dump_screen("stage_payout_counting")
+   while not payout_done() do game_update() end
+   for i=1,10 do game_update() end
    game_draw()
    dump_screen("stage_won")
+   printh("payout: "..tickets.." tickets from "..stats.kills.." aliens, "..stats.golds.." golden, "..stats.bells.." bells, "..stats.titans.." giants, "..stats.civilians.." civilians hit")
   end
   printh("ok stage "..first_stage)
   extcmd("shutdown")

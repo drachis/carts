@@ -63,14 +63,22 @@ function boot_frame()
   expect_mode("play")
   finish("won")
   next_phase("won")
+ elseif phase=="won" then
+  if age==20 then held[4]=true end
+  if age==22 then expect_mode("won") end
+  if age==80 then
+   if not payout_done() then printh("error: the payout was not done in 80 frames") end
+   held[4]=true
+  end
+  if age==82 then expect_mode("play") end
  end
  game_update()
  if n==5 then dump("boot_title") end
  if phase=="idle" and age==150 then dump("boot_play") end
  if phase=="idle" and age==300 then dump("boot_hurt") end
  if phase=="lost" and age==30 then dump("boot_lost") end
- if phase=="won" and age==30 then
-  dump("boot_won")
+ if phase=="won" and age==30 then dump("boot_won") end
+ if phase=="won" and age==84 then
   done=true
   printh("ok boot")
   extcmd("shutdown")

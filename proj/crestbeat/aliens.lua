@@ -51,6 +51,7 @@ function hit_alien(alien,amount,judgement)
  if alien.penalty then
   score=max(score-alien.penalty)
   combo=0
+  stats.civilians+=1
   local x,y=alien_centre(alien)
   popup("hey! -"..alien.penalty.."0",x,y-10,8)
   sfx(4)
@@ -65,7 +66,10 @@ function hit_alien(alien,amount,judgement)
   burst(x,y,12,alien.body,2)
   shake+=2
   sfx(3)
+  stats.kills+=1
   if alien.bonus>0 then
+   stats.kills-=1
+   stats.golds+=1
    score+=alien.bonus
    popup("+"..alien.bonus.."0",x,y-8,alien.body)
    ring(x,y,16,alien.body)

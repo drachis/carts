@@ -38,6 +38,12 @@ max_sparks=200
 fly_speed=0.024
 start_gun=2
 bell_bonus=200
+payout_rest=24
+row_frames=10
+count_frames=8
+total_frames=30
+spring=0.35
+damping=0.6
 ]],nil,_ENV)
 
 stages=parse_table[[
@@ -75,6 +81,16 @@ for gun in all(guns) do
  gun.shots=#split(gun.pattern,"x")-1
  gun.damage=8/gun.shots
 end
+
+payouts=parse_table[[
+name,each,label
+kills,1,aliens downed
+golds,10,golden aliens
+bells,5,bells rung
+titans,10,giants felled
+civilians,-2,civilians hit
+saved,25,city saved
+]]
 
 judgements=parse_table[[
 name,colour,knock,points

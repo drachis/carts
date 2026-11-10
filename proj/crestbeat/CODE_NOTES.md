@@ -8,11 +8,12 @@ Read only the file for the module you are changing.
 
 | Notes | Module |
 |---|---|
-| [notes/data.md](notes/data.md) | tuning, judgements, the wave chart |
+| [notes/data.md](notes/data.md) | tuning, stages, enemy kinds, guns, payouts |
 | [notes/world.md](notes/world.md) | projection, road, buildings, effects |
-| [notes/aliens.md](notes/aliens.md) | sending, hopping, hurting, drawing aliens |
-| [notes/titan.md](notes/titan.md) | the titan, hot spots, spit |
-| [notes/robot.md](notes/robot.md) | lanes, judging shots, the robot |
+| [notes/aliens.md](notes/aliens.md) | enemy kinds: walking, tracks, weaving, hits, knockdowns |
+| [notes/titan.md](notes/titan.md) | the titan, hot spots, spit, the bell |
+| [notes/robot.md](notes/robot.md) | streets, gun patterns, firing, the robot |
+| [notes/payout.md](notes/payout.md) | the ticket payout |
 | [notes/main.md](notes/main.md) | modes, beat clock, chart, HUD, beat bar |
 
 **Format.** Each note is headed

@@ -194,15 +194,28 @@ of the titan), the other buildings far to near, spit, aliens far to near,
 the aim, the robot, effects, HUD, beat bar. `test_rhythm` reads both clips
 off the screen.
 
+## The ticket payout
+
+The game is meant to be installed as a ticket arcade cabinet. When a run is
+won or lost, the payout runs, after bal8tro's cash-out (the user: "that
+game does it super well"): a panel springs up from below the screen and
+settles; one line at a time arrives with a tick and counts up its tickets
+(aliens downed 1 each, golden aliens 10, bells rung 5, giants felled 10,
+civilians hit -2, city saved 25); then the ticket total rolls up in big
+digits while paper tickets are thrown out of a slot at the bottom with a
+ka-chunk. A run always pays at least one ticket. A press starts a new run
+only once every ticket is out. The rows are `payouts` in `data.lua`.
+
 ## Modules
 
 | File | Owns |
 |---|---|
-| `data.lua` | Parsers, constants, stages, guns, judgements |
+| `data.lua` | Parsers, constants, stages, enemy kinds, guns, payouts |
 | `world.lua` | Projection, sky, road, buildings, effects |
-| `aliens.lua` | Sending, hopping, hurting, drawing aliens |
-| `titan.lua` | The titan, its hot spots, its spit |
-| `robot.lua` | Streets, guns, firing, drawing the robot |
+| `aliens.lua` | Enemy kinds: walking, tracks, weaving, hits, knockdowns |
+| `titan.lua` | The titan, its hot spots, its spit, the bell |
+| `robot.lua` | Streets, gun patterns, firing, drawing the robot |
+| `payout.lua` | The ticket payout |
 | `main.lua` | Modes, the beat clock, stages, aim, HUD, beat bar |
 
 ## Tests
@@ -218,19 +231,22 @@ the last, or when they dump a screen. `tests/bot.lua` stubs the buttons and
 sound and holds the bot.
 
 - `test_boot`: the real cart from its title, X then O once each, a run with
-  no input until it is lost, a restart, and the win screen (`boot_*.png`).
+  no input until it is lost, a restart, and the win payout, where a press
+  before it is done must not restart (`boot_*.png`).
 - `test_stage_1` to `test_stage_8`: each starts a run at one stage
-  (`first_stage`) and lets the bot (steer to the most urgent target, away
-  from spit) play it to its end; the last must end in the win. Each prints
-  its beats and hearts and dumps a screen (`stage_*.png`). The bot never
-  loses a heart: 29, 7, 10, 27, 7, 29, 7 and 26 beats, 71 seconds.
+  (`first_stage`) and lets the bot (steer to the most urgent shootable
+  target, away from spit and civilians) play it to its end; the last must
+  end in the win, and plays the payout out (`stage_payout_counting`,
+  `stage_won`). Each prints its beats and hearts and dumps a screen, and the
+  first sight of each special kind (`stage_*.png`).
 - `test_rhythm`: each gun fires on exactly its pattern's eighths; a hit on the beat and its
   knockback; a late arrival inside and outside `good_window`; nothing fired
   and the glow on an empty beat; minigun, front-only and splash damage; that
   every kind lives exactly its bars under every gun; a leak;
   the chart; open and closed hot spots; spit in and out of its street; when
   a swarm and a titan stage are done; the titan and rising aliens read off
-  the screen.
+  the screen; golden aliens, civilians and weavers; the bell; the payout's
+  rows, total, dispensing and spring.
 
 ## Still to do, or not checked
 

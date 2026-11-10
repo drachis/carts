@@ -3,6 +3,7 @@ function reset(new_mode)
  clock,next_beat,combo,score,shake,pulse,ended=0,0,0,0,0,0,0
  scroll,travel_speed,crest_y=0,0,horizon
  aliens,sparks,rings,popups,beams,fallen={},{},{},{},{},{}
+ stats={kills=0,golds=0,bells=0,titans=0,civilians=0}
  make_city()
  reset_robot()
  start_stage(1)
@@ -70,6 +71,7 @@ function finish(result)
  ended=0
  music(-1)
  sfx(result=="won" and 6 or 7)
+ start_payout(result=="won")
 end
 
 function update_play()
@@ -106,7 +108,8 @@ function _update()
   ended+=1
   clock+=1/frames_per_beat
   if clock%1<1/frames_per_beat then pulse=1 end
-  if pressed and ended>15 then start_play() end
+  if mode!="title" then update_payout() end
+  if pressed and ended>15 and (mode=="title" or payout_done()) then start_play() end
  end
  update_effects()
 end
@@ -199,10 +202,7 @@ function _draw()
   centred("left/right street  z/x gun",76,6)
   centred("press z",84,tick_blink() and 10 or 5)
  elseif mode!="play" then
-  rectfill(24,50,103,76,0)
-  centred(mode=="won" and "city saved!" or "the city falls",54,mode=="won" and 11 or 8)
-  centred("score "..score_text(),62,7)
-  if ended>15 then centred("press z",70,tick_blink() and 10 or 5) end
+  draw_payout()
  end
 end
 

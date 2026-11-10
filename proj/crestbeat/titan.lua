@@ -45,6 +45,7 @@ function hit_spot(spot,amount,judgement)
   sfx(13)
   if titan.lamps==3 then
    titan.lamps=0
+   stats.bells+=1
    score+=bell_bonus
    popup("ding! +"..bell_bonus.."0",titan_x(),titan_y()-20,10)
    ring(titan_x(),titan_y()-14,30,10)
@@ -62,6 +63,7 @@ function hit_spot(spot,amount,judgement)
   for other in all(titan.spots) do alive+=other.hp end
   if alive==0 then
    titan.dead=0
+   stats.titans+=1
    sfx(6)
   end
  end
