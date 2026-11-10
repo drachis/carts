@@ -1,0 +1,5 @@
+{
+  "target": "catnfever/crestbeat",
+  "version": "1.0",
+  "channels": {"html5": "release/crestbeat_web.zip"}
+}

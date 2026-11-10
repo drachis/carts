@@ -54,7 +54,7 @@ def build():
             lines.append(line)
         elif include:
             lines.append(stripped(os.path.join(HERE, include.group(1))).rstrip("\n"))
-        elif line == "__gff__":
+        elif line in ("__gff__", "__map__") and "__label__" not in lines:
             lines += label() + [line]
         elif line.startswith("__"):
             in_lua = False
