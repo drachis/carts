@@ -38,18 +38,18 @@ function target_in(lane)
 end
 
 function update_gun()
- local tick=flr(clock*2)
+ local tick,target=flr(clock*2),target_in(robot.lane)
  if tick!=robot.last_tick and fires_on(guns[robot.gun],tick) then
   robot.last_tick=tick
   robot.shots+=1
-  if target_in(robot.lane) then
+  if target then
    fire(judgements[1])
   else
    robot.waiting=clock
    if #aliens>0 then combo=0 end
    robot.glow=4
   end
- elseif robot.waiting and target_in(robot.lane) then
+ elseif robot.waiting and target and not target.penalty then
   if (clock-robot.waiting)*frames_per_beat<=good_window then
    fire(judgements[2])
    popup("late",robot.x,76-robot.lift,10)

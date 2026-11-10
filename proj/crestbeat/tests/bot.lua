@@ -14,8 +14,11 @@ end
 function bot(frame)
  local want
  for alien in all(aliens) do
-  if alien.t>-0.05 then want=alien.lane end
+  local front=front_alien(alien.lane)
+  if alien.t>-0.05 and abs(alien.lane)<=1 and front and not front.penalty and not alien.penalty then want=alien.lane end
  end
+ local blocked=front_alien(robot.lane)
+ if not want and blocked and blocked.penalty then want=robot.lane==0 and 1 or 0 end
  if not want and titan then
   for spot in all(titan.spots) do
    if open_spot_in(spot.lane) then want=spot.lane end

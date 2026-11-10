@@ -44,7 +44,7 @@ name,chart,spot_hp,colour,fly,heal,title
 hill,....1.2.3.2.1...3.1.2.3.1.2.3,,,,,they're over the hill!
 climb,........,,,1,,up the hill!
 titan,..q.w.e.a.w.q.s.e.w.d.,4,3,,,titan! shoot its hot spots
-streets,..1.3.2.2.x.1.3.2.3.1.2.2.1.3.,,,,1,another swarm!
+streets,..1.3.2.2.k.1.3.j.3.1.l.2.x.1.3.,,,,1,run for it!
 climb,........,,,1,,to the crest!
 crest,..1.2.3.3.c.2.1.3.1.1.z.2.1.2.3.,,,,,they keep coming!
 climb,........,,,1,,the hive queen awaits
@@ -52,9 +52,10 @@ queen,..q.w.1.e.a.3.w.q.s.2.e.d.w.1.,8,14,,1,the hive queen!
 ]]
 
 kinds=parse_table[[
-name,keys,hp,walk,bonus,harmless,body,rim,track,depth
-alien,123,4,8,0,,11,3,,
-gold,zxc,8,,100,1,10,9,3,0.45
+name,keys,hp,walk,bonus,harmless,body,rim,track,depth,sprite,penalty
+alien,123,4,8,0,,11,3,,,0,
+gold,zxc,8,,100,1,10,9,3,0.45,0,
+civilian,jkl,99,4,0,1,11,3,,,32,50
 ]]
 
 guns=parse_table[[

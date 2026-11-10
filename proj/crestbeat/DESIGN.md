@@ -102,6 +102,14 @@ intention.
   beats (`track`), on screen for 12 beats, so there is time to clear the
   aliens in front of it. Aliens nearer in its street shield it. Getting
   away costs nothing.
+- **civilian** (`jkl`), the gallery's don't-shoot target: flees down a
+  street twice as fast as an alien (`walk` 4), so it overtakes aliens and
+  blocks the street for about two seconds; the reticle on it is red with a
+  "!". A shot on the beat into it costs `penalty` (shown 500) and the combo
+  and spares it; a late shot never lands on one, so passing through its
+  street is safe. Reaching the bottom costs nothing. The streets stage
+  mixes them in, so the player shifts to the other streets while one
+  passes, then dives in behind it.
 
 A hit knocks an enemy back by moving its start later (`born`). A kill
 tips it over backwards like a gallery target (`draw_fallen`), with a hard
@@ -117,6 +125,7 @@ read one character a beat from the beat it starts on:
 |---|---|
 | `1` `2` `3` | send an alien down the left, middle, right street |
 | `z` `x` `c` | a golden alien: `z` enters from the left, `x` and `c` from the right |
+| `j` `k` `l` | a fleeing civilian down that street |
 | `q` `w` `e` | open the titan's hot spot over that street for 2.5 beats |
 | `a` `s` `d` | the titan spits down that street; it lands two beats later |
 | anything else | a rest |

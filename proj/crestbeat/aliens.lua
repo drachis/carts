@@ -19,9 +19,9 @@ function update_aliens()
   end
   if alien.t>=1 or abs(alien.pos)>2.2 then
    del(aliens,alien)
-   if alien.harmless then
+   if alien.bonus>0 then
     popup("got away",robot.x,70,alien.body)
-   else
+   elseif not alien.harmless then
     hurt_robot(alien.lane)
    end
   end
@@ -38,8 +38,16 @@ function front_alien(lane)
 end
 
 function hit_alien(alien,amount,judgement)
- alien.hp-=amount
  alien.flash=3
+ if alien.penalty then
+  score=max(score-alien.penalty)
+  combo=0
+  local x,y=alien_centre(alien)
+  popup("hey! -"..alien.penalty.."0",x,y-10,8)
+  sfx(4)
+  return
+ end
+ alien.hp-=amount
  alien.born+=amount*knock_per_damage*judgement.knock
  local x,y,scale=alien_centre(alien)
  burst(x,y,4,judgement.colour,2)
@@ -89,7 +97,7 @@ function draw_aliens(behind)
    if alien.flash>0 then
     for colour=1,15 do pal(colour,7) end
    end
-   sspr(alien.hop<0.34 and 16 or 0,0,16,16,x-size/2,y-size+lift,size,size)
+   sspr(alien.sprite+(alien.hop<0.34 and 16 or 0),0,16,16,x-size/2,y-size+lift,size,size)
    pal()
   end
  end

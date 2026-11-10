@@ -10,6 +10,7 @@ Sprites are rows of PICO-8 colour digits; "." is colour 0, transparent.
 Symmetrical things are drawn as their left half and mirrored.
 
     alien      16x16 at (0,0) and (16,0), two hop frames
+    civilian   16x16 at (32,0) and (48,0), arms up, fleeing
     robot      24x24 at (0,64) and (24,64), hivefall's mech in red
 
 The music is 120 BPM: sfx speed 15, a note a quarter beat, 32 notes (eight
@@ -24,6 +25,25 @@ from png import write_png
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GAME = "crestbeat.p8"
+
+CIVILIAN = """
+..f.....
+..f..444
+..7.4444
+..7.4f0f
+..77ffff
+...777ff
+....7777
+....7777
+....7777
+....7c77
+....1111
+....11..
+....11..
+....11..
+...555..
+........
+"""
 
 ALIEN = """
 ......33
@@ -144,6 +164,9 @@ def build_gfx():
     alien = mirrored(ALIEN, 8)
     stamp(sheet, alien, 0, 0)
     stamp(sheet, alien[:14] + mirrored(ALIEN_LEGS, 8), 16, 0)
+    civilian = mirrored(CIVILIAN, 8)
+    stamp(sheet, civilian, 32, 0)
+    stamp(sheet, bobbed(civilian, 10), 48, 0)
     mech = mirrored(MECH.translate(RED), 12)
     stamp(sheet, mech, 0, 64)
     stamp(sheet, bobbed(mech, 14), 24, 64)

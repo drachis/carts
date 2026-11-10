@@ -121,16 +121,20 @@ function draw_aim()
   else
    x,y,scale=alien_centre(target)
   end
-  local half=12*scale+2+pulse*2
+  local half,colour=12*scale+2+pulse*2,target.penalty and 8 or 10
   for side=-1,1,2 do
    for up=-1,1,2 do
     local cx,cy=x+side*half,y+up*half
-    line(cx,cy,cx-side*3,cy,10)
-    line(cx,cy,cx,cy-up*3,10)
+    line(cx,cy,cx-side*3,cy,colour)
+    line(cx,cy,cx,cy-up*3,colour)
    end
   end
-  for i=1,target.hp do
-   pset(x-target.hp+i*2-1,y-half-3,8)
+  if target.penalty then
+   print("!",x-1,y-half-7,8)
+  else
+   for i=1,target.hp do
+    pset(x-target.hp+i*2-1,y-half-3,8)
+   end
   end
  end
 end

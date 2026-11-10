@@ -30,10 +30,11 @@ function stage_frame()
   dump_screen("stage_"..first_stage.."_"..name)
  end
  for alien in all(aliens) do
-  if alien.bonus>0 and abs(alien.pos)<0.6 and not gold_seen then
-   gold_seen=true
+  local kind=getmetatable(alien)
+  if kind!=kinds[1] and abs(alien.pos)<0.6 and alien.t>0.3 and not kind.seen then
+   kind.seen=true
    game_draw()
-   dump_screen("stage_"..first_stage.."_gold")
+   dump_screen("stage_"..first_stage.."_"..kind.name)
   end
  end
  local last=first_stage==#stages

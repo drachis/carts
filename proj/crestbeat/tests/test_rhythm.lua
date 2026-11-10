@@ -129,6 +129,31 @@ local function rhythm()
  check("and an alien nearer in its street shields it",front_alien(0) and not front_alien(0).harmless and #aliens==2,"front is "..(front_alien(0).harmless and "gold" or "an alien"))
 
  reset("play")
+ send_alien(0,0)
+ send_alien(0,2,kinds.civilian)
+ clock=5.9
+ equip(2)
+ update_aliens()
+ local overtaken=front_alien(0).penalty
+ step_to(6.01)
+ check("a fleeing civilian overtakes an alien and blocks its street",overtaken and front_alien(0).penalty,"front is "..(front_alien(0).penalty and "the civilian" or "the alien"))
+ local alien=aliens[1].penalty and aliens[2] or aliens[1]
+ check("a shot into the civilian costs points and spares the alien",alien.hp==alien_hp and score==0 and combo==0,"alien hp "..alien.hp..", score "..score)
+ clock=2+kinds.civilian.walk+1
+ update_aliens()
+ check("a civilian who reaches the bottom costs nothing",robot.hp==max_hp and not front_alien(0).penalty,"hp "..robot.hp)
+
+ reset("play")
+ send_alien(0,0)
+ send_alien(0,2.5,kinds.civilian)
+ score,robot.lane,clock=100,1,5.9
+ equip(2)
+ step_to(6.01)
+ robot.lane=0
+ step_frames(2)
+ check("passing through a civilian's street just after a beat does not shoot them",score==100 and front_alien(0).penalty,"score "..score)
+
+ reset("play")
  on_beat(4)
  check("the chart sends an alien on its beat",#aliens==1 and aliens[1].lane==-1,#aliens.." sent")
 
