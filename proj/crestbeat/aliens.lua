@@ -1,27 +1,27 @@
 function send_alien(lane,beat,kind)
  kind=kind or kinds[1]
  local dir=lane<0 and 1 or -1
- add(aliens,setmetatable({lane=lane,first=lane,pos=lane,start=-2*dir,dir=dir,born=beat,hp=kind.bars*8,flash=0,t=-1},kind))
+ add(aliens,setmetatable({lane=lane,first=lane,pos=lane,start=-2.125*dir,dir=dir,born=beat,hp=kind.bars*8,flash=0,t=-1,knock=0},kind))
 end
 
 function update_aliens()
  for alien in all(aliens) do
-  local beats=(clock-alien.born)/(alien.track or 1)
-  local whole=flr(beats)
-  alien.hop=beats-whole
-  local step=whole+min(1,alien.hop*3)
+  local push=alien.knock/4
+  alien.born+=push
+  alien.knock-=push
+  local beats=clock-alien.born
+  alien.hop=beats%1
   alien.flash=max(alien.flash-1)
   if alien.track then
-   alien.t,alien.pos=alien.depth,alien.start+alien.dir*step
-   alien.lane=flr(alien.pos+0.5)
+   alien.t,alien.pos=alien.depth,alien.start+alien.dir*beats/alien.track
   else
+   local step=beats-surge*sin(beats)
    alien.t=(step-1)/alien.walk
    if alien.weave then
-    local turn=step/alien.weave+alien.first+1
-    alien.pos=weave_lane(turn)+(weave_lane(turn+1)-weave_lane(turn))*(turn%1)
-    alien.lane=flr(alien.pos+0.5)
+    alien.pos=-cos((step/alien.weave+alien.first+1)/4)
    end
   end
+  alien.lane=flr(alien.pos+0.5)
   if alien.t>=1 or alien.pos*alien.dir>1.6 then
    del(aliens,alien)
    if alien.bonus>0 then
@@ -34,14 +34,10 @@ function update_aliens()
  sort_by_t(aliens)
 end
 
-function weave_lane(turn)
- return ({-1,0,1,0})[flr(turn)%4+1]
-end
-
 function front_alien(lane)
  local front
  for alien in all(aliens) do
-  if alien.lane==lane and alien.t>-0.05 then front=alien end
+  if alien.t>-0.05 and (alien.lane==lane or alien.track and abs(alien.pos-lane)<straddle) then front=alien end
  end
  return front
 end
@@ -58,7 +54,7 @@ function hit_alien(alien,amount,judgement)
   return
  end
  alien.hp-=amount
- if not alien.track then alien.born+=amount*knock_per_damage*judgement.knock end
+ if not alien.track then alien.knock+=amount*knock_per_damage*judgement.knock end
  local x,y,scale=alien_centre(alien)
  burst(x,y,4,judgement.colour,2)
  if alien.hp<0.01 then
@@ -116,12 +112,12 @@ function draw_aliens(behind)
   if (alien.t<0)==behind then
    local x,y,scale=project(alien.pos,alien.t)
    local size=24*scale*alien.size
-   local lift=alien.hop<0.34 and sin(alien.hop*1.5)*6*scale or 0
+   local lift=(cos(alien.hop)-1)*2*scale
    kind_colours(alien)
    if alien.flash>0 then
     for colour=1,15 do pal(colour,7) end
    end
-   local frame=alien.hop<0.34 and 1 or 0
+   local frame=alien.hop<0.5 and 1 or 0
    if alien.sprite>0 then
     local width,sx,sy=swarm_sprite(size,civilian_sprites)
     sspr(sx,sy,width,width,x-width/2,y-width-frame,width,width)

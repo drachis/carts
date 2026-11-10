@@ -115,8 +115,8 @@ function update_play()
  crest_y+=((titan and not titan.dead and titan_horizon or horizon)-crest_y)*0.08
  banner_life=max(banner_life-1)
  update_city()
- update_robot()
  update_aliens()
+ update_robot()
  if titan then update_titan() end
  if robot.hp<=0 then
   finish("lost")

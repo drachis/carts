@@ -48,7 +48,7 @@ local function rhythm()
  local name=armed(2,{0})
  step_to(4.01)
  check(name.." hits the alien in its street on the beat",aliens[1].hp==alien_hp-2,"hp "..aliens[1].hp)
- check("and knocks it back up the hill",aliens[1].born>0,"born "..aliens[1].born)
+ check("and knocks it back up the hill",aliens[1].born+aliens[1].knock>0,"born "..aliens[1].born..", knock "..aliens[1].knock)
 
  armed(2,{0},1)
  step_to(4.01)
@@ -97,12 +97,13 @@ local function rhythm()
 
  reset("play")
  send_alien(1,0,kinds.gold)
- clock=12
- update_aliens()
- local stayed=#aliens
- clock=13
- update_aliens()
- check("a golden alien stays on screen for 12 beats",stayed==1 and #aliens==0,stayed.." at beat 12, "..#aliens.." at 13")
+ local on_streets=0
+ for beat=0,20 do
+  clock=beat
+  update_aliens()
+  if aliens[1] and abs(aliens[1].lane)<=1 then on_streets+=1 end
+ end
+ check("a golden alien is on the streets for 12 beats",on_streets==12 and #aliens==0,on_streets.." beats")
  check("and getting away costs nothing",robot.hp==max_hp,"hp "..robot.hp)
  for kind in all(kinds) do
   if not kind.penalty then
@@ -159,12 +160,15 @@ local function rhythm()
  reset("play")
  send_alien(-1,0,kinds.gold)
  local streets=""
- for beat=2,10,kinds.gold.track do
+ for beat=4,12,kinds.gold.track do
   clock=beat
   update_aliens()
   streets..=aliens[1].lane.." "
  end
  check("a golden alien crosses the streets halfway up the hill",streets=="-1 0 1 " and aliens[1].t==kinds.gold.depth,"streets "..streets.."at depth "..aliens[1].t)
+ clock=6.5
+ update_aliens()
+ check("straddling two streets it can be shot from either",front_alien(-1)==aliens[1] and front_alien(0)==aliens[1] and front_alien(1)==nil,"at "..aliens[1].pos)
  reset("play")
  send_alien(-1,0,kinds.gold)
  send_alien(0,-2)
@@ -199,7 +203,7 @@ local function rhythm()
 
  reset("play")
  send_alien(0,0)
- send_alien(0,2.5,kinds.civilian)
+ send_alien(0,2.2,kinds.civilian)
  score,robot.lane,clock=100,1,5.9
  equip(2)
  step_to(6.01)
@@ -288,7 +292,7 @@ local function rhythm()
  start_stage(#stages)
  titan.rise=1
  clock=10
- send_alien(0,10-0.253)
+ send_alien(0,10-0.85)
  update_aliens()
  game_draw()
  local rising=0

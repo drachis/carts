@@ -35,7 +35,19 @@ local function margins()
   printh("error: stage "..first_stage.."'s survival margin is "..survive..", designed "..wanted)
  end
  if stages[first_stage].golden then
+  local real_update=_update_game
+  _update_game=function()
+   local before=flr(clock)
+   real_update()
+   if flr(clock)!=before and trace_gold then
+    local front=target_in(robot.lane)
+    for alien in all(aliens) do
+     if alien.bonus>0 then printh("beat "..(flr(clock)-stage_beat).." robot "..robot.lane.." front "..(front and (front.bonus>0 and "gold" or front.name) or "none").." gold in "..alien.lane.." hp "..alien.hp) end
+    end
+   end
+  end
   local lost,prizes,earned=play_stage(first_stage,0,true)
+  _update_game=real_update
   local prize=stages[first_stage].bars and "bell" or "golden alien"
   printh("stage "..first_stage.." "..prize.." route: gets "..prizes.." "..prize.." for "..lost.." hearts (designed at most "..stages[first_stage].gold_cost.."), "..earned.." tickets")
   if prizes!=1 then printh("error: the "..prize.." route missed its "..prize) end

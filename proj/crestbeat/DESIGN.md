@@ -9,6 +9,11 @@ is choosing a street, and the beats are the guns' cool-down. The user: "like
 a frenetic english country dance", and, watching it, "more a shooting
 gallery than a shmup".
 
+**This is the `crestbeat-smooth` branch**, the user's "insane thing": the
+hard beats smoothed out, while the game stays about beat matching. Shots
+still land on the beat; everything else moves as a continuous function of
+song time (see "Smooth motion"). `crestbeat` is the beat-snapping version.
+
 The run is about 75 to 90 seconds, paced like **Godzilla Kaiju Wars VR**
 (Raw Thrills): small clusters, a big enemy, clusters again, a boss. The
 user's sketch was layout, not art; the art is described under "The art".
@@ -256,6 +261,24 @@ aliens still behind the crest (clipped at `crest_y`, so they rise in front
 of the titan), the other buildings far to near, spit, aliens far to near,
 the aim, the robot, effects, HUD, beat bar. `test_rhythm` reads both clips
 off the screen.
+
+## Smooth motion
+
+The one rule of this branch: nothing snaps on a beat except the shots. A
+sine with a one-beat period is 0 on every whole beat, so motion can surge
+and ease within a beat and still be exactly where the hopping version was
+when a shot lands; that keeps `levels.py`'s plans, margins and routes true.
+
+- **Walkers** move `beats - surge*sin(beats)` (surge 0.12): a push forward on
+  each beat easing off between, never stopping, with a smooth arc of a bob.
+- **Weavers** sweep along a cosine, -1, 0, 1, 0, instead of stepping.
+- **The golden alien** glides across at a constant speed, its street
+  boundaries put mid-beat (it enters at 2.125 streets out) so a shot on the
+  beat is never on a boundary. While it straddles two streets it can be
+  shot from either (`straddle` 0.7): an option, not the plan.
+- **Knockback** is a spring, a quarter of the push a frame.
+- Each frame the enemies move before the guns fire, so a shot on the beat
+  sees where everything is on the beat.
 
 ## The art
 

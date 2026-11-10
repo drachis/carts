@@ -30,6 +30,7 @@ The warning counts the beats down. "/sL" names the street instead.
 would reach the bottom: the margin for falling behind the plan. It shrinks
 level by level.
 """
+import math
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -39,21 +40,22 @@ WALK = 8
 GOLD_TRACK, GOLD_DEPTH, GOLD_SHOTS = 4, 0.45, 8
 CIVILIAN_WALK = 4
 IDLE = 4
+STRADDLE = 0.7
 SPIT, OPEN = "asd", "qwe"
 
 STAGES = [
-    dict(name="hill", slack=5, tickets=1, margin=6, title="they're over the hill!",
+    dict(name="hill", slack=5, tickets=1, margin=7, title="they're over the hill!",
          seq="a1 a2 a3 a2 g1 . . . . a3 a1 b1"),
     dict(name="climb", fly=1, beats=8, title="up the hill!"),
     dict(name="titan", bars=4, colour=3, tickets=2, margin=8, title="titan! shoot its hot spots",
          seq="q1 q2 q3 q2/s q1 q3 q2 q1 q3"),
     dict(name="streets", slack=3, heal=1, tickets=2, margin=4, title="run for it!",
-         seq="a1 a3 c2 a1 a3 a2 c3 b1 a2 g3 . a1 a1 a3 a3"),
+         seq="a1 a3 c2 a1 a3 a2 c3 b1 a2 g3 . . a1 a1 a3 a3"),
     dict(name="climb", fly=1, beats=8, title="to the crest!"),
     dict(name="behemoth", bars=4, colour=13, tickets=3, margin=2, title="a behemoth!",
          seq="q2 q1 a3 q3/s q1 a2 q2/s q3 a1 q1/s q2 q3"),
-    dict(name="crest", slack=1, tickets=3, margin=2, title="they keep coming!",
-         seq="a2 a1 a3 h2 c3 a1 w1 a2 g1 a3 a3"),
+    dict(name="crest", slack=1, tickets=3, margin=3, title="they keep coming!",
+         seq="a2 a1 a3 h2 c3 a1 w1 g1 a2 a3 a3"),
     dict(name="climb", fly=1, beats=8, title="the hive queen awaits"),
     dict(name="queen", bars=6, colour=14, crown=1, heal=1, tickets=4, slack=2, margin=1, title="the hive queen!",
          seq="q1 q2 a3 q3/s q2 a1 q1 q3/s w2 q2/s q1 a3 q3/s q2 a1 q1/s q3"),
@@ -65,16 +67,12 @@ for giants in (False, True):
             " ".join(s["name"] for s in FIGHTS), "the end")
 
 
-def weave_lane(turn):
-    return (-1, 0, 1, 0)[int(turn // 1) % 4]
-
-
 def weaver_street(first, sent, beat):
-    """The street a weaver counts as in on a whole beat, as aliens.lua works it out."""
-    step = beat - sent
-    turn = step / 2 + first + 1
-    here, there = weave_lane(turn), weave_lane(turn + 1)
-    pos = here + (there - here) * (turn % 1)
+    """The street a weaver counts as in on a whole beat, as aliens.lua works it
+    out: it sweeps along a cosine, -1, 0, 1, 0 every two beats (the surge in
+    its walk is nothing on a whole beat)."""
+    turn = (beat - sent) / 2 + first + 1
+    pos = -math.cos(math.pi * turn / 2)
     return int((pos + 0.5) // 1)
 
 
@@ -82,20 +80,32 @@ def gold_in_the_way(stage, side, sent):
     """The beats on which a golden alien sent at `sent` would stand in front
     of the plan's target in the plan's street: the plan must steer round it."""
     clashes = []
-    for beat in range(sent, sent + 14):
-        street = gold_street(side, sent, beat)
-        if street is not None and stage.plan.get(beat) == street and beat in stage.walker:
+    for beat in range(sent, sent + 16):
+        if stage.plan.get(beat) in gold_streets(side, sent, beat) and beat in stage.walker:
             if (beat - stage.walker[beat] - 1) / WALK <= GOLD_DEPTH + 0.1:
                 clashes.append(beat)
     return clashes
 
 
+def gold_position(side, sent, beat):
+    start, way = (-2.125, 1) if side < 0 else (2.125, -1)
+    return start + way * (beat - sent) / GOLD_TRACK
+
+
+def gold_streets(side, sent, beat):
+    """Every street a golden alien can be shot from on a whole beat: the one
+    it is in, and the one beside while it straddles them (within STRADDLE of
+    a street's middle), as front_alien works it out. Empty once it is gone."""
+    pos = gold_position(side, sent, beat)
+    if abs(pos) > 1.6:
+        return []
+    return [s for s in (-1, 0, 1) if abs(pos - s) < STRADDLE]
+
+
 def gold_street(side, sent, beat):
-    """The street a golden alien sent at `sent` counts as in on a whole beat,
-    or None once it is off the streets."""
-    start, way = (-2, 1) if side < 0 else (2, -1)
-    steps = (beat - sent) / GOLD_TRACK
-    pos = start + way * (steps // 1 + min(1, steps % 1 * 3))
+    """The street a golden alien sent at `sent` is in on a whole beat, or
+    None once it is off the streets."""
+    pos = gold_position(side, sent, beat)
     if abs(pos) > 1.6:
         return None
     street = int((pos + 0.5) // 1)
