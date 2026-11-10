@@ -1,5 +1,11 @@
 local n,done,start_hp=0
+local real_hurt=hurt_robot
+function hurt_robot(lane)
+ if not done then printh("hurt at beat "..flr(clock*10)/10-stage_beat.." in street "..lane..", robot in "..robot.lane) end
+ real_hurt(lane)
+end
 local game_update,game_draw=_update,_draw
+_update_game=game_update
 
 function _draw() end
 
@@ -12,6 +18,28 @@ function stage_frames()
   if not done then stage_frame() end
  end
  game_draw()
+end
+
+local function margins()
+ local line,clean,survive="",nil,nil
+ for lag=0,8 do
+  local lost=play_stage(first_stage,lag)
+  line..=lag..":"..lost.." "
+  if lost>0 and not clean then clean=lag-1 end
+  if lost>=max_hp and not survive then survive=lag-1 end
+ end
+ clean,survive=clean or 8,survive or 8
+ printh("stage "..first_stage.." "..stages[first_stage].name..": clean margin "..clean..", survival margin "..survive.." beats behind the plan (lag:hearts lost) "..line)
+ local wanted=stages[first_stage].margin
+ if wanted and survive!=wanted then
+  printh("error: stage "..first_stage.."'s survival margin is "..survive..", designed "..wanted)
+ end
+ if stages[first_stage].golden then
+  local lost,golds,earned=play_stage(first_stage,0,true)
+  printh("stage "..first_stage.." golden route: gets "..golds.." golden alien for "..lost.." hearts (designed at most "..stages[first_stage].gold_cost.."), "..earned.." tickets")
+  if golds!=1 then printh("error: the golden route missed the golden alien") end
+  if lost>stages[first_stage].gold_cost then printh("error: the golden route cost more than designed") end
+ end
 end
 
 function stage_frame()
@@ -43,7 +71,10 @@ function stage_frame()
   if last and mode!="won" or not last and mode!="play" then
    printh("error: stage "..name.." ended in mode "..mode)
   end
-  printh("stage "..first_stage.." "..name..": "..flr(clock).." beats ("..flr(clock/2).."s), hp "..start_hp.." to "..robot.hp)
+  if robot.hp<start_hp then
+   printh("error: the plan loses "..(start_hp-robot.hp).." hearts on stage "..name)
+  end
+  printh("stage "..first_stage.." "..name..": "..flr(clock).." beats ("..flr(clock/2).."s) on the plan, hp "..start_hp.." to "..robot.hp..", tickets so far "..ticket_total())
   if last then
    for i=1,24 do game_update() end
    game_draw()
@@ -52,8 +83,9 @@ function stage_frame()
    for i=1,10 do game_update() end
    game_draw()
    dump_screen("stage_won")
-   printh("payout: "..tickets.." tickets from "..stats.kills.." aliens, "..stats.golds.." golden, "..stats.bells.." bells, "..stats.titans.." giants, "..stats.civilians.." civilians hit")
+   printh("payout: "..tickets.." tickets")
   end
+  if not stages[first_stage].fly then margins() end
   printh("ok stage "..first_stage)
   extcmd("shutdown")
  elseif n>3000 then

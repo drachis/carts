@@ -127,15 +127,19 @@ local function rhythm()
  check("a golden alien pays its bonus",score==kinds.gold.bonus and stats.golds==1 and stats.kills==0,"score "..score)
 
  reset("play")
- stats.kills,stats.golds,stats.civilians=10,1,2
+ for i=1,10 do award("kills") end
+ award("golds")
+ award("civilians")
+ award("civilians")
  start_payout(true)
  local lowest=panel_y
  for i=1,200 do
   update_payout()
   lowest=min(lowest,panel_y)
  end
- check("the payout pays a ticket an alien, 10 a golden one, 25 for the city, less 2 a civilian",tickets==41 and #rows==4,tickets.." tickets in "..#rows.." rows")
- check("and dispenses every one",dispensed==41 and flr(shown_tickets)==41 and payout_done(),dispensed.." dispensed")
+ local expected=10*payouts.kills.each+payouts.golds.each+2*payouts.civilians.each+payouts.saved.each
+ check("the payout adds up each row at level one",tickets==expected and #rows==4,tickets.." tickets in "..#rows.." rows, expected "..expected)
+ check("and dispenses every one",dispensed==expected and flr(shown_tickets)==expected and payout_done(),dispensed.." dispensed")
  check("its panel springs up past its rest and settles",lowest<payout_rest-1 and abs(panel_y-payout_rest)<0.5,"lowest "..lowest..", rests at "..panel_y)
  reset("play")
  start_payout(false)
@@ -155,7 +159,7 @@ local function rhythm()
  reset("play")
  send_alien(-1,0,kinds.gold)
  local streets=""
- for beat=1,8,kinds.gold.track do
+ for beat=2,10,kinds.gold.track do
   clock=beat
   update_aliens()
   streets..=aliens[1].lane.." "
@@ -205,7 +209,8 @@ local function rhythm()
 
  reset("play")
  on_beat(4)
- check("the chart sends an alien on its beat",#aliens==1 and aliens[1].lane==-1,#aliens.." sent")
+ local charted=lane_of(sub(stages[1].chart,5,5),kinds.alien.keys)
+ check("the chart sends an alien on its beat",#aliens==1 and aliens[1].lane==charted,#aliens.." sent")
 
  reset("play")
  start_stage(3)
@@ -220,17 +225,18 @@ local function rhythm()
  start_stage(3)
  local lit=""
  for lane in all({-1,1,0}) do
-  open_spot(lane,0)
   hit_spot(titan.spots[lane+2],1,judgements[1])
-  hit_spot(titan.spots[lane+2],1,judgements[1])
-  lit..=titan.lamps.." "
+  lit..=lamps_lit().." "
  end
- check("hitting three hot spot windows in a row rings the bell",lit=="1 2 0 " and score==bell_bonus,"lamps "..lit.."score "..score)
- open_spot(-1,0)
+ check("one shot on each hot spot rings the bell",lit=="1 2 3 " and score==bell_bonus and titan.rung,"lamps "..lit.."score "..score)
+ for spot in all(titan.spots) do spot.lit=nil end
+ for spot in all(titan.spots) do hit_spot(spot,1,judgements[1]) end
+ check("the bell rings only once a giant",stats.bells==1,stats.bells.." bells")
+ reset("play")
+ start_stage(3)
  hit_spot(titan.spots[1],1,judgements[1])
- open_spot(1,0)
- open_spot(0,0)
- check("a window missed puts the lamps out",titan.lamps==0,"lamps "..titan.lamps)
+ hit_spot(titan.spots[1],1,judgements[1])
+ check("a second shot on a lit spot puts the lamps out",lamps_lit()==0,"lamps "..lamps_lit())
  reset("play")
  start_stage(3)
  spot=titan.spots[2]

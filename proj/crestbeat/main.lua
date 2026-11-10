@@ -3,7 +3,7 @@ function reset(new_mode)
  clock,next_beat,combo,score,shake,pulse,ended=0,0,0,0,0,0,0
  scroll,travel_speed,crest_y=0,0,horizon
  aliens,sparks,rings,popups,beams,fallen={},{},{},{},{},{}
- stats={kills=0,golds=0,bells=0,titans=0,civilians=0}
+ reset_stats()
  make_city()
  reset_robot()
  start_stage(1)
@@ -39,6 +39,30 @@ function sync_clock()
   clock+=((wanted-clock+4)%8-4)/2
  end
  last_note=note
+end
+
+function plan_lane(beat,route)
+ local index=beat-stage_beat
+ if titan then index%=#stage.chart end
+ local code=ord(route or stage.plan,index+1)
+ if code and code>48 then return code-50 end
+end
+
+function chevron(lane,y,colour)
+ local x=64+lane*40
+ for nudge=0,1 do
+  line(x-5,y-4+nudge,x,y+nudge,colour)
+  line(x,y+nudge,x+5,y-4+nudge,colour)
+ end
+end
+
+function draw_plan()
+ for ahead=2,0,-1 do
+  local beat,y=flr(clock)+1+ahead,117-ahead*9
+  local lane,golden=plan_lane(beat),plan_lane(beat,stage.golden)
+  if lane then chevron(lane,y,({11,3,1})[ahead+1]) end
+  if golden and golden!=lane then chevron(golden,y-2,ahead==0 and 10 or 9) end
+ end
 end
 
 function lane_of(code,set)
@@ -190,6 +214,7 @@ function _draw()
  draw_aliens(false)
  if mode=="play" then draw_aim() end
  draw_robot()
+ if mode=="play" and btn(3) then draw_plan() end
  draw_effects()
  camera()
  draw_hud()

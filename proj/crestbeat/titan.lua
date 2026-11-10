@@ -1,5 +1,5 @@
 function make_titan(spec)
- titan={rise=0,spots={},colour=spec.colour,lamps=0,window_hit=true}
+ titan={rise=0,spots={},colour=spec.colour}
  for lane=-1,1 do
   add(titan.spots,{lane=lane,hp=spec.bars*8/3,open=-1,flash=0})
  end
@@ -22,10 +22,34 @@ end
 
 function open_spot(lane,beat)
  local spot=titan.spots[lane+2]
- if spot.hp>0 then
-  spot.open=beat+2.5
-  if not titan.window_hit then titan.lamps=0 end
-  titan.window_hit=false
+ if spot.hp>0 then spot.open=beat+2.5 end
+end
+
+function lamps_lit()
+ local lit=0
+ for spot in all(titan.spots) do
+  if spot.lit then lit+=1 end
+ end
+ return lit
+end
+
+function ring_lamp(spot)
+ if titan.rung then return end
+ if spot.lit then
+  for other in all(titan.spots) do other.lit=nil end
+  sfx(2)
+  return
+ end
+ spot.lit=true
+ sfx(13)
+ if lamps_lit()==3 then
+  titan.rung=true
+  award("bells")
+  score+=bell_bonus
+  popup("ding! +"..bell_bonus.."0",titan_x(),titan_y()-20,10)
+  ring(titan_x(),titan_y()-14,30,10)
+  shake+=3
+  sfx(14)
  end
 end
 
@@ -39,20 +63,7 @@ function hit_spot(spot,amount,judgement)
  spot.flash=6
  local x,y=spot_xy(spot)
  burst(x,y,8,judgement.colour,2)
- if not titan.window_hit then
-  titan.window_hit=true
-  titan.lamps+=1
-  sfx(13)
-  if titan.lamps==3 then
-   titan.lamps=0
-   stats.bells+=1
-   score+=bell_bonus
-   popup("ding! +"..bell_bonus.."0",titan_x(),titan_y()-20,10)
-   ring(titan_x(),titan_y()-14,30,10)
-   shake+=3
-   sfx(14)
-  end
- end
+ ring_lamp(spot)
  if spot.hp<0.01 then
   spot.hp=0
   burst(x,y,30,9,3)
@@ -63,7 +74,7 @@ function hit_spot(spot,amount,judgement)
   for other in all(titan.spots) do alive+=other.hp end
   if alive==0 then
    titan.dead=0
-   stats.titans+=1
+   award("titans")
    sfx(6)
   end
  end
@@ -112,9 +123,10 @@ function draw_titan()
  circfill(x+6,y-2,2,8)
  line(x-8,y+8,x-3,y+14,11)
  line(x+8,y+8,x+3,y+14,11)
- for lamp=1,3 do
-  circfill(x+lamp*7-14,y-16,2,lamp<=titan.lamps and 10 or 1)
-  circ(x+lamp*7-14,y-16,2,lamp<=titan.lamps and 7 or 5)
+ for spot in all(titan.spots) do
+  local lamp_x=x+spot.lane*7
+  circfill(lamp_x,y-16,2,spot.lit and 10 or 1)
+  circ(lamp_x,y-16,2,spot.lit and 7 or 5)
  end
  for spot in all(titan.spots) do
   local sx,sy=spot_xy(spot)
@@ -133,10 +145,9 @@ end
 function draw_hazards()
  for hazard in all(hazards) do
   local x,y,scale=project(hazard.lane,1)
-  if clock*4%1<0.5 then
-   rectfill(x-18,y-2,x+18,y+2,8)
-  end
   local along=(clock-hazard.from)/2
+  if clock*4%1<0.5 then rectfill(x-18,y-2,x+18,y+2,8) end
+  print(ceil(hazard.land-clock),x-1,y-9,8)
   local gx,gy,gscale=project(hazard.lane,along)
   circfill(gx,gy-8*gscale,5*gscale,11)
   circfill(gx,gy-8*gscale,2*gscale,7)

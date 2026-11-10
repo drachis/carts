@@ -107,12 +107,12 @@ intention.
   but sweeps across the streets as it comes, a street every two beats
   (`weave`), left, centre, right, centre, starting from its chart street.
   The player has to read where it will be on the next shot. Purple rim.
-- **golden alien** (`zxc`), the gallery's golden duck: lives 2 bars,
-  pays `bonus` (shown 1000). It appears halfway up the hill (`depth`) at the
-  side its key names and slides across the streets, one street every 3
-  beats (`track`), on screen for 12 beats, so there is time to clear the
-  aliens in front of it. Aliens nearer in its street shield it. Getting
-  away costs nothing.
+- **golden alien** (`zxc`), the gallery's golden duck: lives 2 bars (8
+  shock rifle shots), pays the big tickets. It comes in from the side its
+  key names, halfway up the hill (`depth`), and slides across the streets
+  a street every 4 beats (`track`): 12 beats on the streets, so its 8 shots
+  fit with a little room. Aliens nearer in its street shield it, and
+  knockback does not slow it (it is on a track). Getting away costs nothing.
 - **civilian** (`jkl`), the gallery's don't-shoot target: flees down a
   street twice as fast as an alien (`walk` 4), so it overtakes aliens and
   blocks the street for about two seconds; the reticle on it is red with a
@@ -129,8 +129,50 @@ the target in the robot's street, alien or hot spot.
 
 ## Stages
 
-The run is a list of stages (`stages` in `data.lua`), each with a chart
-read one character a beat from the beat it starts on:
+The stages are designed in `levels.py`, which writes `levels.lua` (never
+edited by hand). A stage is designed as its **plan**: the intended route of
+targets, a window of beats for each, in which the shock rifle (the starting
+gun) is in the target's street. The generator works out when each enemy is
+sent so it is on the hill for its window, and writes the chart and the plan
+as strings a character a beat. There is always a designated street: hold
+**down** in the game to see it, a green chevron for the next shot and dimmer
+ones for the two after. It checks, and fails the build, if a civilian or
+the golden alien would stand in the plan's way, or a spit would land on
+the plan's street.
+
+**Slack** is how many beats an enemy's last planned shot comes before it
+would reach the bottom. It shrinks level by level (5, 3, 1), so the
+**survival margin**, how many beats behind the plan a player can be and
+still clear the stage, shrinks too. The stage carts measure it by playing
+each stage at 0 to 8 beats behind the plan, and fail if it moves from the
+design (`margin` in `levels.py`); the generator asserts it never grows from
+one street stage to the next, nor from one giant to the next:
+
+| Stage | Survival margin | Golden route costs |
+|---|---|---|
+| hill | 6 beats | nothing (it comes in a lull) |
+| titan | 8 (one spit) | |
+| streets | 4 | up to 2 hearts |
+| behemoth | 2 | |
+| crest | 2 | up to 2 hearts |
+| queen | 1 | |
+
+So most players get through the first titan and into the streets, about
+30 seconds; few get through the crest and the queen.
+
+**The golden route.** Each golden alien has a second plan, `golden`, that
+takes it: from its arrival the gun is on it whenever it is in front in its
+street, shooting the alien that shields it out of turn when one does, and
+the rest of the plan waits. Early, a lull pays for it; later, the delay
+pushes aliens past the bottom: the user's "each gold uses some of the early
+margin and is a health trade off later". The generator works out the
+hearts (`gold_cost`, an upper bound: it leaves knockback out) and asserts
+they are 0 first and grow; the stage carts play the golden route and check
+it gets the gold within that cost. Down shows the golden route as a gold
+chevron where it parts from the plan.
+
+The chart the game plays reads one character a beat from the beat the
+stage starts on:
 
 | Character | Meaning |
 |---|---|
@@ -140,7 +182,7 @@ read one character a beat from the beat it starts on:
 | `r` `t` `y` | a weaver starting in that street |
 | `4` `5` `6`, `7` `8` `9` | a brute, a hulk |
 | `q` `w` `e` | open the titan's hot spot over that street for 2.5 beats |
-| `a` `s` `d` | the titan spits down that street; it lands two beats later |
+| `a` `s` `d` | the titan spits down that street; it lands two beats later, counting down |
 | anything else | a rest |
 
 A swarm stage is done when its chart is played and no alien is left. A
@@ -153,13 +195,22 @@ Each spot rounds up to whole shots, so with the shock rifle the titan takes
 4.5 bars and the queen exactly 6. The last stage done is the win. Each stage
 shows its `title` as a banner; `heal` gives back hearts.
 
-The run: the hill swarm (one brute), a climb, the titan, the streets swarm
-with civilians, a brute and a golden alien (one heart back), a climb, the
-crest swarm (clusters, a hulk, a brute, two golden aliens), a climb, and
-the hive queen (pink, aliens and spit between hot spots; one heart back).
-The bot, which steers perfectly, takes 31, 7, 31, 37, 7, 38, 7 and 43 beats,
-about 100 seconds, and loses two hearts in the crest swarm; a person takes
-longer, since only hits move things on.
+The run is three streets, two giants and the queen, as the user asked:
+the hill (a golden alien in a lull), a climb, the titan, the streets
+(civilians, a brute, a weaver, a golden alien; one heart back), a climb,
+the behemoth, the crest (a hulk, a civilian, a weaver, a golden alien), a
+climb, and the hive queen (one heart back). On the plan: 27, 7, 22, 32, 7,
+28, 36, 7 and 39 beats, about 100 seconds; the golden aliens hold a stage
+open until they have crossed.
+
+**Tickets** scale with the level: each payout row's `each` is multiplied by
+the stage's `tickets` (1 the hill, 2, 3, 4 the queen). On the plan, with
+no golden alien and no bell, a whole run pays about 284 tickets, 124 of them
+by the end of the crest (about 75 seconds); one golden alien on top makes
+the user's "150 at 75s, hard but doable". Every bell rung adds about 135;
+every golden alien about 173. So a flawless run without the golden aliens
+reaches about 420, and 500 takes going for every golden alien and winning,
+as the user asked.
 
 ## The titan
 
@@ -167,16 +218,19 @@ A great bug standing behind the crest, swaying, drawn from ovals and lines
 in `draw_titan`. As it arrives, every building on the far part of the hill
 gets a moment to collapse at, so it crunches through the skyline. Its three
 hot spots sit over the three streets; an open one glows orange and can be
-hit, a closed one is dark. Spit is telegraphed by a flashing red bar where
-it will land and a glob travelling down the street; it lands on the beat
-and hurts the robot if it is still in that street.
+hit, a closed one is dark. Spit is the user's "get out of this lane by beat
+x": it goes down the street the plan is in, telegraphed by a flashing red
+bar with a beat countdown and a glob travelling down, and lands two beats
+later, by when the plan has moved on; it hurts the robot if it is still
+there.
 
-**Ring the bell** (a first try at the user's "glowing pattern", which they
-called an exploration): three lamps above the titan's head. Each time a hot
-spot opens and is hit at least once before the next opens, a lamp lights
-with a ding; the third rings the bell for `bell_bonus` (shown 2000) and the
-lamps go out. A window with no hit puts them out. So the hot spots become a
-lit sequence to chase across the streets.
+**Ring the bell** (the user's exploration): three lamps above the giant's
+head, one for each hot spot. One shot on a spot lights its lamp; a second
+shot on a lit spot puts all the lamps out; all three lit rings the bell
+for its tickets, once a giant. So it asks for a different dance from
+knocking the giant down: one shot on each spot and move on, which costs
+damage. The plan does not ring it (it shoots each window twice); ringing
+is the player's choice.
 
 While a titan stands, the horizon (`crest_y`) eases down from `horizon` (40)
 to `titan_horizon` (82), so the road is the bottom third of the screen and
@@ -233,12 +287,15 @@ sound and holds the bot.
 - `test_boot`: the real cart from its title, X then O once each, a run with
   no input until it is lost, a restart, and the win payout, where a press
   before it is done must not restart (`boot_*.png`).
-- `test_stage_1` to `test_stage_8`: each starts a run at one stage
-  (`first_stage`) and lets the bot (steer to the most urgent shootable
-  target, away from spit and civilians) play it to its end; the last must
-  end in the win, and plays the payout out (`stage_payout_counting`,
-  `stage_won`). Each prints its beats and hearts and dumps a screen, and the
-  first sight of each special kind (`stage_*.png`).
+- `test_stage_1` to `test_stage_9`: each starts a run at one stage
+  (`first_stage`) and lets the bot follow the plan (`tests/bot.lua`) to its
+  end, which must cost no heart; the last must end in the win and play the
+  payout out (`stage_payout_counting`, `stage_won`). Then it plays the stage
+  0 to 8 beats behind the plan and checks the survival margin, and plays the
+  golden route, which must get the golden alien within its designed cost.
+  Each prints its beats, hearts and tickets and dumps a screen, and the
+  first sight of each special kind (`stage_*.png`). A heart lost prints
+  where.
 - `test_rhythm`: each gun fires on exactly its pattern's eighths; a hit on the beat and its
   knockback; a late arrival inside and outside `good_window`; nothing fired
   and the glow on an empty beat; minigun, front-only and splash damage; that

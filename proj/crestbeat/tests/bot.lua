@@ -5,34 +5,24 @@ function sfx() end
 dset=sfx
 music=sfx
 
-function danger(lane)
- for hazard in all(hazards) do
-  if hazard.lane==lane and hazard.land-clock<1.4 then return true end
- end
-end
+updates_per_frame=8
 
-function bot(frame)
- local want
- for alien in all(aliens) do
-  local front=front_alien(alien.lane)
-  if alien.t>-0.05 and abs(alien.lane)<=1 and front and not front.penalty and not alien.penalty then want=alien.lane end
- end
- local blocked=front_alien(robot.lane)
- if not want and blocked and blocked.penalty then want=robot.lane==0 and 1 or 0 end
- if not want and titan then
-  for spot in all(titan.spots) do
-   if open_spot_in(spot.lane) then want=spot.lane end
-  end
- end
- if danger(robot.lane) or want and danger(want) then
-  want=nil
-  for lane=-1,1 do
-   if not danger(lane) then want=lane end
-  end
- end
+function bot(frame,lag,route)
+ local want=plan_lane(flr(clock)+1-(lag or 0),route)
  if want and want!=robot.lane and frame%2==0 then
   held[want<robot.lane and 0 or 1]=true
  end
 end
 
-updates_per_frame=8
+function play_stage(number,lag,route)
+ start_play()
+ start_stage(number)
+ local frame,hp=0,robot.hp
+ while mode=="play" and stage_number==number and frame<3000 do
+  frame+=1
+  held={}
+  bot(frame,lag,route and stage.golden)
+  _update_game()
+ end
+ return hp-robot.hp,stats.golds,ticket_total()
+end

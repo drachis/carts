@@ -3,6 +3,7 @@ version 42
 __lua__
 log_name="log_boot"
 #include ../data.lua
+#include ../levels.lua
 #include ../world.lua
 #include ../aliens.lua
 #include ../titan.lua

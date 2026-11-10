@@ -56,7 +56,7 @@ function boot_frame()
    printh("error: the idle run never ended")
    next_phase("lost")
   end
- elseif phase=="lost" and age==40 then
+ elseif phase=="lost" and age>=40 and payout_done() then
   held[4]=true
   next_phase("again")
  elseif phase=="again" and age==10 then

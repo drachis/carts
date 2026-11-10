@@ -22,7 +22,7 @@ function update_aliens()
     alien.lane=flr(alien.pos+0.5)
    end
   end
-  if alien.t>=1 or abs(alien.pos)>2.2 then
+  if alien.t>=1 or alien.pos*alien.dir>1.6 then
    del(aliens,alien)
    if alien.bonus>0 then
     popup("got away",robot.x,70,alien.body)
@@ -51,14 +51,14 @@ function hit_alien(alien,amount,judgement)
  if alien.penalty then
   score=max(score-alien.penalty)
   combo=0
-  stats.civilians+=1
+  award("civilians")
   local x,y=alien_centre(alien)
   popup("hey! -"..alien.penalty.."0",x,y-10,8)
   sfx(4)
   return
  end
  alien.hp-=amount
- alien.born+=amount*knock_per_damage*judgement.knock
+ if not alien.track then alien.born+=amount*knock_per_damage*judgement.knock end
  local x,y,scale=alien_centre(alien)
  burst(x,y,4,judgement.colour,2)
  if alien.hp<0.01 then
@@ -66,13 +66,13 @@ function hit_alien(alien,amount,judgement)
   burst(x,y,12,alien.body,2)
   shake+=2
   sfx(3)
-  stats.kills+=1
   if alien.bonus>0 then
-   stats.kills-=1
-   stats.golds+=1
+   award("golds")
    score+=alien.bonus
    popup("+"..alien.bonus.."0",x,y-8,alien.body)
    ring(x,y,16,alien.body)
+  else
+   award("kills",alien.bars*2)
   end
   local foot_x,foot_y=project(alien.pos,alien.t)
   add(fallen,{x=foot_x,y=foot_y,size=24*scale,age=0,kind=getmetatable(alien)})

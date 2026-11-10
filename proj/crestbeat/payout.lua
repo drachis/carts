@@ -1,14 +1,29 @@
-function start_payout(won)
- stats.saved=won and 1 or 0
- rows,tickets,paper={},0,{}
+function reset_stats()
+ stats={}
  for row in all(payouts) do
-  local count=stats[row.name]
-  if count>0 then
-   add(rows,{label=row.label,count=count,value=count*row.each})
-   tickets+=count*row.each
+  stats[row.name],stats[row.name.."_tickets"]=0,0
+ end
+end
+
+function award(name,scale)
+ stats[name]+=1
+ stats[name.."_tickets"]+=payouts[name].each*(scale or 1)*(stage.tickets or 1)
+end
+
+function ticket_total()
+ local total=0
+ for row in all(payouts) do total+=stats[row.name.."_tickets"] end
+ return total
+end
+
+function start_payout(won)
+ if won then award("saved") end
+ rows,tickets,paper={},max(ticket_total(),1),{}
+ for row in all(payouts) do
+  if stats[row.name]>0 then
+   add(rows,{label=row.label,value=stats[row.name.."_tickets"]})
   end
  end
- tickets=max(tickets,1)
  panel_y,panel_vy,payout_age,shown_tickets,dispensed=128,0,0,0,0
 end
 

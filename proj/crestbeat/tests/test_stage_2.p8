@@ -4,6 +4,7 @@ __lua__
 log_name="log_stage_2"
 first_stage=2
 #include ../data.lua
+#include ../levels.lua
 #include ../world.lua
 #include ../aliens.lua
 #include ../titan.lua
