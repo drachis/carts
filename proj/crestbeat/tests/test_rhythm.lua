@@ -67,7 +67,7 @@ local function rhythm()
 
  name=armed(2,{0,0})
  step_to(5.01)
- check(name.." hits every alien in the street",aliens[1].hp==alien_hp-2 and aliens[2].hp==alien_hp-2,aliens[1].hp.." and "..aliens[2].hp)
+ check(name.." hits only the front alien in the street",aliens[1].hp==alien_hp and aliens[2].hp==alien_hp-2,aliens[1].hp.." behind, "..aliens[2].hp.." in front")
 
  name=armed(3,{-1,0,1})
  step_to(6.01)

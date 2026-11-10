@@ -18,8 +18,8 @@ What it takes from where:
 
 - **hivefall:** the robot (its mech sprite, recoloured red), sparks, rings,
   popups and shake.
-- **Unreal Tournament and Doom:** the guns: a minigun, a shock rifle that
-  pierces, rockets that splash.
+- **Unreal Tournament and Doom:** the guns: a minigun, a shock rifle,
+  rockets that splash.
 - **Godzilla Kaiju Wars VR:** the pacing, and a giant to fight at the crest.
 
 ## Rules of the build
@@ -58,7 +58,7 @@ its `every`:
 | Gun | Fires | Damage | Special |
 |---|---|---|---|
 | minigun | every half beat (8 a bar) | 1 | |
-| shock rifle | every beat (4 a bar) | 2 | pierces every alien in the street |
+| shock rifle | every beat (4 a bar) | 2 | none (no pierce: the user found it looked and felt wrong) |
 | rockets | every other beat (2 a bar) | 4 | 2 to the front alien in each street beside |
 
 An alien has 4 health, so every gun kills a lone alien in two beats: the
@@ -176,7 +176,7 @@ sound and holds the bot.
   loses a heart: 29, 7, 10, 27, 7, 29, 7 and 26 beats, 71 seconds.
 - `test_rhythm`: each gun's shots a bar; a hit on the beat and its
   knockback; a late arrival inside and outside `good_window`; nothing fired
-  and the glow on an empty beat; minigun, pierce and splash damage; a leak;
+  and the glow on an empty beat; minigun, front-only and splash damage; a leak;
   the chart; open and closed hot spots; spit in and out of its street; when
   a swarm and a titan stage are done; the titan and rising aliens read off
   the screen.

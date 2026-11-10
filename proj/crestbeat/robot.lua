@@ -57,21 +57,11 @@ function fire(judgement)
  robot.waiting=nil
  robot.recoil=3
  local gun,lane=guns[robot.gun],robot.lane
- local gun_x,gun_y,targets=robot.x,93-robot.lift,{}
+ local gun_x,gun_y=robot.x,93-robot.lift
  sfx(gun.sound)
- if gun.pierce then
-  for alien in all(aliens) do
-   if alien.lane==lane and alien.t>-0.05 then add(targets,alien) end
-  end
-  add(targets,open_spot_in(lane))
- else
-  add(targets,target_in(lane))
- end
  combo+=1
  score+=judgement.points*multiplier()
- for target in all(targets) do
-  strike(target,gun.damage,judgement,gun_x,gun_y,gun)
- end
+ strike(target_in(lane),gun.damage,judgement,gun_x,gun_y,gun)
  if gun.splash then
   for side=-1,1,2 do
    local alien=front_alien(lane+side)
