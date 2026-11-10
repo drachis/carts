@@ -23,6 +23,7 @@ You are a giant red robot at the foot of a hill. Aliens pour over the crest and 
 - About a minute and a half from the hill to the hive queen, nine stages of swarms, climbs and three giant fights
 - Five guns, five rhythms, all firing to the music
 - Hold down to see where the beat wants you next, and where the golden alien's route goes
+- A neon city at sunset: a synthwave sky, a glowing grid road, and each giant haloed by the setting sun as it fights you
 - Giants built from parts: flapping wings, stomping feet, cracks and smoke when you break a street
 - A ticket payout at the end, counted up and thrown out of the slot
 
@@ -40,7 +41,7 @@ Made in PICO-8.
 
 ## Page colours
 
-These come from the title screen's synthwave palette, so the page reads as the same neon night.
+These come from the game's synthwave palette, so the page reads as the same neon night.
 
 | Part of the page | Colour | Hex |
 |---|---|---|
@@ -63,11 +64,11 @@ Upload order on the page:
 
 1. `crestbeat_title.gif`: the title, the synthwave sun and the robot flying in
 2. `crestbeat_hill.gif`: the core loop, the swarm over the hill and the golden alien
-3. `crestbeat_titan.gif`: a giant fight: the shields falling, the bell ringing, the titan going down
+3. `crestbeat_titan.gif`: a giant fight: the titan haloed by the sun, the shields falling, the bell ringing, the titan going down
 4. `crestbeat_streets.gif`: civilians and the golden alien on the streets
 5. `crestbeat_queen.gif`: the hive queen (the last fight; a mild spoiler)
 6. `crestbeat_payout.gif`: the ticket payout
 
-Screenshots: the `.png` of each name. Cover image: `cover.png` (630x500), the title at 4x with its sky and grid carried out to the sides.
+Screenshots: the `.png` of each name. Cover image: `cover_630x500.png` (630x500), the title at 4x with its sky and grid carried out to the sides.
 
 Re-record with `py itch/capture.py`; it moves PICO-8's files off the Desktop into this folder. The web build is `release/crestbeat_web.zip` (`py export.py`); set the itch embed to 512x512.
