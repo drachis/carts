@@ -136,6 +136,22 @@ local function screen()
  end
  check("a honeycomb shield stands in a closed street, none in an open or destroyed one",blue[1]==0 and blue[2]>40 and blue[3]==0,"blue pixels "..blue[1].." "..blue[2].." "..blue[3])
 
+ reset("play")
+ start_stage(3)
+ titan.rise,crest_y,clock=1,titan_horizon,10
+ send_alien(1,9)
+ send_alien(0,7)
+ spit(0,9.6)
+ spit(1,9.2)
+ update_aliens()
+ clock=11
+ update_aliens()
+ game_draw()
+ dump_screen("screen_spit")
+ local gx,gy,gscale=project(0,spit_along(hazards[1]))
+ local glob=pget(gx,gy-8*gscale)
+ check("spit is drawn in front of an alien farther up its street",glob==7,"colour "..glob.." over the alien at t "..aliens[1].t)
+
  printh("ok screen")
  extcmd("shutdown")
 end

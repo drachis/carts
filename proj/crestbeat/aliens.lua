@@ -108,7 +108,17 @@ function alien_centre(alien)
 end
 
 function draw_aliens(behind)
+ local globs={}
+ if not behind then
+  for hazard in all(hazards) do add(globs,hazard) end
+ end
  for alien in all(aliens) do
+  for hazard in all(globs) do
+   if spit_along(hazard)<alien.t then
+    draw_glob(hazard)
+    del(globs,hazard)
+   end
+  end
   if (alien.t<0)==behind then
    local x,y,scale=project(alien.pos,alien.t)
    local size=24*scale*alien.size
@@ -128,4 +138,5 @@ function draw_aliens(behind)
    pal()
   end
  end
+ foreach(globs,draw_glob)
 end

@@ -183,11 +183,13 @@ function draw_titan()
  for spot in all(titan.spots) do
   local sx,sy=spot_xy(spot)
   local open=clock<spot.open
-  local shield=open and 1-min(1,min(clock-spot.open+2.5,spot.open-clock)*4) or 1
+  local opened=clock-spot.open+2.5
+  local shield=open and 1-min(1,min(opened*2,(spot.open-clock)*4)) or 1
+  local colour=(spot.flash>0 or open and opened<0.5 and clock*8%1<0.5) and 7 or 12
   if spot.hp>0 and shield>0 then
    for row=0,6 do
     for col=-1,1 do
-     hexagon(x+spot.lane*15.6+col*5.2+row%2*2.6-1.3,y-2+row*4.5,3*shield,spot.flash>0 and 7 or 12)
+     hexagon(x+spot.lane*15.6+col*5.2+row%2*2.6-1.3,y-2+row*4.5,3*shield,colour)
     end
    end
   end
@@ -208,12 +210,18 @@ end
 
 function draw_hazards()
  for hazard in all(hazards) do
-  local x,y,scale=project(hazard.lane,1)
-  local along=(clock-hazard.from)/2
+  local x,y=project(hazard.lane,1)
   if clock*4%1<0.5 then rectfill(x-18,y-2,x+18,y+2,8) end
   print(ceil(hazard.land-clock),x-1,y-9,8)
-  local gx,gy,gscale=project(hazard.lane,along)
-  circfill(gx,gy-8*gscale,5*gscale,11)
-  circfill(gx,gy-8*gscale,2*gscale,7)
  end
+end
+
+function spit_along(hazard)
+ return (clock-hazard.from)/2
+end
+
+function draw_glob(hazard)
+ local x,y,scale=project(hazard.lane,spit_along(hazard))
+ circfill(x,y-8*scale,5*scale,11)
+ circfill(x,y-8*scale,2*scale,7)
 end
