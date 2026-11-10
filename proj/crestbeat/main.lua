@@ -145,7 +145,7 @@ function draw_hud()
  for k=0,9 do
   local tick=flr(clock*2)/2+k/2
   local x=10+(tick-clock)*26
-  if tick%gun.every==0 then
+  if fires_on(gun,tick*2) then
    rectfill(x,121,x+1,127,tick-clock<0.3 and 7 or gun.colour)
   else
    rectfill(x,125,x,127,tick%1==0 and 6 or 5)

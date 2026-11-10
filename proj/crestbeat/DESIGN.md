@@ -52,19 +52,20 @@ dashes.
 ## Guns
 
 X is the next gun, O the one before; left/right change street. There is no
-fire button. The gun in hand fires each time `clock` crosses a multiple of
-its `every`:
+fire button. Each gun's `pattern` is a 4/4 bar in eighth notes, an `x` for
+each eighth it fires on, to mix up the rhythm:
 
-| Gun | Fires | Damage | Special |
+| Gun | Pattern | Damage | Special |
 |---|---|---|---|
-| minigun | every half beat (8 a bar) | 1 | |
-| shock rifle | every beat (4 a bar) | 2 | none (no pierce: the user found it looked and felt wrong) |
-| rockets | every other beat (2 a bar) | 4 | 2 to the front alien in each street beside |
+| minigun | `xxxxxxxx` every eighth | 1 | |
+| shock rifle | `x.x.x.x.` every beat | 2 | no pierce (the user found it looked and felt wrong) |
+| rockets | `x...x...` beats 1 and 3 | 4 | 2 to the front alien in each street beside |
+| flak cannon | `x.x.x...` the user's 3/4, `123_` | 3 | |
+| plasma rifle | `x.x.xxx.` the user's `12_123`: two long, three short | 2 | |
 
-An alien has 4 health, so every gun kills a lone alien in two beats: the
-user's "shoot shoot, 2 beats". The guns differ in what else they reach and
-in when the robot must be in the street. The shock rifle is the starting
-gun.
+An alien has 4 health, so the shock rifle and rockets kill a lone alien in
+two beats, the user's "shoot shoot, 2 beats". The shock rifle is the
+starting gun; X/O cycle through the list in this order.
 
 - **On the beat:** if there is a target in the robot's street (the front
   alien, or the titan's open hot spot), the shot lands, white.
@@ -174,7 +175,7 @@ sound and holds the bot.
   from spit) play it to its end; the last must end in the win. Each prints
   its beats and hearts and dumps a screen (`stage_*.png`). The bot never
   loses a heart: 29, 7, 10, 27, 7, 29, 7 and 26 beats, 71 seconds.
-- `test_rhythm`: each gun's shots a bar; a hit on the beat and its
+- `test_rhythm`: each gun fires on exactly its pattern's eighths; a hit on the beat and its
   knockback; a late arrival inside and outside `good_window`; nothing fired
   and the glow on an empty beat; minigun, front-only and splash damage; a leak;
   the chart; open and closed hot spots; spit in and out of its street; when

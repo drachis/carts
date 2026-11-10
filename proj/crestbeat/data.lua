@@ -54,10 +54,12 @@ queen,..q.w.1.e.a.3.w.q.s.2.e.d.w.1.,8,14,,1,the hive queen!
 ]]
 
 guns=parse_table[[
-name,colour,damage,every,splash,sound
-minigun,10,1,0.5,,1
-shock rifle,13,2,1,,0
-rockets,9,4,2,2,12
+name,colour,damage,pattern,splash,sound
+minigun,10,1,xxxxxxxx,,1
+shock rifle,13,2,x.x.x.x.,,0
+rockets,9,4,x...x...,2,12
+flak cannon,4,3,x.x.x...,,3
+plasma rifle,12,2,x.x.xxx.,,0
 ]]
 
 judgements=parse_table[[

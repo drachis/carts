@@ -5,8 +5,13 @@ end
 
 function equip(gun)
  robot.gun=gun
- robot.last_tick=flr(clock/guns[gun].every)
+ robot.last_tick=flr(clock*2)
  robot.waiting=nil
+end
+
+function fires_on(gun,eighth)
+ local slot=eighth%8+1
+ return sub(gun.pattern,slot,slot)=="x"
 end
 
 function update_robot()
@@ -33,8 +38,8 @@ function target_in(lane)
 end
 
 function update_gun()
- local tick=flr(clock/guns[robot.gun].every)
- if tick!=robot.last_tick then
+ local tick=flr(clock*2)
+ if tick!=robot.last_tick and fires_on(guns[robot.gun],tick) then
   robot.last_tick=tick
   robot.shots+=1
   if target_in(robot.lane) then

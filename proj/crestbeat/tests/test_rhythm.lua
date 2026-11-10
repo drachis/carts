@@ -31,9 +31,17 @@ end
 local function rhythm()
  for gun=1,#guns do
   reset("play")
+  clock=-0.1
   equip(gun)
-  step_frames(flr(4*frames_per_beat+1))
-  check(guns[gun].name.." fires "..(4/guns[gun].every).." times a bar",robot.shots==4/guns[gun].every,robot.shots.." shots")
+  local heard=split("........","")
+  while clock<3.95 do
+   local before=robot.shots
+   step_frames(1)
+   if robot.shots>before then heard[flr(clock*2)+1]="x" end
+  end
+  local played=""
+  for slot in all(heard) do played..=slot end
+  check(guns[gun].name.." fires on its pattern",played==guns[gun].pattern,played.." for "..guns[gun].pattern)
  end
 
  local name=armed(2,{0})
