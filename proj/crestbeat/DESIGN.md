@@ -271,6 +271,9 @@ civilians white and brown, the robot red, the giants their own colours.
   (`swarm_sprites` in `data.lua` says where each is). An enemy is drawn 1:1
   with the largest that fits the size its depth asks for; brutes and hulks
   reach the larger ones. A kind's colours are swapped in with `pal`.
+- **Civilians** are drawn the same way at 8, 12, 16 and 24 pixels
+  (`civilian_sprites`): arms thrown up, brown hair, a white shirt, blue
+  trousers; they bob a pixel as they run.
 - **The giant** is a set of parts, after witchcap's hut: a torso (40x32), a
   head with its jaw shut or open (24x20, open just after it spits), hands
   and feet (8x8, 16x8), all drawn 1:1, and arms and legs as solid limbs
@@ -349,9 +352,9 @@ sound and holds the bot.
 
 ## Still to do, or not checked
 
-- The robot is still hivefall's 24px mech drawn at 1.5x, and the civilian
-  one 16px sprite scaled by distance; the user prefers sprites drawn at
-  their size to scaled ones, so these are next if the art goes further.
+- The robot is still hivefall's 24px mech drawn at 1.5x; the user prefers
+  sprites drawn at their size, but the sheet has no 36x36 room left, so a
+  native robot needs something else to give up space.
 - The music has not been heard, and whether `stat(50)` keeps the clock on
   the drums on the user's machine is untested (the tests stub music).
 - Every number (alien health, window, cadences, charts) is tuned only

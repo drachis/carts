@@ -135,6 +135,24 @@ def kaiju_torso():
     ]
 
 
+def civilian():
+    """A fleeing civilian, front on, arms thrown up: brown hair, a white
+    shirt, blue trousers, grey shoes. Drawn at each size it is shown."""
+    return [
+        (capsule(0.36, 0.62, 0.3, 0.95, 0.07), "1"),
+        (ellipse(0.31, 0.97, 0.08, 0.04), "5"),
+        (ellipse(0.5, 0.5, 0.16, 0.2), "7"),
+        (capsule(0.38, 0.38, 0.22, 0.1, 0.055), "7"),
+        (ellipse(0.21, 0.07, 0.05, 0.05), "f"),
+        (ellipse(0.5, 0.24, 0.12, 0.13), "f"),
+        (band(0.08, 0.2, ellipse(0.5, 0.2, 0.13, 0.12)), "4"),
+        (ellipse(0.45, 0.26, 0.02, 0.025), "1"),
+    ]
+
+
+CIVILIAN_SIZES = {8: (64, 84), 12: (64, 72), 16: (48, 72), 24: (104, 72)}
+
+
 def queen_head():
     """The hive queen's head, 24x24: our own queen of the swarm, crowned. A
     narrow, sharp face with glowing eyes and high cheek ridges, spined

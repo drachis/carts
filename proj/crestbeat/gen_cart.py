@@ -12,7 +12,7 @@ Symmetrical things are drawn as their left half and mirrored.
     swarm      rows 0-71: ten sizes, 8 to 32px, two frames each (art.py;
                where each lies is swarm_sprites in data.lua)
     robot      24x24 at (0,72) and (24,72), hivefall's mech in red
-    civilian   16x16 at (48,72) and (64,72), arms up, fleeing
+    civilian   at 8, 12, 16 and 24px (art.py CIVILIAN_SIZES)
     giant      a hand 8x8 at (80,72), a foot 16x8 at (88,72), the torso
                40x32 at (0,96), the head 24x20 at (40,96) and with its jaw
                open at (64,96), the queen's crowned head 24x24 at (88,96)
@@ -31,25 +31,6 @@ import art
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GAME = "crestbeat.p8"
-
-CIVILIAN = """
-..f.....
-..f..444
-..7.4444
-..7.4f0f
-..77ffff
-...777ff
-....7777
-....7777
-....7777
-....7c77
-....1111
-....11..
-....11..
-....11..
-...555..
-........
-"""
 
 MECH = """
 ............
@@ -155,9 +136,8 @@ def build_gfx():
     mech = mirrored(MECH.translate(RED), 12)
     stamp(sheet, mech, 0, 72)
     stamp(sheet, bobbed(mech, 14), 24, 72)
-    civilian = mirrored(CIVILIAN, 8)
-    stamp(sheet, civilian, 48, 72)
-    stamp(sheet, bobbed(civilian, 10), 64, 72)
+    for size, (left, top) in art.CIVILIAN_SIZES.items():
+        stamp(sheet, art.render(art.civilian(), size, size), left, top)
     stamp(sheet, art.outlined(art.render(art.kaiju_claw(), 8, 8, mirror=False)), 80, 72)
     stamp(sheet, art.outlined(art.render(art.kaiju_foot(), 16, 8, mirror=False)), 88, 72)
     stamp(sheet, art.outlined(art.render(art.kaiju_torso(), 40, 32)), 0, 96)

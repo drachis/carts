@@ -54,13 +54,16 @@ weaver,rty,0.5,8,0,,11,2,,,0,,1,2
 brute,456,1,8,0,,3,11,,,0,,1.25
 hulk,789,1.5,8,0,,3,1,,,0,,1.5
 gold,zxc,2,,100,1,10,9,4,0.45,0,,1
-civilian,jkl,99,4,0,1,11,3,,,48,50,1
+civilian,jkl,99,4,0,1,11,3,,,1,50,1
 ]]
 
-swarm_sprites={}
-for entry in all(split("8,0,0/10,16,0/12,36,0/14,60,0/16,88,0/18,0,16/22,36,16/24,80,16/28,0,40/32,56,40","/")) do
- add(swarm_sprites,split(entry))
+function sprite_sizes(text)
+ local sizes={}
+ for entry in all(split(text,"/")) do add(sizes,split(entry)) end
+ return sizes
 end
+swarm_sprites=sprite_sizes"8,0,0/10,16,0/12,36,0/14,60,0/16,88,0/18,0,16/22,36,16/24,80,16/28,0,40/32,56,40"
+civilian_sprites=sprite_sizes"8,64,84/12,64,72/16,48,72/24,104,72"
 
 guns=parse_table[[
 name,colour,pattern,splash,sound

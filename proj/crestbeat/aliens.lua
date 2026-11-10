@@ -84,9 +84,10 @@ function kind_colours(kind,dark)
  pal(3,kind.rim)
 end
 
-function swarm_sprite(size)
- local best=swarm_sprites[1]
- for entry in all(swarm_sprites) do
+function swarm_sprite(size,sizes)
+ sizes=sizes or swarm_sprites
+ local best=sizes[1]
+ for entry in all(sizes) do
   if entry[1]<=size then best=entry end
  end
  return unpack(best)
@@ -122,7 +123,8 @@ function draw_aliens(behind)
    end
    local frame=alien.hop<0.34 and 1 or 0
    if alien.sprite>0 then
-    sspr(alien.sprite+frame*16,72,16,16,x-size/2,y-size+lift,size,size)
+    local width,sx,sy=swarm_sprite(size,civilian_sprites)
+    sspr(sx,sy,width,width,x-width/2,y-width-frame,width,width)
    else
     local width,sx,sy=swarm_sprite(size)
     sspr(sx+frame*width,sy,width,width,x-width/2,y-width+lift,width,width)
