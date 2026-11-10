@@ -286,6 +286,13 @@ when a shot lands; that keeps `levels.py`'s plans, margins and routes true.
   the skyline 15%, the giant at the crest 30%, the road and everything on
   it from 30% at the crest to all of it at the bottom, the robot and its
   shots all of it. The city seems to turn as it moves.
+- **The giants** stomp each foot through a smooth half-sine, one a beat,
+  landing on the beat; their hot spots swell open and shrink shut over a
+  quarter of a beat.
+- `test_screen` measures it: an alien's depth frame by frame over eight
+  beats must always move forward, and no frame's step be more than three
+  times the mean (it is 0.0021 to 0.0146 against 0.0084; the hop stood
+  still two thirds of each beat).
 - **The pulse** is a smooth wave, `(1+cos(clock))/2`, 1 on the beat and 0
   between, never a jump; the robot's and the giant's bobs follow it.
 - Each frame the enemies move before the guns fire, so a shot on the beat

@@ -116,7 +116,7 @@ end
 
 function draw_titan()
  local x,y,colour=titan_x(),titan_y(),titan.colour
- local back,beat=(x-64)*0.4,clock%1
+ local back=(x-64)*0.4
  pal(3,colour)
  local flap=sin(clock/2)
  for side=-1,1,2 do
@@ -144,7 +144,7 @@ function draw_titan()
   draw_limb(shoulder_x,shoulder_y,wrist_x,wrist_y,3,2,colour)
  end
  for side=-1,1,2 do
-  local lift=flr(clock)%2==(side+1)/2 and (1-beat)*(1-beat)*6 or 0
+  local lift=max(0,-sin((clock+(side+1)/2)/2))*6
   local hip_x,foot_x,foot_y=x+side*9,x+side*15,y+45-lift
   local knee_x,knee_y=x+side*17,y+35-lift/2
   draw_limb(hip_x,y+22,knee_x,knee_y,7,5,colour)
@@ -181,8 +181,10 @@ function draw_titan()
   if spot.hp==0 then
    circfill(sx,sy,3,0)
   elseif clock<spot.open then
-   circfill(sx,sy,5+pulse*2,spot.flash>0 and 7 or 9)
-   circfill(sx,sy,3,10)
+   local grow=min(1,min(clock-spot.open+2.5,spot.open-clock)*4)
+   circfill(sx,sy,3,2)
+   circfill(sx,sy,(5+pulse*2)*grow,spot.flash>0 and 7 or 9)
+   circfill(sx,sy,3*grow,10)
   else
    circfill(sx,sy,3,2)
    circ(sx,sy,4,1)

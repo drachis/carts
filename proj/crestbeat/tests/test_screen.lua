@@ -65,6 +65,22 @@ local function screen()
  end
  check("the robot springs between streets, a little past and back",furthest>105 and furthest<108 and settled and settled<=12,"overshoots to "..furthest..", settles in "..tostr(settled).." frames")
 
+ reset("play")
+ send_alien(0,0)
+ local last,least,most,total,frames=nil,99,0,0,0
+ while clock<8 do
+  clock+=1/frames_per_beat
+  update_aliens()
+  local t=aliens[1].t
+  if last and t>=0 then
+   local step=t-last
+   least,most,total,frames=min(least,step),max(most,step),total+step,frames+1
+  end
+  last=t
+ end
+ local mean=total/frames
+ check("an alien moves smoothly: always forward, no frame more than 3x the mean",least>0 and most<mean*3,"steps "..least.." to "..most..", mean "..mean)
+
  printh("ok screen")
  extcmd("shutdown")
 end
