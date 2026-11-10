@@ -24,5 +24,5 @@ function play_stage(number,lag,route)
   bot(frame,lag,route and stage.golden)
   _update_game()
  end
- return hp-robot.hp,stats.golds,ticket_total()
+ return hp-robot.hp,stats.golds+stats.bells,ticket_total(),flr(clock-stage_beat)
 end

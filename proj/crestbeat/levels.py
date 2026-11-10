@@ -146,10 +146,31 @@ def golden_route(stage, side, sent, depth):
     return route, len(leaked), gold_shots == 0
 
 
+def bell_route(stage, spits):
+    """The route that rings a giant's bell: the first time each hot spot
+    opens it takes one shot and moves on to the next window's street a beat
+    early; a spot already lit is not shot again until the bell has rung (a
+    second shot would put the lamps out). After the bell, the plan."""
+    route, lit = dict(stage.plan), set()
+    for start, lane in stage.openings:
+        if len(lit) == 3:
+            break
+        ahead = stage.plan.get(start + 2)
+        if lane in lit:
+            route[start] = route[start + 1] = ahead
+        else:
+            lit.add(lane)
+            route[start + 1] = ahead
+    assert len(lit) == 3, "the bell route never reaches all three hot spots"
+    for token, lane, beat in spits:
+        assert route.get(beat + 2) != lane, "the bell route stands in %s's spit" % token
+    return route
+
+
 class Stage:
     def __init__(self):
         self.chart, self.plan, self.walker, self.gold = {}, {}, {}, ""
-        self.targets, self.golden, self.gold_cost, self.civilians = [], {}, "", []
+        self.targets, self.golden, self.gold_cost, self.civilians, self.openings = [], {}, "", [], []
 
     def put(self, beat, char, earliest=0, latest=None):
         """Puts a character on the chart at beat, or the nearest free beat
@@ -191,6 +212,7 @@ def build(spec):
             window += 2
         elif kind == "q":
             stage.chart[start] = OPEN[lane + 1]
+            stage.openings.append((start, lane))
             for b in range(start, start + 2):
                 stage.plan[b] = lane
             window += 2
@@ -239,6 +261,7 @@ def build(spec):
         for b in range(sent + 1, sent + 5):
             assert stage.plan.get(b) != lane, "civilian in street %d crosses the plan at beat %d" % (lane + 2, b)
     if titan:
+        stage.golden, stage.gold_cost = bell_route(stage, spits), 0
         run, longest, last = 0, 0, None
         for b in list(range(window)) * 2:
             here = stage.plan.get(b, last)

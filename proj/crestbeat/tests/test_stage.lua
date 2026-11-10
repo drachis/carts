@@ -35,10 +35,11 @@ local function margins()
   printh("error: stage "..first_stage.."'s survival margin is "..survive..", designed "..wanted)
  end
  if stages[first_stage].golden then
-  local lost,golds,earned=play_stage(first_stage,0,true)
-  printh("stage "..first_stage.." golden route: gets "..golds.." golden alien for "..lost.." hearts (designed at most "..stages[first_stage].gold_cost.."), "..earned.." tickets")
-  if golds!=1 then printh("error: the golden route missed the golden alien") end
-  if lost>stages[first_stage].gold_cost then printh("error: the golden route cost more than designed") end
+  local lost,prizes,earned=play_stage(first_stage,0,true)
+  local prize=stages[first_stage].bars and "bell" or "golden alien"
+  printh("stage "..first_stage.." "..prize.." route: gets "..prizes.." "..prize.." for "..lost.." hearts (designed at most "..stages[first_stage].gold_cost.."), "..earned.." tickets")
+  if prizes!=1 then printh("error: the "..prize.." route missed its "..prize) end
+  if lost>stages[first_stage].gold_cost then printh("error: the "..prize.." route cost more than designed") end
  end
 end
 

@@ -233,7 +233,13 @@ shot on a lit spot puts all the lamps out; all three lit rings the bell
 for its tickets, once a giant. So it asks for a different dance from
 knocking the giant down: one shot on each spot and move on, which costs
 damage. The plan does not ring it (it shoots each window twice); ringing
-is the player's choice.
+is the player's choice. Each giant has a **bell route** (`bell_route` in
+`levels.py`, in the stage's `golden` column, so down shows it in gold
+chevrons): the first time each spot opens it takes one shot and moves to
+the next window's street a beat early, skipping any reopening of a spot
+already lit, until the bell rings; then the plan. The stage carts play it:
+on every giant it rings the bell for no hearts, the giant just takes a
+little longer to fell.
 
 While a titan stands, the horizon (`crest_y`) eases down from `horizon` (40)
 to `titan_horizon` (82), so the road is the bottom third of the screen and
@@ -346,8 +352,6 @@ sound and holds the bot.
 - The robot is still hivefall's 24px mech drawn at 1.5x, and the civilian
   one 16px sprite scaled by distance; the user prefers sprites drawn at
   their size to scaled ones, so these are next if the art goes further.
-- A bell route through a giant (one shot on each spot) is possible by hand
-  but not designed in `levels.py` or played by a test.
 - The music has not been heard, and whether `stat(50)` keeps the clock on
   the drums on the user's machine is untested (the tests stub music).
 - Every number (alien health, window, cadences, charts) is tuned only
