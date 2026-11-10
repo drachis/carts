@@ -80,6 +80,7 @@ function hit_spot(spot,amount,judgement)
   ring(x,y,16,10)
   shake+=4
   sfx(3)
+  if not titan.rung then titan.rung,titan.bell_lost=true,true end
   local alive=0
   for other in all(titan.spots) do alive+=other.hp end
   if alive==0 then
@@ -173,8 +174,10 @@ function draw_titan()
  pal()
  for spot in all(titan.spots) do
   local lamp_x=x+spot.lane*7
-  circfill(lamp_x,y+1,2,spot.lit and 10 or 1)
-  circ(lamp_x,y+1,2,spot.lit and 7 or 5)
+  if not titan.bell_lost then
+   circfill(lamp_x,y+1,2,spot.lit and 10 or 1)
+   circ(lamp_x,y+1,2,spot.lit and 7 or 5)
+  end
  end
  for spot in all(titan.spots) do
   local sx,sy=spot_xy(spot)
