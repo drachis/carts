@@ -104,7 +104,13 @@ end
 
 function update_titan()
  titan.rise=min(titan.rise+1/30,1)
- for spot in all(titan.spots) do spot.flash=max(spot.flash-1) end
+ for spot in all(titan.spots) do
+  spot.flash=max(spot.flash-1)
+  if spot.hp==0 and #sparks<max_sparks and rnd()<0.3 then
+   local sx,sy=spot_xy(spot)
+   add(sparks,{x=sx+rnd(4)-2,y=sy,vx=rnd(0.4)-0.2,vy=-0.5,float=-0.04,life=15+rnd(15),colour=rnd{5,6,9}})
+  end
+ end
  if titan.dead then
   titan.dead+=1
   if titan.dead%2==0 then
@@ -155,8 +161,9 @@ function draw_titan()
  local bob=pulse*1.5
  sspr(0,96,40,32,x-20,y-4+bob)
  for side=-1,1,2 do
-  local swing=sin(clock/2+side/4)*3
-  local hand_x,hand_y=x+side*25,y+22+swing
+  local limp=titan.spots[side+2].hp==0
+  local swing=limp and 9 or sin(clock/2+side/4)*3
+  local hand_x,hand_y=x+side*(limp and 22 or 25),y+22+swing
   draw_limb(x+side*17,y+2+bob,x+side*28,y+12,5,4,colour)
   draw_limb(x+side*28,y+12,hand_x,hand_y,4,3,colour)
   sspr(80,72,8,8,hand_x-4,hand_y-1)
@@ -171,14 +178,18 @@ function draw_titan()
  else
   sspr(spat and 64 or 40,96,24,20,look,y-21+bob*2)
  end
- pal()
  for spot in all(titan.spots) do
-  local lamp_x=x+spot.lane*7
-  if not titan.bell_lost then
-   circfill(lamp_x,y+1,2,spot.lit and 10 or 1)
-   circ(lamp_x,y+1,2,spot.lit and 7 or 5)
+  if spot.hp==0 then
+   local sx,sy=spot_xy(spot)
+   for glow=0,1 do
+    local c=glow==0 and 0 or rnd{8,9}
+    line(sx-8+glow,sy-5,sx-1+glow,sy,c)
+    line(sx-1+glow,sy,sx+1+glow,sy+8,c)
+    line(sx-1+glow,sy,sx+7+glow,sy-3,c)
+   end
   end
  end
+ pal()
  local segments,bar_y=titan.bars,max(10,y-(titan.crown and 30 or 26))
  for spot in all(titan.spots) do
   local sx,sy=spot_xy(spot)
@@ -194,7 +205,7 @@ function draw_titan()
    end
   end
   local left=x+spot.lane*(segments*3+4)-segments*1.5
-  if segments>0 then rectfill(left-1,bar_y-1,left+segments*3-1,bar_y+2,0) end
+  if segments>0 then rectfill(left-1,bar_y-1,left+segments*3-1,bar_y+2,spot.lit and not titan.bell_lost and 10 or 0) end
   for segment=0,segments-1 do
    local filled=segment<spot.hp*3/8-0.01
    rectfill(left+segment*3,bar_y,left+segment*3+1,bar_y+1,filled and (open and pulse>0.5 and 10 or 8) or 1)

@@ -75,6 +75,43 @@ local function giant()
  for spot in all(titan.spots) do hit_spot(spot,99,judgements[1]) end
  for i=1,60 do update_play() end
  check("after it the road goes back up",crest_y<horizon+3,"crest at "..flr(crest_y))
+ reset("play")
+ start_stage(3)
+ titan.rise,crest_y=1,titan_horizon
+ local dead=titan.spots[1]
+ dead.hp=0
+ for i=1,30 do update_titan() end
+ local smoke=0
+ for spark in all(sparks) do if spark.float then smoke+=1 end end
+ cls()
+ draw_titan()
+ local sx,sy=spot_xy(dead)
+ check("a destroyed street smokes and shows a crack",smoke>3 and pget(sx-1,sy)==0,smoke.." puffs, crack colour "..pget(sx-1,sy))
+ reset("play")
+ send_alien(0,0)
+ send_alien(0,2,kinds.civilian)
+ clock=5.9
+ equip(2)
+ update_aliens()
+ local overtaken=front_alien(0).penalty
+ step_to(6.01)
+ check("a fleeing civilian overtakes an alien and blocks its street",overtaken and front_alien(0).penalty,"front is "..(front_alien(0).penalty and "the civilian" or "the alien"))
+ local alien=aliens[1].penalty and aliens[2] or aliens[1]
+ check("a shot into the civilian costs points and spares the alien",alien.hp==alien_hp and score==0 and combo==0,"alien hp "..alien.hp..", score "..score)
+ clock=2+kinds.civilian.walk+1
+ update_aliens()
+ check("a civilian who reaches the bottom costs nothing",robot.hp==max_hp and not front_alien(0).penalty,"hp "..robot.hp)
+
+ reset("play")
+ send_alien(0,0)
+ send_alien(0,2.2,kinds.civilian)
+ score,robot.lane,clock=100,1,5.9
+ equip(2)
+ step_to(6.01)
+ robot.lane=0
+ step_frames(2)
+ check("passing through a civilian's street just after a beat does not shoot them",score==100 and front_alien(0).penalty,"score "..score)
+
  printh("ok giant")
  extcmd("shutdown")
 end

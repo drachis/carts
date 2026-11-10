@@ -113,7 +113,7 @@ function update_effects()
   spark.x+=spark.vx
   spark.y+=spark.vy
   spark.vx*=0.9
-  spark.vy=spark.vy*0.9+0.05
+  spark.vy=spark.vy*0.9+(spark.float or 0.05)
   spark.life-=1
   if spark.life<0 then del(sparks,spark) end
  end

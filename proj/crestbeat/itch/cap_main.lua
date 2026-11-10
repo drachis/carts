@@ -19,20 +19,21 @@ local function payout()
  start_play()
  for number,row in ipairs(stages) do
   stage=row
-  for i=1,12 do award("kills") end
+  for i=1,7 do award("kills") end
   if row.bars then
    award("titans")
    award("bells")
   end
-  if row.golden and not row.bars and number<5 then award("golds") end
+  if number==1 then award("golds") end
  end
  stage=stages[#stages]
  finish("won")
 end
 
 local sections={
+ {"title",function() reset("title") end},
  {"hill",play(1,2,true,20)},
- {"streets",play(4,1,true,30)},
+ {"streets",play(4,2,true,30)},
  {"titan",play(3,3,true,75)},
  {"queen",play(9,5,false,75)},
  {"payout",payout},

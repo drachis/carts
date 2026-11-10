@@ -23,9 +23,12 @@ Keep: the user's rule: one shot on each, a double tap resets, one ring a boss, w
 **titan.lua:23** `function draw_limb(x0,y0,x1,y1,from_radius,to_radius,colour)`
 witchcap's hut's limb: an outline pass and a fill pass of filled circles along a line, tapering. The giant's arms and legs.
 
-**titan.lua:118** `function draw_titan()`
+**titan.lua:124** `function draw_titan()`
 The giant as parts (after witchcap's hut), each sprite 1:1: wings behind, drawn like wyrmdeep's (a wrist, four finger bones, a scalloped membrane of lines; `flap` is a sine over two beats), legs as limbs stomping in turn on the beat with feet (88,72) standing on the road at the crest, the torso (0,96), arms as limbs with hands (80,72), the head (40,96 shut, 64,96 open for a beat after a spit) turned a little toward the robot. pal(3) swaps the body colour per giant. Hot spots (spot_xy) sit on the chest and shoulders, each behind its third of a honeycomb force field in front of the torso (`hexagon` cells, 3 columns by 7 rows a street) whose cells shrink away over half a beat when its spot opens, flashing white as they fall (the user asked, to draw the eye), grow back over the last quarter beat, and flash white when hit.
-Keep: a ring of hexes on each spot still read as nipples to the user; the shield is a wall in front of the body, never marks on it. Over the head, one segmented bar per lane, a segment per bar of the giant's health (`titan.bars`), red, blinking yellow while that lane is open, clamped below the HUD (y 10).
+Keep: a ring of hexes on each spot still read as nipples to the user; the shield is a wall in front of the body, never marks on it. A destroyed street is a damage state: a black crack with a flickering red and orange edge at its spot, smoke and embers rising from it (`update_titan` adds sparks with `float`, which world.lua's sparks rise by instead of falling), and on a side street that arm hangs limp, its hand low and still.
+Keep: the user asked for a damage state when a street's health is gone. Wounds are lines, never round marks: round dark marks on the chest read as nipples to the user (the torso's dots and the old round bell lamps were taken out for it).
+The bell's lamps are the bars' frames: a lit spot's frame turns yellow (all three stay yellow once rung, none once the bell is lost).
+Over the head, one segmented bar per lane, a segment per bar of the giant's health (`titan.bars`), red, blinking yellow while that lane is open, clamped below the HUD (y 10).
 Keep: the user found the old glowing spots looked like nipples and asked for hex shields on the closed lanes, a look change only: the pacing and what can be shot did not change. The user asked for one health bar per lane over the head, segmented.
 Keep: the user asked for the giant to follow witchcap's 2.5D multi-sprite hut, and for sprites drawn at their size over scaled ones.
 

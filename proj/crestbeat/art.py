@@ -117,7 +117,7 @@ def swarm_layout():
 
 
 def kaiju_torso():
-    """The giant's trunk, 40x32: shoulders, a scaled chest and a ridged belly."""
+    """The giant's trunk, 40x32: shoulders, scale ridges down its flanks (lines, never dots: dots on a chest read as nipples) and a ridged belly."""
     return [
         (ellipse(0.5, 0.55, 0.42, 0.45), "3"),
         (ellipse(0.16, 0.22, 0.16, 0.2), "3"),
@@ -126,10 +126,9 @@ def kaiju_torso():
         (band(0.56, 0.6, ellipse(0.5, 0.62, 0.2, 0.36)), "d"),
         (band(0.72, 0.76, ellipse(0.5, 0.62, 0.2, 0.36)), "d"),
         (band(0.88, 0.92, ellipse(0.5, 0.62, 0.2, 0.36)), "d"),
-        (ellipse(0.2, 0.5, 0.025, 0.03), "1"),
-        (ellipse(0.12, 0.34, 0.025, 0.03), "1"),
-        (ellipse(0.24, 0.78, 0.025, 0.03), "1"),
-        (ellipse(0.3, 0.3, 0.025, 0.03), "1"),
+        (capsule(0.1, 0.42, 0.26, 0.36, 0.018), "1"),
+        (capsule(0.12, 0.6, 0.27, 0.52, 0.018), "1"),
+        (capsule(0.16, 0.78, 0.28, 0.7, 0.018), "1"),
         (triangle((0.1, 0.12), (0.2, 0.08), (0.1, -0.1)), "6"),
         (triangle((0.24, 0.07), (0.32, 0.06), (0.26, -0.12)), "6"),
     ]

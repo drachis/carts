@@ -235,7 +235,11 @@ old glowing orange spots looked like nipples; the shields are a look
 change only, what can be hit is the same). Over its head, one segmented
 health bar a street, a segment per bar of its health (4 for the titans, 6
 for the queen), the open street's blinking yellow; a destroyed street's
-bar is empty and its shield gone. Spit is the user's "get out of this lane by beat
+bar is empty and its shield gone. A destroyed street is a damage state:
+a black crack with a flickering red edge, smoke and embers rising from it,
+and on a side street that arm hangs limp (the user asked). The bell's lamps
+are the bars' frames, yellow when lit: the old round lamps on the chest and
+the torso's dark scale dots read as nipples, and are gone. Spit is the user's "get out of this lane by beat
 x": it goes down the street the plan is in, telegraphed by a flashing red
 bar with a beat countdown and a glob travelling down, and lands two beats
 later, by when the plan has moved on; it hurts the robot if it is still
@@ -420,10 +424,11 @@ sound and holds the bot.
   knockback; a late arrival inside and outside `good_window`; nothing fired
   and the glow on an empty beat; minigun, front-only and splash damage; that
   every kind lives exactly its bars under every gun; a leak;
-  the chart; when a swarm is done; golden aliens, civilians and weavers.
+  the chart; when a swarm is done; golden aliens and weavers.
 - `test_giant` (split from test_rhythm when the title passed it over 8192
   tokens): open and closed hot spots, spit in and out of its street, the
-  idle spit, when a titan stage is done, the road coming down and back up.
+  idle spit, when a titan stage is done, the road coming down and back up,
+  a destroyed street's crack and smoke; civilians.
 - the payout's rows, curve, dispensing and spring are in `test_screen`.
 
 ## Still to do, or not checked
