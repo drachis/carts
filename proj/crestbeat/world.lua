@@ -12,7 +12,7 @@ function make_city()
  end
  for side=-1,1,2 do
   for t=0,1.2,0.15 do
-   add(buildings,{side=side,t=t+rnd(0.05),w=18+rnd(14),h=30+rnd(50),gap=rnd(6)})
+   add(buildings,{side=side,t=t+rnd(0.05),w=18+rnd(14),h=30+rnd(50),gap=rnd(6),glow=rnd{12,14,13}})
   end
  end
  sort_by_t(buildings)
@@ -47,28 +47,51 @@ function sort_by_t(list)
  end
 end
 
-function draw_sky()
+function sunset(horizon,sun_x,radius)
  cls(1)
- rectfill(0,crest_y-10,127,crest_y,2)
+ fillp(0xa5a5)
+ rectfill(0,horizon-44,127,horizon-23,0x12)
+ fillp()
+ rectfill(0,horizon-22,127,horizon,2)
+ for star=1,40 do
+  local x,y=star*37%128,star*23%50
+  if y<horizon-12 and (star+flr(clock*2))%7>0 then pset(x,y,star%3==0 and 7 or 13) end
+ end
+ local centre=horizon-radius*0.37
+ for dy=-radius,radius*0.37 do
+  local half,share=sqrt(radius*radius-dy*dy),dy/radius
+  if dy<0 or (dy+flr(clock*8))%6>=share*6 then
+   line(sun_x-half,centre+dy,sun_x+half,centre+dy,share<-0.47 and 10 or share<-0.07 and 9 or share<0.33 and 8 or 14)
+  end
+ end
+end
+
+function draw_sky()
+ sunset(crest_y,64-cam_x*0.1,22)
  for tower in all(skyline) do
   local x=tower.x-cam_x*0.15
-  rectfill(x,crest_y-tower.h,x+tower.w,crest_y,13)
+  rectfill(x,crest_y-tower.h,x+tower.w,crest_y,0)
+  pset(x+2,crest_y-tower.h+3,tower.h%3<1 and 14 or 12)
  end
 end
 
 function draw_ground()
- rectfill(0,crest_y,127,127,5)
- for t=0,1.4,0.02 do
-  local left,top=project(-1.5,t)
-  local right,bottom=project(1.5,t+0.02)
-  rectfill(left,top,right,bottom,0)
+ rectfill(0,crest_y,127,127,0)
+ for t=scroll%0.1,1.4,0.1 do
+  local _,y=project(0,t)
+  line(0,y,127,y,2)
+ end
+ for edge=-1.5,1.5,3 do
+  local x1,y1=project(edge,0)
+  local x2,y2=project(edge,1.4)
+  line(x1,y1,x2,y2,14)
  end
  for t=scroll%0.2,1.4,0.2 do
   for lane=-0.5,0.5,1 do
    local x1,y1,scale=project(lane,t)
    local x2,y2=project(lane,t+0.09)
    for w=0,scale*2 do
-    line(x1+w,y1,x2+w,y2,10)
+    line(x1+w,y1,x2+w,y2,12)
    end
   end
  end
@@ -81,10 +104,14 @@ function draw_buildings(behind)
    local inner=edge+building.side*(4+building.gap)*scale
    local outer=inner+building.side*building.w*scale
    local top=base-building.h*scale
-   rectfill(inner,top,outer,base,12)
-   rect(inner,top,outer,base,6)
+   rectfill(inner,top,outer,base,1)
+   rect(inner,top,outer,base,building.glow)
+   local window=0
    for y=top+4,base-3,5*scale+1 do
-    line(min(inner,outer)+2,y,max(inner,outer)-2,y,13)
+    for x=min(inner,outer)+2,max(inner,outer)-3,3*scale+1 do
+     window+=1
+     if (window*building.w+building.h)%5<2 then rectfill(x,y,x+scale,y+scale,window%7==0 and 10 or building.glow) end
+    end
    end
   end
  end

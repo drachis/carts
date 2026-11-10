@@ -82,26 +82,6 @@ local function screen()
  local mean=total/frames
  check("an alien moves smoothly: always forward, no frame more than 3x the mean",least>0 and most<mean*3,"steps "..least.." to "..most..", mean "..mean)
 
- reset("play")
- start_stage(3)
- local lit=""
- for lane in all({-1,1,0}) do
-  hit_spot(titan.spots[lane+2],1,judgements[1])
-  lit..=lamps_lit().." "
- end
- check("one shot on each hot spot rings the bell",lit=="1 2 3 " and score==bell_bonus and titan.rung,"lamps "..lit.."score "..score)
- for spot in all(titan.spots) do spot.lit=nil end
- for spot in all(titan.spots) do hit_spot(spot,1,judgements[1]) end
- check("the bell rings only once a giant",stats.bells==1,stats.bells.." bells")
- reset("play")
- start_stage(3)
- hit_spot(titan.spots[1],1,judgements[1])
- hit_spot(titan.spots[1],1,judgements[1])
- check("a second shot on a lit spot puts the lamps out",lamps_lit()==0,"lamps "..lamps_lit())
- hit_spot(titan.spots[2],1,judgements[1])
- hit_spot(titan.spots[1],99,judgements[1])
- hit_spot(titan.spots[3],1,judgements[1])
- check("destroying a hot spot before the bell takes the bell away",stats.bells==0 and titan.bell_lost,stats.bells.." bells")
 
  reset("play")
  start_stage(3)

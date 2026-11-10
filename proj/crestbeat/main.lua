@@ -206,21 +206,7 @@ function centred(text,y,colour)
 end
 
 function draw_title()
- rectfill(0,0,127,30,1)
- fillp(0xa5a5)
- rectfill(0,31,127,52,0x12)
- fillp()
- rectfill(0,53,127,74,2)
- for star=1,40 do
-  local x,y=star*37%128,star*23%50
-  if (star+flr(clock*2))%7>0 then pset(x,y,star%3==0 and 7 or 13) end
- end
- for dy=-30,11 do
-  local half=sqrt(900-dy*dy)
-  if dy<0 or (dy+flr(clock*8))%6>=dy/5 then
-   line(64-half,64+dy,64+half,64+dy,dy<-14 and 10 or dy<-2 and 9 or dy<10 and 8 or 14)
-  end
- end
+ sunset(75,64,30)
  if not titan then make_titan(stages[3]) end
  titan.rise,titan.bars,crest_y=1,0,225
  local real_pal=pal

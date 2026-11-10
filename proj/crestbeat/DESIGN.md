@@ -326,6 +326,14 @@ pink lines rolling toward the player with the street's edges in blue, the
 robot on its jets swaying down the street, and a chrome logo in banded
 white, blue and grey. It draws no HUD.
 
+**The play screens share it** (the crestbeat-synth branch: the user loved
+the title and wished the whole game had its art direction). `sunset` draws
+the same sky and sun at the crest, so the giants stand in front of the
+setting sun; the skyline is black silhouettes; the buildings are navy with
+neon outlines and lit windows; the ground is black with a dim purple grid,
+pink road edges and blue lane dashes. The aliens' green, the golden alien
+and the robot's red stay as they were: they read clearly on black.
+
 ## The art
 
 The figures are drawn from shapes by `art.py` (run by `gen_cart.py`), at
@@ -419,7 +427,7 @@ sound and holds the bot.
   Each prints its beats, hearts and tickets and dumps a screen, and the
   first sight of each special kind (`stage_*.png`). A heart lost prints
   where.
-- `test_screen`: what is read off the screen: the queen and rising aliens, the wings flapping, the robot drawn from the map and the sheet restored, the robot's spring; the bell (moved here when test_rhythm passed 8192 tokens); a shot blocked by a shield, the health bars and the shields read off the screen (`screen_shields.png`).
+- `test_screen`: what is read off the screen: the queen and rising aliens, the wings flapping, the robot drawn from the map and the sheet restored, the robot's spring; a shot blocked by a shield, the health bars and the shields read off the screen (`screen_shields.png`).
 - `test_rhythm`: each gun fires on exactly its pattern's eighths; a hit on the beat and its
   knockback; a late arrival inside and outside `good_window`; nothing fired
   and the glow on an empty beat; minigun, front-only and splash damage; that
@@ -428,7 +436,7 @@ sound and holds the bot.
 - `test_giant` (split from test_rhythm when the title passed it over 8192
   tokens): open and closed hot spots, spit in and out of its street, the
   idle spit, when a titan stage is done, the road coming down and back up,
-  a destroyed street's crack and smoke; civilians.
+  a destroyed street's crack and smoke; civilians; the bell.
 - the payout's rows, curve, dispensing and spring are in `test_screen`.
 
 ## Still to do, or not checked
