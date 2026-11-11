@@ -1,0 +1,85 @@
+local game_update=_update
+local frame,sec,left,route=0,0,0
+
+local function play(number,gun,golden,skip)
+ return function()
+  start_play()
+  start_stage(number)
+  equip(gun)
+  route=golden
+  for i=1,skip or 0 do
+   held={}
+   bot(i,0,route and stage.golden)
+   game_update()
+  end
+ end
+end
+
+local function payout()
+ start_play()
+ for number,row in ipairs(stages) do
+  stage=row
+  for i=1,7 do award("kills") end
+  if row.bars then
+   award("titans")
+   award("bells")
+  end
+  if number==1 then award("golds") end
+ end
+ stage=stages[#stages]
+ finish("won")
+end
+
+local wanted={}
+local every={
+ {"title",function() reset("title") end},
+ {"hill",play(1,1,true,20)},
+ {"streets",play(4,2,true,30)},
+ {"titan",play(3,3,true,75)},
+ {"queen",play(9,5,false,75)},
+ {"fever",play(7,4,false,20),function() combo=max(combo,30) end},
+ {"finale",play(6,3,false,60),function()
+   if frame==60 then
+    for spot in all(titan.spots) do hit_spot(spot,99,judgements[1]) end
+   end
+  end,72},
+ {"payout",payout},
+}
+for section in all(every) do
+ if filming[section[1]] then add(wanted,section) end
+end
+sections=wanted
+
+function _update()
+ if sec>#sections then
+  left-=1
+  if left==0 then
+   printh("ok cap_main")
+   extcmd("shutdown")
+  end
+  return
+ end
+ if left==0 then
+  if sec>0 then extcmd("video") end
+  sec+=1
+  if not sections[sec] then
+   left=90
+   return
+  end
+  frame,left=0,240
+  srand(7)
+  sections[sec][2]()
+  printh("filming "..sections[sec][1])
+  extcmd("set_filename","crestbeat_"..sections[sec][1])
+  extcmd("rec")
+ end
+ frame+=1
+ left-=1
+ held={}
+ if mode=="play" then bot(frame,0,route and stage.golden) end
+ if sections[sec][3] then sections[sec][3]() end
+ game_update()
+ if frame==(sections[sec][4] or 150) then extcmd("screen") end
+end
+
+printh("started")

@@ -1,0 +1,15 @@
+*.png
+__pycache__/
+tests/*.p8l
+*.html
+*.js
+*.zip
+*.bin/
+build/
+release/
+run.txt
+tests/lite.lua
+tests/play.lua
+tests/boot.lua
+tests/capture_play.lua
+tests/capture_menus.lua
